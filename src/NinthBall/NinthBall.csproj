@@ -13,6 +13,7 @@
     <Authors>Venkatesh Ramakrishnan</Authors>
     <Description>Beyond the 8-Ball – A Monte Carlo framework grounded in math and probability.</Description>
     <AssemblyVersion>1.0.0</AssemblyVersion>
+    <ErrorReport>none</ErrorReport>
   </PropertyGroup>
 
   <ItemGroup>
