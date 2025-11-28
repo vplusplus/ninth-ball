@@ -1,4 +1,27 @@
 ﻿
 * Excel readers are in two places. Consider moving the logic to a 'Reader'.
 * Add whitebox unit tests 
+* Implement reallocation strategy: Can change allocation from 50-50 to 60-40 to 70-30 at specific years.
 
+Q Should we package initial parameters to SimParams? 
+  Currently these are passed around as individual parameters.
+  Motivation is, common parameters not specific to individual objectives are captured as SimParams.
+
+* IDEA: 
+  Implement stochastic gradient descent by sunning multiple simulations to discover parameters.
+  Example: For given set of objectives, discover minimum required initial balance for 99% success
+  Example: For given set of objectives, discover safe withdawal amount
+  Example: For given set of objectives, discover minimum required buffer amount 99% success
+  Example: For given set of objectives, discover if investing buffer cash can improve survival
+  
+* IDEA:
+  Integrate with LLM to describe the result.
+  Generate HtML report, ask LLM to describe, include in the report.
+
+* IDEA:
+  Package as self-contained asp.net razor pages exe that initiates a broser.
+  Provides UI for updating the objevtives and see the result.
+
+* IDEA:
+  Instead of generating static html, produce data.
+  Implement a self-contained Razor pages to view the report.

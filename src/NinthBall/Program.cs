@@ -90,7 +90,7 @@ namespace NinthBall
 
                 // Run simulation
                 var timer = Stopwatch.StartNew();
-                var simResult = MonteCarlo.RunSimulation(simConfig);
+                var simResult = Simulation.RunSimulation(simConfig);
                 timer.Stop();
 
                 // Generate html report

@@ -2,48 +2,48 @@
 
 namespace NinthBall
 {
-    internal static class MonteCarlo
+    internal static class Simulation
     {
         public static SimResult RunSimulation(SimConfig simConfig)
         {
             ArgumentNullException.ThrowIfNull(simConfig);
 
-            // Consult SimConfig.
             // Create simulation objectives.
             var objectives = simConfig.CreateObjectives();
 
-            // Check if HistoricalReturns with sequential block simulation is requested.
-            // In such case, we may not meet NumIterations objective
+            // Check if HistoricalReturns with sequential-returns simulation is requested.
+            // In such case, we may not meet NumIterations objective.
             // Limit max iterations.
             var historicalGrowthObjective = objectives.OfType<HistoricalGrowthObjective>().SingleOrDefault();
-            var maxIterations = null != historicalGrowthObjective ? historicalGrowthObjective.MaxIterations : simConfig.Iterations;
+            var numIterations = Math.Min(
+                null != historicalGrowthObjective ? historicalGrowthObjective.MaxIterations : simConfig.Iterations,
+                simConfig.Iterations
+            );
 
             return objectives.RunSimulation(
                 simConfig.StartingBalance,
                 simConfig.StocksAllocationPct,
                 simConfig.MaxDrift,
                 simConfig.NoOfYears,
-                maxIterations
+                numIterations
             );
         }
 
+        /// <summary>
+        /// Runs simulation of the objectives.  
+        /// </summary>
         public static SimResult RunSimulation(this IReadOnlyList<ISimObjective> objectives,
-            double initialBalance, double initialAllocation, double initialMaxDrift, int numYears,
-            int numIterations
+            double initialBalance, double initialAllocation, double initialMaxDrift, int numYears, int numIterations
         )
         {
             ArgumentNullException.ThrowIfNull(objectives);
 
-            objectives = objectives.OrderBy(x => x.Order).ToList().AsReadOnly();
-
             List<SimIteration> iterationResults = [];
 
-            for (int iterationIndex = 0; iterationIndex < numIterations; iterationIndex++)
-                iterationResults.Add(
-                    objectives.RunIteration(iterationIndex, initialBalance, initialAllocation, initialMaxDrift, numYears)
-                );
-
-            var iterationResultsWorstToBest = iterationResults
+            // Run iterations. Collect results.
+            // Sort the results worst-to-best ( * -> survival -> ending balance )
+            var iterationResultsWorstToBest = Enumerable.Range(0, numIterations)
+                .Select(iterationIndex => objectives.RunIteration(iterationIndex, initialBalance, initialAllocation, initialMaxDrift, numYears))
                 .OrderBy(x => x.SurvivedYears)
                 .ThenBy(x => x.EndingBalance)
                 .ToList()
@@ -58,9 +58,12 @@ namespace NinthBall
             );
         }
 
+        /// <summary>
+        /// Runs a single iteration of the simulation.
+        /// This signature is intended for unit testing. Consider RunSimulation()
+        /// </summary>
         public static SimIteration RunIteration(this IReadOnlyList<ISimObjective> objectives, 
-            int iterationIndex, double initialBalance, double initialAllocation, double initialMaxDrift,
-            int numYears
+            int iterationIndex, double initialBalance, double initialAllocation, double initialMaxDrift, int numYears
         )
         {
             ArgumentNullException.ThrowIfNull(objectives);
