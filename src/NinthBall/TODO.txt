@@ -1,4 +1,4 @@
 ﻿
-* Excel readers are in multiple places. Try to consolidate.
-* Consider leaving the --watch loop after 3 unhandled exceptions which are not FatalWarning
+* Excel readers are in two places. Consider moving the logic to a 'Reader'.
+* Add whitebox unit tests 
 
