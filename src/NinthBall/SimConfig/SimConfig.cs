@@ -29,7 +29,8 @@ namespace NinthBall
     {
         IReadOnlyList<double> __withdrawalSequence = null!;
 
-        public IReadOnlyList<double> WithdrawalSequence => ReadPrecalculatedWithdrawals(FileName, SheetName);
+        public IReadOnlyList<double> WithdrawalSequence => __withdrawalSequence ??= 
+            ReadPrecalculatedWithdrawals(FileName, SheetName);
 
         static IReadOnlyList<double> ReadPrecalculatedWithdrawals(string xlFileName, string sheetName)
         {
