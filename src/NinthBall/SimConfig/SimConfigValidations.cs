@@ -64,8 +64,10 @@ namespace NinthBall
     {
         public void ThrowIfInvalid()
         {
+            if (MaxSkips < 0 || MaxSkips > 100) throw new FatalWarning("ReduceWithdrawal.MaxSkips must be >= 0 and <= 100");
+            if (CutOffYear < 1 || CutOffYear > 100) throw new FatalWarning("ReduceWithdrawal.CutOffYear must be >= 1 and <= 100");
             GrowthThreshold.ThrowIfBadPCT("ReduceWithdrawal.GrowthThreshold");
-            GrowthThreshold.ThrowIfBadPCT("ReduceWithdrawal.ReductionPct");
+            ReductionPct.ThrowIfBadPCT("ReduceWithdrawal.ReductionPct");
         }
     }
 

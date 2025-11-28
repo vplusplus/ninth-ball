@@ -9,7 +9,11 @@ namespace NinthBall
     /// <summary>
     /// Represents a small sequence of historical returns.
     /// </summary>
-    public sealed record Block(IReadOnlyList<YROI> Segment) { public readonly int ChronoIndex = Segment[0].Year; }
+    public sealed record Block(IReadOnlyList<YROI> Segment) 
+    { 
+        public readonly IReadOnlyList<YROI> Segment = Segment ?? throw new ArgumentNullException(nameof(Segment));
+        public readonly int ChronoIndex = 0 == Segment.Count ? 0 : Segment[0].Year; 
+    }
 
     public static class Bootstrap
     {
@@ -78,6 +82,8 @@ namespace NinthBall
 
             static IEnumerable<Block> ReadBlocks(YROI[] history, int sequenceLength)
             {
+                if (history.Length < sequenceLength) throw new Exception($"Too few elements in history | Expecting at leaset {sequenceLength}");
+
                 for (int i = 0; i <= (history.Length - sequenceLength); i++)
                 {
                     YROI[] segment = new YROI[sequenceLength];
@@ -87,7 +93,7 @@ namespace NinthBall
             }
         }
 
-        public static YROI[] SampleRandomMovingBlocks(Random rand, IReadOnlyList<Block> allBlocks, int numYears, bool noConsecutiveRepetition, bool skip1931)
+        public static YROI[] SampleRandomMovingBlocks(Random rand, IReadOnlyList<Block> allBlocks, int numYears, bool noConsecutiveRepetition)
         {
             ArgumentNullException.ThrowIfNull(rand);
             ArgumentNullException.ThrowIfNull(allBlocks);

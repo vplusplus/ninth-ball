@@ -44,16 +44,15 @@ namespace NinthBall
             var iterationRand = new Random(PredictableHashCode.Combine(C.SessionSeed, iterationIndex));
 
             return P.UseRandomBlocks
-                ? new RandomBlocksStrategy(iterationRand, P.AllBlocks, C.NoOfYears, P.NoConsecutiveBlocks, P.Skip1931)
+                ? new RandomBlocksStrategy(iterationRand, P.AllBlocks, C.NoOfYears, P.NoConsecutiveBlocks)
                 : new SequentialHistoryStrategy(P.AllYears, iterationIndex: iterationIndex);
         }
 
-        sealed class RandomBlocksStrategy(Random rand, IReadOnlyList<Block> allBlocks, int numYears, bool noConsecutiveRepetition, bool skip1931) : ISimStrategy
+        sealed class RandomBlocksStrategy(Random rand, IReadOnlyList<Block> allBlocks, int numYears, bool noConsecutiveRepetition) : ISimStrategy
         {
             // SampleRandomMovingBlocks rndom blocks, prepare ROI sequence
             readonly YROI[] MyROISequence = Bootstrap.SampleRandomMovingBlocks(rand, allBlocks, numYears,
-                noConsecutiveRepetition: noConsecutiveRepetition,
-                skip1931: skip1931
+                noConsecutiveRepetition: noConsecutiveRepetition
             );
 
             void ISimStrategy.Apply(ISimContext context)

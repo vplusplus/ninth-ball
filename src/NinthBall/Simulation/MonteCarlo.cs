@@ -9,7 +9,7 @@ namespace NinthBall
             ArgumentNullException.ThrowIfNull(simConfig);
 
             // Consult SimConfig.
-            // Create smulation objectives.
+            // Create simulation objectives.
             var objectives = simConfig.CreateObjectives();
 
             // Check if HistoricalReturns with sequential block simulation is requested.
