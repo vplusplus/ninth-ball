@@ -151,22 +151,24 @@ namespace NinthBall
     /// </summary>
     public record SimContext(int IterationIndex, double InitialBalance, double InitialStockAllocationPct, double InitialMaxDrift) : ISimContext
     {
-        readonly SimBalance    _Balance = new(InitialBalance, InitialStockAllocationPct, InitialMaxDrift);
-        readonly List<SimYear> _PriorYears = [];
+        static readonly YROI ZeroROI = new(0, 0, 0);
+
+        readonly SimBalance    MyBalance = new(InitialBalance, InitialStockAllocationPct, InitialMaxDrift);
+        readonly List<SimYear> MyPriorYears = [];
 
         int     _YearIndex = 0;
         double  _PlannedWithdrawal = double.NaN;
-        double  _ActualWithdrawal = double.NaN;
-        double  _Fees = double.NaN;
-        YROI    _ROI = null!;
+        double  _ActualWithdrawal  = double.NaN;
+        double  _Fees = 0;
+        YROI    _ROI = ZeroROI;
 
         public int YearIndex => _YearIndex;
 
-        public IReadOnlyList<SimYear> PriorYears => _PriorYears;
+        public IReadOnlyList<SimYear> PriorYears => this.MyPriorYears;
 
-        public double JanBalance => _Balance.CurrentBalance;
+        public double JanBalance => MyBalance.CurrentBalance;
 
-        public double AvailableBalance => _Balance.CurrentBalance
+        public double AvailableBalance => MyBalance.CurrentBalance
             - (double.IsNaN(_Fees) ? 0 : _Fees)
             - (double.IsNaN(_ActualWithdrawal) ? 0 : _ActualWithdrawal);
 
@@ -189,7 +191,6 @@ namespace NinthBall
 
         YROI ISimContext.ROI
         {
-            //get => _ROI;
             set => _ROI = value ?? throw new Exception("ROI can't be null.");
         }
 
@@ -199,27 +200,27 @@ namespace NinthBall
             _PlannedWithdrawal = double.NaN;
             _ActualWithdrawal = double.NaN;
             _Fees = 0;
-            _ROI = null!;
+            _ROI = ZeroROI;
 
-            _Balance.Rebalance();
+            MyBalance.Rebalance();
         }
 
         public bool EndYear()
         {
-            double janBalance = _Balance.CurrentBalance;
-            double janAlloc = _Balance.CurrentStockPct;
+            double janBalance = MyBalance.CurrentBalance;
+            double janAlloc = MyBalance.CurrentStockPct;
             double changeInValue = 0;
 
-            var success = !double.IsNaN(_ActualWithdrawal) && _Balance.CurrentBalance >= _Fees + _ActualWithdrawal;
+            var success = !double.IsNaN(_ActualWithdrawal) && MyBalance.CurrentBalance >= (_Fees + _ActualWithdrawal);
 
             if (success)
             {
-                _Balance.Reduce(_Fees);
-                _Balance.Reduce(_ActualWithdrawal);
-                changeInValue = null != _ROI ? _Balance.Grow(_ROI.StocksROI, _ROI.BondROI) : 0;
+                MyBalance.Reduce(_Fees);
+                MyBalance.Reduce(_ActualWithdrawal);
+                changeInValue = null != _ROI ? MyBalance.Grow(_ROI.StocksROI, _ROI.BondROI) : 0;
             }
 
-            _PriorYears.Add(new SimYear
+            MyPriorYears.Add(new SimYear
             (
                 YearIndex,
                 JanBalance: janBalance,
@@ -229,8 +230,8 @@ namespace NinthBall
                 ActualWithdrawal:   success ? _ActualWithdrawal : 0,
                 Fees:               success ? _Fees : 0,
                 Change:             success ? changeInValue : 0,
-                DecBalance:         success ? _Balance.CurrentBalance : 0,
-                DecStockPct:        success ? _Balance.CurrentStockPct : 0,
+                DecBalance:         success ? MyBalance.CurrentBalance : 0,
+                DecStockPct:        success ? MyBalance.CurrentStockPct : 0,
 
                 StockROI:           success ? _ROI?.StocksROI ?? 0 : 0,
                 BondROI:            success ? _ROI?.BondROI ?? 0 : 0,

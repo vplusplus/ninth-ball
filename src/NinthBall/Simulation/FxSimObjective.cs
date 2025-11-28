@@ -3,7 +3,7 @@ namespace NinthBall
 {
     /// <summary>
     /// Helper for unit-testing.
-    /// Enables composing a simulation strategy using a simple function with no additional boiler plate.
+    /// Enables composing a simulation strategy using a simple function with no additional boilerplate.
     /// </summary>
     public sealed class FxSimObjective(Action<ISimContext> fxStrategy) : ISimObjective
     {

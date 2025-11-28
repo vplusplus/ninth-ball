@@ -21,14 +21,15 @@ zzPrecalculatedWithdrawal:
 
 # Withdrawal optimizations objectives 
 
+zzUseBufferCash:
+  Amount: 350000
+  GrowthThreshold: 0.03
+
 zzReduceWithdrawal:
   MaxSkips: 3
   CutOffYear: 10
   GrowthThreshold: 0.03
   ReductionPct: 0.4
-zzUseBufferCash:
-  Amount: 350000
-  GrowthThreshold: 0.03
 
 # Growth strategies 
 

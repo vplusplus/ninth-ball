@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-// REF: https://learn.microsoft.com/en-us/aspnet/core/blazor/components/render-components-outside-of-aspnetcore?view=aspnetcore-10.0
-
 namespace NinthBall.Templates
 {
     internal static class MyTemplates
@@ -20,12 +18,8 @@ namespace NinthBall.Templates
             {
                 return await htmlRenderer.Dispatcher.InvokeAsync(async () =>
                 {
-                    var output = await htmlRenderer.RenderComponentAsync<TTemplate>(
-                        ParameterView.FromDictionary(
-                            templateParameters ?? new Dictionary<string, object?>()
-                        )
-                    );
-
+                    var parameters = ParameterView.FromDictionary(templateParameters ?? new Dictionary<string, object?>());
+                    var output = await htmlRenderer.RenderComponentAsync<TTemplate>(parameters).ConfigureAwait(false);
                     return output.ToHtmlString();
                 });
             }
@@ -33,6 +27,8 @@ namespace NinthBall.Templates
 
         public static async Task<string> GenerateSimReportAsync(SimResult simOutcome)
         {
+            ArgumentNullException.ThrowIfNull(simOutcome);
+
             Dictionary<string, object?> templateParameters = new() 
             { 
                 ["Model"] = simOutcome 

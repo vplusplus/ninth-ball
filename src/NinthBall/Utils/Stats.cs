@@ -94,7 +94,6 @@ namespace NinthBall
         public static double Round10(this double value) => RoundX(value, 10);
         public static double Round100(this double value) => RoundX(value, 100);
         public static double Round1000(this double value) => RoundX(value, 1000);
-
         public static string Thousands(this double value, int decimalPlaces = 2) => $"{(value / 1000).ToString($"C{decimalPlaces}")} K";
         public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
     }

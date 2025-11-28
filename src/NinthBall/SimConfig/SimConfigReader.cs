@@ -1,5 +1,4 @@
 ﻿
-using System.Data;
 using System.Text.Json;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -17,8 +16,9 @@ namespace NinthBall
                 // Read YAML text
                 string yamlText = File.ReadAllText(yamlFileName);
 
-                // $(MyPath) represents path of the current config file.
-                // If present, replace with path of the config file.
+                // The $(MyPath) token represents directory of the current config file.
+                // Config entries can reference $(MyPath) to locate related files.
+                // If present, replace $(MyPath) with the actual path of this config file.
                 if (yamlText.Contains(MyPathTag, StringComparison.OrdinalIgnoreCase))
                 {
                     var myPath = Path.GetFullPath(Path.GetDirectoryName(yamlFileName) ?? "./")
@@ -33,13 +33,13 @@ namespace NinthBall
                     .WithNamingConvention(CamelCaseNamingConvention.Instance)
                     .WithAttemptingUnquotedStringTypeDeserialization() // Helps recognize types like booleans and numbers implicitly
                     .Build()
-                    .Deserialize(yamlText) ?? throw new Exception("Yaml.NET Deserializer returnd null.");
+                    .Deserialize(yamlText) ?? throw new Exception("Yaml.NET deserializer returnd null.");
 
                 // Convert to Json (because deserialization behaviors are different)
                 string jsonText = JsonSerializer.Serialize(yamlObject);
 
                 // Deserialize from Json 
-                return System.Text.Json.JsonSerializer.Deserialize<SimConfig>(jsonText) ?? throw new Exception("Unexpected: JsonSerializer.Deserialize returned null.");
+                return System.Text.Json.JsonSerializer.Deserialize<SimConfig>(jsonText) ?? throw new Exception("Unexpected: JsonSerializer returned null.");
             }
             catch (Exception err)
             {

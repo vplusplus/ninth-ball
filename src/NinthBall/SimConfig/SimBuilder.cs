@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Immutable;
+
 namespace NinthBall
 {
     internal static class SimBuilder
@@ -10,9 +12,9 @@ namespace NinthBall
         {
             ArgumentNullException.ThrowIfNull(simConfig);
 
-            // Create instances of ISimObjective
+            // Create instances of ISimObjective(s)
             // Ignore NULLs - The ObjectiveOrNull() helper may return nulls.
-            // Sort by execution order suggested by the objective(s)
+            // Sort by execution order suggested by the objectives.
             // Break ties using their original config order.
             return new List<ISimObjective?> {
                 simConfig.ObjectiveOrNull(simConfig.PCTWithdrawal),
@@ -42,17 +44,19 @@ namespace NinthBall
                 : null;
 
         /// <summary>
-        /// Map of config section type and a factory that provides instance ISimObjective
+        /// Map of config section type and a factory that provides corresponsing ISimObjective.
         /// </summary>
-        private static readonly Dictionary<Type, Func<SimConfig, ISimObjective>> SimObjectiveMap = new()
-        {
-            { typeof(PCTWithdrawal), cfg => new PCTWithdrawalObjective(cfg) },
-            { typeof(PrecalculatedWithdrawal), cfg => new PrecalculatedWithdrawalObjective(cfg) },
-            { typeof(ReduceWithdrawal), cfg => new ReduceWithdrawalAfterBadYears(cfg) },
-            { typeof(UseBufferCash), cfg => new UseBufferCashAfterBadYears(cfg) },
-            { typeof(FlatGrowth), cfg => new FlatGrowthObjective(cfg) },
-            { typeof(HistoricalGrowth), cfg => new HistoricalGrowthObjective(cfg) },
-            { typeof(Fees), cfg => new AnnualFeesObjective(cfg) },
-        };
+        private static readonly IReadOnlyDictionary<Type, Func<SimConfig, ISimObjective>> SimObjectiveMap =
+            new Dictionary<Type, Func<SimConfig, ISimObjective>>
+            {
+                [typeof(PCTWithdrawal)]             = cfg => new PCTWithdrawalObjective(cfg),
+                [typeof(PrecalculatedWithdrawal)]   = cfg => new PrecalculatedWithdrawalObjective(cfg),
+                [typeof(ReduceWithdrawal)]          = cfg => new ReduceWithdrawalAfterBadYears(cfg),
+                [typeof(UseBufferCash)]             = cfg => new UseBufferCashAfterBadYears(cfg),
+                [typeof(FlatGrowth)]                = cfg => new FlatGrowthObjective(cfg),
+                [typeof(HistoricalGrowth)]          = cfg => new HistoricalGrowthObjective(cfg),
+                [typeof(Fees)]                      = cfg => new AnnualFeesObjective(cfg),
+            }
+            .ToImmutableDictionary();
     }
 }
