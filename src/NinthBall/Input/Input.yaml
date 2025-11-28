@@ -1,0 +1,51 @@
+
+RandomSeedHint: "JSR"
+
+StartingBalance: 2500000
+StocksAllocationPct: 0.6
+MaxDrift: 0.03
+NoOfYears: 30
+Iterations: 10000
+Output: "D:/Junk/SimReport.html"
+
+# Withdrawal objectives
+
+zzPCTWithdrawal:
+  FirstYearPct: 0.05
+  IncrementPct: 0.02
+  ResetYears: [6, 11]
+
+PrecalculatedWithdrawal:
+  FileName: $(MyPath)/DATA/Withdrawals.xlsx
+  SheetName: Withdrawals
+
+# Withdrawal optimizations objectives 
+
+zzReduceWithdrawal:
+  MaxSkips: 3
+  CutOffYear: 10
+  GrowthThreshold: 0.03
+  ReductionPct: 0.4
+zzUseBufferCash:
+  Amount: 350000
+  GrowthThreshold: 0.03
+
+# Growth strategies 
+
+HistoricalGrowth:
+  FileName: $(MyPath)/DATA/ROI-History.xlsx
+  SheetName: DATA
+  zzUseRandomBlocks: true
+  zzBlockSizes: [3,4,5]
+  zzNoConsecutiveBlocks: true
+  zzSkip1931: true
+zzzFlatGrowth:
+  StocksGrowthRate: 0.05
+  BondGrowthRate: 0.05
+
+# Fees and other deductions
+zzFees:
+  AnnualFeesPct: 0.009
+
+
+  

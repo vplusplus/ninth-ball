@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="NinthBall/NinthBall.csproj" />
+  <Project Path="UnitTests/UnitTests.csproj" />
+</Solution>

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "9-ball": {
+      "commandName": "Project",
+      "commandLineArgs": "--in $(SolutionDir)NinthBall/Input/Input.yaml --watch"
+    }
+  }
+}

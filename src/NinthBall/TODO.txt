@@ -1,0 +1,4 @@
+﻿
+* Excel readers are in multiple places. Try to consolidate.
+* Consider leaving the --watch loop after 3 unhandled exceptions which are not FatalWarning
+

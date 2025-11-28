@@ -1,0 +1,54 @@
+﻿
+<h1>Something went wrong</h1>
+
+@if(Ex is FatalWarning)
+{
+    <h3>@Ex.Message</h3>
+}
+else
+{
+    <h3>@FindRootCause(Ex)</h3>
+
+    <h4>Errors:</h4>
+    <div>
+        <ul>
+        @foreach(var msg in InnerMessages(Ex))
+        {
+            <li>@msg</li>
+        }
+        </ul>
+    </div>
+
+    <h4>Details</h4>
+    <pre>
+    @Ex.ToString()
+    </pre>
+}
+
+@code {
+
+    [Parameter] public Exception Ex { get; set; } = null!;
+
+
+    static string FindRootCause(Exception err)
+    {
+        var rootCause = string.Empty;
+
+        while(null != err)
+        {
+            rootCause = err.Message;
+            err = err.InnerException!;
+        }
+
+        return rootCause;
+    }
+
+    static IEnumerable<string> InnerMessages(Exception err) 
+    {
+        while(null != err) 
+        {
+            yield return err.Message;
+            err = err.InnerException!;
+        }
+    }
+}

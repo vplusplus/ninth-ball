@@ -1,0 +1,5 @@
+<Project>
+	<PropertyGroup>
+		<ArtifactsPath>$(SolutionDir).artifacts</ArtifactsPath>
+	</PropertyGroup>
+</Project>
