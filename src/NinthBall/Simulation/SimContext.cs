@@ -3,8 +3,7 @@
 namespace NinthBall
 {
     /// <summary>
-    /// represents a simulation objective. 
-    /// Provides strategy, aligned with the simulation objective.
+    /// Represents a simulation objective; Provides ISimStrategy for each iteration.
     /// </summary>
     public interface ISimObjective
     {
@@ -13,7 +12,7 @@ namespace NinthBall
     }
 
     /// <summary>
-    /// Strategy that implements a simulation objective.
+    /// Strategy that applies a specific simulation objective to a given context.
     /// </summary>
     public interface ISimStrategy 
     {
@@ -21,41 +20,40 @@ namespace NinthBall
     }
 
     /// <summary>
-    /// Context of a simulation-iteration.
+    /// Context representing the state of a single iteration during simulation.
     /// </summary>
     public interface ISimContext
     {
-        /// <summary> Zero based index of a simulation-iteration </summary>
+        /// <summary> Zero-based index of the current simulation iteration. </summary>
         int IterationIndex { get; }
 
-        /// <summary> Zero based index of simulation year with-in an iteration. </summary>
+        /// <summary> Zero-based index of the simulation year within the current iteration. </summary>
         int YearIndex { get; }
 
-        /// <summary> Performance in prior years. Will be an empty list on first year. </summary>
+        /// <summary> Performance data from prior years. Empty on the first year of an iteration. </summary>
         IReadOnlyList<SimYear> PriorYears { get; }
 
-        /// <summary> Portfolio balance as on Jan this year. </summary>
+        /// <summary> Portfolio balance at the start of the current year (January 1st). </summary>
         double JanBalance { get; }
 
-        /// <summary> Portfolio balance less fees and known withdrawals (which might change) </summary>
+        /// <summary> Portfolio balance after deducting fees and withdrawals (amounts may be adjusted). </summary>
         double AvailableBalance { get; }
 
-        /// <summary> Originally planned withdrawal amount. </summary>
+        /// <summary> Initial planned withdrawal amount before any adjustments. </summary>
         double PlannedWithdrawalAmount { set; }
 
-        /// <summary> Adjusted withdrawal amount. </summary>
+        /// <summary> Actual withdrawal amount, potentially adjusted from the planned amount. </summary>
         double WithdrawalAmount { get; set; }
 
-        /// <summary> Any applicable fees. </summary>
+        /// <summary> Fees applicable to the current year. </summary>
         double Fees { get; set; }
 
-        /// <summary> Estimated ROI this year. </summary>
+        /// <summary> Return on investment for the current year. </summary>
         YROI ROI { set; }
     }
 
     /// <summary>
-    /// Portfolio balance.
-    /// Can rebalance, reallocate, withdraw and grow
+    /// Portfolio balance with support for rebalancing, reallocation, withdrawals, and growth.
     /// </summary>
     public record class SimBalance(double InitialBalance, double InitialStockPct, double InitialMaxDrift)
     {
@@ -73,22 +71,22 @@ namespace NinthBall
             if (amount < 0) throw new ArgumentException("Reduce: Amount must be positive.");
             if (CurrentBalance < amount) throw new InvalidOperationException("Reduce: Can't reduce more than what we have.");
 
-            // If nothing to reduce
+            // If nothing to reduce.
             if (0 == amount) return 0;
 
-            // This is how much we plan to reduce from stock and bond balance
+            // This is how much we plan to reduce from stock and bond balance.
             double fromStock = amount * TargetStockPct;
             double fromBond = amount - fromStock;
 
-            // Try take from correct asset
+            // Try take from correct asset.
             TryTakeFromStock(ref fromStock);
             TryTakeFromBond(ref fromBond);
 
-            // There may be leftover. Try otherway
+            // There may be leftover. Try otherway.
             TryTakeFromBond(ref fromStock);
             TryTakeFromStock(ref fromBond);
 
-            // By now, both must be zero
+            // By now, both must be zero.
             if (fromStock + fromBond > 0) throw new InvalidOperationException("SimBalance.Reduce: Unexpected mismatch in Reduce calculation.");
             return amount;
 
@@ -147,7 +145,7 @@ namespace NinthBall
     }
 
     /// <summary>
-    /// Provides context of one iteration.
+    /// Implementats ISimContext. Provides state management for a single simulation iteration.
     /// </summary>
     public record SimContext(int IterationIndex, double InitialBalance, double InitialStockAllocationPct, double InitialMaxDrift) : ISimContext
     {
@@ -241,5 +239,4 @@ namespace NinthBall
             return success;
         }
     }
-
 }

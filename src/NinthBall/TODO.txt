@@ -3,7 +3,10 @@
 * Add whitebox unit tests 
 * Implement reallocation strategy: Can change allocation from 50-50 to 60-40 to 70-30 at specific years.
 * Accept iterationIndex[] parameter in Output specification. Print iteration data in addition to known percentiles
-* Externalize list of percentiles shown in the poutput report to config yaml file. Example: Output: Percentiles: [0.1, 0.05, 0.2, ...]
+* Externalize list of percentiles shown in the output report to config yaml file. Example: Output: Percentiles: [0.1, 0.05, 0.2, ...]
+
+* Revisit use of decimals to represent percentage. Consider 1-100. Keep it consistent.
+* Consider using suffix Pct for all percentages represented on -100 to +100. Currently its mixed.
 
 Q Should we package initial parameters to SimParams? 
   Currently these are passed around as individual parameters.
