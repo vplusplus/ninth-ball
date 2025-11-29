@@ -46,8 +46,8 @@ namespace NinthBall
     {
         public double JanBondPct => 1 - JanStockPct;
         public double DecBondPct => 1 - DecStockPct;
+        public double PCTChange => Change / (JanBalance - Fees - ActualWithdrawal);
         public bool IsBadYear(double minimumExpectedGrowthPct = 0.0) => (Change / (JanBalance - Fees - ActualWithdrawal + 0.000001)) < minimumExpectedGrowthPct;
-
         public override string ToString() => $"{Year,4} | {JanBalance,6:C0} | {Fees,6:C0} | {ActualWithdrawal,6:C0} | {DecBalance,6:C0}";
     };
 }

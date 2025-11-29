@@ -116,8 +116,7 @@
 
                         if (iter.Success)
                         {
-                            var inflationRate = 0.03;
-                            var endBalance = iter.ByYear[^1].DecBalance.InflationAdjustedValue(inflationRate, NumYears).Millions();
+                            var endBalance = iter.ByYear[^1].DecBalance.InflationAdjustedValue(TheInflationRate, iter.SurvivedYears).Millions();
                             <th>@endBalance</th>
                         }
                         else
@@ -144,13 +143,13 @@
                     }
                 </tr>
                 <tr>
-                    <td>ROI (Annualized)</td>
+                    <td>Change (Annualized)</td>
                     @foreach (var p in PercentileTargets)
                     {
                         var iter = FindIterationByPercentile(p);
-                        var pct = iter.ByYear.Select(x => x.StockROI * StockAllocationPct + x.BondROI * BondAllocationPct).ToArray().Annualize();
+                        var pctChange = iter.ByYear.Select(x => x.PCTChange).ToArray().Annualize();
                         <td class="text-secondary">
-                            @($"{pct:P1}")
+                            @($"{pctChange:P1}")
                         </td>
                     }
                 </tr>
@@ -195,19 +194,17 @@
 
                                 var xCaption = $"{iter.ByYear.Count} years";
 
-                                var xJan    = iter.ByYear[0].JanBalance.Millions();
-                                var xFees   = totalFees.Millions();
-                                var xDraw   = iter.ByYear.Sum(y => y.ActualWithdrawal).Millions();
-                                var xChange = iter.ByYear.Sum(y => y.Change).Millions();
-                                var xDec    = iter.ByYear[^1].DecBalance.Millions();
-
+                                var xJan     = iter.ByYear[0].JanBalance.Millions();
+                                var xFees    = totalFees.Millions();
+                                var xDraw    = iter.ByYear.Sum(y => y.ActualWithdrawal).Millions();
+                                var xChange  = iter.ByYear.Sum(y => y.Change).Millions();
+                                var xDecReal = iter.ByYear[^1].DecBalance.InflationAdjustedValue(TheInflationRate, iter.SurvivedYears).Millions();
 
                                 var xAlloc = string.Empty;
 
                                 var xLike = string.Empty;
                                 var xStock = iter.ByYear.Select(y => y.StockROI).Annualize().ToString("P1").PadLeft(6);
                                 var xBond = iter.ByYear.Select(y => y.BondROI).Annualize().ToString("P1").PadLeft(6);
-
                             }
                             <tr>
                                 <td class="text-secondary">@xCaption</td>
@@ -222,7 +219,7 @@
                                 <td class="text-secondary">@xFees</td>
                                 <td class="text-secondary">@xDraw</td>
                                 <td class="text-secondary">@xChange</td>
-                                <td class="text-secondary">@xDec</td>
+                                <td class="text-secondary">@xDecReal</td>
                             </tr>
 
                             <!-- Labels after summary on top -->
@@ -297,6 +294,12 @@
 
 @code
 {
+    // We do not track year-by-year inflation.
+    // We do not use inflation rate anywhere in calculations.
+    // Making it a SimConfig parameter will send a wrong expectation.
+    // Hard-coding here. Revisit.
+    const double TheInflationRate = 0.03;
+
     const double TargetPctl = 0.2;
 
     [Parameter] public SimResult Model { get; set; } = null!;
