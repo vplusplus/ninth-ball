@@ -4,7 +4,7 @@ using NinthBall;
 namespace UnitTests
 {
     [TestClass]
-    public sealed class Test1
+    public sealed class SampleTest
     {
         [TestMethod]
         public void HelloSimContext()
