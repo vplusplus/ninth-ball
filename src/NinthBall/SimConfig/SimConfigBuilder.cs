@@ -71,7 +71,16 @@ namespace NinthBall
             {
                 if (_mutators.TryGetValue(variable, out var mutator))
                 {
-                    currentConfig = mutator(currentConfig, value);
+                    try
+                    {
+                        currentConfig = mutator(currentConfig, value);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException(
+                            $"Failed to apply mutation for '{variable}' with value {value}. " +
+                            $"This may indicate a null or incomplete configuration.", ex);
+                    }
                 }
                 else
                 {
