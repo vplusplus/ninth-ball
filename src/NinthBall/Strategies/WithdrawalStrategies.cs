@@ -4,12 +4,15 @@ namespace NinthBall
     /// <summary>
     /// PCT of initial balance, yearly increment and optional periodic reset.
     /// </summary>
-    sealed class PCTWithdrawalObjective(SimConfig simConfig) : ISimObjective
+    public sealed class PCTWithdrawalObjective(SimConfig simConfig) : ISimObjective
     {
         readonly SimConfig C = simConfig;
-        readonly PCTWithdrawal P = simConfig.PCTWithdrawal;
+        public readonly PCTWithdrawal P = simConfig.PCTWithdrawal;
 
         int ISimObjective.Order => 0;
+        
+        // Expose for optimization objectives
+        public double FirstYearPct => P.FirstYearPct;
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(C.StartingBalance, P.FirstYearPct, P.IncrementPct, P.ResetYears);
 

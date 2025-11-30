@@ -13,6 +13,29 @@ namespace NinthBall
         IReadOnlyList<SimIteration> Results)
     {
         public double SurvivalRate => (double)Results.Count(x => x.Success) / (double)Results.Count;
+        
+        /// <summary>
+        /// Convenience property for accessing iterations.
+        /// </summary>
+        public IReadOnlyList<SimIteration> Iterations => Results;
+        
+        /// <summary>
+        /// Gets the iteration at the specified percentile by ending balance.
+        /// Results are assumed to be sorted worst-to-best.
+        /// </summary>
+        /// <param name="percentile">Percentile (0.0 to 1.0).</param>
+        /// <returns>Iteration at the specified percentile.</returns>
+        public SimIteration Percentile(double percentile)
+        {
+            if (percentile < 0.0 || percentile > 1.0)
+                throw new ArgumentOutOfRangeException(nameof(percentile), "Percentile must be between 0.0 and 1.0");
+            
+            if (Results.Count == 0)
+                throw new InvalidOperationException("No results available");
+            
+            int index = (int)(percentile * (Results.Count - 1));
+            return Results[index];
+        }
     }
 
     /// <summary>

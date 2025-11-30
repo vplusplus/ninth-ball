@@ -5,10 +5,13 @@ namespace NinthBall
     /// <summary>
     /// Utilize buffer cash to cover withdrawals in bad years (prior year growth below threshold).
     /// </summary>
-    sealed class UseBufferCashAfterBadYears(SimConfig simConfig) : ISimObjective
+    public sealed class UseBufferCashAfterBadYears(SimConfig simConfig) : ISimObjective
     {
         readonly SimConfig C = simConfig;
         readonly UseBufferCash P = simConfig.UseBufferCash;
+        
+        // Expose for optimization objectives
+        public double Amount => P.Amount;
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(P.Amount, P.GrowthThreshold);
 
