@@ -36,7 +36,7 @@ zzReduceWithdrawal:
 HistoricalGrowth:
   FileName: $(MyPath)/ROI-History.xlsx
   SheetName: DATA
-  zzUseRandomBlocks: true
+  UseRandomBlocks: true
   zzBlockSizes: [3,4,5]
   zzNoConsecutiveBlocks: true
   zzSkip1931: true
