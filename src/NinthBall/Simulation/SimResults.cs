@@ -21,7 +21,7 @@ namespace NinthBall
         /// <summary>
         /// Maximum possible score (ideal/perfect).
         /// </summary>
-        public static readonly Score Perfect = new(1.0);
+        public static readonly Score Perfect = new(10.0);
 
         /// <summary>
         /// Unknown or not applicable score.
@@ -33,22 +33,24 @@ namespace NinthBall
         /// <summary>
         /// Creates a new score with validation.
         /// </summary>
-        /// <param name="value">Score value, must be between 0.0 and 1.0 inclusive, or NaN for unknown.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Value is outside [0.0, 1.0] range and not NaN.</exception>
+        /// <param name="value">Score value, must be between 1.0 and 10.0 inclusive (or 0.0 for failure), or NaN for unknown.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Value is outside valid range and not NaN.</exception>
         public Score(double value)
         {
             // Allow NaN for unknown/undefined scores
-            if (!double.IsNaN(value) && (value < 0.0 || value > 1.0))
+            // Allow 0.0 for constraint violations/failures
+            // Allow 1.0-10.0 for quality ratings
+            if (!double.IsNaN(value) && value != 0.0 && (value < 1.0 || value > 10.0))
                 throw new ArgumentOutOfRangeException(
                     nameof(value),
                     value,
-                    "Score must be between 0.0 and 1.0, or NaN for unknown");
+                    "Score must be 0.0 (failure), 1.0-10.0 (quality rating), or NaN for unknown");
 
             _value = value;
         }
 
         /// <summary>
-        /// The numeric value of the score [0.0, 1.0] or NaN.
+        /// The numeric value of the score [0.0, 1.0-10.0] or NaN.
         /// </summary>
         public double Value => _value;
 
@@ -118,9 +120,18 @@ namespace NinthBall
         }
 
         /// <summary>
-        /// Formats score as percentage with one decimal place, or "N/A" for unknown.
+        /// Formats score as 'x.y of 10' with one decimal place (or 'x of 10' for whole numbers), or 'N/A' for unknown, or '0 of 10' for failure.
         /// </summary>
-        public override string ToString() => IsUnknown ? "N/A" : $"{_value:P1}";
+        public override string ToString()
+        {
+            if (IsUnknown) return "N/A";
+            
+            // Format whole numbers without decimal point (e.g., "10 of 10" not "10.0 of 10")
+            bool isWholeNumber = Math.Abs(_value - Math.Round(_value)) < 0.001;
+            string formattedValue = isWholeNumber ? _value.ToString("F0") : _value.ToString("F1");
+            
+            return $"{formattedValue} of 10";
+        }
     }
 
     /// <summary>

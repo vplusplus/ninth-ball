@@ -32,8 +32,8 @@ namespace NinthBall
         public override string ToString() =>
             Enabled
                 ? MinRequired.HasValue
-                    ? $"Survival Rate >= {MinRequired.Value:P1}"
-                    : "Survival Rate"
+                    ? $"Survival Rate >= {MinRequired.Value:P1} Score"
+                    : "Survival Rate Score"
                 : "Survival rate rating not activated";
     }
 
@@ -46,7 +46,7 @@ namespace NinthBall
 
         public override string ToString() =>
             Enabled
-                ? "Minimize Starting Capital (lower is better)"
+                ? "Minimize Starting Capital Score (lower is better)"
                 : "Capital requirement rating not activated";
     }
 
@@ -59,7 +59,7 @@ namespace NinthBall
 
         public override string ToString() =>
             Enabled
-                ? "Maximize Withdrawal Rate (higher is better)"
+                ? "Maximize Withdrawal Rate Score (higher is better)"
                 : "Withdrawal rate rating not activated";
     }
 
@@ -74,8 +74,8 @@ namespace NinthBall
         public override string ToString() =>
             Enabled
                 ? MinRequired.HasValue
-                    ? $"Median Balance >= {MinRequired.Value:C0}"
-                    : "Median Balance"
+                    ? $"Median Balance >= {MinRequired.Value:C0} Score"
+                    : "Median Balance Score"
                 : "Median balance rating not activated";
     }
 
@@ -90,8 +90,8 @@ namespace NinthBall
         public override string ToString() =>
             Enabled
                 ? MinRequired.HasValue
-                    ? $"Mean Balance >= {MinRequired.Value:C0}"
-                    : "Mean Balance"
+                    ? $"Mean Balance >= {MinRequired.Value:C0} Score"
+                    : "Mean Balance Score"
                 : "Mean balance rating not activated";
     }
 }

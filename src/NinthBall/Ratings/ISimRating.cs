@@ -50,7 +50,7 @@ namespace NinthBall
             _config = config ?? new CapitalRequirementConfig();
         }
         
-        public string Name => "CapitalRequirement";
+        public string Name => "CapitalRequirementScore";
         
         public override string ToString() => _config.ToString();
         
@@ -67,8 +67,10 @@ namespace NinthBall
             if (capital < MIN_VIABLE || capital > MAX_REASONABLE)
                 return NinthBall.Score.Zero;
             
-            // Linear scale: lower capital = higher score
-            return new Score(1.0 - (capital - MIN_VIABLE) / (MAX_REASONABLE - MIN_VIABLE));
+            // Linear scale: lower capital = higher score (1-10)
+            // $100k = score 10, $5M = score 1
+            double normalized = 1.0 - (capital - MIN_VIABLE) / (MAX_REASONABLE - MIN_VIABLE);
+            return new Score(1.0 + (normalized * 9.0));
         }
     }
 
@@ -91,7 +93,7 @@ namespace NinthBall
             _minRequired = config?.MinRequired;
         }
 
-        public string Name => "SurvivalRate";
+        public string Name => "SurvivalRateScore";
         
         public override string ToString() => _config.ToString();
         
@@ -103,8 +105,8 @@ namespace NinthBall
             if (_minRequired.HasValue && survivalRate < _minRequired.Value)
                 return NinthBall.Score.Zero;
             
-            // Already on natural [0, 1] scale
-            return new Score(survivalRate);
+            // Map [0.0-1.0] survival rate to [1-10] score
+            return new Score(1.0 + (survivalRate * 9.0));
         }
     }
 
@@ -123,7 +125,7 @@ namespace NinthBall
             _minRequired = config?.MinRequired;
         }
 
-        public string Name => "MedianBalance";
+        public string Name => "MedianBalanceScore";
         
         public override string ToString() => _config.ToString();
         
@@ -136,11 +138,11 @@ namespace NinthBall
                 return NinthBall.Score.Zero;
             
             // Scale based on starting balance
-            // 0 = depleted, 2x starting = excellent
+            // 0 = depleted (score 1), 2x starting = excellent (score 10)
             double maxReasonable = result.StartingBalance * 2.0;
-            double score = Math.Min(median / maxReasonable, 1.0);
+            double normalized = Math.Min(median / maxReasonable, 1.0);
             
-            return new Score(score);
+            return new Score(1.0 + (normalized * 9.0));
         }
     }
 
@@ -159,7 +161,7 @@ namespace NinthBall
             _config = config ?? new WithdrawalRateConfig();
         }
         
-        public string Name => "WithdrawalRate";
+        public string Name => "WithdrawalRateScore";
         
         public override string ToString() => _config.ToString();
         
@@ -176,8 +178,10 @@ namespace NinthBall
             if (rate < MIN_CONSERVATIVE || rate > MAX_AGGRESSIVE)
                 return NinthBall.Score.Zero;
             
-            // Linear scale: higher rate = higher score
-            return new Score((rate - MIN_CONSERVATIVE) / (MAX_AGGRESSIVE - MIN_CONSERVATIVE));
+            // Linear scale: higher rate = higher score (1-10)
+            // 2% = score 1, 6% = score 10
+            double normalized = (rate - MIN_CONSERVATIVE) / (MAX_AGGRESSIVE - MIN_CONSERVATIVE);
+            return new Score(1.0 + (normalized * 9.0));
         }
     }
 
@@ -196,7 +200,7 @@ namespace NinthBall
             _minRequired = config?.MinRequired;
         }
 
-        public string Name => "MeanBalance";
+        public string Name => "MeanBalanceScore";
         
         public override string ToString() => _config.ToString();
         
@@ -208,11 +212,11 @@ namespace NinthBall
             if (_minRequired.HasValue && mean < _minRequired.Value)
                 return NinthBall.Score.Zero;
             
-            // Scale based on starting balance
+            // Scale based on starting balance (1-10)
             double maxReasonable = result.StartingBalance * 2.0;
-            double score = Math.Min(mean / maxReasonable, 1.0);
+            double normalized = Math.Min(mean / maxReasonable, 1.0);
             
-            return new Score(score);
+            return new Score(1.0 + (normalized * 9.0));
         }
     }
 }

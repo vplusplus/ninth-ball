@@ -70,7 +70,7 @@
                         @foreach (var rating in Model.Problem.Ratings)
                         {
                             var score = solution.Result.Scores[rating.Name];
-                            var cssClass = score.Value >= 0.8 ? "text-success" : score.Value >= 0.5 ? "text-warning" : "text-danger";
+                            var cssClass = score.Value >= 8.0 ? "text-success" : score.Value >= 5.0 ? "text-warning" : "text-danger";
                             <td class="@cssClass">@score</td>
                         }
                         <td>@solution.Result.SurvivalRate.ToString("P1")</td>

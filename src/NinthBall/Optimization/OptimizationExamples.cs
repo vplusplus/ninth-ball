@@ -167,10 +167,10 @@ namespace NinthBall.Examples
                 Score score = rating.Score(result);
                 string assessment = score.Value switch
                 {
-                    >= 0.8 => "Excellent",
-                    >= 0.6 => "Good",
-                    >= 0.4 => "Acceptable",
-                    >= 0.2 => "Poor",
+                    >= 8.0 => "Excellent",
+                    >= 6.0 => "Good",
+                    >= 4.0 => "Acceptable",
+                    >= 2.0 => "Poor",
                     _ => "Unacceptable"
                 };
                 

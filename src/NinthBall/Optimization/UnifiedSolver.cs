@@ -38,8 +38,10 @@ namespace NinthBall
                 })
                 .ToList();
 
+            progress?.Report((current, total));
+
             // 3. Filter valid solutions (no constraint violations)
-            var validSolutions = evaluatedCandidates
+        var validSolutions = evaluatedCandidates
                 .Where(c => !c.HasConstraintViolation)
                 .ToList();
 
