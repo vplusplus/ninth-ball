@@ -42,8 +42,9 @@ namespace NinthBall
 
             // Run iterations, collect results.
             // IMPORTANT: Sort the results worst-to-best ( * -> survival -> ending balance )
+            // NOTE: Parallelism moved to outer optimization loop to avoid nested parallelism
             var iterationResultsWorstToBest = Enumerable.Range(0, numIterations)
-                .AsParallel()
+                // .AsParallel()  // Commented out - parallelism now at optimization level
                 .Select(iterationIndex => objectives.RunIteration(iterationIndex, initialBalance, initialAllocation, initialMaxDrift, numYears))
                 .OrderBy(x => x.SurvivedYears)
                 .ThenBy(x => x.EndingBalance)

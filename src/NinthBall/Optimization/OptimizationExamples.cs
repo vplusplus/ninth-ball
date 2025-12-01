@@ -30,16 +30,21 @@ namespace NinthBall.Examples
                     [SimVariable.StartingBalance] = (100_000, 2_000_000)
                 },
                 
+                StepSizes: new Dictionary<SimVariable, double>
+                {
+                    [SimVariable.StartingBalance] = 100_000
+                },
+                
                 // Ratings: Minimize capital with 98% survival constraint
                 Ratings: new ISimRating[]
                 {
-                    new SurvivalRateRating(minRequired: 0.98), // Constraint
-                    new CapitalRequirementRating()             // Optimization goal
+                    new SurvivalRateRating(new SurvivalRateConfig { MinRequired = 0.98 }),
+                    new CapitalRequirementRating(new CapitalRequirementConfig())
                 }
             );
 
             // 4. Solve
-            var result = UnifiedSolver.Solve(problem, gridPointsPerVariable: 20);
+            var result = UnifiedSolver.Solve(problem);
 
             // 5. Get best solution
             var best = result.BestSolution;
@@ -80,16 +85,22 @@ namespace NinthBall.Examples
                     [SimVariable.WithdrawalRate] = (0.02, 0.05)
                 },
                 
+                StepSizes: new Dictionary<SimVariable, double>
+                {
+                    [SimVariable.StartingBalance] = 100_000,
+                    [SimVariable.WithdrawalRate] = 0.005
+                },
+                
                 // Multiple competing ratings
                 Ratings: new ISimRating[]
                 {
-                    new SurvivalRateRating(minRequired: 0.95), // Soft constraint
-                    new WithdrawalRateRating(),
-                    new CapitalRequirementRating()
+                    new SurvivalRateRating(new SurvivalRateConfig { MinRequired = 0.95 }),
+                    new WithdrawalRateRating(new WithdrawalRateConfig()),
+                    new CapitalRequirementRating(new CapitalRequirementConfig())
                 }
             );
 
-            var result = UnifiedSolver.Solve(problem, gridPointsPerVariable: 15);
+            var result = UnifiedSolver.Solve(problem);
 
             // Explore Pareto front with absolute scores
             Console.WriteLine($"Found {result.ParetoFront.Count} Pareto-optimal solutions:\n");
@@ -100,14 +111,17 @@ namespace NinthBall.Examples
             foreach (var solution in result.ParetoFront.OrderByDescending(s => s.Result.SurvivalRate))
             {
                 var withdrawalObj = solution.Result.Objectives.OfType<PCTWithdrawalObjective>().Single();
+                var survivalRating = solution.Result.Scores.Values.First();
+                var withdrawalRating = solution.Result.Scores.Values.Skip(1).First();
+                var capitalRating = solution.Result.Scores.Values.Skip(2).First();
                 
                 Console.WriteLine(
                     $"{solution.Inputs[SimVariable.StartingBalance],-12:C0} " +
                     $"{withdrawalObj.FirstYearPct,-12:P2} " +
                     $"{solution.Result.SurvivalRate,-10:P1} | " +
-                    $"{solution.Result.Scores["Survival Rate >= 95.0%"],4:P0}  " +
-                    $"{solution.Result.Scores["Withdrawal Rate"],4:P0}  " +
-                    $"{solution.Result.Scores["Capital Requirement"],4:P0}");
+                    $"{survivalRating,4:P0}  " +
+                    $"{withdrawalRating,4:P0}  " +
+                    $"{capitalRating,4:P0}");
             }
             
             Console.WriteLine("\nInterpretation:");
@@ -126,9 +140,9 @@ namespace NinthBall.Examples
             // Define what we want to rate (no optimization, just assessment)
             var ratings = new ISimRating[]
             {
-                new SurvivalRateRating(minRequired: 0.95),
-                new MedianBalanceRating(),
-                new CapitalRequirementRating()
+                new SurvivalRateRating(new SurvivalRateConfig { MinRequired = 0.95 }),
+                new MedianBalanceRating(new MedianBalanceConfig()),
+                new CapitalRequirementRating(new CapitalRequirementConfig())
             };
             
             // Build specific config and run simulation

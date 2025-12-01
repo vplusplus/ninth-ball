@@ -71,7 +71,7 @@ namespace NinthBall
         // Doesn't support macros or formulas.
         private sealed class CellReader(ExcelReader parent)
         {
-            // Read and cache NumberFormatIds and SharedStrings once. PRESERVE the order.
+            // ReadYamlFile and cache NumberFormatIds and SharedStrings once. PRESERVE the order.
             readonly uint[] MyNumberFormatIds = parent.MyCellFormats.Select(x => x?.NumberFormatId?.Value ?? 0).ToArray();
             readonly string[] MySharedStrings = parent.MySharedStringTable.Elements<SharedStringItem>().Select(x => x?.Text?.Text ?? x?.InnerText ?? string.Empty).ToArray();
 

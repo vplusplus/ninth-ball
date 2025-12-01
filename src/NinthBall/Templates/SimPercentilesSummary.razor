@@ -1,0 +1,89 @@
+﻿@using System;
+
+
+<!-- Summary view of chosen perentiles -->
+<table id="percentiles" class="table table-sm caption-top" style="table-layout: fixed; width: 100%;">
+    <caption>
+        <h3>Percentiles</h3>
+    </caption>
+    <tbody>
+        <tr>
+            <th></th>
+            @foreach (var p in PercentileTargets)
+            {
+                var pct100 = (int)(p * 100);
+                var caption = 1 == pct100 ? "1st" : 2 == pct100 ? "2nd" : 3 == pct100 ? "3rd" : $"{pct100}th";
+
+                <td class="text-primary">
+                    @caption
+                </td>
+            }
+        </tr>
+        <tr>
+            <th></th>
+            @foreach (var mood in PercentileSentiments)
+            {
+                <td class="text-secondary">@mood</td>
+            }
+        </tr>
+        <tr>
+            <th>End (Real)</th>
+            @foreach (var p in PercentileTargets)
+            {
+                var iter = Model.Percentile(p);
+
+                if (iter.Success)
+                {
+                    var endBalance = iter.ByYear[^1].DecBalance.InflationAdjustedValue(TheInflationRate, iter.SurvivedYears).Millions();
+                    <th>@endBalance</th>
+                }
+                else
+                {
+                    <td class="text-danger">--</td>
+                }
+            }
+        </tr>
+        <tr>
+            <td>End (Nominal)</td>
+            @foreach (var p in PercentileTargets)
+            {
+                var iter = Model.Percentile(p);
+
+                if (iter.Success)
+                {
+                    var endBalance = iter.ByYear[^1].DecBalance.Millions();
+                    <td class="text-secondary">@endBalance</td>
+                }
+                else
+                {
+                    <td class="text-danger">--</td>
+                }
+            }
+        </tr>
+        <tr>
+            <td>Change (Annualized)</td>
+            @foreach (var p in PercentileTargets)
+            {
+                var iter = Model.Percentile(p); 
+                var pctChange = iter.ByYear.Select(x => x.PCTChange).ToArray().Annualize();
+                <td class="text-secondary">
+                    @($"{pctChange:P1}")
+                </td>
+            }
+        </tr>
+    </tbody>
+
+</table>
+
+@code
+{
+    [Parameter] public SimResult Model { get; set; } = null!;
+
+    // TODO: Externalize, may be from input.yaml
+    static readonly double[] PercentileTargets = [0.01, 0.05, 0.10, 0.20, 0.50, 0.80, 0.90];
+    static readonly string[] PercentileSentiments = ["Disaster", "Unlucky", "Unfortunate", "Target", "Coin-flip", "Fortunate", "Lucky"];
+    const double TargetPctl = 0.2;
+
+    // TODO: Externalize. 
+    const double TheInflationRate = 0.03;
+}

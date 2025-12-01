@@ -5,6 +5,11 @@ namespace NinthBall
     /// Represents a rating score on an absolute scale from 0.0 (unacceptable) to 1.0 (ideal).
     /// Enforces valid range and provides type safety.
     /// Can also represent unknown/undefined scores using double.NaN.
+    /// 
+    /// DESIGN PRINCIPLE:
+    /// Score's job: Measure quality on one dimension.
+    /// Scores are absolute and independent - no weights or preferences.
+    /// Weights/preferences belong in higher layers (optimization), not core data.
     /// </summary>
     public readonly record struct Score : IComparable<Score>
     {
@@ -120,6 +125,12 @@ namespace NinthBall
 
     /// <summary>
     /// Immutable structure that describe result of a simulation.
+    /// 
+    /// DESIGN PRINCIPLE:
+    /// SimResult's job: Capture what happened.
+    /// Contains pure data - no weights, no preferences, no decision-making.
+    /// Same configuration always produces same result (idempotent).
+    /// Scores are absolute measurements, independent of optimization goals.
     /// </summary>
     public record SimResult
     (

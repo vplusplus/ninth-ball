@@ -1,0 +1,13 @@
+﻿
+Strategy: GridSearch
+
+Variables:
+  StartingBalance:
+    Min: 1000000
+    Max: 2000000
+    Step: 100000
+  
+  WithdrawalRate:
+    Min: 0.03
+    Max: 0.05
+    Step: 0.005

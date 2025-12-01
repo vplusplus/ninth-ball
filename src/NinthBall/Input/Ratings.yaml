@@ -1,0 +1,10 @@
+﻿
+SurvivalRate:
+  Enabled: true
+  MinRequired: 0.95
+
+CapitalRequirement:
+  Enabled: true
+
+WithdrawalRate:
+  Enabled: true

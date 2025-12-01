@@ -1,0 +1,108 @@
+﻿@using System;
+
+<!-- Presents year-by-year details of single iteration -->
+<table id="@Id" class="table table-sm caption-top page-break mb-0" style="table-layout: fixed; width: 100%;">
+    <caption>
+        <h3>@Caption</h3>
+    </caption>
+    <tbody>
+
+        <!-- Summary row (totals, ann-returns, etc.) on top -->
+        @{
+            var totalFees = Iteration.ByYear.Sum(y => y.Fees);
+
+            var xCaption = $"{Iteration.ByYear.Count} years";
+
+            var xJan = Iteration.ByYear[0].JanBalance.Millions();
+            var xFees = totalFees.Millions();
+            var xDraw = Iteration.ByYear.Sum(y => y.ActualWithdrawal).Millions();
+            var xChange = Iteration.ByYear.Sum(y => y.Change).Millions();
+            var xDecReal = Iteration.ByYear[^1].DecBalance.InflationAdjustedValue(TheInflationRate, Iteration.SurvivedYears).Millions();
+
+            var xAlloc = string.Empty;
+
+            var xLike = string.Empty;
+            var xStock = Iteration.ByYear.Select(y => y.StockROI).Annualize().ToString("P1").PadLeft(6);
+            var xBond = Iteration.ByYear.Select(y => y.BondROI).Annualize().ToString("P1").PadLeft(6);
+        }
+        <tr>
+            <td class="text-secondary">@xCaption</td>
+
+            <td class="text-secondary">@xJan</td>
+            <td class="text-secondary">@xAlloc</td>
+
+            <td><small class="text-secondary">#@Iteration.Index</small></td>
+            <td class="text-secondary pct-col">@xStock</td>
+            <td class="text-secondary pct-col">@xBond</td>
+
+            <td class="text-secondary">@xFees</td>
+            <td class="text-secondary">@xDraw</td>
+            <td class="text-secondary">@xChange</td>
+            <td class="text-secondary">@xDecReal</td>
+        </tr>
+
+        <!-- Labels are printed summary row on top -->
+        <tr>
+            <th>Year</th>
+
+            <th>Jan</th>
+            <th>Alloc</th>
+
+            <th>Like</th>
+            <th>ROI Stock</th>
+            <th>ROI Bond</th>
+
+            <th>Fees</th>
+            <th>Withdrawal</th>
+            <th>Change</th>
+            <th>Dec</th>
+        </tr>
+
+        <!-- Details -->
+        @foreach (var y in Iteration.ByYear)
+        {
+            var jan = $"{y.JanBalance.Round100():C0}";
+            var dec = $"{y.DecBalance.Round100():C0}";
+
+            var alloc = $"{y.JanStockPct * 100,2:F0}/{y.JanBondPct * 100,-2:F0}";
+            var fees = 0 == y.Fees ? string.Empty : $"{y.Fees:C0}";
+            var draw = $"{y.ActualWithdrawal:C0}";
+            var change = 0 == y.Change ? string.Empty : $"{y.Change:C0}";
+            var stock = 0 == y.StockROI ? string.Empty : $"{y.StockROI:P1}".PadLeft(6);
+            var bond = 0 == y.BondROI ? string.Empty : $"{y.BondROI:P1}".PadLeft(6);
+            var like = 0 == y.LikeYear ? string.Empty : $"{y.LikeYear}";
+
+            var clsDraw = y.ActualWithdrawal < y.PlannedWithdrawal ? "text-danger" : "";
+            var clsStock = y.StockROI < 0.0 ? "pct-col text-danger" : "pct-col";
+            var clsBond = y.BondROI < 0.0 ? "pct-col text-danger" : "pct-col";
+            var clsChange = y.Change < 0 ? "text-danger" : "";
+            var clsLike = clsChange;
+
+            <tr>
+                <td>@(y.Year + 1)</td>
+
+                <td>@jan</td>
+                <td>@alloc</td>
+
+                <td class="@clsLike">@like</td>
+                <td class="@clsStock">@stock</td>
+                <td class="@clsBond">@bond</td>
+
+                <td>@fees</td>
+                <td class="@clsDraw">@draw</td>
+                <td class="@clsChange">@change</td>
+                <td>@dec</td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+@code
+{
+    const double TheInflationRate = 0.03;
+
+    [Parameter] public string Id { get; set; } = null!;
+    [Parameter] public string Caption { get; set; } = "";
+    [Parameter] public SimIteration Iteration { get; set; } = null!;
+}

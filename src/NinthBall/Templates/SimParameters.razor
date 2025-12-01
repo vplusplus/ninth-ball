@@ -1,0 +1,25 @@
+﻿@using System;
+
+<!-- Simulation parameters -->
+<div>
+    <h4 class="mt-3">
+        @($"{InitialBalance:C0}") | @($"{StockAllocationPct:P0}") - @($"{BondAllocationPct:P0}") | @NumYears years | @NumIterations.ToString("#,0") iterations
+    </h4>
+    <ul>
+        @foreach (var obj in Model.Objectives)
+        {
+            <li>@obj.ToString()</li>
+        }
+    </ul>
+</div>
+
+@code
+{
+    [Parameter] public SimResult Model { get; set; } = null!;
+    
+    double InitialBalance => Model.StartingBalance;
+    double StockAllocationPct => Model.InitialAllocation;
+    double BondAllocationPct => (1 - Model.InitialAllocation);
+    int    NumYears => Model.NoOfYears;
+    int    NumIterations => Model.Results.Count;
+}

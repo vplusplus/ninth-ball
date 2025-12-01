@@ -8,6 +8,7 @@ namespace NinthBall
         SimulationEvaluator Evaluator,
         IReadOnlyList<SimVariable> SearchVariables,
         IReadOnlyDictionary<SimVariable, (double min, double max)> SearchRanges,
+        IReadOnlyDictionary<SimVariable, double> StepSizes,
         IReadOnlyList<ISimRating> Ratings
     )
     {
@@ -35,14 +36,20 @@ namespace NinthBall
             if (SearchRanges == null || SearchRanges.Count == 0)
                 throw new InvalidOperationException("SearchRanges cannot be null or empty");
 
+            if (StepSizes == null || StepSizes.Count == 0)
+                throw new InvalidOperationException("StepSizes cannot be null or empty");
+
             if (Ratings == null || Ratings.Count == 0)
                 throw new InvalidOperationException("Ratings cannot be null or empty");
 
-            // Ensure all search variables have ranges
+            // Ensure all search variables have ranges and steps
             foreach (var variable in SearchVariables)
             {
                 if (!SearchRanges.ContainsKey(variable))
                     throw new InvalidOperationException($"Search range not defined for variable: {variable}");
+                
+                if (!StepSizes.ContainsKey(variable))
+                    throw new InvalidOperationException($"Step size not defined for variable: {variable}");
             }
         }
     }

@@ -11,6 +11,12 @@ namespace NinthBall
     /// 
     /// Scores are stable and interpretable, independent of other simulations.
     /// Can be used for quality assessment, reporting, or as input to optimization.
+    /// 
+    /// DESIGN PRINCIPLE:
+    /// ISimRating's job: Measure quality on one dimension.
+    /// Must be idempotent - same SimResult always produces same Score.
+    /// No weights, no priorities - those belong in optimization layer.
+    /// Ratings provide objective measurements; optimization applies preferences.
     /// </summary>
     public interface ISimRating
     {
@@ -37,8 +43,16 @@ namespace NinthBall
     {
         private const double MIN_VIABLE = 100_000;      // Can't sustain on less
         private const double MAX_REASONABLE = 5_000_000; // Beyond this is wasteful
+        private readonly CapitalRequirementConfig _config;
         
-        public string Name => "Capital Requirement";
+        public CapitalRequirementRating(CapitalRequirementConfig config)
+        {
+            _config = config ?? new CapitalRequirementConfig();
+        }
+        
+        public string Name => "CapitalRequirement";
+        
+        public override string ToString() => _config.ToString();
         
         public Score Score(SimResult result)
         {
@@ -65,19 +79,21 @@ namespace NinthBall
     public class SurvivalRateRating : ISimRating
     {
         private readonly double? _minRequired;
+        private readonly SurvivalRateConfig _config;
 
         /// <summary>
         /// Creates rating for survival rate.
         /// </summary>
-        /// <param name="minRequired">Optional minimum required survival rate (constraint).</param>
-        public SurvivalRateRating(double? minRequired = null)
+        /// <param name="config">Configuration with minRequired constraint.</param>
+        public SurvivalRateRating(SurvivalRateConfig config)
         {
-            _minRequired = minRequired;
+            _config = config ?? new SurvivalRateConfig();
+            _minRequired = config?.MinRequired;
         }
 
-        public string Name => _minRequired.HasValue 
-            ? $"Survival Rate >= {_minRequired.Value:P1}"
-            : "Survival Rate";
+        public string Name => "SurvivalRate";
+        
+        public override string ToString() => _config.ToString();
         
         public Score Score(SimResult result)
         {
@@ -99,15 +115,17 @@ namespace NinthBall
     public class MedianBalanceRating : ISimRating
     {
         private readonly double? _minRequired;
+        private readonly MedianBalanceConfig _config;
 
-        public MedianBalanceRating(double? minRequired = null)
+        public MedianBalanceRating(MedianBalanceConfig config)
         {
-            _minRequired = minRequired;
+            _config = config ?? new MedianBalanceConfig();
+            _minRequired = config?.MinRequired;
         }
 
-        public string Name => _minRequired.HasValue
-            ? $"Median Balance >= {_minRequired.Value:C0}"
-            : "Median Balance";
+        public string Name => "MedianBalance";
+        
+        public override string ToString() => _config.ToString();
         
         public Score Score(SimResult result)
         {
@@ -134,8 +152,16 @@ namespace NinthBall
     {
         private const double MIN_CONSERVATIVE = 0.02; // 2% is very safe
         private const double MAX_AGGRESSIVE = 0.06;   // 6% is risky
+        private readonly WithdrawalRateConfig _config;
         
-        public string Name => "Withdrawal Rate";
+        public WithdrawalRateRating(WithdrawalRateConfig config)
+        {
+            _config = config ?? new WithdrawalRateConfig();
+        }
+        
+        public string Name => "WithdrawalRate";
+        
+        public override string ToString() => _config.ToString();
         
         public Score Score(SimResult result)
         {
@@ -162,15 +188,17 @@ namespace NinthBall
     public class MeanBalanceRating : ISimRating
     {
         private readonly double? _minRequired;
+        private readonly MeanBalanceConfig _config;
 
-        public MeanBalanceRating(double? minRequired = null)
+        public MeanBalanceRating(MeanBalanceConfig config)
         {
-            _minRequired = minRequired;
+            _config = config ?? new MeanBalanceConfig();
+            _minRequired = config?.MinRequired;
         }
 
-        public string Name => _minRequired.HasValue
-            ? $"Mean Balance >= {_minRequired.Value:C0}"
-            : "Mean Balance";
+        public string Name => "MeanBalance";
+        
+        public override string ToString() => _config.ToString();
         
         public Score Score(SimResult result)
         {

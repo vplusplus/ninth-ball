@@ -1,8 +1,4 @@
 ﻿
-using System.Text.Json;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-
 namespace NinthBall
 {
     public static class SimConfigReader
@@ -13,7 +9,7 @@ namespace NinthBall
 
             try
             {
-                // Read YAML text
+                // ReadYamlFile YAML text
                 string yamlText = File.ReadAllText(yamlFileName);
 
                 // The $(MyPath) token represents directory of the current config file.
@@ -28,18 +24,7 @@ namespace NinthBall
                     yamlText = yamlText.Replace(MyPathTag, myPath, StringComparison.OrdinalIgnoreCase);
                 }
 
-                // Deserialize as Yaml object
-                object yamlObject = new DeserializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                    .WithAttemptingUnquotedStringTypeDeserialization() // Helps recognize types like booleans and numbers implicitly
-                    .Build()
-                    .Deserialize(yamlText) ?? throw new Exception("Yaml.NET deserializer returnd null.");
-
-                // Convert to Json (because deserialization behaviors are different)
-                string jsonText = JsonSerializer.Serialize(yamlObject);
-
-                // Deserialize from Json 
-                return System.Text.Json.JsonSerializer.Deserialize<SimConfig>(jsonText) ?? throw new Exception("Unexpected: JsonSerializer returned null.");
+                return YamlReader.ReadYamlText<SimConfig>(yamlText);
             }
             catch (Exception err)
             {

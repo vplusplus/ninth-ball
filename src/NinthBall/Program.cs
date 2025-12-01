@@ -32,9 +32,26 @@ namespace NinthBall
             TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
 
             var inputFileName = CmdLine.Required("in");
-            var oldTimestamp = DateTime.MinValue;
+            var isWhatIf = CmdLine.Switch("whatif");
 
-            Console.WriteLine($" WATCHING: {Path.GetFullPath(inputFileName)}");
+            // Determine which files to watch
+            var filesToWatch = new List<string> { inputFileName };
+            
+            if (isWhatIf)
+            {
+                var dir = Path.GetDirectoryName(inputFileName) ?? "./";
+                filesToWatch.Add(Path.Combine(dir, "Ratings.yaml"));
+                filesToWatch.Add(Path.Combine(dir, "WhatIf.yaml"));
+            }
+
+            // Track timestamps for all files
+            var timestamps = filesToWatch.ToDictionary(f => f, f => DateTime.MinValue);
+
+            Console.WriteLine($" WATCHING:");
+            foreach (var file in filesToWatch)
+            {
+                Console.WriteLine($"   {Path.GetFullPath(file)}");
+            }
             Console.WriteLine();
 
             int errorCount = 0;
@@ -51,11 +68,23 @@ namespace NinthBall
                         return;
                     }
 
-                    var newTimestamp = File.GetLastWriteTime(inputFileName);
-                    if (newTimestamp != oldTimestamp)
+                    // Check if any file changed
+                    bool anyChanged = false;
+                    foreach (var file in filesToWatch)
+                    {
+                        if (!File.Exists(file)) continue;
+                        
+                        var newTimestamp = File.GetLastWriteTime(file);
+                        if (newTimestamp != timestamps[file])
+                        {
+                            timestamps[file] = newTimestamp;
+                            anyChanged = true;
+                        }
+                    }
+
+                    if (anyChanged)
                     {
                         await ProcessOnce();
-                        oldTimestamp = newTimestamp;
                         errorCount = 0;
                     }
 
@@ -73,11 +102,25 @@ namespace NinthBall
         static async Task ProcessOnce()
         {
             var inputFileName = CmdLine.Required("in");
+            var isWhatIf = CmdLine.Switch("whatif");
+
+            if (isWhatIf)
+            {
+                await ProcessWhatIf(inputFileName);
+            }
+            else
+            {
+                await ProcessSimulation(inputFileName);
+            }
+        }
+
+        static async Task ProcessSimulation(string inputFileName)
+        {
             var outputFileName = "./Output.html";
 
             try
             {
-                // Read Simulation configurations
+                // ReadYamlFile Simulation configurations
                 var simConfig = SimConfigReader.Read(inputFileName);
 
                 // Capture output file name here before proceeding
@@ -99,6 +142,71 @@ namespace NinthBall
 
                 // Inform                
                 Print.Footer(simResult, timer.Elapsed, outputFileName);
+                Console.WriteLine();
+            }
+            catch (FatalWarning warn)
+            {
+                SaveErrorHtml(warn, outputFileName);
+                Console.WriteLine($" FATAL WARNING: {warn.Message}");
+                Console.WriteLine();
+            }
+            catch (Exception err)
+            {
+                SaveErrorHtml(err, outputFileName);
+                Print.Error(err);
+                throw;
+            }
+        }
+
+        static async Task ProcessWhatIf(string inputFileName)
+        {
+            var outputFileName = "./Output.html";
+
+            try
+            {
+                var dir = Path.GetDirectoryName(inputFileName) ?? "./";
+                var ratingsFile = Path.Combine(dir, "Ratings.yaml");
+                var whatIfFile = Path.Combine(dir, "WhatIf.yaml");
+
+                // ReadYamlFile all configurations
+                var simConfig = SimConfigReader.Read(inputFileName);
+                var ratingsConfig = RatingsConfigReader.Read(ratingsFile);
+                var whatIfConfig = WhatIfConfigReader.Read(whatIfFile);
+
+                // Capture output file name
+                outputFileName = simConfig.Output;
+                var outputDir = Path.GetDirectoryName(outputFileName) ?? "./";
+                if (!Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
+
+                // Build optimization problem
+                var builder = new SimConfigBuilder(inputFileName);
+                var ratings = RatingsBuilder.CreateRatings(ratingsConfig);
+                var problem = WhatIfBuilder.CreateProblem(whatIfConfig, builder, ratings);
+
+                // Print configuration
+                Console.WriteLine($" OPTIMIZATION MODE");
+                Console.WriteLine($" Variables: {string.Join(", ", problem.SearchVariables)}");
+                Console.WriteLine($" Ratings: {string.Join(", ", problem.Ratings.Select(r => r.Name))}");
+                Console.WriteLine();
+
+                // Run optimization with progress
+                var timer = Stopwatch.StartNew();
+                var progress = new Progress<(int current, int total)>(p =>
+                    Console.Write($"\r Optimizing... {p.current}/{p.total} ({100.0 * p.current / p.total:F1}%)"));
+
+                var result = UnifiedSolver.Solve(problem, progress);
+                timer.Stop();
+                Console.WriteLine();  // New line after progress
+
+                // Generate optimization report
+                var html = await MyTemplates.GenerateOptimizationReportAsync(result).ConfigureAwait(false);
+                File.WriteAllText(outputFileName, html);
+
+                // Print results
+                Console.WriteLine($" Found {result.ParetoFront.Count} Pareto-optimal solutions");
+                Console.WriteLine($" Total evaluations: {result.TotalEvaluations}");
+                Console.WriteLine($" Time elapsed: {timer.Elapsed.TotalSeconds:F1}s");
+                Console.WriteLine($" Output: {outputFileName}");
                 Console.WriteLine();
             }
             catch (FatalWarning warn)

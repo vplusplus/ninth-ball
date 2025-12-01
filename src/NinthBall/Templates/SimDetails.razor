@@ -1,0 +1,12 @@
+﻿
+<div>
+    <SimParameters Model=Model />
+    <SimFailureBuckets Model=Model />
+    <SimPercentilesSummary Model=Model />
+    <SimIterationTabs Model=Model />
+</div>
+
+@code
+{
+    [Parameter] public SimResult Model { get; set; } = null!;
+}

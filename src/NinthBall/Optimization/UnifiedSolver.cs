@@ -11,22 +11,31 @@ namespace NinthBall
         /// Solves the optimization problem using grid search and Pareto dominance.
         /// </summary>
         /// <param name="problem">Optimization problem to solve.</param>
-        /// <param name="gridPointsPerVariable">Number of grid points per variable (default: 10).</param>
+        /// <param name="progress">Optional progress reporter for tracking evaluation progress.</param>
         /// <returns>Optimization result with Pareto-optimal solutions.</returns>
-        public static OptimizationResult Solve(OptimizationProblem problem, int gridPointsPerVariable = 10)
+        public static OptimizationResult Solve(
+            OptimizationProblem problem,
+            IProgress<(int current, int total)>? progress = null)
         {
             problem.Validate();
 
-            if (gridPointsPerVariable < 2)
-                throw new ArgumentException("Grid size must be at least 2", nameof(gridPointsPerVariable));
+            // 1. Generate all grid points from step sizes
+            var allGridPoints = GenerateGridPointsFromSteps(problem).ToList();
+            int total = allGridPoints.Count;
+            int current = 0;
 
-            // 1. Generate all grid points
-            var allGridPoints = GenerateGridPoints(problem, gridPointsPerVariable).ToList();
-
-            // 2. Evaluate each candidate in parallel
+            // 2. Evaluate each candidate in parallel with progress tracking
             var evaluatedCandidates = allGridPoints
                 .AsParallel()
-                .Select(overrides => EvaluateCandidate(overrides, problem))
+                .Select(overrides =>
+                {
+                    var solution = EvaluateCandidate(overrides, problem);
+                    
+                    Interlocked.Increment(ref current);
+                    progress?.Report((current, total));
+                    
+                    return solution;
+                })
                 .ToList();
 
             // 3. Filter valid solutions (no constraint violations)
@@ -52,27 +61,38 @@ namespace NinthBall
         }
 
         /// <summary>
-        /// Generates all grid points for the search space.
+        /// Generates all grid points for the search space using step sizes.
         /// </summary>
-        private static IEnumerable<Dictionary<SimVariable, double>> GenerateGridPoints(
-            OptimizationProblem problem,
-            int gridPointsPerVariable)
+        private static IEnumerable<Dictionary<SimVariable, double>> GenerateGridPointsFromSteps(
+            OptimizationProblem problem)
         {
             var variables = problem.SearchVariables.ToList();
             var ranges = problem.SearchRanges;
+            var steps = problem.StepSizes;
 
-            // Generate grid steps for each variable
-            var gridSteps = variables.Select(v =>
+            // Generate grid values for each variable based on step size
+            var gridValues = variables.Select(v =>
             {
                 var (min, max) = ranges[v];
-                var step = (max - min) / (gridPointsPerVariable - 1);
-                return Enumerable.Range(0, gridPointsPerVariable)
-                    .Select(i => min + i * step)
-                    .ToList();
+                var step = steps[v];
+                var values = new List<double>();
+                
+                for (double value = min; value <= max; value += step)
+                {
+                    values.Add(value);
+                }
+                
+                // Ensure max is included even if not exactly on step boundary
+                if (values.Count == 0 || Math.Abs(values[^1] - max) > 1e-10)
+                {
+                    values.Add(max);
+                }
+                
+                return values;
             }).ToList();
 
             // Generate all combinations using recursive approach
-            return GenerateCombinations(variables, gridSteps, 0, new Dictionary<SimVariable, double>());
+            return GenerateCombinations(variables, gridValues, 0, new Dictionary<SimVariable, double>());
         }
 
         /// <summary>
@@ -80,7 +100,7 @@ namespace NinthBall
         /// </summary>
         private static IEnumerable<Dictionary<SimVariable, double>> GenerateCombinations(
             List<SimVariable> variables,
-            List<List<double>> gridSteps,
+            List<List<double>> gridValues,
             int depth,
             Dictionary<SimVariable, double> current)
         {
@@ -91,10 +111,10 @@ namespace NinthBall
             }
 
             var variable = variables[depth];
-            foreach (var value in gridSteps[depth])
+            foreach (var value in gridValues[depth])
             {
                 current[variable] = value;
-                foreach (var combination in GenerateCombinations(variables, gridSteps, depth + 1, current))
+                foreach (var combination in GenerateCombinations(variables, gridValues, depth + 1, current))
                 {
                     yield return combination;
                 }
