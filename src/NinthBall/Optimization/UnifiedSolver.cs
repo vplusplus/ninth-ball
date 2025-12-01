@@ -110,24 +110,15 @@ namespace NinthBall
         {
             var result = problem.Evaluator.Evaluate(overrides);
 
-            // Compute absolute rating scores
-            var scores = new Dictionary<string, double>();
-            bool hasViolation = false;
+            // Score the result with all ratings (batch operation)
+            var scoredResult = result.WithScores(problem.Ratings);
 
-            foreach (var rating in problem.Ratings)
-            {
-                double score = rating.Score(result);
-                scores[rating.Name] = score;
-
-                // Score of 0.0 indicates constraint violation
-                if (score <= 0.0)
-                    hasViolation = true;
-            }
+            // Check for constraint violations (Score.Zero or Score.Unknown)
+            bool hasViolation = scoredResult.Scores.Values.Any(score => score <= Score.Zero || score.IsUnknown);
 
             return new Solution(
                 Inputs: overrides,
-                Result: result,
-                Scores: scores,
+                Result: scoredResult,  // Result now contains scores
                 HasConstraintViolation: hasViolation
             );
         }
@@ -165,8 +156,8 @@ namespace NinthBall
 
             foreach (var rating in ratings)
             {
-                double aScore = a.Scores[rating.Name];
-                double bScore = b.Scores[rating.Name];
+                Score aScore = a.Result.Scores[rating.Name];
+                Score bScore = b.Result.Scores[rating.Name];
 
                 if (aScore < bScore) return false; // A is worse on this rating
                 if (aScore > bScore) betterInAtLeastOne = true;
@@ -177,12 +168,11 @@ namespace NinthBall
     }
 
     /// <summary>
-    /// Represents a candidate solution with inputs, results, and absolute rating scores.
+    /// Represents a candidate solution with inputs and scored simulation result.
     /// </summary>
     public record Solution(
         IReadOnlyDictionary<SimVariable, double> Inputs,
-        SimResult Result,
-        IReadOnlyDictionary<string, double> Scores,          // Absolute scores [0-1]
+        SimResult Result,  // Result contains Scores property
         bool HasConstraintViolation
     );
 

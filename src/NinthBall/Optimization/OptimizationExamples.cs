@@ -48,9 +48,9 @@ namespace NinthBall.Examples
             Console.WriteLine($"Achieved survival rate: {best.Result.SurvivalRate:P1}");
             Console.WriteLine();
             Console.WriteLine("Ratings (0.0 = unacceptable, 1.0 = ideal):");
-            foreach (var (ratingName, score) in best.Scores)
+            foreach (var (ratingName, score) in best.Result.Scores)
             {
-                Console.WriteLine($"  {ratingName}: {score:P1}");
+                Console.WriteLine($"  {ratingName}: {score}");  // Score.ToString() formats as percentage
             }
             Console.WriteLine($"\nTotal evaluations: {result.TotalEvaluations}");
         }
@@ -105,9 +105,9 @@ namespace NinthBall.Examples
                     $"{solution.Inputs[SimVariable.StartingBalance],-12:C0} " +
                     $"{withdrawalObj.FirstYearPct,-12:P2} " +
                     $"{solution.Result.SurvivalRate,-10:P1} | " +
-                    $"{solution.Scores["Survival Rate >= 95.0%"],4:P0}  " +
-                    $"{solution.Scores["Withdrawal Rate"],4:P0}  " +
-                    $"{solution.Scores["Capital Requirement"],4:P0}");
+                    $"{solution.Result.Scores["Survival Rate >= 95.0%"],4:P0}  " +
+                    $"{solution.Result.Scores["Withdrawal Rate"],4:P0}  " +
+                    $"{solution.Result.Scores["Capital Requirement"],4:P0}");
             }
             
             Console.WriteLine("\nInterpretation:");
@@ -150,8 +150,8 @@ namespace NinthBall.Examples
             
             foreach (var rating in ratings)
             {
-                double score = rating.Score(result);
-                string assessment = score switch
+                Score score = rating.Score(result);
+                string assessment = score.Value switch
                 {
                     >= 0.8 => "Excellent",
                     >= 0.6 => "Good",
@@ -160,7 +160,7 @@ namespace NinthBall.Examples
                     _ => "Unacceptable"
                 };
                 
-                Console.WriteLine($"  {rating.Name}: {score:P1} ({assessment})");
+                Console.WriteLine($"  {rating.Name}: {score} ({assessment})");
             }
         }
     }

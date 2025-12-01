@@ -6,6 +6,7 @@ namespace NinthBall
     /// Returns absolute score [0.0, 1.0] based on domain knowledge:
     ///   - 0.0 = Unacceptable (constraint violation or worst case)
     ///   - 1.0 = Ideal (best possible outcome)
+    ///   - Unknown = Not applicable or cannot be measured
     ///   - Values in between represent degrees of acceptability
     /// 
     /// Scores are stable and interpretable, independent of other simulations.
@@ -20,11 +21,12 @@ namespace NinthBall
 
         /// <summary>
         /// Scores the simulation result on an absolute scale.
-        /// Returns 0.0 (unacceptable) to 1.0 (ideal) based on domain knowledge.
+        /// Returns 0.0 (unacceptable) to 1.0 (ideal) based on domain knowledge,
+        /// or Score.Unknown if not applicable.
         /// </summary>
         /// <param name="result">Simulation result to score.</param>
         /// <returns>Absolute score where higher is always better.</returns>
-        double Score(SimResult result);
+        Score Score(SimResult result);
     }
 
     /// <summary>
@@ -38,7 +40,7 @@ namespace NinthBall
         
         public string Name => "Capital Requirement";
         
-        public double Score(SimResult result)
+        public Score Score(SimResult result)
         {
             double capital = result.StartingBalance;
             
@@ -49,10 +51,10 @@ namespace NinthBall
             
             // Outside reasonable bounds = unacceptable
             if (capital < MIN_VIABLE || capital > MAX_REASONABLE)
-                return 0.0;
+                return NinthBall.Score.Zero;
             
             // Linear scale: lower capital = higher score
-            return 1.0 - (capital - MIN_VIABLE) / (MAX_REASONABLE - MIN_VIABLE);
+            return new Score(1.0 - (capital - MIN_VIABLE) / (MAX_REASONABLE - MIN_VIABLE));
         }
     }
 
@@ -77,16 +79,16 @@ namespace NinthBall
             ? $"Survival Rate >= {_minRequired.Value:P1}"
             : "Survival Rate";
         
-        public double Score(SimResult result)
+        public Score Score(SimResult result)
         {
             double survivalRate = result.SurvivalRate;
             
             // Constraint violation
             if (_minRequired.HasValue && survivalRate < _minRequired.Value)
-                return 0.0;
+                return NinthBall.Score.Zero;
             
             // Already on natural [0, 1] scale
-            return survivalRate;
+            return new Score(survivalRate);
         }
     }
 
@@ -107,20 +109,20 @@ namespace NinthBall
             ? $"Median Balance >= {_minRequired.Value:C0}"
             : "Median Balance";
         
-        public double Score(SimResult result)
+        public Score Score(SimResult result)
         {
             double median = result.Percentile(0.50).EndingBalance;
             
             // Constraint violation
             if (_minRequired.HasValue && median < _minRequired.Value)
-                return 0.0;
+                return NinthBall.Score.Zero;
             
             // Scale based on starting balance
             // 0 = depleted, 2x starting = excellent
             double maxReasonable = result.StartingBalance * 2.0;
             double score = Math.Min(median / maxReasonable, 1.0);
             
-            return score;
+            return new Score(score);
         }
     }
 
@@ -135,21 +137,21 @@ namespace NinthBall
         
         public string Name => "Withdrawal Rate";
         
-        public double Score(SimResult result)
+        public Score Score(SimResult result)
         {
             var withdrawalObj = result.Objectives.OfType<PCTWithdrawalObjective>().SingleOrDefault();
             
             if (withdrawalObj == null)
-                return 0.0; // Not configured
+                return NinthBall.Score.Unknown; // Not applicable
             
             double rate = withdrawalObj.FirstYearPct;
             
             // Outside reasonable bounds
             if (rate < MIN_CONSERVATIVE || rate > MAX_AGGRESSIVE)
-                return 0.0;
+                return NinthBall.Score.Zero;
             
             // Linear scale: higher rate = higher score
-            return (rate - MIN_CONSERVATIVE) / (MAX_AGGRESSIVE - MIN_CONSERVATIVE);
+            return new Score((rate - MIN_CONSERVATIVE) / (MAX_AGGRESSIVE - MIN_CONSERVATIVE));
         }
     }
 
@@ -170,19 +172,19 @@ namespace NinthBall
             ? $"Mean Balance >= {_minRequired.Value:C0}"
             : "Mean Balance";
         
-        public double Score(SimResult result)
+        public Score Score(SimResult result)
         {
             double mean = result.Iterations.Average(i => i.EndingBalance);
             
             // Constraint violation
             if (_minRequired.HasValue && mean < _minRequired.Value)
-                return 0.0;
+                return NinthBall.Score.Zero;
             
             // Scale based on starting balance
             double maxReasonable = result.StartingBalance * 2.0;
             double score = Math.Min(mean / maxReasonable, 1.0);
             
-            return score;
+            return new Score(score);
         }
     }
 }
