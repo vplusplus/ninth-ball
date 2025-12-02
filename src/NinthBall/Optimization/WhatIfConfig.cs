@@ -8,11 +8,6 @@ namespace NinthBall
     public record WhatIfConfig
     {
         /// <summary>
-        /// Optimization strategy to use (currently only GridSearch supported).
-        /// </summary>
-        public string Strategy { get; init; } = "GridSearch";
-
-        /// <summary>
         /// Variables to optimize and their ranges.
         /// Key is SimVariable name (e.g., "StartingBalance").
         /// </summary>

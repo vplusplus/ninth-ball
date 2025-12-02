@@ -5,6 +5,9 @@
 * Accept iterationIndex[] parameter in Output specification. Print iteration data in addition to known percentiles
 * Externalize list of percentiles shown in the output report to config yaml file. Example: Output: Percentiles: [0.1, 0.05, 0.2, ...]
 
+* Currently Simulation results are sorted by SurvivedYears and EndingBalance. 
+  Ideally, we shiuld consult rating system, and sort by weighted-consolidated-rating.
+
 Q Should we package initial parameters to SimParams? 
   Currently these are passed around as individual parameters.
   Motivation is, common parameters not specific to individual objectives are captured as SimParams.

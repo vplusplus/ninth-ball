@@ -13,9 +13,7 @@ namespace NinthBall
         /// <param name="problem">Optimization problem to solve.</param>
         /// <param name="progress">Optional progress reporter for tracking evaluation progress.</param>
         /// <returns>Optimization result with Pareto-optimal solutions.</returns>
-        public static OptimizationResult Solve(
-            OptimizationProblem problem,
-            IProgress<(int current, int total)>? progress = null)
+        public static OptimizationResult Solve(OptimizationProblem problem, IProgress<(int current, int total)>? progress = null)
         {
             problem.Validate();
 
@@ -41,7 +39,7 @@ namespace NinthBall
             progress?.Report((current, total));
 
             // 3. Filter valid solutions (no constraint violations)
-        var validSolutions = evaluatedCandidates
+            var validSolutions = evaluatedCandidates
                 .Where(c => !c.HasConstraintViolation)
                 .ToList();
 
@@ -65,8 +63,7 @@ namespace NinthBall
         /// <summary>
         /// Generates all grid points for the search space using step sizes.
         /// </summary>
-        private static IEnumerable<Dictionary<SimVariable, double>> GenerateGridPointsFromSteps(
-            OptimizationProblem problem)
+        private static IEnumerable<Dictionary<SimVariable, double>> GenerateGridPointsFromSteps(OptimizationProblem problem)
         {
             var variables = problem.SearchVariables.ToList();
             var ranges = problem.SearchRanges;
@@ -100,11 +97,7 @@ namespace NinthBall
         /// <summary>
         /// Recursively generates all combinations of variable values.
         /// </summary>
-        private static IEnumerable<Dictionary<SimVariable, double>> GenerateCombinations(
-            List<SimVariable> variables,
-            List<List<double>> gridValues,
-            int depth,
-            Dictionary<SimVariable, double> current)
+        private static IEnumerable<Dictionary<SimVariable, double>> GenerateCombinations(List<SimVariable> variables, List<List<double>> gridValues, int depth, Dictionary<SimVariable, double> current)
         {
             if (depth == variables.Count)
             {
@@ -126,9 +119,7 @@ namespace NinthBall
         /// <summary>
         /// Evaluates a single candidate solution.
         /// </summary>
-        private static Solution EvaluateCandidate(
-            Dictionary<SimVariable, double> overrides,
-            OptimizationProblem problem)
+        private static Solution EvaluateCandidate(Dictionary<SimVariable, double> overrides, OptimizationProblem problem)
         {
             var result = problem.Evaluator.Evaluate(overrides);
 
@@ -149,9 +140,7 @@ namespace NinthBall
         /// Computes Pareto front from valid solutions.
         /// Uses absolute scores where higher is always better.
         /// </summary>
-        private static List<Solution> ComputeParetoFront(
-            List<Solution> candidates,
-            IReadOnlyList<ISimRating> ratings)
+        private static List<Solution> ComputeParetoFront(List<Solution> candidates, IReadOnlyList<ISimRating> ratings)
         {
             var nonDominated = new List<Solution>();
 
@@ -194,7 +183,7 @@ namespace NinthBall
     /// </summary>
     public record Solution(
         IReadOnlyDictionary<SimVariable, double> Inputs,
-        SimResult Result,  // Result contains Scores property
+        SimResult Result,
         bool HasConstraintViolation
     );
 

@@ -40,11 +40,8 @@ namespace NinthBall
 
             List<SimIteration> iterationResults = [];
 
-            // Run iterations, collect results.
-            // IMPORTANT: Sort the results worst-to-best ( * -> survival -> ending balance )
-            // NOTE: Parallelism moved to outer optimization loop to avoid nested parallelism
+            // Run iterations; Collect results; Sort the results worst-to-best.
             var iterationResultsWorstToBest = Enumerable.Range(0, numIterations)
-                // .AsParallel()  // Commented out - parallelism now at optimization level
                 .Select(iterationIndex => objectives.RunIteration(iterationIndex, initialBalance, initialAllocation, initialMaxDrift, numYears))
                 .OrderBy(x => x.SurvivedYears)
                 .ThenBy(x => x.EndingBalance)

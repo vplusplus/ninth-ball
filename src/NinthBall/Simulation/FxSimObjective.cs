@@ -2,8 +2,8 @@
 namespace NinthBall
 {
     /// <summary>
-    /// Helper for unit-testing.
-    /// Enables composing a simulation strategy using a simple function with no additional boilerplate.
+    /// Utility for unit testing.
+    /// Allows you to create ISimObjective using a simple function with no additional boilerplate.
     /// </summary>
     public sealed class FxSimObjective(Action<ISimContext> fxStrategy) : ISimObjective
     {

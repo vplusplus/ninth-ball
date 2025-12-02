@@ -2,7 +2,6 @@ namespace NinthBall
 {
     /// <summary>
     /// Extension methods for modifying SimConfig properties.
-    /// Follows the "Wither" pattern for immutable records.
     /// </summary>
     public static class SimConfigMutations
     {
