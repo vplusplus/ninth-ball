@@ -44,8 +44,14 @@ namespace NinthBall
                 // Convert to Json
                 string jsonText = JsonSerializer.Serialize(yamlObject);
 
+                var options = new JsonSerializerOptions()
+                {
+                    WriteIndented = true,
+                };
+                options.Converters.Add(new PCT2DoubleConverter());
+
                 // Deserialize from Json
-                return JsonSerializer.Deserialize<T>(jsonText) ?? throw new Exception("Unexpected: JsonSerializer returned null.");
+                return JsonSerializer.Deserialize<T>(jsonText, options) ?? throw new Exception("Unexpected: JsonSerializer returned null.");
             }
             catch (Exception err)
             {

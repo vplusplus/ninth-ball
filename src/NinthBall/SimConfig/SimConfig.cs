@@ -1,4 +1,6 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace NinthBall
 {
     /// <summary>
@@ -6,14 +8,33 @@ namespace NinthBall
     /// </summary>
     public partial record SimConfig
     (   
-        string RandomSeedHint, double StartingBalance, double StocksAllocationPct, double MaxDrift, int NoOfYears, int Iterations, string Output,
-        PCTWithdrawal PCTWithdrawal, 
-        PrecalculatedWithdrawal PrecalculatedWithdrawal,
-        UseBufferCash UseBufferCash, 
-        ReduceWithdrawal ReduceWithdrawal,
-        FlatGrowth FlatGrowth, 
-        HistoricalGrowth HistoricalGrowth,
-        Fees Fees
+        string RandomSeedHint,
+
+        [property: Min(10)]
+        double StartingBalance,
+
+        [property: Range(0.0, 1.0)]
+        double StocksAllocationPct,
+
+        [property: Range(0.0, 1.0)]
+        double MaxDrift,
+
+        [property: Range(1, 50)]
+        int NoOfYears,
+
+        [property: Range(1, 100000)]
+        int Iterations,
+
+        [property: Required()]
+        string Output,
+
+        [property: ValidateNested()] PCTWithdrawal PCTWithdrawal,
+        [property: ValidateNested()] PrecalculatedWithdrawal PrecalculatedWithdrawal,
+        [property: ValidateNested()] UseBufferCash UseBufferCash,
+        [property: ValidateNested()] ReduceWithdrawal ReduceWithdrawal,
+        [property: ValidateNested()] FlatGrowth FlatGrowth,
+        [property: ValidateNested()] HistoricalGrowth HistoricalGrowth,
+        [property: ValidateNested()] Fees Fees
     )
     {
         public int SessionSeed => (RandomSeedHint ?? "JSR").GetPredictableHashCode();
@@ -23,9 +44,26 @@ namespace NinthBall
     // Withdrawal configurations
     //..........................................................................
     
-    public partial record PCTWithdrawal(double FirstYearPct, double IncrementPct, IReadOnlyList<int> ResetYears);
+    public partial record PCTWithdrawal
+    (
+        [property: Range(0.0, 1.0)]
+        double FirstYearPct,
 
-    public partial record PrecalculatedWithdrawal(string FileName, string SheetName)
+        [property: Range(0.0, 1.0)]
+        double IncrementPct, 
+        
+        IReadOnlyList<int> ResetYears
+    );
+
+    public partial record PrecalculatedWithdrawal
+    (
+        [property: Required()]
+        [property: FileExists()]
+        string FileName,
+
+        [property: Required()]
+        string SheetName
+    )
     {
         IReadOnlyList<double> __withdrawalSequence = null!;
 
@@ -69,17 +107,59 @@ namespace NinthBall
     //..........................................................................
     // Withdrawal optimization configurations
     //..........................................................................
-    public partial record UseBufferCash(double Amount, double GrowthThreshold);
+    public partial record UseBufferCash
+    (
+        [property: Range(1, 100000)]
+        double Amount,
 
-    public partial record ReduceWithdrawal(int MaxSkips, int CutOffYear, double GrowthThreshold, double ReductionPct);
+        [property: Range(1, 100000)]
+        double GrowthThreshold
+    );
+
+    public partial record ReduceWithdrawal
+    (
+        [property: Range(1, 30)]
+        int MaxSkips,
+
+        [property: Range(1, 30)]
+        int CutOffYear, 
+
+        [property: Range(-0.5, 0.5)] 
+        double GrowthThreshold, 
+        
+        [property: Range(0.0, 0.5)] 
+        double ReductionPct
+    );
 
     //..........................................................................
     // Growth and ROI configurations
     //..........................................................................
+    public partial record FlatGrowth
+    (
+        [property: Range(-1.0, 1.0)]
+        double StocksGrowthRate, 
+        
+        [property: Range(-1.0, 1.0)] 
+        double BondGrowthRate
+    );
 
-    public partial record FlatGrowth(double StocksGrowthRate, double BondGrowthRate);
+    public partial record HistoricalGrowth
+    (
+        [property: Required]
+        [property: FileExists]
+        string FileName,
 
-    public partial record HistoricalGrowth(string FileName, string SheetName, bool UseRandomBlocks, IReadOnlyList<int> BlockSizes, bool NoConsecutiveBlocks, bool Skip1931)
+        [property : Required]
+        string SheetName, 
+
+        bool UseRandomBlocks,
+
+        IReadOnlyList<int> BlockSizes, 
+
+        bool NoConsecutiveBlocks, 
+
+        bool Skip1931
+    )
     {
         public IReadOnlyList<int> BlockSizes { get; init; } = BlockSizes ?? [3, 4, 5];
 
@@ -94,6 +174,9 @@ namespace NinthBall
     //..........................................................................
     // Fees
     //..........................................................................
-    public partial record Fees(double AnnualFeesPct);
-
+    public partial record Fees
+    (
+        [property : Range(0.0, 1.0)]
+        double AnnualFeesPct
+    );
 }

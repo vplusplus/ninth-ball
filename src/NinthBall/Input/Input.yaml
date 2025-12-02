@@ -2,7 +2,7 @@
 RandomSeedHint: "JSR"
 
 StartingBalance: 2500000
-StocksAllocationPct: 0.6
+StocksAllocationPct: 50%
 MaxDrift: 0.03
 NoOfYears: 30
 Iterations: 10000
@@ -10,12 +10,12 @@ Output: "D:/Junk/SimReport.html"
 
 # Withdrawal objectives
 
-PCTWithdrawal:
+zzPCTWithdrawal:
   FirstYearPct: 0.04
   IncrementPct: 0.02
   zzResetYears: [6, 11]
 
-zzPrecalculatedWithdrawal:
+PrecalculatedWithdrawal:
   FileName: $(MyPath)/Withdrawals.xlsx
   SheetName: Withdrawals
 
@@ -45,7 +45,7 @@ zzzFlatGrowth:
   BondGrowthRate: 0.05
 
 # Fees and other deductions
-zzFees:
+zzzFees:
   AnnualFeesPct: 0.009
 
 
