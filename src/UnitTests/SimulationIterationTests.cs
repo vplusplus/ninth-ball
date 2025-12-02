@@ -129,7 +129,7 @@ namespace UnitTests
             var result = objectives.RunSimulation(1_000_000, 0.6, 0.03, numYears: 10, NumIterations);
 
             // Assert
-            Assert.AreEqual(NumIterations, result.Results.Count);
+            Assert.AreEqual(NumIterations, result.Iterations.Count);
         }
 
         [TestMethod]
@@ -158,11 +158,11 @@ namespace UnitTests
             // Act
             var result = objectives.RunSimulation(1_000_000, 0.6, 0.03, numYears: 10, numIterations: 30);
 
-            // Assert - Results should be ordered worst-to-best (by survived years, then ending balance)
-            for (int i = 1; i < result.Results.Count; i++)
+            // Assert - Iterations should be ordered worst-to-best (by survived years, then ending balance)
+            for (int i = 1; i < result.Iterations.Count; i++)
             {
-                var prev = result.Results[i - 1];
-                var curr = result.Results[i];
+                var prev = result.Iterations[i - 1];
+                var curr = result.Iterations[i];
 
                 // Either current survived more years, or same years but higher ending balance
                 Assert.IsTrue(
@@ -188,8 +188,8 @@ namespace UnitTests
             var result = objectives.RunSimulation(500_000, 0.6, 0.03, numYears: 30, numIterations: 10);
 
             // Assert
-            var successCount = result.Results.Count(x => x.Success);
-            var expectedRate = (double)successCount / result.Results.Count;
+            var successCount = result.Iterations.Count(x => x.Success);
+            var expectedRate = (double)successCount / result.Iterations.Count;
             
             Assert.AreEqual(expectedRate, result.SurvivalRate, 0.001);
             Assert.IsTrue(result.SurvivalRate >= 0.0 && result.SurvivalRate <= 1.0);

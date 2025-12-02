@@ -317,11 +317,11 @@
     double StockAllocationPct => Model.InitialAllocation;
     double BondAllocationPct => (1 - Model.InitialAllocation);
     int NumYears => Model.NoOfYears;
-    int NumIterations => Model.Results.Count;
+    int NumIterations => Model.Iterations.Count;
 
-    IEnumerable<SimIteration> Results => Model.Results;
-    IEnumerable<SimIteration> Failed => Model.Results.Where(x => !x.Success);
-    IEnumerable<SimIteration> Survived => Model.Results.Where(x => x.Success);
+    IEnumerable<SimIteration> Results => Model.Iterations;
+    IEnumerable<SimIteration> Failed => Model.Iterations.Where(x => !x.Success);
+    IEnumerable<SimIteration> Survived => Model.Iterations.Where(x => x.Success);
 
     IEnumerable<FailureBucket> GetFailureBuckets()
     {
@@ -337,7 +337,7 @@
         }
     }
 
-    SimIteration FindIterationByPercentile(double percentile) => Model.Results[GetPercentileIndex(Model.Results.Count, percentile)];
+    SimIteration FindIterationByPercentile(double percentile) => Model.Iterations[GetPercentileIndex(Model.Iterations.Count, percentile)];
 
     static int GetPercentileIndex(int length, double percentile) => 0.0 == percentile ? 0 : 1.0 == percentile ? length - 1 : Math.Max((int)(length * percentile) - 1, 0);
 

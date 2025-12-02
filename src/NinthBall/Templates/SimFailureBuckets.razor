@@ -50,9 +50,9 @@
 {
     [Parameter] public SimResult Model { get; set; } = null!;
     
-    IEnumerable<SimIteration> Results => Model.Results;
-    IEnumerable<SimIteration> Failed => Model.Results.Where(x => !x.Success);
-    IEnumerable<SimIteration> Survived => Model.Results.Where(x => x.Success);
+    IEnumerable<SimIteration> Results => Model.Iterations;
+    IEnumerable<SimIteration> Failed => Model.Iterations.Where(x => !x.Success);
+    IEnumerable<SimIteration> Survived => Model.Iterations.Where(x => x.Success);
 
     IEnumerable<FailureBucket> GetFailureBuckets()
     {
