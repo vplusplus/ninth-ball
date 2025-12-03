@@ -21,8 +21,8 @@ namespace NinthBall
             );
 
             return objectives.RunSimulation(
-                simConfig.StartingBalance,
-                simConfig.StocksAllocationPct,
+                simConfig.InitialBalance,
+                simConfig.StockAllocation,
                 simConfig.MaxDrift,
                 simConfig.NoOfYears,
                 numIterations
@@ -49,8 +49,8 @@ namespace NinthBall
                 .AsReadOnly();
 
             return new SimResult(
-                StartingBalance: initialBalance,
-                InitialAllocation: initialAllocation,
+                InitialBalance: initialBalance,
+                InitialStockAllocation: initialAllocation,
                 NoOfYears: numYears,
                 objectives,
                 iterationResultsWorstToBest

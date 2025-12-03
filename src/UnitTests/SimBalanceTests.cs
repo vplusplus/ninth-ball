@@ -16,38 +16,38 @@ namespace UnitTests
         public void Constructor_StandardAllocation_CorrectStockBondSplit()
         {
             // Arrange & Act
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Assert
             Assert.AreEqual(100_000, balance.CurrentBalance, 0.01);
             Assert.AreEqual(60_000, balance.StockBalance, 0.01);
             Assert.AreEqual(40_000, balance.BondBalance, 0.01);
-            Assert.AreEqual(0.6, balance.TargetStockPct, 0.001);
-            Assert.AreEqual(0.6, balance.CurrentStockPct, 0.001);
+            Assert.AreEqual(0.6, balance.TargetStockAllocation, 0.001);
+            Assert.AreEqual(0.6, balance.CurrentStockAllocation, 0.001);
         }
 
         [TestMethod]
         public void Constructor_AllStocks_100PercentStockAllocation()
         {
             // Arrange & Act
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 1.0, InitialMaxDrift: 0.05);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 1.0, InitialMaxDrift: 0.05);
 
             // Assert
             Assert.AreEqual(100_000, balance.StockBalance, 0.01);
             Assert.AreEqual(0, balance.BondBalance, 0.01);
-            Assert.AreEqual(1.0, balance.CurrentStockPct, 0.001);
+            Assert.AreEqual(1.0, balance.CurrentStockAllocation, 0.001);
         }
 
         [TestMethod]
         public void Constructor_AllBonds_ZeroStockAllocation()
         {
             // Arrange & Act
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.0, InitialMaxDrift: 0.05);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.0, InitialMaxDrift: 0.05);
 
             // Assert
             Assert.AreEqual(0, balance.StockBalance, 0.01);
             Assert.AreEqual(100_000, balance.BondBalance, 0.01);
-            Assert.AreEqual(0.0, balance.CurrentStockPct, 0.001);
+            Assert.AreEqual(0.0, balance.CurrentStockAllocation, 0.001);
         }
 
         #endregion
@@ -58,7 +58,7 @@ namespace UnitTests
         public void Reduce_ProportionalReduction_TakesFromBothAssets()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             var reduced = balance.Reduce(10_000);
@@ -74,7 +74,7 @@ namespace UnitTests
         public void Reduce_StocksDepletedFirst_TakesRemainderFromBonds()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act - Try to reduce 70k (wants 42k from stocks, 28k from bonds)
             // Stocks have 60k, will give 42k, remainder 18k comes from stocks (not bonds as initially thought)
@@ -92,7 +92,7 @@ namespace UnitTests
         public void Reduce_ZeroAmount_NoChange()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             var reduced = balance.Reduce(0);
@@ -108,7 +108,7 @@ namespace UnitTests
         public void Reduce_ExactBalance_DepletesCompletely()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             var reduced = balance.Reduce(100_000);
@@ -125,7 +125,7 @@ namespace UnitTests
         public void Reduce_NegativeAmount_ThrowsException()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             balance.Reduce(-1000);
@@ -136,7 +136,7 @@ namespace UnitTests
         public void Reduce_AmountExceedsBalance_ThrowsException()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             balance.Reduce(100_001);
@@ -150,7 +150,7 @@ namespace UnitTests
         public void Grow_PositiveROI_IncreasesBalance()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act - 10% stock growth, 3% bond growth
             var growth = balance.Grow(stocksROI: 0.10, bondsROI: 0.03);
@@ -166,7 +166,7 @@ namespace UnitTests
         public void Grow_NegativeROI_DecreasesBalance()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act - Market crash: -35% stocks, -10% bonds
             var growth = balance.Grow(stocksROI: -0.35, bondsROI: -0.10);
@@ -182,7 +182,7 @@ namespace UnitTests
         public void Grow_ZeroROI_NoChange()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             var growth = balance.Grow(stocksROI: 0.0, bondsROI: 0.0);
@@ -196,7 +196,7 @@ namespace UnitTests
         public void Grow_AsymmetricROI_ChangesAllocation()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act - Stocks up 50%, bonds down 20%
             balance.Grow(stocksROI: 0.50, bondsROI: -0.20);
@@ -205,7 +205,7 @@ namespace UnitTests
             Assert.AreEqual(122_000, balance.CurrentBalance, 0.01);
             Assert.AreEqual(90_000, balance.StockBalance, 0.01);
             Assert.AreEqual(32_000, balance.BondBalance, 0.01);
-            Assert.IsTrue(balance.CurrentStockPct > 0.6); // Allocation shifted toward stocks
+            Assert.IsTrue(balance.CurrentStockAllocation > 0.6); // Allocation shifted toward stocks
         }
 
         #endregion
@@ -216,7 +216,7 @@ namespace UnitTests
         public void Rebalance_DriftExceedsThreshold_RebalancesPortfolio()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
             
             // Create significant drift by growing only stocks
             balance.Grow(stocksROI: 0.50, bondsROI: 0.0); // Stocks: 90k, Bonds: 40k, Total: 130k
@@ -229,14 +229,14 @@ namespace UnitTests
             Assert.AreEqual(130_000, balance.CurrentBalance, 0.01);
             Assert.AreEqual(78_000, balance.StockBalance, 0.01); // 60% of 130k
             Assert.AreEqual(52_000, balance.BondBalance, 0.01); // 40% of 130k
-            Assert.AreEqual(0.6, balance.CurrentStockPct, 0.001);
+            Assert.AreEqual(0.6, balance.CurrentStockAllocation, 0.001);
         }
 
         [TestMethod]
         public void Rebalance_WithinDriftThreshold_NoRebalance()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
             
             // Small symmetric growth - should stay within drift
             balance.Grow(stocksROI: 0.05, bondsROI: 0.05);
@@ -257,10 +257,10 @@ namespace UnitTests
         public void Rebalance_AtExactDriftBoundary_TriggersRebalance()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
             
             // Manually set to exact boundary (target 60%, drift at 3% means 61.5% or 58.5%)
-            // CurrentDrift = Math.Abs(CurrentStockPct - TargetStockPct) * 2
+            // CurrentDrift = Math.Abs(CurrentStockAllocation - TargetStockAllocation) * 2
             // 0.03 = Math.Abs(x - 0.6) * 2
             // x = 0.615 or 0.585
 
@@ -282,30 +282,30 @@ namespace UnitTests
         public void Reallocate_ChangeTargetAllocation_RebalancesImmediately()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act - Change to 40/60 allocation
             balance.Reallocate(newStockPct: 0.4, newMaxDrift: 0.05);
 
             // Assert
-            Assert.AreEqual(0.4, balance.TargetStockPct, 0.001);
+            Assert.AreEqual(0.4, balance.TargetStockAllocation, 0.001);
             Assert.AreEqual(0.05, balance.TargetMaxDrift, 0.001);
             Assert.AreEqual(40_000, balance.StockBalance, 0.01);
             Assert.AreEqual(60_000, balance.BondBalance, 0.01);
-            Assert.AreEqual(0.4, balance.CurrentStockPct, 0.001);
+            Assert.AreEqual(0.4, balance.CurrentStockAllocation, 0.001);
         }
 
         [TestMethod]
         public void Reallocate_ToAllStocks_100PercentAllocation()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             balance.Reallocate(newStockPct: 1.0, newMaxDrift: 0.0);
 
             // Assert
-            Assert.AreEqual(1.0, balance.TargetStockPct, 0.001);
+            Assert.AreEqual(1.0, balance.TargetStockAllocation, 0.001);
             Assert.AreEqual(100_000, balance.StockBalance, 0.01);
             Assert.AreEqual(0, balance.BondBalance, 0.01);
         }
@@ -315,7 +315,7 @@ namespace UnitTests
         public void Reallocate_NegativeStockPct_ThrowsException()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             balance.Reallocate(newStockPct: -0.1, newMaxDrift: 0.03);
@@ -326,7 +326,7 @@ namespace UnitTests
         public void Reallocate_StockPctOver100_ThrowsException()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             balance.Reallocate(newStockPct: 1.1, newMaxDrift: 0.03);
@@ -337,7 +337,7 @@ namespace UnitTests
         public void Reallocate_NegativeMaxDrift_ThrowsException()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             balance.Reallocate(newStockPct: 0.6, newMaxDrift: -0.01);
@@ -351,7 +351,7 @@ namespace UnitTests
         public void Invariant_StockPlusBondAlwaysEqualsTotal()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act & Assert - Test through various operations
             AssertBalanceInvariant(balance);

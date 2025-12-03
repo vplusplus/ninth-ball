@@ -11,10 +11,10 @@ namespace NinthBall
         string RandomSeedHint,
 
         [property: Min(10)]
-        double StartingBalance,
+        double InitialBalance,
 
         [property: Range(0.0, 1.0)]
-        double StocksAllocationPct,
+        double StockAllocation,
 
         [property: Range(0.0, 1.0)]
         double MaxDrift,

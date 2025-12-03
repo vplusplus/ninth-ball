@@ -6,10 +6,10 @@ namespace NinthBall
     public static class SimConfigMutations
     {
         public static SimConfig WithStartingBalance(this SimConfig config, double value) 
-            => config with { StartingBalance = value };
+            => config with { InitialBalance = value };
 
         public static SimConfig WithStockAllocation(this SimConfig config, double value) 
-            => config with { StocksAllocationPct = value };
+            => config with { StockAllocation = value };
 
         public static SimConfig WithMaxDrift(this SimConfig config, double value) 
             => config with { MaxDrift = value };

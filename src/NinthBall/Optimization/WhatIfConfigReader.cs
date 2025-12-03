@@ -7,6 +7,6 @@ namespace NinthBall
     /// </summary>
     public static class WhatIfConfigReader
     {
-        public static WhatIfConfig Read(string yamlFileName) => YamlReader.ReadYamlFile<WhatIfConfig>(yamlFileName);
+        public static WhatIfConfig Read(string yamlFileName) => YamlReader.FromYamlFile<WhatIfConfig>(yamlFileName);
     }
 }

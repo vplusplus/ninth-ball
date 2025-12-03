@@ -313,9 +313,9 @@
     static readonly double[] PercentileTargets = [0.01, 0.05, 0.10, 0.20, 0.50, 0.80, 0.90];
     static readonly string[] PercentileSentiments = ["Disaster", "Unlucky", "Unfortunate", "Target", "Coin-flip", "Fortunate", "Lucky"];
 
-    double InitialBalance => Model.StartingBalance;
-    double StockAllocationPct => Model.InitialAllocation;
-    double BondAllocationPct => (1 - Model.InitialAllocation);
+    double InitialBalance => Model.InitialBalance;
+    double StockAllocationPct => Model.InitialStockAllocation;
+    double BondAllocationPct => (1 - Model.InitialStockAllocation);
     int NumYears => Model.NoOfYears;
     int NumIterations => Model.Iterations.Count;
 

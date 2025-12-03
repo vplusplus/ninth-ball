@@ -55,16 +55,16 @@ namespace NinthBall
     /// <summary>
     /// Portfolio balance with support for rebalancing, reallocation, withdrawals, and growth.
     /// </summary>
-    public record class SimBalance(double InitialBalance, double InitialStockPct, double InitialMaxDrift)
+    public record class SimBalance(double InitialBalance, double InitialStockAllocation, double InitialMaxDrift)
     {
-        public double StockBalance { get; private set; } = InitialBalance * InitialStockPct;
-        public double BondBalance { get; private set; } = InitialBalance * (1 - InitialStockPct);
+        public double StockBalance { get; private set; } = InitialBalance * InitialStockAllocation;
+        public double BondBalance { get; private set; } = InitialBalance * (1 - InitialStockAllocation);
         public double CurrentBalance => StockBalance + BondBalance;
         
-        public double TargetStockPct { get; private set; } = InitialStockPct;
-        public double CurrentStockPct => StockBalance / CurrentBalance;
+        public double TargetStockAllocation { get; private set; } = InitialStockAllocation;
+        public double CurrentStockAllocation => StockBalance / CurrentBalance;
         public double TargetMaxDrift { get; private set; } = InitialMaxDrift;
-        public double CurrentDrift => Math.Abs(CurrentStockPct - TargetStockPct) * 2;
+        public double CurrentDrift => Math.Abs(CurrentStockAllocation - TargetStockAllocation) * 2;
 
         public double Reduce(double amount)
         {
@@ -75,7 +75,7 @@ namespace NinthBall
             if (0 == amount) return 0;
 
             // This is how much we plan to reduce from stock and bond balance.
-            double fromStock = amount * TargetStockPct;
+            double fromStock = amount * TargetStockAllocation;
             double fromBond = amount - fromStock;
 
             // Try take from correct asset.
@@ -121,7 +121,7 @@ namespace NinthBall
             if (Math.Abs(CurrentDrift) > Math.Abs(TargetMaxDrift))
             {
                 var tmpTotalBalance = CurrentBalance;
-                StockBalance = tmpTotalBalance * TargetStockPct;
+                StockBalance = tmpTotalBalance * TargetStockAllocation;
                 BondBalance  = tmpTotalBalance - StockBalance;
                 return true;
             }
@@ -136,7 +136,7 @@ namespace NinthBall
             if (newStockPct < 0.0 || newStockPct > 1.0) throw new ArgumentException("Reallocate: StockAllocationPct must be between 0.0 and 1.0");
             if (newMaxDrift < 0.0 || newMaxDrift > 1.0) throw new ArgumentException("Reallocate: MaxDrift must be between 0.0 and 1.0");
 
-            TargetStockPct = newStockPct;
+            TargetStockAllocation = newStockPct;
             TargetMaxDrift = newMaxDrift;
             this.Rebalance();
         }
@@ -147,11 +147,11 @@ namespace NinthBall
     /// <summary>
     /// Implementats ISimContext. Provides state management for a single simulation iteration.
     /// </summary>
-    public record SimContext(int IterationIndex, double InitialBalance, double InitialStockAllocationPct, double InitialMaxDrift) : ISimContext
+    public record SimContext(int IterationIndex, double InitialBalance, double InitialStockAllocation, double InitialMaxDrift) : ISimContext
     {
         static readonly YROI ZeroROI = new(0, 0, 0);
 
-        readonly SimBalance    MyBalance = new(InitialBalance, InitialStockAllocationPct, InitialMaxDrift);
+        readonly SimBalance    MyBalance = new(InitialBalance, InitialStockAllocation, InitialMaxDrift);
         readonly List<SimYear> MyPriorYears = [];
 
         int     _YearIndex = 0;
@@ -206,7 +206,7 @@ namespace NinthBall
         public bool EndYear()
         {
             double janBalance = MyBalance.CurrentBalance;
-            double janAlloc = MyBalance.CurrentStockPct;
+            double janAlloc = MyBalance.CurrentStockAllocation;
             double changeInValue = 0;
 
             var success = !double.IsNaN(_ActualWithdrawal) && MyBalance.CurrentBalance >= (_Fees + _ActualWithdrawal);
@@ -229,7 +229,7 @@ namespace NinthBall
                 Fees:               success ? _Fees : 0,
                 Change:             success ? changeInValue : 0,
                 DecBalance:         success ? MyBalance.CurrentBalance : 0,
-                DecStockPct:        success ? MyBalance.CurrentStockPct : 0,
+                DecStockPct:        success ? MyBalance.CurrentStockAllocation : 0,
 
                 StockROI:           success ? _ROI?.StocksROI ?? 0 : 0,
                 BondROI:            success ? _ROI?.BondROI ?? 0 : 0,

@@ -56,7 +56,7 @@ namespace NinthBall
         
         public Score Score(SimResult result)
         {
-            double capital = result.StartingBalance;
+            double capital = result.InitialBalance;
             
             // Add buffer if used
             var bufferObj = result.Objectives.OfType<UseBufferCashAfterBadYears>().SingleOrDefault();
@@ -139,7 +139,7 @@ namespace NinthBall
             
             // Scale based on starting balance
             // 0 = depleted (score 1), 2x starting = excellent (score 10)
-            double maxReasonable = result.StartingBalance * 2.0;
+            double maxReasonable = result.InitialBalance * 2.0;
             double normalized = Math.Min(median / maxReasonable, 1.0);
             
             return new Score(1.0 + (normalized * 9.0));
@@ -213,7 +213,7 @@ namespace NinthBall
                 return NinthBall.Score.Zero;
             
             // Scale based on starting balance (1-10)
-            double maxReasonable = result.StartingBalance * 2.0;
+            double maxReasonable = result.InitialBalance * 2.0;
             double normalized = Math.Min(mean / maxReasonable, 1.0);
             
             return new Score(1.0 + (normalized * 9.0));

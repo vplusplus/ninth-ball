@@ -16,8 +16,8 @@ namespace NinthBall
 
     public record SimResult
     (
-        double StartingBalance, 
-        double InitialAllocation, 
+        double InitialBalance, 
+        double InitialStockAllocation, 
         int NoOfYears, 
         IReadOnlyList<ISimObjective> Objectives, 
         IReadOnlyList<SimIteration> Iterations)

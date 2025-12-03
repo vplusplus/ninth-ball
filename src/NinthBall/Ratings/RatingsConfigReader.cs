@@ -6,6 +6,6 @@ namespace NinthBall
     /// </summary>
     public static class RatingsConfigReader
     {
-        public static RatingsConfig Read(string yamlFileName) => YamlReader.ReadYamlFile<RatingsConfig>(yamlFileName);
+        public static RatingsConfig Read(string yamlFileName) => YamlReader.FromYamlFile<RatingsConfig>(yamlFileName);
     }
 }

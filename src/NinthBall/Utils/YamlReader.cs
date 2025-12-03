@@ -7,30 +7,18 @@ namespace NinthBall
 {
     internal static class YamlReader
     {
-        public static T ReadYamlFile<T>(string yamlFileName)
+        public static T FromYamlFile<T>(string yamlFileName) => File
+            .ReadAllText(yamlFileName)
+            .YamlTextToJaonText()
+            .DeserializeJsonText<T>();
+
+        public static T FromYamlText<T>(string yamlText) => yamlText
+            .YamlTextToJaonText()
+            .DeserializeJsonText<T>();
+
+        static string YamlTextToJaonText(this string yamlText)
         {
-            ArgumentNullException.ThrowIfNull(yamlFileName);
-
-            var myType = typeof(T).Name;
-            var justFileName = Path.GetFileName(yamlFileName);
-
-            if (!File.Exists(yamlFileName)) throw new FatalWarning($"Error reading {myType} | {justFileName} | File not found.");
-
-            try
-            {
-                string yamlText = File.ReadAllText(yamlFileName);
-                return ReadYamlText<T>(yamlText);
-
-            }
-            catch (Exception err)
-            {
-                throw new FatalWarning($"Error reading {myType} | {justFileName} | {err.Message}");
-            }
-        }
-
-        public static T ReadYamlText<T>(string yamlText)
-        {
-            var myType = typeof(T).Name;
+            ArgumentNullException.ThrowIfNull(yamlText);
 
             try
             {
@@ -42,21 +30,24 @@ namespace NinthBall
                     .Deserialize(yamlText) ?? throw new Exception("Yaml.NET deserializer returned null.");
 
                 // Convert to Json
-                string jsonText = JsonSerializer.Serialize(yamlObject);
-
-                var options = new JsonSerializerOptions()
-                {
-                    WriteIndented = true,
-                };
-                options.Converters.Add(new PCT2DoubleConverter());
-
-                // Deserialize from Json
-                return JsonSerializer.Deserialize<T>(jsonText, options) ?? throw new Exception("Unexpected: JsonSerializer returned null.");
+                return System.Text.Json.JsonSerializer.Serialize(yamlObject);
             }
             catch (Exception err)
             {
-                throw new FatalWarning($"Error reading {myType} | {err.Message}");
+                throw new Exception($"Error convertng YAML to Json.", err);
             }
+        }
+
+        static T DeserializeJsonText<T>(this string jsonText)
+        {
+            var options = new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+            };
+            options.Converters.Add(new PCT2DoubleConverter());
+
+            // Deserialize from Json
+            return JsonSerializer.Deserialize<T>(jsonText, options) ?? throw new Exception("Unexpected: JsonSerializer returned null.");
         }
     }
 }

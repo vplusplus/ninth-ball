@@ -16,7 +16,7 @@ namespace UnitTests
         public void SimBalance_VerySmallBalance_HandlesCorrectly()
         {
             // Arrange & Act
-            var balance = new SimBalance(InitialBalance: 0.01, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 0.01, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Assert
             Assert.AreEqual(0.01, balance.CurrentBalance, 0.001);
@@ -28,7 +28,7 @@ namespace UnitTests
         public void SimBalance_VeryLargeBalance_HandlesCorrectly()
         {
             // Arrange & Act
-            var balance = new SimBalance(InitialBalance: 1_000_000_000, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 1_000_000_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Assert
             Assert.AreEqual(1_000_000_000, balance.CurrentBalance, 1.0);
@@ -58,7 +58,7 @@ namespace UnitTests
         public void SimBalance_ExtremeAllocation_100PercentStocks()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 1.0, InitialMaxDrift: 0.0);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 1.0, InitialMaxDrift: 0.0);
 
             // Act
             balance.Grow(stocksROI: 0.20, bondsROI: 0.05);
@@ -73,7 +73,7 @@ namespace UnitTests
         public void SimBalance_ExtremeAllocation_100PercentBonds()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.0, InitialMaxDrift: 0.0);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.0, InitialMaxDrift: 0.0);
 
             // Act
             balance.Grow(stocksROI: 0.20, bondsROI: 0.05);
@@ -88,7 +88,7 @@ namespace UnitTests
         public void SimBalance_ExtremeDrift_100Percent()
         {
             // Arrange & Act
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 1.0);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 1.0);
 
             // Create massive drift
             balance.Grow(stocksROI: 5.0, bondsROI: 0.0); // 500% stock growth!
@@ -103,7 +103,7 @@ namespace UnitTests
         public void SimBalance_NoDriftTolerance_AlwaysRebalances()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.6, InitialMaxDrift: 0.0);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.6, InitialMaxDrift: 0.0);
 
             // Act - Any asymmetric growth should trigger rebalance
             balance.Grow(stocksROI: 0.01, bondsROI: 0.0);
@@ -346,7 +346,7 @@ namespace UnitTests
         public void SimBalance_50_50_Allocation_BalancedGrowth()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.5, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.5, InitialMaxDrift: 0.03);
 
             // Act
             balance.Grow(stocksROI: 0.10, bondsROI: 0.04);
@@ -361,7 +361,7 @@ namespace UnitTests
         public void SimBalance_80_20_AggressiveAllocation()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.8, InitialMaxDrift: 0.05);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.8, InitialMaxDrift: 0.05);
 
             // Act
             balance.Grow(stocksROI: 0.12, bondsROI: 0.03);
@@ -374,7 +374,7 @@ namespace UnitTests
         public void SimBalance_20_80_ConservativeAllocation()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 100_000, InitialStockPct: 0.2, InitialMaxDrift: 0.05);
+            var balance = new SimBalance(InitialBalance: 100_000, InitialStockAllocation: 0.2, InitialMaxDrift: 0.05);
 
             // Act
             balance.Grow(stocksROI: 0.12, bondsROI: 0.03);
@@ -416,7 +416,7 @@ namespace UnitTests
         public void SimBalance_TinyAmounts_MaintainsPrecision()
         {
             // Arrange
-            var balance = new SimBalance(InitialBalance: 1.00, InitialStockPct: 0.6, InitialMaxDrift: 0.03);
+            var balance = new SimBalance(InitialBalance: 1.00, InitialStockAllocation: 0.6, InitialMaxDrift: 0.03);
 
             // Act
             balance.Reduce(0.50);

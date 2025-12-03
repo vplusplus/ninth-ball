@@ -120,7 +120,7 @@ namespace NinthBall
 
             try
             {
-                // ReadYamlFile Simulation configurations
+                // FromYamlFile Simulation configurations
                 var simConfig = SimConfigReader.Read(inputFileName);
 
                 // Capture output file name here before proceeding
@@ -168,7 +168,7 @@ namespace NinthBall
                 var ratingsFile = Path.Combine(dir, "Ratings.yaml");
                 var whatIfFile = Path.Combine(dir, "WhatIf.yaml");
 
-                // ReadYamlFile all configurations
+                // FromYamlFile all configurations
                 var simConfig = SimConfigReader.Read(inputFileName);
                 var ratingsConfig = RatingsConfigReader.Read(ratingsFile);
                 var whatIfConfig = WhatIfConfigReader.Read(whatIfFile);

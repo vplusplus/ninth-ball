@@ -9,7 +9,7 @@ namespace NinthBall
 
             try
             {
-                // ReadYamlFile YAML text
+                // Read yaml text
                 string yamlText = File.ReadAllText(yamlFileName);
 
                 // The $(MyPath) token represents directory of the current config file.
@@ -24,7 +24,7 @@ namespace NinthBall
                     yamlText = yamlText.Replace(MyPathTag, myPath, StringComparison.OrdinalIgnoreCase);
                 }
 
-                return YamlReader.ReadYamlText<SimConfig>(yamlText);
+                return YamlReader.FromYamlText<SimConfig>(yamlText);
             }
             catch (Exception err)
             {

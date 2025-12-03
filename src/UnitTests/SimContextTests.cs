@@ -19,7 +19,7 @@ namespace UnitTests
             var ctx = new SimContext(
                 IterationIndex: 5,
                 InitialBalance: 100_000,
-                InitialStockAllocationPct: 0.6,
+                InitialStockAllocation: 0.6,
                 InitialMaxDrift: 0.03
             );
 

@@ -17,8 +17,8 @@ namespace NinthBall
 
         public static void PrintParams(this SimConfig simConfig)
         {
-            var init = $"{simConfig.StartingBalance:C0}";
-            var aloc = $"{simConfig.StocksAllocationPct:P0}-{1-simConfig.StocksAllocationPct:P0}";
+            var init = $"{simConfig.InitialBalance:C0}";
+            var aloc = $"{simConfig.StockAllocation:P0}-{1-simConfig.StockAllocation:P0}";
             var year = $"{simConfig.NoOfYears}";
             var iter = $"{simConfig.Iterations:#,0}";
 

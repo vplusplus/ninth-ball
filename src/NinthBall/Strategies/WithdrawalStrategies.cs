@@ -14,7 +14,7 @@ namespace NinthBall
         // Expose for optimization objectives
         public double FirstYearPct => P.FirstYearPct;
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(C.StartingBalance, P.FirstYearPct, P.IncrementPct, P.ResetYears);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(C.InitialBalance, P.FirstYearPct, P.IncrementPct, P.ResetYears);
 
         sealed class Strategy(double startingBalance, double firstYearPct, double yearlyIncrementPct, IReadOnlyList<int> resetYears) : ISimStrategy
         {

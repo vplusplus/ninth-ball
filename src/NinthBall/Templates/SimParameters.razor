@@ -17,9 +17,9 @@
 {
     [Parameter] public SimResult Model { get; set; } = null!;
     
-    double InitialBalance => Model.StartingBalance;
-    double StockAllocationPct => Model.InitialAllocation;
-    double BondAllocationPct => (1 - Model.InitialAllocation);
+    double InitialBalance => Model.InitialBalance;
+    double StockAllocationPct => Model.InitialStockAllocation;
+    double BondAllocationPct => (1 - Model.InitialStockAllocation);
     int    NumYears => Model.NoOfYears;
     int    NumIterations => Model.Iterations.Count;
 }
