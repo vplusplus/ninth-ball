@@ -53,7 +53,12 @@ namespace NinthBall
         double IncrementPct, 
         
         IReadOnlyList<int> ResetYears
-    );
+    )
+    {
+        public override string ToString() => $"{WithdrawPctToString} {ResetYearsToString}";
+        string WithdrawPctToString => $"Withdraw {FirstYearPct:P1} first year with {IncrementPct:P1} increment each year.";
+        string ResetYearsToString => (null == ResetYears || 0 == ResetYears.Count) ? string.Empty : $"Reset to {FirstYearPct:P1} on years [{string.Join(',', ResetYears)}]";
+    }
 
     public partial record PrecalculatedWithdrawal
     (
@@ -102,6 +107,8 @@ namespace NinthBall
 
             return withdrawalSequence.AsReadOnly();
         }
+
+        public override string ToString() => $"Predefined withdrawal sequence from {Path.GetFileName(FileName)}";
     }
 
     //..........................................................................
@@ -114,7 +121,10 @@ namespace NinthBall
 
         [property: Range(1, 100000)]
         double GrowthThreshold
-    );
+    )
+    {
+        public override string ToString() => $"{Amount:C0} buffer cash tapped if prior-year growth < {GrowthThreshold:P1}";
+    }
 
     public partial record ReduceWithdrawal
     (
@@ -129,7 +139,12 @@ namespace NinthBall
         
         [property: Range(0.0, 0.5)] 
         double ReductionPct
-    );
+    )
+    {
+        public override string ToString() => 1.0 == ReductionPct
+            ? $"Skip withdrawal if prior year growth is less than {GrowthThreshold:P1}, only {MaxSkips} times in first {CutOffYear} years."
+            : $"Reduce withdrawal by {ReductionPct:P0} if prior year growth is less than {GrowthThreshold:P1}, only {MaxSkips} times in first {CutOffYear} years.";
+    }
 
     //..........................................................................
     // Growth and ROI configurations
@@ -141,7 +156,10 @@ namespace NinthBall
         
         [property: Range(-1.0, 1.0)] 
         double BondGrowthRate
-    );
+    )
+    {
+        public override string ToString() => $"Assume flat growth. Stocks: {StocksGrowthRate:P1} Bonds: {BondGrowthRate:P1}";
+    }
 
     public partial record HistoricalGrowth
     (
@@ -169,6 +187,15 @@ namespace NinthBall
 
         public IReadOnlyList<YROI> AllYears => __allYears ??= Bootstrap.ReadHistory(FileName, SheetName, Skip1931);
         public IReadOnlyList<Block> AllBlocks => __alBlocks ??= AllYears.ReadBlocks(BlockSizes);
+
+        public override string ToString() => $"{TxtBootstrap}{TxtSkipConsecutive}{TxtSkip1932}";
+
+        string TxtBootstrap => UseRandomBlocks
+            ? $"Random Blocks ({string.Join("/", BlockSizes)}-years) using historical returns from {Path.GetFileName(FileName)}."
+            : $"Sequential historical returns from {Path.GetFileName(FileName)}.";
+        string TxtSkipConsecutive => UseRandomBlocks && NoConsecutiveBlocks ? " No consecutive repetition." : string.Empty;
+        string TxtSkip1932 => Skip1931 ? " *** Skip 1931, the single worst year ***" : string.Empty;
+
     }
 
     //..........................................................................
@@ -178,5 +205,8 @@ namespace NinthBall
     (
         [property : Range(0.0, 1.0)]
         double AnnualFeesPct
-    );
+    )
+    {
+        public override string ToString() => $"Annual fees: {AnnualFeesPct:P1}";
+    }
 }
