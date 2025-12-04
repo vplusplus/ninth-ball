@@ -137,7 +137,7 @@ namespace NinthBall
         [property: Range(-0.5, 0.5)] 
         double GrowthThreshold, 
         
-        [property: Range(0.0, 0.5)] 
+        [property: Range(0.0, 1.0)] 
         double ReductionPct
     )
     {

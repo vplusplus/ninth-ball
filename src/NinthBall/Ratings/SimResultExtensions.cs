@@ -4,37 +4,25 @@ namespace NinthBall
     /// <summary>
     /// Extension methods for scoring SimResult with ratings.
     /// </summary>
-    public static class SimResultExtensions
+    public static partial class SimResultExtensions
     {
         /// <summary>
-        /// Scores the simulation result with the specified ratings.
-        /// Returns a new SimResult instance with scores merged into existing scores.
-        /// Batch operation - all ratings are evaluated and result is cloned once.
-        /// Scores are idempotent - same rating always produces same score for the same result.
+        /// Scores the simulation simResult with the specified ratings.
         /// </summary>
-        /// <param name="result">Simulation result to score.</param>
-        /// <param name="ratings">Ratings to apply.</param>
-        /// <returns>New SimResult instance with updated scores.</returns>
-        public static SimResult WithScores( this SimResult result, IEnumerable<ISimRating> ratings)
+        public static SimResult WithScores(this SimResult simResult, IEnumerable<ISimRating> ratings)
         {
-            ArgumentNullException.ThrowIfNull(result);
+            ArgumentNullException.ThrowIfNull(simResult);
             ArgumentNullException.ThrowIfNull(ratings);
 
             // Start with existing scores (merge strategy)
-            var merged = new Dictionary<string, Score>(result.Scores);
+            var merged = new Dictionary<string, SimScore10>(simResult.Scores);
 
-            // Rate the simulation result.
+            // Rate the simulation simResult.
             // Overwrite if exists (idempotent)
-            foreach (var rating in ratings) merged[rating.Name] = rating.Score(result);  
+            foreach (var rating in ratings) merged[rating.Name] = rating.Score(simResult);  
 
-            // The rated result.
-            return result with { Scores = merged };
+            // The rated simResult.
+            return simResult with { Scores = merged };
         }
-
-        /// <summary>
-        /// Scores the simulation result with a single rating.
-        /// Convenience method, intended for unit testing 
-        /// </summary>
-        public static SimResult WithScore( this SimResult result, ISimRating rating) => result.WithScores([rating]);
     }
 }

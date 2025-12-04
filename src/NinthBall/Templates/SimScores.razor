@@ -1,0 +1,35 @@
+﻿@using System;
+
+<table class="table table-sm caption-top" style="table-layout: fixed; width: 100%;">
+    @{
+        var scores = Model.Scores;
+    }
+    <caption>
+        <h3>Scores</h3>
+    </caption>
+    <thead>
+        <tr>
+            @foreach (var scoreName in scores.Keys)
+            {
+                <td class="text-primary">
+                    @scoreName
+                </td>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            @foreach (var scoreName in scores.Keys)
+            {
+                <td>
+                    @scores[scoreName]
+                </td>
+            }
+        </tr>
+    </tbody>
+</table>
+
+@code
+{
+    [Parameter] public SimResult Model { get; set; } = null!;
+}

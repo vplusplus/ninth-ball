@@ -32,26 +32,19 @@ namespace NinthBall
             TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
 
             var inputFileName = CmdLine.Required("in");
-            var isWhatIf = CmdLine.Switch("whatif");
+            var fileSet = new WatchFileSet(inputFileName);
 
-            // Determine which files to watch
-            var filesToWatch = new List<string> { inputFileName };
-            
-            if (isWhatIf)
+            if (CmdLine.Switch("whatif"))
             {
                 var dir = Path.GetDirectoryName(inputFileName) ?? "./";
-                filesToWatch.Add(Path.Combine(dir, "Ratings.yaml"));
-                filesToWatch.Add(Path.Combine(dir, "WhatIf.yaml"));
+                fileSet.AlsoWatch(
+                    Path.Combine(dir, "Ratings.yaml")
+                    // Path.Combine(dir, "WhatIf.yaml")
+                );
             }
-
-            // Track timestamps for all files
-            var timestamps = filesToWatch.ToDictionary(f => f, f => DateTime.MinValue);
 
             Console.WriteLine($" WATCHING:");
-            foreach (var file in filesToWatch)
-            {
-                Console.WriteLine($"   {Path.GetFullPath(file)}");
-            }
+            foreach (var file in fileSet.Watching) Console.WriteLine($"   {Path.GetFullPath(file)}");
             Console.WriteLine();
 
             int errorCount = 0;
@@ -69,20 +62,8 @@ namespace NinthBall
                     }
 
                     // Check if any file changed
-                    bool anyChanged = false;
-                    foreach (var file in filesToWatch)
-                    {
-                        if (!File.Exists(file)) continue;
-                        
-                        var newTimestamp = File.GetLastWriteTime(file);
-                        if (newTimestamp != timestamps[file])
-                        {
-                            timestamps[file] = newTimestamp;
-                            anyChanged = true;
-                        }
-                    }
-
-                    if (anyChanged)
+                    bool somethingChanged = fileSet.CheckForChangesAndRememberTimestamp();
+                    if (somethingChanged)
                     {
                         await ProcessOnce();
                         errorCount = 0;
@@ -91,9 +72,13 @@ namespace NinthBall
                     // Wait
                     await Task.Delay(TwoSeconds).ConfigureAwait(false);
                 }
-                catch
+                catch(FatalWarning)
                 {
-                    if (++errorCount > 2) throw new FatalWarning("Too many errors. Stopped watching.");
+                    throw;
+                }
+                catch(Exception err)
+                {
+                    if (++errorCount > 2) throw new Exception("Too many errors. Stopped watching.", err);
                     await Task.Delay(FiveSeconds).ConfigureAwait(false);
                 }
             }
@@ -106,7 +91,8 @@ namespace NinthBall
 
             if (isWhatIf)
             {
-                await ProcessWhatIf(inputFileName);
+                Console.WriteLine("WhatIf is currently stubbed...");
+                //await ProcessWhatIf(inputFileName);
             }
             else
             {
@@ -120,8 +106,12 @@ namespace NinthBall
 
             try
             {
+                var dir = Path.GetDirectoryName(inputFileName) ?? "./";
+                var ratingsFile = Path.Combine(dir, "Ratings.yaml");
+
                 // FromYamlFile Simulation configurations
                 var simConfig = SimConfigReader.Read(inputFileName);
+                var simRatings = SimRatings.FromYamlFile(ratingsFile);
 
                 // Capture output file name here before proceeding
                 outputFileName = simConfig.Output;
@@ -133,7 +123,7 @@ namespace NinthBall
 
                 // Run simulation
                 var timer = Stopwatch.StartNew();
-                var simResult = Simulation.RunSimulation(simConfig);
+                var simResult = Simulation.RunSimulation(simConfig); //.WithScores(simRatings.AvailableRatings());
                 timer.Stop();
 
                 // Generate html report
@@ -158,70 +148,70 @@ namespace NinthBall
             }
         }
 
-        static async Task ProcessWhatIf(string inputFileName)
-        {
-            var outputFileName = "./Output.html";
+        //static async Task ProcessWhatIf(string inputFileName)
+        //{
+        //    var outputFileName = "./Output.html";
 
-            try
-            {
-                var dir = Path.GetDirectoryName(inputFileName) ?? "./";
-                var ratingsFile = Path.Combine(dir, "Ratings.yaml");
-                var whatIfFile = Path.Combine(dir, "WhatIf.yaml");
+        //    try
+        //    {
+        //        var dir = Path.GetDirectoryName(inputFileName) ?? "./";
+        //        var ratingsFile = Path.Combine(dir, "Ratings.yaml");
+        //        var whatIfFile = Path.Combine(dir, "WhatIf.yaml");
 
-                // FromYamlFile all configurations
-                var simConfig = SimConfigReader.Read(inputFileName);
-                var ratingsConfig = RatingsConfigReader.Read(ratingsFile);
-                var whatIfConfig = WhatIfConfigReader.Read(whatIfFile);
+        //        // FromYamlFile all configurations
+        //        var simConfig = SimConfigReader.Read(inputFileName);
+        //        var ratingsConfig = SimRatingsReader.Read(ratingsFile);
+        //        var whatIfConfig = WhatIfConfigReader.Read(whatIfFile);
 
-                // Capture output file name
-                outputFileName = simConfig.Output;
-                var outputDir = Path.GetDirectoryName(outputFileName) ?? "./";
-                if (!Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
+        //        // Capture output file name
+        //        outputFileName = simConfig.Output;
+        //        var outputDir = Path.GetDirectoryName(outputFileName) ?? "./";
+        //        if (!Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
 
-                // Build optimization problem
-                var builder = new SimConfigBuilder(inputFileName);
-                var ratings = RatingsBuilder.CreateRatings(ratingsConfig);
-                var problem = WhatIfBuilder.CreateProblem(whatIfConfig, builder, ratings);
+        //        // Build optimization problem
+        //        var builder = new SimConfigBuilder(inputFileName);
+        //        var ratings = RatingsBuilder.CreateRatings(ratingsConfig);
+        //        var problem = WhatIfBuilder.CreateProblem(whatIfConfig, builder, ratings);
 
-                // Print configuration
-                Console.WriteLine($" OPTIMIZATION MODE");
-                Console.WriteLine($" Variables: {string.Join(", ", problem.SearchVariables)}");
-                Console.WriteLine($" Ratings: {string.Join(", ", problem.Ratings.Select(r => r.Name))}");
-                Console.WriteLine();
+        //        // Print configuration
+        //        Console.WriteLine($" OPTIMIZATION MODE");
+        //        Console.WriteLine($" Variables: {string.Join(", ", problem.SearchVariables)}");
+        //        Console.WriteLine($" Ratings: {string.Join(", ", problem.Ratings.Select(r => r.Name))}");
+        //        Console.WriteLine();
 
-                // Run optimization with progress
-                var timer = Stopwatch.StartNew();
-                var progress = new Progress<(int current, int total)>(p =>
-                    Console.Write($"\r Optimizing... {p.current}/{p.total} ({100.0 * p.current / p.total:F1}%)"));
+        //        // Run optimization with progress
+        //        var timer = Stopwatch.StartNew();
+        //        var progress = new Progress<(int current, int total)>(p =>
+        //            Console.Write($"\r Optimizing... {p.current}/{p.total} ({100.0 * p.current / p.total:F1}%)"));
 
-                var result = UnifiedSolver.Solve(problem, progress);
-                timer.Stop();
-                Console.WriteLine();  // New line after progress
+        //        var result = UnifiedSolver.Solve(problem, progress);
+        //        timer.Stop();
+        //        Console.WriteLine();  // New line after progress
 
-                // Generate optimization report
-                var html = await MyTemplates.GenerateOptimizationReportAsync(result).ConfigureAwait(false);
-                File.WriteAllText(outputFileName, html);
+        //        // Generate optimization report
+        //        var html = await MyTemplates.GenerateOptimizationReportAsync(result).ConfigureAwait(false);
+        //        File.WriteAllText(outputFileName, html);
 
-                // Print results
-                Console.WriteLine($" Found {result.ParetoFront.Count} Pareto-optimal solutions");
-                Console.WriteLine($" Total evaluations: {result.TotalEvaluations}");
-                Console.WriteLine($" Time elapsed: {timer.Elapsed.TotalSeconds:F1}s");
-                Console.WriteLine($" Output: {outputFileName}");
-                Console.WriteLine();
-            }
-            catch (FatalWarning warn)
-            {
-                SaveErrorHtml(warn, outputFileName);
-                Console.WriteLine($" FATAL WARNING: {warn.Message}");
-                Console.WriteLine();
-            }
-            catch (Exception err)
-            {
-                SaveErrorHtml(err, outputFileName);
-                Print.Error(err);
-                throw;
-            }
-        }
+        //        // Print results
+        //        Console.WriteLine($" Found {result.ParetoFront.Count} Pareto-optimal solutions");
+        //        Console.WriteLine($" Total evaluations: {result.TotalEvaluations}");
+        //        Console.WriteLine($" Time elapsed: {timer.Elapsed.TotalSeconds:F1}s");
+        //        Console.WriteLine($" Output: {outputFileName}");
+        //        Console.WriteLine();
+        //    }
+        //    catch (FatalWarning warn)
+        //    {
+        //        SaveErrorHtml(warn, outputFileName);
+        //        Console.WriteLine($" FATAL WARNING: {warn.Message}");
+        //        Console.WriteLine();
+        //    }
+        //    catch (Exception err)
+        //    {
+        //        SaveErrorHtml(err, outputFileName);
+        //        Print.Error(err);
+        //        throw;
+        //    }
+        //}
 
         static void SaveErrorHtml(Exception err, string outputFileName)
         {
@@ -229,4 +219,6 @@ namespace NinthBall
             File.WriteAllText(outputFileName, html);
         }
     }
+
+
 }

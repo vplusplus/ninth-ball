@@ -1,28 +1,19 @@
 ﻿
 namespace NinthBall
 {
-    public readonly record struct Score(double value) : IComparable<Score>
-    {
-        public static readonly Score Zero = new Score(0);
-        public static readonly Score Unknown = new(double.NaN);
-
-        public readonly double Value = double.IsNaN(value) ? value : value >= 0.0 && value <= 10.0 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "Score must be between 0 and 10");
-        public bool IsUnknown => double.IsNaN(Value);
-        public int CompareTo(Score other) => Value.CompareTo(other.Value);
-        public override string ToString() => IsUnknown ? "N/A" : Math.Abs(Value - Math.Round(Value)) < 0.001 ? $"{Value:F0} of 10" : $"{Value:F1} of 10";
-
-        public static implicit operator double(Score score) => score.Value;
-    }
-
+    /// <summary>
+    /// Immutable structure that represents results of a simulation.
+    /// </summary>
     public record SimResult
     (
         double InitialBalance, 
         double InitialStockAllocation, 
         int NoOfYears, 
         IReadOnlyList<ISimObjective> Objectives, 
-        IReadOnlyList<SimIteration> Iterations)
+        IReadOnlyList<SimIteration> Iterations
+    )
     {
-        public IReadOnlyDictionary<string, Score> Scores { get; init; } =  new Dictionary<string, Score>();
+        public IReadOnlyDictionary<string, SimScore10> Scores { get; init; } =  new Dictionary<string, SimScore10>();
         
         public double SurvivalRate => (double)Iterations.Count(x => x.Success) / (double)Iterations.Count;
         
@@ -67,4 +58,26 @@ namespace NinthBall
         public bool IsBadYear(double minimumExpectedGrowthPct = 0.0) => (Change / (JanBalance - Fees - ActualWithdrawal + 0.000001)) < minimumExpectedGrowthPct;
         public override string ToString() => $"{Year,4} | {JanBalance,6:C0} | {Fees,6:C0} | {ActualWithdrawal,6:C0} | {DecBalance,6:C0}";
     };
+
+    /// <summary>
+    /// A number ranging from 0 to 10 that represents quality of the simulation result.
+    /// </summary>
+    public readonly record struct SimScore10(double valueZeroToTen) : IComparable<SimScore10>
+    {
+        public static readonly SimScore10 Zero = new SimScore10(0);
+        public static readonly SimScore10 Unknown = new(double.NaN);
+
+        public readonly double Value = double.IsNaN(valueZeroToTen) || (valueZeroToTen >= 0.0 && valueZeroToTen <= 10.0) 
+            ? valueZeroToTen 
+            : throw new ArgumentOutOfRangeException(nameof(valueZeroToTen), valueZeroToTen, "Score must be between 0 and 10");
+
+        public bool IsUnknown => double.IsNaN(Value);
+
+        public static implicit operator double(SimScore10 score) => score.Value;
+
+        public int CompareTo(SimScore10 other) => Value.CompareTo(other.Value);
+
+        public override string ToString() => IsUnknown ? "N/A" : Math.Abs(Value - Math.Round(Value)) < 0.001 ? $"{Value:F0} of 10" : $"{Value:F1} of 10";
+    }
+
 }

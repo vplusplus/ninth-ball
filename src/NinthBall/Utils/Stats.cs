@@ -1,4 +1,6 @@
 ﻿
+using System.Transactions;
+
 namespace NinthBall
 {
     internal static partial class Stats
@@ -96,5 +98,11 @@ namespace NinthBall
         public static double Round1000(this double value) => RoundX(value, 1000);
         public static string Thousands(this double value, int decimalPlaces = 2) => $"{(value / 1000).ToString($"C{decimalPlaces}")} K";
         public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
+
+        public static (double, double) Swap(double first, double second)
+        {
+            var temp = first; first = second; second = temp;
+            return (first, second);
+        }
     }
 }

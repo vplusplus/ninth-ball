@@ -1,9 +1,9 @@
 
 RandomSeedHint: "JSR"
 
-InitialBalance: 2000000
-StockAllocation: 60%
-MaxDrift: 1%
+InitialBalance: 2500000
+StockAllocation: 50%
+MaxDrift: 5%
 NoOfYears: 30
 Iterations: 10000
 Output: "D:/Junk/SimReport.html"
@@ -11,9 +11,9 @@ Output: "D:/Junk/SimReport.html"
 # Withdrawal objectives
 
 PCTWithdrawal:
-  FirstYearPct: 4%
+  FirstYearPct: 5%
   IncrementPct: 2%
-  zzResetYears: [6, 11]
+  ResetYears: [6, 11]
 
 zzPrecalculatedWithdrawal:
   FileName: $(MyPath)/Withdrawals.xlsx
@@ -25,11 +25,11 @@ zzUseBufferCash:
   Amount: 350000
   GrowthThreshold: 0.03
 
-zzReduceWithdrawal:
-  MaxSkips: 3
-  CutOffYear: 10
-  GrowthThreshold: 0.03
-  ReductionPct: 0.4
+ReduceWithdrawal:
+  MaxSkips: 2
+  CutOffYear: 30
+  GrowthThreshold: -2%
+  ReductionPct: 100%
 
 # Growth strategies 
 

@@ -1,4 +1,8 @@
 ﻿
+SurvivalRating:
+  Lower: 80%    # Not acceptable if below this threshold.
+  Upper: 98%    # Anyting on or above are equally good.
+
 SurvivalRate:
   Enabled: true
   MinRequired: 0.95

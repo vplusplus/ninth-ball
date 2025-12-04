@@ -50,16 +50,16 @@ namespace NinthBall.Templates
             return await RenderTemplateAsync<Error>(templateParameters).ConfigureAwait(false);
         }
 
-        public static async Task<string> GenerateOptimizationReportAsync(OptimizationResult result)
-        {
-            ArgumentNullException.ThrowIfNull(result);
+        //public static async Task<string> GenerateOptimizationReportAsync(OptimizationResult result)
+        //{
+        //    ArgumentNullException.ThrowIfNull(result);
 
-            Dictionary<string, object?> templateParameters = new()
-            {
-                ["Model"] = result
-            };
+        //    Dictionary<string, object?> templateParameters = new()
+        //    {
+        //        ["Model"] = result
+        //    };
 
-            return await RenderTemplateAsync<OptimizationReport>(templateParameters).ConfigureAwait(false);
-        }
+        //    return await RenderTemplateAsync<OptimizationReport>(templateParameters).ConfigureAwait(false);
+        //}
     }
 }

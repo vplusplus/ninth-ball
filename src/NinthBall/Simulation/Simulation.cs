@@ -20,12 +20,13 @@ namespace NinthBall
                 simConfig.Iterations
             );
 
+            // Multiple doubles and ints. Use named-parameters.
             return objectives.RunSimulation(
-                simConfig.InitialBalance,
-                simConfig.StockAllocation,
-                simConfig.MaxDrift,
-                simConfig.NoOfYears,
-                numIterations
+                initialBalance: simConfig.InitialBalance,
+                initialAllocation: simConfig.StockAllocation,
+                initialMaxDrift: simConfig.MaxDrift,
+                numYears: simConfig.NoOfYears,
+                numIterations: numIterations
             );
         }
 
@@ -41,13 +42,22 @@ namespace NinthBall
             List<SimIteration> iterationResults = [];
 
             // Run iterations; Collect results; Sort the results worst-to-best.
+            // Question:
+            // Iterations are sorted by SurvivedYears and EndingBalance. Is this the only view possible?
             var iterationResultsWorstToBest = Enumerable.Range(0, numIterations)
-                .Select(iterationIndex => objectives.RunIteration(iterationIndex, initialBalance, initialAllocation, initialMaxDrift, numYears))
-                .OrderBy(x => x.SurvivedYears)
-                .ThenBy(x => x.EndingBalance)
+                .Select(iterationIndex => objectives.RunIteration(
+                    iterationIndex: iterationIndex, 
+                    initialBalance: initialBalance, 
+                    initialAllocation: initialAllocation, 
+                    initialMaxDrift: initialMaxDrift, 
+                    numYears: numYears
+                ))
+                .OrderBy(iter => iter.SurvivedYears)
+                .ThenBy(iter => iter.EndingBalance)
                 .ToList()
                 .AsReadOnly();
 
+            // Multiple doubles and ints. Use named-parameters.
             return new SimResult(
                 InitialBalance: initialBalance,
                 InitialStockAllocation: initialAllocation,
