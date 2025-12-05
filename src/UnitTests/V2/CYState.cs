@@ -5,9 +5,9 @@ namespace UnitTests.V2
     /// TotalIncome buckets. Can withdraw. Cannot deposit.
     /// </summary>
     public enum In { 
-        SS,                 // TotalIncome from Social security.
-        Ann,                // TotalIncome from Annuities
-        FourK               // TotalIncome from 401K
+        SS,                 // Income from Social security.
+        Ann,                // Income from Annuities
+        FourK               // Income from 401K
     }
 
     /// <summary>
@@ -20,7 +20,7 @@ namespace UnitTests.V2
     }
 
     /// <summary>
-    /// Can behave as both TotalIncome or Expense. 
+    /// Can behave as both Income or Expense. 
     /// </summary>
     public enum IO { 
         Inv,              // Investment account, can consume or invest funds.
@@ -42,14 +42,14 @@ namespace UnitTests.V2
         public double JanInv { get; private set; } = JanInv;
         public double JanSav { get; private set; } = JanSav;
 
-        readonly Dictionary<In,  double> InDelta  = InitZero(In.SS, In.Ann, In.FourK);
-        readonly Dictionary<Exp, double> ExpDelta = InitZero(Exp.CYExp, Exp.PYTax, Exp.Fees);
-        readonly Dictionary<IO,  double> IODelta  = InitZero(IO.Inv, IO.Sav);
+        readonly double[] InDelta  = new double[3];  // SS=0, Ann=1, FourK=2
+        readonly double[] ExpDelta = new double[3];  // CYExp=0, PYTax=1, Fees=2
+        readonly double[] IODelta  = new double[2];  // Inv=0, Sav=1
 
         public double CashInHand { get; private set; } = 0.0;       // Virtual cash in hand during transaction planning.
-        public double TotalIncome => InDelta.Sum(x => x.Value);     // Total income from all income streams
-        public double TotalExpenses => ExpDelta.Sum(x => x.Value);  // Total estimated expenses
-        public double AssetChanges => IODelta.Sum(x => x.Value);    // Total change in investment and cash assets
+        public double TotalIncome => InDelta.Sum();
+        public double TotalExpenses => ExpDelta.Sum();
+        public double AssetChanges => IODelta.Sum();
 
         /// <summary>
         /// Checksum - Must always read zero after each transaction.
@@ -69,7 +69,7 @@ namespace UnitTests.V2
         public CYState AddIncome(In bucket, double amount)
         {
             if (amount < 0) throw new ArgumentException("Income must be non-negative.");
-            InDelta[bucket] += amount;
+            InDelta[(int)bucket] += amount;
             CashInHand += amount;  // Receiving income adds to cash in hand
             return this;
         }
@@ -82,7 +82,7 @@ namespace UnitTests.V2
         public CYState ReduceIncome(In bucket, double amount)
         {
             if (amount < 0) throw new ArgumentException("Income reduction must be non-negative.");
-            InDelta[bucket] -= amount;
+            InDelta[(int)bucket] -= amount;
             CashInHand -= amount;  // Reducing income removes from cash in hand
             return this;
         }
@@ -95,7 +95,7 @@ namespace UnitTests.V2
         public CYState AddExpense(Exp bucket, double amount)
         {
             if (amount < 0) throw new ArgumentException("Expense must be non-negative");
-            ExpDelta[bucket] -= amount; // enforce negative
+            ExpDelta[(int)bucket] -= amount; // enforce negative
             CashInHand -= amount;   // Paying expense removes from cash in hand
             return this;
         }
@@ -108,7 +108,7 @@ namespace UnitTests.V2
         public CYState ReduceExpense(Exp bucket, double amount)
         {
             if (amount < 0) throw new ArgumentException("Expense reduction must be non-negative");
-            ExpDelta[bucket] += amount; 
+            ExpDelta[(int)bucket] += amount; 
             CashInHand += amount;   // Refund adds back to cash in hand
             return this;
         }
@@ -122,7 +122,7 @@ namespace UnitTests.V2
         {
             if (amount < 0) throw new ArgumentException("Deposit amount must be non-negative");
 
-            IODelta[target] += amount;
+            IODelta[(int)target] += amount;
             CashInHand -= amount;   // Depositing removes from cash in hand
             return amount;
         }
@@ -136,7 +136,7 @@ namespace UnitTests.V2
         {
             if (amount < 0) throw new ArgumentException("Withdrawal amount must be non-negative");
 
-            IODelta[source] -= amount;
+            IODelta[(int)source] -= amount;
             CashInHand += amount;   // Withdrawing adds to cash in hand
             return amount;
         }
@@ -165,20 +165,20 @@ namespace UnitTests.V2
             Deposit(target, amount);
         }
 
-        public double SS    => InDelta[In.SS];
-        public double ANN   => InDelta[In.Ann];
-        public double FourK => InDelta[In.FourK];
-        public double CYExp => ExpDelta[Exp.CYExp];
-        public double PYTax => ExpDelta[Exp.PYTax];
-        public double Fees  => ExpDelta[Exp.Fees];
-        public double Inv   => IODelta[IO.Inv];
-        public double Sav   => IODelta[IO.Sav];
+        public double SS    => InDelta[(int)In.SS];
+        public double ANN   => InDelta[(int)In.Ann];
+        public double FourK => InDelta[(int)In.FourK];
+        public double CYExp => ExpDelta[(int)Exp.CYExp];
+        public double PYTax => ExpDelta[(int)Exp.PYTax];
+        public double Fees  => ExpDelta[(int)Exp.Fees];
+        public double Inv   => IODelta[(int)IO.Inv];
+        public double Sav   => IODelta[(int)IO.Sav];
 
         public void Reset(double jan4K, double janInv, double janSav)
         {
-            foreach (var key in InDelta.Keys) InDelta[key] = 0;
-            foreach (var key in ExpDelta.Keys) ExpDelta[key] = 0;
-            foreach (var key in IODelta.Keys) IODelta[key] = 0;
+            Array.Clear(InDelta);
+            Array.Clear(ExpDelta);
+            Array.Clear(IODelta);
             CashInHand = 0;
 
             this.Jan4K = jan4K;
@@ -187,6 +187,5 @@ namespace UnitTests.V2
         }
 
         public override string ToString() => $"CashInHand: {CashInHand:F0} Income: {TotalIncome:F0} Expenses: {TotalExpenses:F0} Assets: {AssetChanges:F0}";
-        static Dictionary<T, double> InitZero<T>(params T[] keys) where T : notnull => keys.ToDictionary(x => x, x => 0.0);
     }
 }
