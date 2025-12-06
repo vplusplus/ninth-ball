@@ -10,14 +10,9 @@ namespace NinthBall
     (   
         string RandomSeedHint,
 
-        [property: Min(10)]
-        double InitialBalance,
-
-        [property: Range(0.0, 1.0)]
-        double StockAllocation,
-
-        [property: Range(0.0, 1.0)]
-        double MaxDrift,
+        Asset InitialFourK,
+        Asset InitialInv,
+        Asset InitialSav,
 
         [property: Range(1, 50)]
         int NoOfYears,
@@ -204,9 +199,12 @@ namespace NinthBall
     public partial record Fees
     (
         [property : Range(0.0, 1.0)]
-        double AnnualFeesPct
+        double Fees401K = 0.0,
+
+        [property : Range(0.0, 1.0)]
+        double FeesInv = 0.0
     )
     {
-        public override string ToString() => $"Annual fees: {AnnualFeesPct:P1}";
+        public override string ToString() => $"Annual fees: 401K {Fees401K:P1} Inv: {FeesInv:P1}";
     }
 }

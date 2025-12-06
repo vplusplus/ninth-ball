@@ -14,17 +14,19 @@ namespace NinthBall
             // Check if HistoricalReturns with sequential-returns simulation is requested.
             // In such case, we may not meet NumIterations objective.
             // Limit max iterations.
-            var historicalGrowthObjective = objectives.OfType<HistoricalGrowthObjective>().SingleOrDefault();
-            var numIterations = Math.Min(
-                null != historicalGrowthObjective ? historicalGrowthObjective.MaxIterations : simConfig.Iterations,
-                simConfig.Iterations
-            );
+            //var historicalGrowthObjective = objectives.OfType<HistoricalGrowthObjective>().SingleOrDefault();
+            //var numIterations = Math.Min(
+            //    null != historicalGrowthObjective ? historicalGrowthObjective.MaxIterations : simConfig.Iterations,
+            //    simConfig.Iterations
+            //);
+
+            var numIterations = simConfig.Iterations;
 
             // Multiple doubles and ints. Use named-parameters.
             return objectives.RunSimulation(
-                initialBalance: simConfig.InitialBalance,
-                initialAllocation: simConfig.StockAllocation,
-                initialMaxDrift: simConfig.MaxDrift,
+                initialFourK: simConfig.InitialFourK,
+                initialInv: simConfig.InitialInv,
+                initialSav: simConfig.InitialSav,
                 numYears: simConfig.NoOfYears,
                 numIterations: numIterations
             );
@@ -34,7 +36,8 @@ namespace NinthBall
         /// Runs simulation of the objectives.  
         /// </summary>
         public static SimResult RunSimulation(this IReadOnlyList<ISimObjective> objectives,
-            double initialBalance, double initialAllocation, double initialMaxDrift, int numYears, int numIterations
+            Asset initialFourK, Asset initialInv, Asset initialSav, 
+            int numYears, int numIterations
         )
         {
             ArgumentNullException.ThrowIfNull(objectives);
@@ -47,9 +50,9 @@ namespace NinthBall
             var iterationResultsWorstToBest = Enumerable.Range(0, numIterations)
                 .Select(iterationIndex => objectives.RunIteration(
                     iterationIndex: iterationIndex, 
-                    initialBalance: initialBalance, 
-                    initialAllocation: initialAllocation, 
-                    initialMaxDrift: initialMaxDrift, 
+                    initialFourK: initialFourK, 
+                    initialInv: initialInv, 
+                    initialSav: initialSav, 
                     numYears: numYears
                 ))
                 .OrderBy(iter => iter.SurvivedYears)
@@ -59,8 +62,9 @@ namespace NinthBall
 
             // Multiple doubles and ints. Use named-parameters.
             return new SimResult(
-                InitialBalance: initialBalance,
-                InitialStockAllocation: initialAllocation,
+                InitialFourK: initialSav,
+                InitialInv: initialInv,
+                InitialSav: initialSav,
                 NoOfYears: numYears,
                 objectives,
                 iterationResultsWorstToBest
@@ -71,14 +75,15 @@ namespace NinthBall
         /// Runs a single iteration of the simulation.
         /// This signature is intended for unit testing. Consider RunSimulation()
         /// </summary>
-        public static SimIteration RunIteration(this IReadOnlyList<ISimObjective> objectives, 
-            int iterationIndex, double initialBalance, double initialAllocation, double initialMaxDrift, int numYears
+        public static SimIteration RunIteration(this IReadOnlyList<ISimObjective> objectives,
+            int iterationIndex,
+            Asset initialFourK, Asset initialInv, Asset initialSav, int numYears
         )
         {
             ArgumentNullException.ThrowIfNull(objectives);
 
             var strategies = objectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();
-            var ctx = new SimContext(iterationIndex, initialBalance, initialAllocation, initialMaxDrift);
+            var ctx = new SimContext(iterationIndex, initialFourK, initialInv, initialSav);
 
             bool success = false;
 

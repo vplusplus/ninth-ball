@@ -17,10 +17,10 @@ namespace NinthBall
 
         public static void PrintParams(this SimConfig simConfig)
         {
-            var init = $"{simConfig.InitialBalance:C0}";
-            var aloc = $"{simConfig.StockAllocation:P0}-{1-simConfig.StockAllocation:P0}";
-            var year = $"{simConfig.NoOfYears}";
-            var iter = $"{simConfig.Iterations:#,0}";
+            var init = 0; // $"{simConfig.InitialBalance:C0}";
+            var aloc = 0; //  $"{simConfig.StockAllocation:P0}-{1-simConfig.StockAllocation:P0}";
+            var year = 0; //  $"{simConfig.NoOfYears}";
+            var iter = 0; // $"{simConfig.Iterations:#,0}";
 
             Inform($"{init} | {aloc} | {year} years | {iter} iterations.");
         }

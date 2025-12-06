@@ -1,5 +1,5 @@
 ﻿
-namespace UnitTests.V2
+namespace NinthBall
 {
     /// <summary> 
     /// TotalIncome buckets. Can withdraw. Cannot deposit.
@@ -16,7 +16,8 @@ namespace UnitTests.V2
     public enum Exp { 
         CYExp,              // Estimated current year expenses (post tax)
         PYTax,              // Taxes on prior year income
-        Fees                // Fees payable to managed accounts
+        FeesFourK,          // Fees payable to managed accounts
+        FeesInv,            // Fees payable to managed accounts
     }
 
     /// <summary>
@@ -33,20 +34,13 @@ namespace UnitTests.V2
     /// TotalIncome adds virtual funds, expenses consume funds, and asset operations plan balance changes.
     /// The Residual must reach zero before committing deltas to actual accounts.
     /// </summary>
-    /// <param name="Jan4K">Read-only reference: Opening 401K balance (not modified by CYState)</param>
-    /// <param name="JanInv">Read-only reference: Opening Investment balance (not modified by CYState)</param>
-    /// <param name="JanSav">Read-only reference: Opening Savings balance (not modified by CYState)</param>
-    public record CYState(double Jan4K, double JanInv, double JanSav)
+    public record CYState
     {
-        public double Jan4K { get; private set; } = Jan4K;
-        public double JanInv { get; private set; } = JanInv;
-        public double JanSav { get; private set; } = JanSav;
+        readonly double[] InDelta  = new double[3];
+        readonly double[] ExpDelta = new double[4];
+        readonly double[] IODelta  = new double[2];
 
-        readonly double[] InDelta  = new double[3];  // SS=0, Ann=1, FourK=2
-        readonly double[] ExpDelta = new double[3];  // CYExp=0, PYTax=1, Fees=2
-        readonly double[] IODelta  = new double[2];  // Inv=0, Sav=1
-
-        public double CashInHand { get; private set; } = 0.0;       // Virtual cash in hand during transaction planning.
+        public double CashInHand { get; private set; } = 0.0;
         public double TotalIncome => InDelta.Sum();
         public double TotalExpenses => ExpDelta.Sum();
         public double AssetChanges => IODelta.Sum();
@@ -170,20 +164,17 @@ namespace UnitTests.V2
         public double FourK => InDelta[(int)In.FourK];
         public double CYExp => ExpDelta[(int)Exp.CYExp];
         public double PYTax => ExpDelta[(int)Exp.PYTax];
-        public double Fees  => ExpDelta[(int)Exp.Fees];
+        public double FeesFourK => ExpDelta[(int)Exp.FeesFourK];
+        public double FeesInv => ExpDelta[(int)Exp.FeesInv];
         public double Inv   => IODelta[(int)IO.Inv];
         public double Sav   => IODelta[(int)IO.Sav];
 
-        public void Reset(double jan4K, double janInv, double janSav)
+        public void Reset()
         {
             Array.Clear(InDelta);
             Array.Clear(ExpDelta);
             Array.Clear(IODelta);
             CashInHand = 0;
-
-            this.Jan4K = jan4K;
-            this.JanInv = janInv;
-            this.JanSav = janSav;
         }
 
         public override string ToString() => $"CashInHand: {CashInHand:F0} Income: {TotalIncome:F0} Expenses: {TotalExpenses:F0} Assets: {AssetChanges:F0}";

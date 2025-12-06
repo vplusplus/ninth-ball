@@ -2,6 +2,7 @@
 
 namespace NinthBall
 {
+    /*
     /// <summary>
     /// Utilize buffer cash to cover withdrawals in bad years (prior year growth below threshold).
     /// </summary>
@@ -19,7 +20,7 @@ namespace NinthBall
         {
             double availableBufferCash = initialBufferCash;
 
-            void ISimStrategy.Apply(ISimContext context)
+            void ISimStrategy.Apply(SimContext context)
             {
                 // First year, nothing to adjust.
                 if (context.PriorYears.Count == 0) return;
@@ -64,7 +65,7 @@ namespace NinthBall
         {
             int skipCount = 0;
 
-            void ISimStrategy.Apply(ISimContext context)
+            void ISimStrategy.Apply(SimContext context)
             {
                 // On first year, nothing to adjust.
                 if (context.PriorYears.Count == 0) return;
@@ -89,4 +90,5 @@ namespace NinthBall
 
         public override string ToString() => P.ToString();
     }
+    */
 }

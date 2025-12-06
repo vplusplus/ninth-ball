@@ -111,8 +111,7 @@ namespace NinthBall
 
                 // FromYamlFile Simulation configurations
                 var simConfig = SimConfigReader.Read(inputFileName);
-                var simRatings = SimRatings.FromYamlFile(ratingsFile);
-
+                
                 // Capture output file name here before proceeding
                 outputFileName = simConfig.Output;
                 var outputDir = Path.GetDirectoryName(outputFileName) ?? "./";

@@ -24,6 +24,7 @@ namespace NinthBall
                 simConfig.ObjectiveOrNull(simConfig.FlatGrowth),
                 simConfig.ObjectiveOrNull(simConfig.HistoricalGrowth),
                 simConfig.ObjectiveOrNull(simConfig.Fees),
+                new AllInOneStrategy(simConfig)
             }
             .Where(x => null != x)
             .Select((objective, index) => (Objective: objective!, ConfigOrder: index))
@@ -49,13 +50,13 @@ namespace NinthBall
         private static readonly IReadOnlyDictionary<Type, Func<SimConfig, ISimObjective>> SimObjectiveMap =
             new Dictionary<Type, Func<SimConfig, ISimObjective>>
             {
-                [typeof(PCTWithdrawal)]             = cfg => new PCTWithdrawalObjective(cfg),
-                [typeof(PrecalculatedWithdrawal)]   = cfg => new PrecalculatedWithdrawalObjective(cfg),
-                [typeof(ReduceWithdrawal)]          = cfg => new ReduceWithdrawalAfterBadYears(cfg),
-                [typeof(UseBufferCash)]             = cfg => new UseBufferCashAfterBadYears(cfg),
+                //[typeof(PCTWithdrawal)]             = cfg => new PCTWithdrawalObjective(cfg),
+                //[typeof(PrecalculatedWithdrawal)]   = cfg => new PrecalculatedWithdrawalObjective(cfg),
+                //[typeof(ReduceWithdrawal)]          = cfg => new ReduceWithdrawalAfterBadYears(cfg),
+                //[typeof(UseBufferCash)]             = cfg => new UseBufferCashAfterBadYears(cfg),
                 [typeof(FlatGrowth)]                = cfg => new FlatGrowthObjective(cfg),
                 [typeof(HistoricalGrowth)]          = cfg => new HistoricalGrowthObjective(cfg),
-                [typeof(Fees)]                      = cfg => new AnnualFeesObjective(cfg),
+                //[typeof(Fees)]                      = cfg => new AnnualFeesObjective(cfg),
             }
             .ToImmutableDictionary();
     }

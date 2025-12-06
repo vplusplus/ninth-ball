@@ -6,8 +6,9 @@ namespace NinthBall
     /// </summary>
     public record SimResult
     (
-        double InitialBalance, 
-        double InitialStockAllocation, 
+        Asset InitialFourK,
+        Asset InitialInv,
+        Asset InitialSav,
         int NoOfYears, 
         IReadOnlyList<ISimObjective> Objectives, 
         IReadOnlyList<SimIteration> Iterations
@@ -39,24 +40,33 @@ namespace NinthBall
     public record SimYear
     (
         int    Year,
-        double JanBalance,
-        double JanStockPct,
-        double Fees,
-        double PlannedWithdrawal,
-        double ActualWithdrawal,
-        double Change,
-        double DecBalance,
-        double DecStockPct,
-        double StockROI,
-        double BondROI,
+        double Jan401K,
+        double JanInv,
+        double JanSav,
+        double PYTaxes,
+        double PYFees,
+        double CYExp,
+        double SS,
+        double ANN,
+        double X401K,
+        double XInv,
+        double XSav,
+        double Surplus,
+        double Change401K,
+        double ChangeInv,
+        double ChangeSav,
+        double Dec401K,
+        double DecInv,
+        double DecSav,
         int    LikeYear
     )
     {
-        public double JanBondPct => 1 - JanStockPct;
-        public double DecBondPct => 1 - DecStockPct;
-        public double PCTChange => Change / (JanBalance - Fees - ActualWithdrawal);
-        public bool IsBadYear(double minimumExpectedGrowthPct = 0.0) => (Change / (JanBalance - Fees - ActualWithdrawal + 0.000001)) < minimumExpectedGrowthPct;
-        public override string ToString() => $"{Year,4} | {JanBalance,6:C0} | {Fees,6:C0} | {ActualWithdrawal,6:C0} | {DecBalance,6:C0}";
+        public double JanBalance => Jan401K + JanInv + JanSav;
+        public double Withdrawals => X401K + XInv + XSav;
+        public double Change => Change401K + ChangeInv + ChangeSav;
+        public double DecBalance => Dec401K + DecInv + DecSav;
+        public double PCTChange => Change / (JanBalance - Withdrawals + 0.0000001);
+        public bool IsBadYear(double minimumExpectedGrowthPct = 0.0) => PCTChange < minimumExpectedGrowthPct;
     };
 
     /// <summary>

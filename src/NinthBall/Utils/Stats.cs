@@ -1,10 +1,11 @@
 ﻿
-using System.Transactions;
 
 namespace NinthBall
 {
     internal static partial class Stats
     {
+        public static bool AlmostZero(this double number) => Math.Abs(number) <= 1e-6;
+
         /// <summary>
         /// Computes the standard deviation (volatility) of a sequence of periodic returns.
         /// </summary>
