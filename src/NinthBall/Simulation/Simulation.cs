@@ -62,10 +62,6 @@ namespace NinthBall
 
             // Multiple doubles and ints. Use named-parameters.
             return new SimResult(
-                InitialFourK: initialSav,
-                InitialInv: initialInv,
-                InitialSav: initialSav,
-                NoOfYears: numYears,
                 objectives,
                 iterationResultsWorstToBest
             );
