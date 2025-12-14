@@ -16,15 +16,19 @@ namespace NinthBall
             // Ignore NULLs - The ObjectiveOrNull() helper may return nulls.
             // Sort by execution order suggested by the objectives.
             // Break ties using their original config order.
-            return new List<ISimObjective?> {
-                simConfig.ObjectiveOrNull(simConfig.PCTWithdrawal),
-                simConfig.ObjectiveOrNull(simConfig.PrecalculatedWithdrawal),
+            var objectives = new List<ISimObjective?> {
+                simConfig.ObjectiveOrNull(simConfig.InitPortfolio),
+                simConfig.ObjectiveOrNull(simConfig.YearlyRebalance),
+                simConfig.ObjectiveOrNull(simConfig.AdditionalIncomes),
+                simConfig.ObjectiveOrNull(simConfig.LivingExpenses),
+                simConfig.ObjectiveOrNull(simConfig.PrecalculatedLivingExpenses),
+                simConfig.ObjectiveOrNull(simConfig.Taxes),
+                simConfig.ObjectiveOrNull(simConfig.PreTaxWithdrawal),
                 simConfig.ObjectiveOrNull(simConfig.ReduceWithdrawal),
                 simConfig.ObjectiveOrNull(simConfig.UseBufferCash),
                 simConfig.ObjectiveOrNull(simConfig.FlatGrowth),
                 simConfig.ObjectiveOrNull(simConfig.HistoricalGrowth),
                 simConfig.ObjectiveOrNull(simConfig.Fees),
-                new AllInOneStrategy(simConfig)
             }
             .Where(x => null != x)
             .Select((objective, index) => (Objective: objective!, ConfigOrder: index))
@@ -33,6 +37,8 @@ namespace NinthBall
             .Select(x => x.Objective)
             .ToList()
             .AsReadOnly();
+
+            return objectives;
         }
 
         /// <summary>
@@ -50,13 +56,18 @@ namespace NinthBall
         private static readonly IReadOnlyDictionary<Type, Func<SimConfig, ISimObjective>> SimObjectiveMap =
             new Dictionary<Type, Func<SimConfig, ISimObjective>>
             {
-                //[typeof(PCTWithdrawal)]             = cfg => new PCTWithdrawalObjective(cfg),
-                //[typeof(PrecalculatedWithdrawal)]   = cfg => new PrecalculatedWithdrawalObjective(cfg),
-                //[typeof(ReduceWithdrawal)]          = cfg => new ReduceWithdrawalAfterBadYears(cfg),
-                //[typeof(UseBufferCash)]             = cfg => new UseBufferCashAfterBadYears(cfg),
-                [typeof(FlatGrowth)]                = cfg => new FlatGrowthObjective(cfg),
-                [typeof(HistoricalGrowth)]          = cfg => new HistoricalGrowthObjective(cfg),
-                //[typeof(Fees)]                      = cfg => new AnnualFeesObjective(cfg),
+                [typeof(InitPortfolio)]                 = cfg => new InitPortfolioObjective(cfg),
+                [typeof(YearlyRebalance)]               = cfg => new RebalancingObjective(cfg),
+                [typeof(AdditionalIncomes)]             = cfg => new AdditionalIncomeObjective(cfg),
+                [typeof(LivingExpenses)]                = cfg => new LivingExpensesObjective(cfg),
+                [typeof(PrecalculatedLivingExpenses)]   = cfg => new PrecalculatedLivingExpensesObjective(cfg),
+                [typeof(Taxes)]                         = cfg => new TaxStrategy(cfg),
+                [typeof(PreTaxWithdrawal)]              = cfg => new PreTaxWithdrawalObjective(cfg),
+                //[typeof(ReduceWithdrawal)]            = cfg => new ReduceWithdrawalAfterBadYears(cfg),
+                //[typeof(UseBufferCash)]               = cfg => new UseBufferCashAfterBadYears(cfg),
+                [typeof(FlatGrowth)]                    = cfg => new FlatGrowthObjective(cfg),
+                [typeof(HistoricalGrowth)]              = cfg => new HistoricalGrowthObjective(cfg),
+                [typeof(FeesPCT)]                       = cfg => new AnnualFeesObjective(cfg),
             }
             .ToImmutableDictionary();
     }

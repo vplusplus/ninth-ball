@@ -1,6 +1,6 @@
 ﻿
+* Implement - Equated yearly withdrawal with escalation
 * Excel readers are in two places. Consider moving the logic to a 'Reader'.
-* Add whitebox unit tests 
 * Implement reallocation strategy: Can change allocation from 50-50 to 60-40 to 70-30 at specific years.
 * Accept iterationIndex[] parameter in Output specification. Print iteration data in addition to known percentiles
 * Externalize list of percentiles shown in the output report to config yaml file. Example: Output: Percentiles: [0.1, 0.05, 0.2, ...]

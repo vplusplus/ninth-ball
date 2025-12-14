@@ -1,34 +1,57 @@
 
 RandomSeedHint: "JSR"
 
-InitialFourK:
-  Amount: 2000000
-  Allocation: 60%
-  Drift: 5%
-
-InitialInv:
-  Amount: 1500000
-  Allocation: 60%
-  Drift: 5%
-
-InitialSav:
-  Amount: 200000
-  Allocation: 100%
-
 NoOfYears: 30
 Iterations: 10000
 Output: "D:/Junk/SimReport.html"
 
-# Withdrawal objectives
+InitPortfolio:
+  PreTax:
+    Amount: 2,000,000
+    Allocation: 60%
+    MaxDrift: 5%
+  PostTax:
+    Amount: 1,000,000
+    Allocation: 60%
+    MaxDrift: 5%
+  Cash:
+    Amount: 200,000
+    MaxDrift: 10%
 
-PCTWithdrawal:
-  FirstYearPct: 5%
+YearlyRebalance:
+  MaxDrift: 5%
+
+# Additional known incomes
+AdditionalIncomes:
+  SS: 
+    Amount: 70,000
+    FromYear: 11
+    YearlyIncrement: 2%
+  Ann:
+    Amount: 50,000
+    FromYear: 11
+    YearlyIncrement: 0%
+
+# Expense modelling
+zzLivingExpense:
+  FirstYearAmount: 130,000
   IncrementPct: 2%
-  zzResetYears: [6, 11]
 
-zzPrecalculatedWithdrawal:
+PrecalculatedLivingExpenses:
   FileName: $(MyPath)/Withdrawals.xlsx
   SheetName: Withdrawals
+
+# Tax model
+Taxes:
+  YearZeroTaxAmount: 25,000
+  OrdinaryIncomeTaxRate: 22%
+  CapitalGainsTaxRate: 15%
+
+# Withdrawal objectives
+PreTaxWithdrawal:
+  FirstYearPct: 4%
+  IncrementPct: 2%
+  zzResetYears: [6, 11]
 
 # Withdrawal optimizations objectives 
 
@@ -58,8 +81,6 @@ zzzFlatGrowth:
 
 # Fees and other deductions
 Fees:
-  Fees401K: 0.2%
-  FeesInv:  0.9%
-
-
-  
+  PreTaxFeesPCT:   0.2%    # 401K account
+  PostTaxFeesPCT:  0.9%    # Joint investments
+  CashFeesPCT:     0%      # HY Savings

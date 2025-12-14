@@ -2,11 +2,6 @@
 namespace NinthBall
 {
     /// <summary>
-    /// Represents Stock and Bond ROI for one year.
-    /// </summary>
-    public sealed record YROI(int Year, double StocksROI, double BondROI);
-
-    /// <summary>
     /// Represents a small sequence of historical returns.
     /// </summary>
     public sealed record Block(IReadOnlyList<YROI> Segment) 

@@ -2,8 +2,9 @@
 
 namespace NinthBall
 {
-    internal static class Simulation
+    public static class Simulation
     {
+
         public static SimResult RunSimulation(SimConfig simConfig)
         {
             ArgumentNullException.ThrowIfNull(simConfig);
@@ -23,38 +24,21 @@ namespace NinthBall
             var numIterations = simConfig.Iterations;
 
             // Multiple doubles and ints. Use named-parameters.
-            return objectives.RunSimulation(
-                initialFourK: simConfig.InitialFourK,
-                initialInv: simConfig.InitialInv,
-                initialSav: simConfig.InitialSav,
-                numYears: simConfig.NoOfYears,
-                numIterations: numIterations
-            );
+            return RunSimulation(objectives, numYears: simConfig.NoOfYears,numIterations: numIterations);
         }
 
         /// <summary>
         /// Runs simulation of the objectives.  
         /// </summary>
-        public static SimResult RunSimulation(this IReadOnlyList<ISimObjective> objectives,
-            Asset initialFourK, Asset initialInv, Asset initialSav, 
-            int numYears, int numIterations
-        )
+        public static SimResult RunSimulation(IReadOnlyList<ISimObjective> objectives, int numYears, int numIterations)
         {
             ArgumentNullException.ThrowIfNull(objectives);
 
             List<SimIteration> iterationResults = [];
 
             // Run iterations; Collect results; Sort the results worst-to-best.
-            // Question:
-            // Iterations are sorted by SurvivedYears and EndingBalance. Is this the only view possible?
             var iterationResultsWorstToBest = Enumerable.Range(0, numIterations)
-                .Select(iterationIndex => objectives.RunIteration(
-                    iterationIndex: iterationIndex, 
-                    initialFourK: initialFourK, 
-                    initialInv: initialInv, 
-                    initialSav: initialSav, 
-                    numYears: numYears
-                ))
+                .Select(idx => RunOneIteration(iterationIndex: idx, objectives, numYears))
                 .OrderBy(iter => iter.SurvivedYears)
                 .ThenBy(iter => iter.EndingBalance)
                 .ToList()
@@ -71,15 +55,12 @@ namespace NinthBall
         /// Runs a single iteration of the simulation.
         /// This signature is intended for unit testing. Consider RunSimulation()
         /// </summary>
-        public static SimIteration RunIteration(this IReadOnlyList<ISimObjective> objectives,
-            int iterationIndex,
-            Asset initialFourK, Asset initialInv, Asset initialSav, int numYears
-        )
+        public static SimIteration RunOneIteration(int iterationIndex, IReadOnlyList<ISimObjective> objectives, int numYears)
         {
             ArgumentNullException.ThrowIfNull(objectives);
 
             var strategies = objectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();
-            var ctx = new SimContext(iterationIndex, initialFourK, initialInv, initialSav);
+            var ctx = new SimContext(iterationIndex);
 
             bool success = false;
 

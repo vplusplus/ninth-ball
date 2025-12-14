@@ -15,48 +15,66 @@
         <tr>
             <th>Year</th>
 
-            <th>J401K</th>
-            <th>JInv</th>
+            <th>J-401K</th>
+            <th>J-Inv</th>
+            <th>J-Cash</th>
 
-            <th>PYTax</th>
-            <th>PYFee</th>
-            <th>CYExp</th>
+            <th>Fees</th>
+            <th>Taxes</th>
+            <th>Exp</th>
 
             <th>SS</th>
             <th>ANN</th>
+
             <th>X401K</th>
             <th>XInv</th>
+            <th>XCash</th>
 
-            <th>C401K</th>
-            <th>CInv</th>
-            <th>Surplus</th>
+            <th>Like</th>
+            <th>Stocks</th>
+            <th>Bonds</th>
+            <th>Change</th>
 
-            <th>LikeYr</th>
+            <th>+INV</th>
+            <th>+Cash</th>
         </tr>
 
         <!-- Details -->
         @foreach (var y in Iteration.ByYear)
         {
+            static string KAmtAndAlloc(Asset a) => 0 == a.Amount ? string.Empty : $"{a.Amount/1000,6:C0} K [{a.Allocation,3:P0}]";
+            // static string StrAlloc(double pct) => $"{pct:P0}";
+
+            var txtPretax  = KAmtAndAlloc(y.Jan.PreTax);
+            var txtPostTax = KAmtAndAlloc(y.Jan.PostTax);
+            var txtCash    = $"{y.Jan.Cash.Amount / 1000:C0} K";
+
             <tr>
                 <td>@y.Year</td>
 
-                <td>@y.Jan401K.ToString("C0")</td>
-                <td>@y.JanInv.ToString("C0")</td>
+                <td class="mono-space">@txtPretax</td>
+                <td class="mono-space">@txtPostTax</td>
+                <td class="mono-space">@txtCash</td>
 
-                <td>@y.PYTaxes.ToString("C0")</td>
-                <td>@y.PYFees.ToString("C0")</td>
-                <td>@y.CYExp.ToString("C0")</td>
+                <td>@y.Fees.Total().ToString("C0")</td>
 
-                <td>@y.SS.ToString("C0")</td>
-                <td>@y.ANN.ToString("C0")</td>
-                <td>@y.X401K.ToString("C0")</td>
-                <td>@y.XInv.ToString("C0")</td>
-                
-                <td>@y.Change401K.ToString("C0")</td>
-                <td>@y.ChangeInv.ToString("C0")</td>
-                <td>@y.Surplus.ToString("C0")</td>
+                <td>@y.Expenses.PYTax.ToString("C0")</td>
+                <td>@y.Expenses.CYExp.ToString("C0")</td>
 
-                <td>@y.LikeYear</td>
+                <td>@y.Incomes.SS.ToString("C0")</td>
+                <td>@y.Incomes.Ann.ToString("C0")</td>
+
+                <td>@y.Withdrawals.PreTax.ToString("C0")</td>
+                <td>@y.Withdrawals.PostTax.ToString("C0")</td>
+                <td>@y.Withdrawals.Cash.ToString("C0")</td>
+
+                <td class="@CSS(y.Change.Total())">@y.ROI.LikeYear</td>
+                <td class="@CSS(y.ROI.StocksROI) mono-space">@($"{y.ROI.StocksROI,6:P1}")</td>
+                <td class="@CSS(y.ROI.BondsROI) mono-space">@($"{y.ROI.BondsROI,6:P1}")</td>
+                <td class="@CSS(y.Change.Total()) mono-space">@y.Change.Total().ToString("C0")</td>
+
+                <td>@y.Deposits.PostTax.ToString("C0")</td>
+                <td>@y.Deposits.Cash.ToString("C0")</td>
             </tr>
         }
 
@@ -70,4 +88,8 @@
     [Parameter] public string Id { get; set; } = null!;
     [Parameter] public string Caption { get; set; } = "";
     [Parameter] public SimIteration Iteration { get; set; } = null!;
+
+
+    static string CSS(double value) => value < 0.0 ? "text-danger" : string.Empty;
+
 }

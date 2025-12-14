@@ -6,6 +6,8 @@
 
 namespace NinthBall
 {
+    public record struct YROI(int Year, double StocksROI, double BondROI);
+
     /// <summary>
     /// Assumes flat growth each iterationYearIndex.
     /// </summary>
@@ -18,12 +20,11 @@ namespace NinthBall
 
         sealed class Strategy(double stocksFlatGrowthPct, double bondsFlatGrowthPct) : ISimStrategy
         {
-            readonly YROI ZeroGrowth = new(0, 0, 0);
             readonly YROI OneGrowth = new(0, stocksFlatGrowthPct, bondsFlatGrowthPct);
 
-            void ISimStrategy.Apply(SimContext context)
+            void ISimStrategy.Apply(ISimContext context)
             {
-                context.ROI = OneGrowth;
+                context.ROI = new(OneGrowth.Year, OneGrowth.StocksROI, OneGrowth.BondROI, 0.0);
             }
         }
 
@@ -58,13 +59,13 @@ namespace NinthBall
                 noConsecutiveRepetition: noConsecutiveRepetition
             );
 
-            void ISimStrategy.Apply(SimContext context)
+            void ISimStrategy.Apply(ISimContext context)
             {
                 var roi = context.YearIndex >= 0 && context.YearIndex < MyROISequence.Length
                     ? MyROISequence[context.YearIndex]
                     : throw new IndexOutOfRangeException($"Year #{context.YearIndex} is outside the range of this growth strategy");
 
-                context.ROI = roi;
+                context.ROI = new ROI(roi.Year, roi.StocksROI, roi.BondROI, 0.0);
             }
         }
 
@@ -72,7 +73,7 @@ namespace NinthBall
         {
             readonly YROI ZeroGrowth = new(0, 0, 0);
 
-            void ISimStrategy.Apply(SimContext context)
+            void ISimStrategy.Apply(ISimContext context)
             {
                 var historyYear = context.IterationIndex + context.YearIndex;
 
@@ -80,7 +81,7 @@ namespace NinthBall
                     ? history[historyYear]
                     : throw new IndexOutOfRangeException($"Iteration #{iterationIndex} and year #{context.YearIndex} is outside the range of this growth strategy");
 
-                context.ROI = roi;
+                context.ROI = new ROI(roi.Year, roi.StocksROI, roi.BondROI, 0.0);
             }
         }
 

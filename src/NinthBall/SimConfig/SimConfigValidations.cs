@@ -21,14 +21,24 @@ namespace NinthBall
         {
             var results = new List<ValidationResult>();
 
-            if (null != PCTWithdrawal && null != PrecalculatedWithdrawal) results.Add(new("Specify ONLY ONE withdrawal strategy"));
-            if (null == PCTWithdrawal && null == PrecalculatedWithdrawal) results.Add(new("Specify at least ONE withdrawal strategy"));
-            if (null != FlatGrowth && null != HistoricalGrowth) results.Add(new("Specify ONLY ONE Growth strategy"));
-            if (null == FlatGrowth && null == HistoricalGrowth) results.Add(new("Specify at least ONE Growth strategy"));
+            OnlyOne("Living expenses", LivingExpenses, PrecalculatedLivingExpenses);
+
+            //if (null != PreTaxWithdrawal && null != PrecalculatedWithdrawal) results.Add(new("Specify ONLY ONE withdrawal strategy"));
+            //if (null == PreTaxWithdrawal && null == PrecalculatedWithdrawal) results.Add(new("Specify at least ONE withdrawal strategy"));
+            //if (null != FlatGrowth && null != HistoricalGrowth) results.Add(new("Specify ONLY ONE Growth strategy"));
+            //if (null == FlatGrowth && null == HistoricalGrowth) results.Add(new("Specify at least ONE Growth strategy"));
             
             Validator.TryValidateObject(this, new ValidationContext(this), results, validateAllProperties: true);
 
             return results;
+
+            static void OnlyOne(string name, object obj1, object obj2)
+            {
+                if (obj1 is not null && obj2 is not null) throw new Exception($"{name} - Specify only one.");
+                if (obj1 is null && obj2 is null) throw new Exception($"{name} - Specify atleast one.");
+            }
+
+
         }
     }
 }

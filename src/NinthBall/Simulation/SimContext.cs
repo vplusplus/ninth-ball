@@ -1,544 +1,473 @@
 ﻿
 
-
 namespace NinthBall
 {
-    /// <summary>
-    /// Represents a simulation objective; Provides ISimStrategy for each iteration.
-    /// </summary>
-    public interface ISimObjective
+    sealed record CashBalance : IBalance
     {
-        int Order { get => 50; }
-        ISimStrategy CreateStrategy(int iterationIndex);
-    }
+        double Cash = 0.0;
 
-    /// <summary>
-    /// Strategy that applies a specific simulation objective to a given context.
-    /// </summary>
-    public interface ISimStrategy 
-    {
-        void Apply(SimContext context);
-    }
+        public double Amount => Cash;
+        public double Allocation => 1.0;
 
-    public record Asset(double Amount, double Allocation, double Drift);
+        // Single asset. Ignore allocation and drift.
+        public void Init(double amount, double _) => Cash = amount;
 
-    /// <summary>
-    /// Represents a portfolio balance, optionally split between two asset classes (Stocks and Bonds)
-    /// </summary>
-    public record class AssetBalance(Asset InitialAssetAllocation)
-    {
-        public double StockBalance { get; private set; } = InitialAssetAllocation.Amount * InitialAssetAllocation.Allocation;
-        public double BondBalance { get; private set; } = InitialAssetAllocation.Amount * (1-InitialAssetAllocation.Allocation);
-        public double CurrentBalance => StockBalance + BondBalance;
-        public double TargetAllocation { get; private set; } = InitialAssetAllocation.Allocation;
-        public double CurrentAllocation => StockBalance / (CurrentBalance + 0.0000001);
-        public double TargetMaxDrift { get; private set; } = InitialAssetAllocation.Drift;
-        public double CurrentDrift => Math.Abs(CurrentAllocation - TargetAllocation) * 2;
+        // Single asset. Nothing to Rebalance.
+        public bool RebalanceIf(double _) => false;
 
-        public bool Rebalance()
+        // Single asset. Nothing to Rellocate.
+        public bool Reallocate(double _, double __) => false;
+
+        public void Post(double amount) => Cash += amount;
+
+        public double Grow(double ROI)
         {
-            if (Math.Abs(CurrentDrift) > Math.Abs(TargetMaxDrift))
-            {
-                var tmpTotalBalance = CurrentBalance;
-                StockBalance = tmpTotalBalance * TargetAllocation;
-                BondBalance = tmpTotalBalance - StockBalance;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            var change = Amount * ROI;
+            Cash += change;
+            return change;
+        }
+    }
+
+    sealed record SplitBalance : IBalance
+    {
+        double Stocks = 0.0;
+        double Bonds = 0.0;
+        double TargetAllocation = 1.0;
+
+        double CurrentAllocation => 0 == (Stocks + Bonds) ? 0.0 : Stocks / (Stocks + Bonds + 0.0001);
+        double CurrentDrift => Math.Abs(CurrentAllocation - TargetAllocation) * 2;
+
+        public double Amount => Stocks + Bonds;
+        public double Allocation => CurrentAllocation;
+
+        public void Init(double amount, double allocation)
+        {
+            Stocks = amount * allocation;
+            Bonds = amount - Stocks;
+            TargetAllocation = allocation;
         }
 
-        public void Reallocate(double newAllocation, double newMaxDrift)
+        public bool RebalanceIf(double maxDrift)
         {
-            if (newAllocation < 0.0 || newAllocation > 1.0) throw new ArgumentException("Stock allocation PCT must be between 0.0 and 1.0");
-            if (newMaxDrift < 0.0 || newMaxDrift > 1.0) throw new ArgumentException("MaxDrift must be between 0.0 and 1.0");
+            if (Math.Abs(CurrentDrift) > Math.Abs(maxDrift))
+            {
+                double tmpAmount = Stocks + Bonds;
+                Stocks = tmpAmount * TargetAllocation;
+                Bonds = tmpAmount - Stocks;
+                return true;
+            }
+            else return false;
+        }
 
+        public bool Reallocate(double newAllocation, double maxDrift)
+        {
             TargetAllocation = newAllocation;
-            TargetMaxDrift = newMaxDrift;
-            this.Rebalance();
+            return RebalanceIf(maxDrift);
         }
 
         public void Post(double amount)
         {
-            if (0 == amount) return;
-            else if (double.IsNaN(amount)) throw new Exception("Invalid amount.");
-            else if (amount > 0.0) Deposit(amount); 
-            else Withdraw(Math.Abs(amount));
+            if (amount > 0.0) Deposit(amount); else if (amount < 0.0) Withdraw(Math.Abs(amount));
 
-            void Deposit(double amount)
+            void Deposit(double depositAmount)
             {
-                var stockChange = amount * TargetAllocation;
-                var bondChange = amount - stockChange;
+                if (0 == depositAmount) return;
+                if (depositAmount < 0) throw new ArgumentException("Deposit amount must be positive.");
 
-                StockBalance += stockChange;
-                BondBalance += bondChange;
+                var stockChange = depositAmount * TargetAllocation;
+                var bondChange = depositAmount - stockChange;
+
+                Stocks += stockChange;
+                Bonds += bondChange;
             }
 
-            void Withdraw(double amount)
+            void Withdraw(double withdrawalAmount)
             {
-                if (amount < 0) throw new ArgumentException("Withdrawal amount must be positive.");
-                if (CurrentBalance < amount) throw new InvalidOperationException("Can't withdraw more than what we have.");
+                if (0 == withdrawalAmount) return;
+                if (withdrawalAmount < 0) throw new ArgumentException("Withdrawal amount must be positive.");
+                if (withdrawalAmount > Amount + 0.01) throw new InvalidOperationException($"Can't withdraw more than what we have | Aailable: {Amount:C0} | Requested: {withdrawalAmount:C0}");
 
-                // If nothing to reduce.
-                if (0 == amount) return;
+                // TODO: Revisit rounding issues Avoid roundng errors
+                withdrawalAmount = Math.Min(withdrawalAmount, Amount);
 
                 // This is how much we plan to reduce from stock and bond balance.
-                double fromStock = amount * TargetAllocation;
-                double fromBond = amount - fromStock;
+                double fromStock = withdrawalAmount * TargetAllocation;
+                double fromBond = withdrawalAmount - fromStock;
 
-                // Try take from correct asset.
-                TryTakeFromStock(ref fromStock);
-                TryTakeFromBond(ref fromBond);
+                // Try to took from correct asset.
+                TryTakeFrom(ref Stocks, ref fromStock);
+                TryTakeFrom(ref Bonds, ref fromBond);
 
-                // There may be leftover. Try otherway.
-                TryTakeFromBond(ref fromStock);
-                TryTakeFromStock(ref fromBond);
+                // There may be insufficient funds. Try otherway.
+                TryTakeFrom(ref Bonds, ref fromStock);
+                TryTakeFrom(ref Stocks, ref fromBond);
 
-                // By now, both must be zero.
-                if (fromStock + fromBond > 0.01) throw new InvalidOperationException("SimBalance.Reduce: Unexpected mismatch in Reduce calculation.");
+                // We had enough funds. By now, both must be zero.
+                if (fromStock + fromBond > 0.0001) throw new InvalidOperationException("Balance.Withdraw() - Unexpected mismatch in calculation.");
                 return;
 
-                void TryTakeFromStock(ref double amt)
+                static void TryTakeFrom(ref double availabe, ref double required)
                 {
-                    var took = Math.Min(amt, StockBalance);
-                    StockBalance -= took;
-                    amt -= took;
-                }
-
-                void TryTakeFromBond(ref double amt)
-                {
-                    var took = Math.Min(amt, BondBalance);
-                    BondBalance -= took;
-                    amt -= took;
+                    var took = Math.Min(availabe, required);
+                    if (took > 0)
+                    {
+                        availabe -= took;
+                        required -= took;
+                    }
                 }
             }
         }
 
         public double Grow(double stocksROI, double bondsROI)
         {
-            var stockChange = StockBalance * stocksROI;
-            var bondChange = BondBalance * bondsROI;
+            var stockChange = Stocks * stocksROI;
+            var bondsChange = Bonds * bondsROI;
 
-            StockBalance += stockChange;
-            BondBalance += bondChange;
+            Stocks += stockChange;
+            Bonds += bondsChange;
 
-            return stockChange + bondChange;
+            return stockChange + bondsChange;
         }
-
-        public override string ToString() => $"{CurrentBalance:C0} = {StockBalance:C0} + {BondBalance:C0}";
     }
 
-    public record SimContext(int IterationIndex, Asset InitialFourK, Asset InitialInv, Asset InitialSav)
+    sealed record SimContext(int IterationIndex) : ISimContext
     {
-        static readonly YROI ZeroROI = new(0, 0, 0);
+        private readonly SplitBalance MyPreTaxBalance = new();
+        private readonly SplitBalance MyPostTaxBalance = new();
+        private readonly CashBalance MyCashBalance = new();
+        private readonly List<SimYear> MyPriorYears = new();
 
-        readonly List<SimYear> MyPriorYears = [];
-        readonly AssetBalance  CurrentFourK  = new (InitialFourK);
-        readonly AssetBalance  CurrentInv    = new (InitialInv);
-        readonly AssetBalance  CurrentSav    = new (InitialSav);
+        // The zero based index of simulation year
+        //public int IterationIndex { get; } = iterationIndex;
+        public int YearIndex { get; private set; }
 
-        public int YearIndex  { get; private set; } = 0;
-        public IReadOnlyList<SimYear> PriorYears => this.MyPriorYears;
+        // Running balance
+        public IReadOnlyList<SimYear> PriorYears => MyPriorYears;
+        public IBalance PreTaxBalance => MyPreTaxBalance;
+        public IBalance PostTaxBalance => MyPostTaxBalance;
+        public IBalance CashBalance => MyCashBalance;
 
-        public double CYExp;
-        public double PYTax;
-        public double PYFees;
-
-        public double SSIncome;
-        public double AnnIncome;
-
-        public double X401K;
-        public double XInv;
-        public double XSav;
-
-        public YROI ROI = ZeroROI;
+        // Current year 
+        public FeesPCT FeesPCT { get; set; }
+        public Incomes Incomes { get; set; }
+        public Expenses Expenses { get; set; }
+        public Withdrawals Withdrawals { get; set; }
+        public Deposits Refills { get; set; }
+        public ROI ROI { get; set; }
 
         public void StartYear(int yearIndex)
         {
-            CurrentFourK.Rebalance();
-            CurrentInv.Rebalance(); 
-            CurrentSav.Rebalance();
-
+            FeesPCT = default;
+            Incomes = default;
+            Expenses = default;
+            Withdrawals = default;
+            Refills = default;
+            ROI = default;
             YearIndex = yearIndex;
-            CYExp = PYTax = PYFees = X401K = XInv = XSav = 0;
-            ROI = ZeroROI;
         }
+
+        static Asset AsReadOnly(IBalance x) => new(x.Amount, x.Allocation);
 
         public bool EndYear()
         {
-            double jan401K  = CurrentFourK.CurrentBalance;
-            double janInv = CurrentInv.CurrentBalance;
-            double janSav = CurrentSav.CurrentBalance;
+            var jan = new Assets(AsReadOnly(MyPreTaxBalance), AsReadOnly(MyPostTaxBalance), AsReadOnly(MyCashBalance));
+            var fees = FeesPCT.CalculateFees(jan);
 
-            var success = (CYExp + PYTax + PYFees - SSIncome - AnnIncome + 1) < (jan401K + janInv);
+            var success = SimMath.FinalizeWithdrawals(
+                jan,
+                fees,
+                Incomes, Expenses,
+                Withdrawals, Refills,
+                out var adjustedWithdrawals,
+                out var adjustedDeposits
+            );
 
             if (success)
             {
-                // This is how much we need to cover expenses.
-                double pendingExp = CYExp + PYTax + PYFees - SSIncome - AnnIncome;
-                double from401K = 0;
-                double fromInv = 0;
+                //................................................
+                // Apply the chages to the portfolio
+                //................................................
+                // Jan 1st - Apply the fees
+                MyPreTaxBalance.Post(-fees.PreTax);
+                MyPostTaxBalance.Post(-fees.PostTax);
+                MyCashBalance.Post(-fees.Cash);
 
-                if (pendingExp > 0)
-                {
-                    var take = Math.Min(CurrentFourK.CurrentBalance, X401K);
-                    CurrentFourK.Post(-take);
-                    pendingExp -= take;
-                    from401K += take;
-                }
-                if (pendingExp > 0)
-                {
-                    var take = Math.Min(CurrentInv.CurrentBalance, XInv);
-                    CurrentInv.Post(-take);
-                    pendingExp -= take;
-                    fromInv += take;
-                }
-                if (pendingExp > 0)
-                {
-                    var take = Math.Min(CurrentInv.CurrentBalance, pendingExp);
-                    CurrentInv.Post(-take);
-                    pendingExp -= take;
-                    fromInv += take;
-                }
-                if (pendingExp > 0)
-                {
-                    var take = Math.Min(CurrentFourK.CurrentBalance, pendingExp);
-                    CurrentFourK.Post(-take);
-                    pendingExp -= take;
-                    from401K += take;
-                }
-                if (pendingExp > 0)
-                {
-                    throw new Exception("Simulation logic error: Unable to cover expenses despite success condition.");
-                }
+                // Jan 1st - Take withdrawals
+                MyPreTaxBalance.Post(-adjustedWithdrawals.PreTax);
+                MyPostTaxBalance.Post(-adjustedWithdrawals.PostTax);
+                MyCashBalance.Post(-adjustedWithdrawals.Cash);
 
-                var changeIn401K = CurrentFourK.Grow(ROI.StocksROI, ROI.BondROI);
-                var changeInInv = CurrentInv.Grow(ROI.StocksROI, ROI.BondROI);
+                // Some time after Jan 1st - Apply ROI
+                var growth = new Change(
+                    PreTax: MyPreTaxBalance.Grow(ROI.StocksROI, ROI.BondsROI),
+                    PostTax: MyPostTaxBalance.Grow(ROI.StocksROI, ROI.BondsROI),
+                    Cash: MyCashBalance.Grow(ROI.CashROI)
+                );
 
-                double surplus = (SSIncome + AnnIncome + from401K + fromInv) - (CYExp + PYTax + PYFees);
-                if (surplus > 0)
-                {
-                    // We withdrew more than what we need.
-                    // Return excess to investments.
-                    CurrentInv.Post(surplus);
-                }
+                // Dec 31st - Apply the refills/fund transfers
+                // REVISIT: Why deposits on Dec 31st if fund are idling through the year?
+                // REVISIT: May be we should move this to Jan 1st as well.
+                MyPostTaxBalance.Post(adjustedDeposits.PostTax);
+                MyCashBalance.Post(adjustedDeposits.Cash);
+                //................................................
 
-                var dec401K = CurrentFourK.CurrentBalance;
-                var decInv = CurrentInv.CurrentBalance;
-                var decSav = CurrentSav.CurrentBalance;
+                // Ending balance
+                var dec = new Assets(AsReadOnly(MyPreTaxBalance), AsReadOnly(MyPostTaxBalance), AsReadOnly(MyCashBalance));
 
-                MyPriorYears.Add(new SimYear
-                (
-                    Year: YearIndex,
-
-                    Jan401K: jan401K,
-                    JanInv: janInv,
-                    JanSav: janSav,
-
-                    PYTaxes: PYTax,
-                    PYFees: PYFees,
-                    CYExp: CYExp,
-
-                    SS: SSIncome,
-                    ANN: AnnIncome,
-                    X401K: from401K,
-                    XInv: fromInv,
-                    XSav: 0,
-
-                    Surplus: surplus,
-                    Change401K: changeIn401K,
-                    ChangeInv: changeInInv,
-                    ChangeSav: 0,
-
-                    Dec401K: dec401K,
-                    DecInv: decInv,
-                    DecSav: decSav,
-
-                    LikeYear: ROI.Year
+                MyPriorYears.Add(new SimYear(
+                    YearIndex, jan, fees, Incomes, Expenses, adjustedWithdrawals, adjustedDeposits, ROI, growth, dec
                 ));
             }
             else
             {
-                MyPriorYears.Add(new SimYear
-                (
-                    Year: YearIndex,
-                    Jan401K: jan401K,
-                    JanInv: janInv,
-                    JanSav: janSav,
-
-                    SS: 0,
-                    ANN: 0,
-                    X401K: 0,
-                    XInv: 0,
-                    XSav: 0,
-                    Surplus: 0,
-                    Change401K: 0,
-                    ChangeInv: 0,
-                    ChangeSav: 0,
-                    Dec401K: 0,
-                    DecInv: 0,
-                    DecSav: 0,
-                    PYTaxes: 0,
-                    PYFees: 0,
-                    CYExp: 0,
-                    LikeYear: 0
-                ));
+                MyPriorYears.Add(new SimYear()
+                {
+                    Year = YearIndex,
+                    Jan = jan,
+                });
             }
 
             return success;
         }
-        
+
+    }
+
+    public static class SimMath
+    {
+        /// <summary>
+        /// Given known constraints (Jan, fees, incomes, expenses, etc.)
+        /// and given withdrawal and refill (deposit) aspirations,
+        /// calculates the financially viable withdrawal and deposit amounts.
+        /// Returns false if essential expenses can't be met.
+        /// </summary>
+        public static bool FinalizeWithdrawals
+        (
+            // Immutables uses camel-case variable names on purpose.
+            Assets Jan,                          // Starting portfolio value as on Jan 1st
+            Fees Fees,                              // Fee amounts payable on Jan 1st balance
+            Incomes Incomes,                        // Known guarenteed additional incomes
+            Expenses Expenses,                      // Prior year tax and current year expenses
+            Withdrawals SuggestedWithdrawals,       // Withdrawal scheme suggested by the model (we may adjust this)
+            Deposits SuggestedRefills,              // Refill aspirations suggested by the model (we may adjust this)
+            out Withdrawals adjustedWithdrawals,    // Adjusted withdrawal amounts that aligns with realities
+            out Deposits adjustedDeposits           // Max permissible adjusted refill (deposit) amounts
+        )
+        {
+            // Model works on all +ve numbers. 
+            // We are responsible for correct application of sign.
+            // Pre-validate our assumption.
+            Jan.ThrowIfNegative();
+            Fees.ThrowIfNegative();
+            Incomes.ThrowIfNegative();
+            Expenses.ThrowIfNegative();
+            SuggestedRefills.ThrowIfNegative();
+            SuggestedWithdrawals.ThrowIfNegative();
+
+            // Temp working memory, we will adjust these numbers.
+            ThreeD available = new("Available", Jan.PreTax.Amount, Jan.PostTax.Amount, Jan.Cash.Amount);
+            ThreeD withdrawals = new("Withdrawals", SuggestedWithdrawals.PreTax, SuggestedWithdrawals.PostTax, SuggestedWithdrawals.Cash);
+            TwoD deposits = new("Deposits", 0, 0);
+
+            // Let's took care of one meaningless fund transfer.
+            // Take 100K from post-tax, refill 50K to post-tax = took 50K from post-tax
+            // Take 50K from cash, refill 100K to cash-buffer  = took Zero from cash. 
+            withdrawals.PostTax = Math.Max(0, withdrawals.PostTax - SuggestedRefills.PostTax);
+            withdrawals.Cash = Math.Max(0, withdrawals.Cash - SuggestedRefills.Cash);
+
+            // Fees goes first. 
+            available.PreTax -= Fees.PreTax;
+            available.PostTax -= Fees.PostTax;
+            available.Cash -= Fees.Cash;
+
+            // Fees can't make balance go negative. If that happens, assume zero balance.
+            available.PreTax = Math.Max(0.0, available.PreTax);
+            available.PostTax = Math.Max(0.0, available.PostTax);
+            available.Cash = Math.Max(0.0, available.Cash);
+
+            // We can't withdraw more than what we have after deducting fees.
+            withdrawals.PreTax = Math.Min(available.PreTax, withdrawals.PreTax);
+            withdrawals.PostTax = Math.Min(available.PostTax, withdrawals.PostTax);
+            withdrawals.Cash = Math.Min(available.Cash, withdrawals.Cash);
+
+            // Take the withdrawals
+            available.PreTax -= withdrawals.PreTax;
+            available.PostTax -= withdrawals.PostTax;
+            available.Cash -= withdrawals.Cash;
+
+            // We will come to refill aspirations later.
+            // First we will meet the expenses.
+            // Do we have enough? 
+            double deficit = Math.Max(0, Expenses.Total() - Incomes.Total() - withdrawals.Total());
+            if (deficit.IsMoreThanZero())
+            {
+                // Model is not withdrawing enough; we need more.
+                // Sequence:
+                // 1. PostTax - Minimize tax, try to honor PreTax withdrawal velocity
+                // 2. PreTax  - Cash reserve is for emergency, give max control to the model
+                // 3. Cash    - Survical is better than keeping the cash for future emergency
+                TryTransferFunds(ref deficit, ref available.PostTax, ref withdrawals.PostTax);
+                TryTransferFunds(ref deficit, ref available.PreTax, ref withdrawals.PreTax);
+                TryTransferFunds(ref deficit, ref available.Cash, ref withdrawals.Cash);
+
+                if (deficit.IsMoreThanZero())
+                {
+                    // Insufficient funds. Model failed.
+                    adjustedWithdrawals = new();
+                    adjustedDeposits = new();
+                    return false;
+                }
+            }
+
+            // We survived. We may even have some surplus.
+            var surplus = Math.Max(0, Incomes.Total() + withdrawals.Total() - Expenses.Total());
+
+            // First, we will try to accomodate cash-refill aspiration.
+            var refillTarget = SuggestedRefills.Cash;
+            if (refillTarget.IsMoreThanZero())
+            {
+                // Use unallocated cash-in-hand first
+                // If we need more try PostTax: Minimize tax, try to honor PreTax withdrawal velocity
+                // If we need more try PreTax:  Model is trying to catch-up with prior cash drain.
+                TryTransferFunds(ref refillTarget, ref surplus, ref deposits.Cash);
+                withdrawals.PostTax += TryTransferFunds(ref refillTarget, ref available.PostTax, ref deposits.Cash);
+                withdrawals.PreTax += TryTransferFunds(ref refillTarget, ref available.PreTax, ref deposits.Cash);
+            }
+
+            // Now we try to accomodate fund transfer aspirations to PostTax account.
+            refillTarget = SuggestedRefills.PostTax;
+            if (refillTarget.IsMoreThanZero())
+            {
+                // Use unallocated cash-in-hand first
+                // If we need more try PreTax:  Model is trying to spread the tax impact of PreTax funds
+                TryTransferFunds(ref refillTarget, ref surplus, ref deposits.PostTax);
+                withdrawals.PreTax += TryTransferFunds(ref refillTarget, ref available.PreTax, ref deposits.PostTax);
+            }
+
+            // One more thing...
+            // All remaining surplus (if any) gets re-inveted in post-tax assets
+            if (surplus.IsMoreThanZero())
+            {
+                deposits.PostTax += surplus;
+                surplus = 0;
+            }
+
+            adjustedWithdrawals = new(withdrawals.PreTax, withdrawals.PostTax, withdrawals.Cash);
+            adjustedDeposits = new(deposits.PostTax, deposits.Cash);
+
+            // Independent validation of math integrity
+            VerifyWithdrawals(Jan, Fees, Incomes, Expenses, adjustedWithdrawals, adjustedDeposits, available);
+
+            return true;
+
+            // Try to transfer suggested funds from source to target.
+            // If suggested amount is not availabe, transfer available funds.
+            static double TryTransferFunds(ref double whatWeNeed, ref double source, ref double target)
+            {
+                if (whatWeNeed.IsMoreThanZero() && source.IsMoreThanZero())
+                {
+                    double took = Math.Min(whatWeNeed, source);
+                    source -= took;
+                    target += took;
+                    whatWeNeed -= took;
+
+                    return took;
+                }
+                else return 0;
+            }
+        }
+
+        /// <summary>
+        /// Independent validation of the math.
+        /// Focus on integrity of the end-result.
+        /// Pretend you don't know anything about the calculations.
+        /// Repeating all calculations is not the intention.
+        /// </summary>
+        static void VerifyWithdrawals(Assets Jan, Fees Fees, Incomes Incomes, Expenses Expenses, Withdrawals Withdrawals, Deposits Deposits, ThreeD Available)
+        {
+            Jan.ThrowIfNegative();
+            Fees.ThrowIfNegative();
+            Incomes.ThrowIfNegative();
+            Expenses.ThrowIfNegative();
+            Withdrawals.ThrowIfNegative();
+            Deposits.ThrowIfNegative();
+            Available.ThrowIfNegative();
+
+            var good = true;
+
+            // Cashflow: (Incomes + Withdrawals) = (Expenses + Deposits)
+            good = AlmostSame(Incomes.Total() + Withdrawals.Total(), Expenses.Total() + Deposits.Total());
+            if (!good) throw new Exception($"Incomes {Incomes.Total():C0} + Withdrawals {Withdrawals.Total():C0} != Expenses {Expenses.Total():C0} + Deposits {Deposits.Total():C0}");
+
+            // Expenses are met. (TODO: Fix rounding error here)
+            good = Incomes.Total() + Withdrawals.Total() + 0.01 >= Expenses.Total();
+            if (!good) throw new Exception($"Incomes {Incomes.Total():C0} + Withdrawals {Withdrawals.Total():C0} is less than expenses {Expenses.Total():C0}");
+
+            // Per-asset balance agrees: a.Starting - a.Fees - a.Withdrawals = a.Available
+            good &= AlmostSame(Jan.PreTax.Amount - Fees.PreTax - Withdrawals.PreTax, Available.PreTax);
+            good &= AlmostSame(Jan.PostTax.Amount - Fees.PostTax - Withdrawals.PostTax, Available.PostTax);
+            good &= AlmostSame(Jan.Cash.Amount - Fees.Cash - Withdrawals.Cash, Available.Cash);
+            if (!good) throw new Exception("Starting - Fees - Withdrals != Available");
+
+            // Either withdrawals or Deposits should be zero.
+            good &= Withdrawals.PostTax.AlmostZero() || Deposits.PostTax.AlmostZero();
+            good &= Withdrawals.Cash.AlmostZero() || Deposits.Cash.AlmostZero();
+            if (!good) throw new Exception($"Meaningless fund transfers. Both withdrawal and deposit can't be positive.");
+        }
+
+        //......................................................................
+        #region Roundng and validation helpers 
+        //......................................................................
+        const double TOLLERANCE = 1e-6;
+
+        // static double RoundToCents(this double value) => Math.Round(value, digits: 2, mode: MidpointRounding.AwayFromZero);
+        // static double ZeroReset(this double value) => Math.Abs(value) <= TOLLERANCE ? 0.0 : value;
+        static bool AlmostSame(double a, double b) => Math.Abs(a - b) < TOLLERANCE;
+        static bool IsMoreThanZero(this double value) => value > TOLLERANCE;
+        static void ThrowIfNegative(this Assets x) => ThrowIfNegative(nameof(Assets), x.PreTax.Amount, x.PostTax.Amount, x.Cash.Amount);
+        static void ThrowIfNegative(this Fees x) => ThrowIfNegative(nameof(Fees), x.PreTax, x.PostTax, x.Cash);
+        static void ThrowIfNegative(this Incomes x) => ThrowIfNegative(nameof(Incomes), x.SS, x.Ann);
+        static void ThrowIfNegative(this Expenses x) => ThrowIfNegative(nameof(Expenses), x.PYTax, x.CYExp);
+        static void ThrowIfNegative(this Deposits x) => ThrowIfNegative(nameof(Deposits), x.PostTax, x.Cash);
+        static void ThrowIfNegative(this Withdrawals x) => ThrowIfNegative(nameof(Withdrawals), x.PreTax, x.PostTax, x.Cash);
+        static void ThrowIfNegative(this ThreeD x) => ThrowIfNegative(nameof(Withdrawals), x.PreTax, x.PostTax, x.Cash);
+        static bool ThrowIfNegative(string kind, params double[] doubles) => Min(doubles) < 0 ? throw new Exception($"{kind} cannot be negative.") : true;
+
+        static double Min(params double[] values)
+        {
+            if (values is null or { Length: 0 }) return 0.0;
+
+            double minValue = values[0];
+            for (int i = 0; i < values.Length; i++) minValue = Math.Min(minValue, values[i]);
+            return minValue;
+        }
+
+        #endregion
+
+        //......................................................................
+        #region Temp data structures for tracking and adjusting nunmbers
+        //......................................................................
+        private struct ThreeD(string name, double PreTax, double PostTax, double Cash)
+        {
+            // Temp data structure to track the three asset values.
+            public double PreTax = PreTax;
+            public double PostTax = PostTax;
+            public double Cash = Cash;
+            public double Total() => PreTax + PostTax + Cash;
+
+            public override string ToString() => $"{name}: {{ PreTax: {PreTax:F0}, PostTax: {PostTax:F0}, Cash: {Cash:F0} }}";
+        }
+
+        private struct TwoD(string name, double PostTax, double Cash)
+        {
+            // Temp data structure to track assets except PreTax
+            public double PostTax = PostTax;
+            public double Cash = Cash;
+            public double Total() => PostTax + Cash;
+
+            public override string ToString() => $"{name}: {{ PostTax: {PostTax:F0}, Cash: {Cash:F0} }}";
+        }
+
+        #endregion
+
     }
 }
-
-
-// Context may require
-//  InitialBalance (PreTax, PostTax, NoTax)
-//  CurrentBalance (PreTax, PostTax, NoTax)
-//  PYBalance (PreTax, PostTax, NoTax)
-//  
-// Strategies will provide
-//  Exp (a.k.a withdrawl)
-//  Withdrawals from 401K, SS, Ann
-//  Withdrawals/Deposits on Inv and Savings
-//  Fees are (Investment) deducted on source - Currently its handled as expense - Change design
-//  ROI on 401K, Inv and Savings
-
-
-//  Sequence:
-//  Set PYTax        <-- TaxStrategies : ExpenseStrategy
-//  Set CYExp        <-- CashStrategy  : ExpenseStrategy
-//  Set PYFees       <-- FeesStrategy  : ExpenseStrategy
-//  Set SS Income    <-- SS Strategy   : Income strategy
-//  Set Ann Income   <-- Ann Strategy  : Income  strategy
-//  Set 401K Draw    <-- WithdrawalStrategy : Income strategy
-
-
-/*
-     /// <summary>
-    /// Portfolio balance with support for rebalancing, reallocation, withdrawals, and growth.
-    /// </summary>
-    public record class SimBalance(double Amount, double InitialAllocation, double InitialMaxDrift)
-    {
-        public double StockBalance { get; private set; } = Amount * InitialAllocation;
-        public double BondBalance { get; private set; } = Amount * (1 - InitialAllocation);
-        public double CurrentBalance => StockBalance + BondBalance;
-        
-        public double TargetAllocation { get; private set; } = InitialAllocation;
-        public double CurrentAllocation => StockBalance / CurrentBalance;
-        public double TargetMaxDrift { get; private set; } = InitialMaxDrift;
-        public double CurrentDrift => Math.Abs(CurrentAllocation - TargetAllocation) * 2;
-
-        public double Reduce(double amount)
-        {
-            if (amount < 0) throw new ArgumentException("Reduce: Amount must be positive.");
-            if (CurrentBalance < amount) throw new InvalidOperationException("Reduce: Can't reduce more than what we have.");
-
-            // If nothing to reduce.
-            if (0 == amount) return 0;
-
-            // This is how much we plan to reduce from stock and bond balance.
-            double fromStock = amount * TargetAllocation;
-            double fromBond = amount - fromStock;
-
-            // Try take from correct asset.
-            TryTakeFromStock(ref fromStock);
-            TryTakeFromBond(ref fromBond);
-
-            // There may be leftover. Try otherway.
-            TryTakeFromBond(ref fromStock);
-            TryTakeFromStock(ref fromBond);
-
-            // By now, both must be zero.
-            if (fromStock + fromBond > 0) throw new InvalidOperationException("SimBalance.Reduce: Unexpected mismatch in Reduce calculation.");
-            return amount;
-
-            void TryTakeFromStock(ref double amt)
-            {
-                var took = Math.Min(amt, StockBalance);
-                StockBalance -= took;
-                amt -= took;
-            }
-
-            void TryTakeFromBond(ref double amt)
-            {
-                var took = Math.Min(amt, BondBalance);
-                BondBalance -= took;
-                amt -= took;
-            }
-        }
-
-        public double Grow(double stocksROI, double bondsROI)
-        {
-            var stockChange = StockBalance * stocksROI;
-            var bondChange = BondBalance * bondsROI;
-
-            StockBalance += stockChange;
-            BondBalance += bondChange;
-
-            return stockChange + bondChange;
-        }
-
-        public bool Rebalance()
-        {
-            if (Math.Abs(CurrentDrift) > Math.Abs(TargetMaxDrift))
-            {
-                var tmpTotalBalance = CurrentBalance;
-                StockBalance = tmpTotalBalance * TargetAllocation;
-                BondBalance  = tmpTotalBalance - StockBalance;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public void Reallocate(double newAllocation, double newMaxDrift)
-        {
-            if (newAllocation < 0.0 || newAllocation > 1.0) throw new ArgumentException("Reallocate: StockAllocationPct must be between 0.0 and 1.0");
-            if (newMaxDrift < 0.0 || newMaxDrift > 1.0) throw new ArgumentException("Reallocate: MaxDrift must be between 0.0 and 1.0");
-
-            TargetAllocation = newAllocation;
-            TargetMaxDrift = newMaxDrift;
-            this.Rebalance();
-        }
-
-        public override string ToString() => $"{CurrentBalance:C0} = {StockBalance:C0} + {BondBalance:C0}";
-    }
-
-*/
-
-/*
- * 
-     /// <summary>
-    /// Context representing the state of a single iteration during simulation.
-    /// </summary>
-    public interface SimContext
-    {
-        /// <summary> Zero-based index of the current simulation iteration. </summary>
-        int IterationIndex { get; }
-
-        /// <summary> Zero-based index of the simulation year within the current iteration. </summary>
-        int YearIndex { get; }
-
-        /// <summary> Performance data from prior years. Empty on the first year of an iteration. </summary>
-        IReadOnlyList<SimYear> PriorYears { get; }
-
-        /// <summary> Portfolio balance at the start of the current year (January 1st). </summary>
-        double JanBalance { get; }
-
-        /// <summary> Portfolio balance after deducting fees and withdrawals (amounts may be adjusted). </summary>
-        double AvailableBalance { get; }
-
-        /// <summary> Initial planned withdrawal amount before any adjustments. </summary>
-        double PlannedWithdrawalAmount { set; }
-
-        /// <summary> Actual withdrawal amount, potentially adjusted from the planned amount. </summary>
-        double WithdrawalAmount { get; set; }
-
-        /// <summary> Fees applicable to the current year. </summary>
-        double Fees { get; set; }
-
-        /// <summary> Return on investment for the current year. </summary>
-        YROI ROI { set; }
-    }
- 
-    /// <summary>
-    /// Implementats SimContext. Provides state management for a single simulation iteration.
-    /// </summary>
-    public record SimContext(int IterationIndex, double Amount, double InitialAllocation, double InitialMaxDrift) : SimContext
-    {
-        static readonly YROI ZeroROI = new(0, 0, 0);
-
-        readonly SimBalance    MyBalance = new(Amount, InitialAllocation, InitialMaxDrift);
-        readonly List<SimYear> MyPriorYears = [];
-
-        int     _YearIndex = 0;
-        double  _PlannedWithdrawal = double.NaN;
-        double  _ActualWithdrawal  = double.NaN;
-        double  _Fees = 0;
-        YROI    _ROI = ZeroROI;
-
-        public int YearIndex => _YearIndex;
-
-        public IReadOnlyList<SimYear> PriorYears => this.MyPriorYears;
-
-        public double JanBalance => MyBalance.CurrentBalance;
-
-        public double AvailableBalance => MyBalance.CurrentBalance
-            - (double.IsNaN(_Fees) ? 0 : _Fees)
-            - (double.IsNaN(_ActualWithdrawal) ? 0 : _ActualWithdrawal);
-
-        double SimContext.PlannedWithdrawalAmount
-        {
-            set => _ActualWithdrawal = _PlannedWithdrawal = double.IsNaN(_PlannedWithdrawal) ? value : throw new Exception("Planned and actual withdrawal already initialized.");
-        }
-
-        double SimContext.WithdrawalAmount
-        {
-            get => double.IsNaN(_ActualWithdrawal) ? throw new Exception("Planned and actual withdrawal amount not initialized.") : _ActualWithdrawal;
-            set => _ActualWithdrawal = value;
-        }
-
-        double SimContext.Fees
-        {
-            get => _Fees;
-            set => _Fees = value;
-        }
-
-        YROI SimContext.ROI
-        {
-            set => _ROI = value ?? throw new Exception("ROI can't be null.");
-        }
-
-        public void StartYear(int yearIndex)
-        {
-            _YearIndex = yearIndex;
-            _PlannedWithdrawal = double.NaN;
-            _ActualWithdrawal = double.NaN;
-            _Fees = 0;
-            _ROI = ZeroROI;
-
-            MyBalance.Rebalance();
-        }
-
-        public bool EndYear()
-        {
-            double janBalance = MyBalance.CurrentBalance;
-            double janAlloc = MyBalance.CurrentAllocation;
-            double changeInValue = 0;
-
-            var success = !double.IsNaN(_ActualWithdrawal) && MyBalance.CurrentBalance >= (_Fees + _ActualWithdrawal);
-
-            if (success)
-            {
-                MyBalance.Reduce(_Fees);
-                MyBalance.Reduce(_ActualWithdrawal);
-                changeInValue = null != _ROI ? MyBalance.Grow(_ROI.StocksROI, _ROI.BondROI) : 0;
-            }
-
-            MyPriorYears.Add(new SimYear
-            (
-                YearIndex,
-                JanBalance: janBalance,
-                JanStockPct: janAlloc,
-
-                PlannedWithdrawal:  success ? _PlannedWithdrawal : 0,
-                ActualWithdrawal:   success ? _ActualWithdrawal : 0,
-                Fees:               success ? _Fees : 0,
-                Change:             success ? changeInValue : 0,
-                DecBalance:         success ? MyBalance.CurrentBalance : 0,
-                DecStockPct:        success ? MyBalance.CurrentAllocation : 0,
-
-                StockROI:           success ? _ROI?.StocksROI ?? 0 : 0,
-                BondROI:            success ? _ROI?.BondROI ?? 0 : 0,
-                LikeYear:           success ? _ROI?.Year ?? 0 : 0
-            ));
-
-            return success;
-        }
-    }
-*/

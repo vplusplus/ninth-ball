@@ -1,8 +1,13 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
+using System.Transactions;
 
 namespace NinthBall
 {
+    // TODO: Remove need for ValidateNested. 
+    // All config structures should be validated nested
+    // Or, switch to IConfiguration. ISimObjevtives are responsible for validations.
+
     /// <summary>
     /// Immutable representation of simulation configurations, learnt from yaml config files.
     /// </summary>
@@ -10,52 +15,105 @@ namespace NinthBall
     (   
         string RandomSeedHint,
 
-        Asset InitialFourK,
-        Asset InitialInv,
-        Asset InitialSav,
-
         [property: Range(1, 50)]
         int NoOfYears,
 
-        [property: Range(1, 100000)]
+        [property: Range(1, 50_000)]
         int Iterations,
 
         [property: Required()]
         string Output,
 
-        [property: ValidateNested()] PCTWithdrawal PCTWithdrawal,
-        [property: ValidateNested()] PrecalculatedWithdrawal PrecalculatedWithdrawal,
+        [property: ValidateNested()] InitPortfolio InitPortfolio,
+        [property: ValidateNested()] YearlyRebalance YearlyRebalance,
+        [property: ValidateNested()] AdditionalIncomes AdditionalIncomes,
+        [property: ValidateNested()] LivingExpenses LivingExpenses,
+        [property: ValidateNested()] PrecalculatedLivingExpenses PrecalculatedLivingExpenses,
+        [property: ValidateNested()] Taxes Taxes,
+        [property: ValidateNested()] PreTaxWithdrawal PreTaxWithdrawal,
         [property: ValidateNested()] UseBufferCash UseBufferCash,
         [property: ValidateNested()] ReduceWithdrawal ReduceWithdrawal,
         [property: ValidateNested()] FlatGrowth FlatGrowth,
         [property: ValidateNested()] HistoricalGrowth HistoricalGrowth,
-        [property: ValidateNested()] Fees Fees
+        [property: ValidateNested()] FeesPCT Fees
     )
     {
         public int SessionSeed => (RandomSeedHint ?? "JSR").GetPredictableHashCode();
     }
 
+
     //..........................................................................
-    // Withdrawal configurations
+    // Inital portfiolio balances
     //..........................................................................
-    
-    public partial record PCTWithdrawal
+    public readonly record struct InitBalance
+    (
+        [property: Min(0.0)]
+        double Amount,
+
+        [property: Range(0.0, 1.0)]
+        double Allocation
+    );
+
+    public readonly record struct InitPortfolio(InitBalance PreTax, InitBalance PostTax, InitBalance Cash);
+
+    //..........................................................................
+    // Rebalancing objective
+    //..........................................................................
+    public readonly record struct YearlyRebalance
     (
         [property: Range(0.0, 1.0)]
-        double FirstYearPct,
+        double MaxDrift
+    );
+
+
+    //..........................................................................
+    // Additional known incomes
+    //..........................................................................
+    public readonly record struct AdditionalIncome
+    (
+        [property: Min(0)]
+        double Amount,
+
+        [property: Range(1, 50)]
+        int FromYear,
+
+        [property: Range(0.0, 0.1)]
+        double YearlyIncrement
+    );
+
+    public readonly record struct AdditionalIncomes(AdditionalIncome SS, AdditionalIncome Ann);
+
+
+    //..........................................................................
+    // Tax model
+    //..........................................................................
+    public readonly record struct Taxes
+    (
+        [property: Min(0)]
+        double YearZeroTaxAmount,
+
+        [property: Range(0.0, 0.5)]
+        double OrdinaryIncomeTaxRate,
+
+        [property: Range(0.0, 0.5)]
+        double CapitalGainsTaxRate
+    );
+
+
+    //..........................................................................
+    // Expense model
+    //..........................................................................
+    public sealed record LivingExpenses
+    (
+        [property: Min(0)]
+        double FirstYearAmount,
 
         [property: Range(0.0, 1.0)]
-        double IncrementPct, 
-        
-        IReadOnlyList<int> ResetYears
-    )
-    {
-        public override string ToString() => $"{WithdrawPctToString} {ResetYearsToString}";
-        string WithdrawPctToString => $"Withdraw {FirstYearPct:P1} first year with {IncrementPct:P1} increment each year.";
-        string ResetYearsToString => (null == ResetYears || 0 == ResetYears.Count) ? string.Empty : $"Reset to {FirstYearPct:P1} on years [{string.Join(',', ResetYears)}]";
-    }
+        double IncrementPct
+    );
 
-    public partial record PrecalculatedWithdrawal
+
+    public sealed record PrecalculatedLivingExpenses
     (
         [property: Required()]
         [property: FileExists()]
@@ -65,14 +123,13 @@ namespace NinthBall
         string SheetName
     )
     {
-        IReadOnlyList<double> __withdrawalSequence = null!;
+        IReadOnlyList<double> __livingExpensesSequence = null!;
 
-        public IReadOnlyList<double> WithdrawalSequence => __withdrawalSequence ??= 
-            ReadPrecalculatedWithdrawals(FileName, SheetName);
+        public IReadOnlyList<double> LivingExpensesSequence => __livingExpensesSequence ??= ReadPrecalculatedLivingExpenses(FileName, SheetName);
 
-        static IReadOnlyList<double> ReadPrecalculatedWithdrawals(string xlFileName, string sheetName)
+        static IReadOnlyList<double> ReadPrecalculatedLivingExpenses(string xlFileName, string sheetName)
         {
-            var withdrawalSequence = new List<double>();
+            var sequence = new List<double>();
 
             using (var xlReader = new ExcelReader(xlFileName))
             {
@@ -95,15 +152,29 @@ namespace NinthBall
                         && double.TryParse(cells[0], out var amount)
                     )
                     {
-                        withdrawalSequence.Add(amount);
+                        sequence.Add(amount);
                     }
                 }
             }
 
-            return withdrawalSequence.AsReadOnly();
+            return sequence.AsReadOnly();
         }
+    }
 
-        public override string ToString() => $"Predefined withdrawal sequence from {Path.GetFileName(FileName)}";
+    //..........................................................................
+    // Withdrawal configurations
+    //..........................................................................
+    public partial record PreTaxWithdrawal
+    (
+        [property: Range(0.0, 1.0)]
+        double FirstYearPct,
+
+        [property: Range(0.0, 1.0)]
+        double IncrementPct, 
+        
+        IReadOnlyList<int> ResetYears
+    )
+    {
     }
 
     //..........................................................................
@@ -191,20 +262,5 @@ namespace NinthBall
         string TxtSkipConsecutive => UseRandomBlocks && NoConsecutiveBlocks ? " No consecutive repetition." : string.Empty;
         string TxtSkip1932 => Skip1931 ? " *** Skip 1931, the single worst year ***" : string.Empty;
 
-    }
-
-    //..........................................................................
-    // Fees
-    //..........................................................................
-    public partial record Fees
-    (
-        [property : Range(0.0, 1.0)]
-        double Fees401K = 0.0,
-
-        [property : Range(0.0, 1.0)]
-        double FeesInv = 0.0
-    )
-    {
-        public override string ToString() => $"Annual fees: 401K {Fees401K:P1} Inv: {FeesInv:P1}";
     }
 }
