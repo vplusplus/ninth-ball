@@ -15,15 +15,15 @@ namespace NinthBall
             Console.WriteLine(DASHES);
         }
 
-        public static void PrintParams(this SimConfig simConfig)
-        {
-            var init = 0; // $"{simConfig.InitialBalance:C0}";
-            var aloc = 0; //  $"{simConfig.StockAllocation:P0}-{1-simConfig.StockAllocation:P0}";
-            var year = 0; //  $"{simConfig.NoOfYears}";
-            var iter = 0; // $"{simConfig.Iterations:#,0}";
+        //public static void PrintParams(this SimConfig simConfig)
+        //{
+        //    var init = 0; // $"{simConfig.InitialBalance:C0}";
+        //    var aloc = 0; //  $"{simConfig.StockAllocation:P0}-{1-simConfig.StockAllocation:P0}";
+        //    var year = 0; //  $"{simConfig.NoOfYears}";
+        //    var iter = 0; // $"{simConfig.Iterations:#,0}";
 
-            Inform($"{init} | {aloc} | {year} years | {iter} iterations.");
-        }
+        //    Inform($"{init} | {aloc} | {year} years | {iter} iterations.");
+        //}
 
         public static void Footer(SimResult simResult, TimeSpan elapsed, string outputFileName) 
         {
@@ -38,7 +38,7 @@ namespace NinthBall
         public static void Error(Exception err)
         {
             Console.WriteLine();
-            Console.WriteLine("An error occured:");
+            Console.WriteLine("An error occurred:");
             Console.WriteLine(err);
         }
     }

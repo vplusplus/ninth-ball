@@ -1,76 +1,53 @@
 ﻿
-
 namespace NinthBall
 {
-    public static class Simulation
+    sealed class Simulation(SimParams MySimParams, InitialBalance InitPortfolio, SimBuilder MySimBuilder, GrowthStrategy GrowthStrategy)
     {
-
-        public static SimResult RunSimulation(SimConfig simConfig)
+        public SimResult RunSimulation()
         {
-            ArgumentNullException.ThrowIfNull(simConfig);
-
             // Create simulation objectives.
-            var objectives = simConfig.CreateObjectives();
+            var objectives = MySimBuilder.SimulationObjectives;
 
-            // Check if HistoricalReturns with sequential-returns simulation is requested.
-            // In such case, we may not meet NumIterations objective.
-            // Limit max iterations.
-            //var historicalGrowthObjective = objectives.OfType<HistoricalGrowthObjective>().SingleOrDefault();
-            //var numIterations = Math.Min(
-            //    null != historicalGrowthObjective ? historicalGrowthObjective.MaxIterations : simConfig.Iterations,
-            //    simConfig.Iterations
-            //);
+            // TODO: Consult current bootstrapper. Find max iterations that we can support.
+            int maxIterations = Math.Min(MySimParams.Iterations, GrowthStrategy.MaxIterations);
 
-            var numIterations = simConfig.Iterations;
+            // RunAsync iterations; Collect results.
+            var iterationResults = Enumerable.Range(0, maxIterations)
+                .Select(iterationIndex => RunOneIteration(objectives, iterationIndex))
+                // .AsParallel()
+                .ToList();
 
-            // Multiple doubles and ints. Use named-parameters.
-            return RunSimulation(objectives, numYears: simConfig.NoOfYears,numIterations: numIterations);
-        }
-
-        /// <summary>
-        /// Runs simulation of the objectives.  
-        /// </summary>
-        public static SimResult RunSimulation(IReadOnlyList<ISimObjective> objectives, int numYears, int numIterations)
-        {
-            ArgumentNullException.ThrowIfNull(objectives);
-
-            List<SimIteration> iterationResults = [];
-
-            // Run iterations; Collect results; Sort the results worst-to-best.
-            var iterationResultsWorstToBest = Enumerable.Range(0, numIterations)
-                .Select(idx => RunOneIteration(iterationIndex: idx, objectives, numYears))
+            // Sort the iteration results worst to best.
+            var iterationResultsWorstToBest = iterationResults
                 .OrderBy(iter => iter.SurvivedYears)
                 .ThenBy(iter => iter.EndingBalance)
                 .ToList()
                 .AsReadOnly();
 
-            // Multiple doubles and ints. Use named-parameters.
             return new SimResult(
                 objectives,
                 iterationResultsWorstToBest
             );
         }
-
-        /// <summary>
-        /// Runs a single iteration of the simulation.
-        /// This signature is intended for unit testing. Consider RunSimulation()
-        /// </summary>
-        public static SimIteration RunOneIteration(int iterationIndex, IReadOnlyList<ISimObjective> objectives, int numYears)
+    
+        private SimIteration RunOneIteration(IReadOnlyList<ISimObjective> objectives, int iterationIndex)
         {
-            ArgumentNullException.ThrowIfNull(objectives);
+            // SimContext that tracks running balance 
+            var ctx = new SimContext(InitPortfolio, IterationIndex: iterationIndex, StartAge: MySimParams.StartAge);
 
+            // Strategies can be stateful; Create new set of strategies for each iteration.
             var strategies = objectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();
-            var ctx = new SimContext(iterationIndex);
 
-            bool success = false;
-
-            for (int yearIndex = 0; yearIndex < numYears; yearIndex++)
+            // Assess each year.
+            var success = false;
+            for (int yearIndex = 0; yearIndex < MySimParams.NoOfYears; yearIndex++)
             {
-                ctx.StartYear(yearIndex);
+                // Process next year.
+                ctx.BeginNewYear(yearIndex);
                 foreach (var strategy in strategies) strategy.Apply(ctx);
-                success = ctx.EndYear();
+                success = ctx.ImplementStrategies();
 
-                if (!success) break;
+                if (!success ) break;
             }
 
             return new(iterationIndex, success, ctx.PriorYears);

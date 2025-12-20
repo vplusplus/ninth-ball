@@ -1,28 +1,28 @@
 ﻿
 namespace NinthBall
 {
-    internal class AdditionalIncomeObjective(SimConfig simConfig) : ISimObjective
+    sealed class AdditionalIncomeStrategy(AdditionalIncomes options) : ISimObjective
     {
-        readonly AdditionalIncomes AI = simConfig.AdditionalIncomes;
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(options);
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(simConfig.AdditionalIncomes);
+        int ISimObjective.Order => 10;
 
-        sealed record Strategy(AdditionalIncomes AI) : ISimStrategy
+
+        sealed record Strategy(AdditionalIncomes options) : ISimStrategy
         {
             double ssAmount  = 0;
             double annAmount = 0;
-
 
             void ISimStrategy.Apply(ISimContext context)
             {
                 context.Incomes = context.Incomes with
                 {
-                    SS  = context.YearIndex == AI.SS.FromYear  ? ssAmount  = AI.SS.Amount  : ssAmount  *= 1 + AI.SS.YearlyIncrement,
-                    Ann = context.YearIndex == AI.Ann.FromYear ? annAmount = AI.Ann.Amount : annAmount *= 1 + AI.Ann.YearlyIncrement,
+                    SS  = context.Age == options.SS.FromAge  ? ssAmount  = options.SS.Amount  : ssAmount  *= 1 + options.SS.Increment,
+                    Ann = context.Age == options.Ann.FromAge ? annAmount = options.Ann.Amount : annAmount *= 1 + options.Ann.Increment,
                 };
             }
         }
 
-        public override string ToString() => $"Income | SS: {AI.SS.Amount:C0} from year {AI.SS.FromYear} with {AI.SS.YearlyIncrement:P1} increment | Ammuity: {AI.Ann.Amount:C0} from year {AI.Ann.FromYear} with {AI.Ann.YearlyIncrement:P1} increment ";
+        public override string ToString() => $"Incomes | SS: {options.SS.Amount:C0} from {options.SS.FromAge} with {options.SS.Increment:P1} increment | Ann: {options.Ann.Amount:C0} from {options.Ann.FromAge} with {options.Ann.Increment:P1} increment.";
     }
 }

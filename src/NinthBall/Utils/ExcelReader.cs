@@ -21,7 +21,7 @@ namespace NinthBall
             MyCellReader = new(this);
         }
 
-        // Returns a seqeunce of SheetReader, one per worksheet.
+        // Returns a sequence of SheetReader, one per worksheet.
         public IEnumerable<SheetReader> GetSheets() => MySheets.Select(sheet => new SheetReader(this, sheet));
 
         public sealed class SheetReader(ExcelReader MyParent, Sheet MySheet)
@@ -32,7 +32,7 @@ namespace NinthBall
             // Indicates if the sheet is hidden.
             public bool IsHidden => MySheet.State?.Value == SheetStateValues.Hidden || MySheet.State?.Value == SheetStateValues.VeryHidden;
 
-            // Returns a seqeunce of RowReader, one per row.
+            // Returns a sequence of RowReader, one per row.
             public IEnumerable<RowReader> GetRows() => MyParent.GetSheetData(MySheet).Elements<Row>().Where(x => null != x).Select(x => new RowReader(MyParent, x));
         }
 

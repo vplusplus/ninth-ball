@@ -2,7 +2,7 @@
 namespace NinthBall
 {
     /// <summary>
-    /// Keeps a tab on LasstWriteTime of set of files
+    /// Keeps a tab on LastWriteTime of set of files
     /// </summary>
     sealed class WatchFileSet(params string[] filesToWatch)
     {
@@ -11,7 +11,7 @@ namespace NinthBall
             .ToDictionary(f => f, f => DateTime.MinValue);
 
         /// <summary>
-        /// Check for change to any file. Also, remeber the current timestamp.
+        /// Check for change to any file. Also, remember the current timestamp.
         /// </summary>
         public bool CheckForChangesAndRememberTimestamp()
         {

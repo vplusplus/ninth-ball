@@ -1,29 +1,19 @@
 ﻿
 namespace NinthBall
 {
-    internal class RebalancingObjective(SimConfig simConfig) : ISimObjective
+    sealed class RebalancingStrategy(Rebalance Options) : ISimObjective, ISimStrategy
     {
-        readonly YearlyRebalance RB = simConfig.YearlyRebalance;
+        int ISimObjective.Order => 2;
 
-        readonly Strategy MyStrategy = new(simConfig.YearlyRebalance);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => this;
 
-        // Reblance happens early (after init)
-        int ISimObjective.Order => 1;
-
-        // Stateless. We need only one instance.
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => MyStrategy;
-        
-        // Initialize portfolio balance on year #0
-        sealed record Strategy(YearlyRebalance rb) : ISimStrategy
+        void ISimStrategy.Apply(ISimContext context)
         {
-            void ISimStrategy.Apply(ISimContext context)
-            {
-                context.PreTaxBalance.RebalanceIf(rb.MaxDrift);
-                context.PostTaxBalance.RebalanceIf(rb.MaxDrift);
-                context.CashBalance.RebalanceIf(rb.MaxDrift);
-            }
+            context.PreTaxBalance.Rebalance(Options.MaxDrift);
+            context.PostTaxBalance.Rebalance(Options.MaxDrift);
+            context.CashBalance.Rebalance(Options.MaxDrift);
         }
 
-        public override string ToString() => $"Rebalance yearly - MaxDrift: {RB.MaxDrift:P0}";
+        public override string ToString() => $"Rebalance yearly - MaxDrift: {Options.MaxDrift:P0}";
     }
 }

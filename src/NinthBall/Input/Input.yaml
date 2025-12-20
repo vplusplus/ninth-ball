@@ -1,86 +1,132 @@
 
-RandomSeedHint: "JSR"
 
-NoOfYears: 30
-Iterations: 10000
+RandomSeedHint: "JSR"
 Output: "D:/Junk/SimReport.html"
 
-InitPortfolio:
+SimParams:
+  StartAge: 60
+  NoOfYears: 30
+  Iterations: 10000
+
+InitialBalance:
   PreTax:
     Amount: 2,000,000
     Allocation: 60%
-    MaxDrift: 5%
   PostTax:
-    Amount: 1,000,000
+    Amount: 1,000,001
     Allocation: 60%
-    MaxDrift: 5%
   Cash:
-    Amount: 200,000
-    MaxDrift: 10%
+    Amount: 200,002
 
-YearlyRebalance:
+# Rebalancing and Reallocation strategies
+Rebalance:
   MaxDrift: 5%
+
+zzReallocate:
+  MaxDrift: 5%
+  Steps:
+    - AtAge: 70
+      Allocation: 60%
+    - AtAge: 80
+      Allocation: 70%
+    - AtAge: 90
+      Allocation: 80%
 
 # Additional known incomes
 AdditionalIncomes:
   SS: 
+    FromAge: 60
     Amount: 70,000
-    FromYear: 11
-    YearlyIncrement: 2%
+    Increment: 2%
   Ann:
+    FromAge: 70
     Amount: 50,000
-    FromYear: 11
-    YearlyIncrement: 0%
+    Increment: 0%
+
+# Fees (in pct)
+FeesPCT:
+  PreTax:   0.2%    # 401K account
+  PostTax:  0.9%    # Joint investments
+  Cash:     0%      # HY Savings
+
+# Tax model
+Taxes:
+  YearZeroTaxAmount: 25,000
+  TaxRates:
+    OrdinaryIncome: 22%
+    CapitalGains: 15%
 
 # Expense modelling
-zzLivingExpense:
+LivingExpenses:
   FirstYearAmount: 130,000
-  IncrementPct: 2%
+  Increment: 2%
 
 PrecalculatedLivingExpenses:
   FileName: $(MyPath)/Withdrawals.xlsx
   SheetName: Withdrawals
 
-# Tax model
-Taxes:
-  YearZeroTaxAmount: 25,000
-  OrdinaryIncomeTaxRate: 22%
-  CapitalGainsTaxRate: 15%
+# ............................................................
+# PreTax asset depletion velocity
+# All three choices below are applicable ONLY to the PreTax assets
+# ............................................................
+FixedWithdrawal:
+  FirstYearAmount: 80000
+  Increment: 2%
 
-# Withdrawal objectives
-PreTaxWithdrawal:
+ZZZPercentageWithdrawal:
   FirstYearPct: 4%
-  IncrementPct: 2%
-  zzResetYears: [6, 11]
+  Increment:    2%
+  ResetAtAge: [65, 70]
 
-# Withdrawal optimizations objectives 
+ZZZVariablePercentageWithdrawal:
+  ROI: 4%
+  Escalation: 2%
 
-zzUseBufferCash:
-  Amount: 350000
+# ............................................................
+# Buffer cash strategies
+# ............................................................
+ZZZUseBufferCash:
   GrowthThreshold: 0.03
+  MaxAmount: 100000
 
-ReduceWithdrawal:
-  MaxSkips: 2
-  CutOffYear: 30
-  GrowthThreshold: -2%
-  ReductionPct: 100%
+ZZZBufferRefill:
+  GrowthThreshold: 0.03
+  MaxAmount: 100000
 
+# ............................................................
 # Growth strategies 
+# ............................................................
+Growth:
+  Bootstrapper: Sequential     # Flat | Sequential | MovingBlock | Parametric
+  CashROI: 0%
 
-HistoricalGrowth:
-  FileName: $(MyPath)/ROI-History.xlsx
-  SheetName: DATA
-  UseRandomBlocks: true
+# ............................................................
+# Supporting data for ROI Bootstrap options
+# ............................................................
+ROIHistory:
+  XLFileName:  $(MyPath)/ROI-History.xlsx
+  XLSheetName: DATA
+
+FlatBootstrap:
+  Stocks: 5%
+  Bonds: 5%
+  
+MovingBlockBootstrap:
   BlockSizes: [3,4,5]
-  zzNoConsecutiveBlocks: true
-  zzSkip1931: true
+  NoConsecutiveBlocks: true
 
-zzzFlatGrowth:
-  StocksGrowthRate: 0.05
-  BondGrowthRate: 0.05
-
-# Fees and other deductions
-Fees:
-  PreTaxFeesPCT:   0.2%    # 401K account
-  PostTaxFeesPCT:  0.9%    # Joint investments
-  CashFeesPCT:     0%      # HY Savings
+ParametricBootstrap:
+  DistributionType: LogNormal
+  StocksBondCorrelation: -0.15
+  Stocks:
+    MeanReturn: 6.5%
+    Volatility: 17%
+    Skewness: -0.5
+    Kurtosis: 5
+    AutoCorrelation: 0.1
+  Bonds:
+    MeanReturn: 3.5%
+    Volatility: 8%
+    Skewness: 0
+    Kurtosis: 3
+    AutoCorrelation: 0

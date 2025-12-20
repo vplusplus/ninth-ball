@@ -1,22 +1,22 @@
 ﻿
 namespace NinthBall
 {
-    internal class AnnualFeesObjective(SimConfig simConfig) : ISimObjective
+    sealed class AnnualFeesStrategy(FeesPCT Options) : ISimObjective, ISimStrategy
     {
-        readonly FeesPCT F = simConfig.Fees;
+        int ISimObjective.Order => 30;
 
-        readonly ISimStrategy MyStrategy = new Strategy(simConfig.Fees);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => this;
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => MyStrategy;
-
-        sealed record Strategy(FeesPCT pctFees) : ISimStrategy
+        void ISimStrategy.Apply(ISimContext context)
         {
-            void ISimStrategy.Apply(ISimContext context)
-            {
-                context.FeesPCT = pctFees;
-            }
+            // Calculate fees
+            context.Fees = new(
+                context.PreTaxBalance.Amount * Options.PreTax,
+                context.PostTaxBalance.Amount * Options.PostTax,
+                context.CashBalance.Amount * Options.Cash
+            );
         }
 
-        public override string ToString() => $"Fees | PreTax: {F.PreTaxFeesPCT:P1} | PostTax: {F.PostTaxFeesPCT:P1} | Cash: {F.CashFeesPCT:P1}";
+        public override string ToString() => $"Fees | PreTax: {Options.PreTax:P1} | PostTax: {Options.PostTax:P1} | Cash: {Options.Cash:P1}";
     }
 }

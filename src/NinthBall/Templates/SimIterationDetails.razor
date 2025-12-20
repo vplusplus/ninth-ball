@@ -13,10 +13,13 @@
 
         <!-- Labels are printed summary row on top -->
         <tr>
-            <th>Year</th>
+            <th>Yr</th>
+            <th>Age</th>
 
             <th>J-401K</th>
+            <th></th>
             <th>J-Inv</th>
+            <th></th>
             <th>J-Cash</th>
 
             <th>Fees</th>
@@ -34,47 +37,45 @@
             <th>Stocks</th>
             <th>Bonds</th>
             <th>Change</th>
-
-            <th>+INV</th>
-            <th>+Cash</th>
         </tr>
 
         <!-- Details -->
         @foreach (var y in Iteration.ByYear)
         {
-            static string KAmtAndAlloc(Asset a) => 0 == a.Amount ? string.Empty : $"{a.Amount/1000,6:C0} K [{a.Allocation,3:P0}]";
-            // static string StrAlloc(double pct) => $"{pct:P0}";
+            double fromPreTax = y.Withdrawals.PreTax * -1; 
+            double fromPostTax = y.Deposits.PostTax - y.Withdrawals.PostTax;
+            double fromCash    = y.Deposits.Cash - y.Withdrawals.Cash;
 
-            var txtPretax  = KAmtAndAlloc(y.Jan.PreTax);
-            var txtPostTax = KAmtAndAlloc(y.Jan.PostTax);
-            var txtCash    = $"{y.Jan.Cash.Amount / 1000:C0} K";
+
+            static string K0(double amount) => amount > 1 || amount < -1 ? $"{amount / 1000:C0}" : string.Empty;
+            static string P0(double pct) => $"{pct:P0}";
 
             <tr>
-                <td>@y.Year</td>
+                <td>@(y.Year + 1)</td>
+                <td>@y.Age</td>
 
-                <td class="mono-space">@txtPretax</td>
-                <td class="mono-space">@txtPostTax</td>
-                <td class="mono-space">@txtCash</td>
+                <td>@K0(y.Jan.PreTax.Amount)</td>
+                <td>@P0(y.Jan.PreTax.Allocation)</td>
+                <td>@K0(y.Jan.PostTax.Amount)</td>
+                <td>@P0(y.Jan.PostTax.Allocation)</td>
+                <td>@K0(y.Jan.Cash.Amount)</td>
 
-                <td>@y.Fees.Total().ToString("C0")</td>
+                <td>@K0(y.Fees.Total())</td>
 
-                <td>@y.Expenses.PYTax.ToString("C0")</td>
-                <td>@y.Expenses.CYExp.ToString("C0")</td>
+                <td>@K0(y.Expenses.PYTax)</td>
+                <td>@K0(y.Expenses.CYExp)</td>
 
-                <td>@y.Incomes.SS.ToString("C0")</td>
-                <td>@y.Incomes.Ann.ToString("C0")</td>
+                <td>@K0(y.Incomes.SS)</td>
+                <td>@K0(y.Incomes.Ann)</td>
 
-                <td>@y.Withdrawals.PreTax.ToString("C0")</td>
-                <td>@y.Withdrawals.PostTax.ToString("C0")</td>
-                <td>@y.Withdrawals.Cash.ToString("C0")</td>
+                <td class="@RG(fromPreTax)">@K0(fromPreTax)</td>
+                <td class="@RG(fromPostTax)">@K0(fromPostTax)</td>
+                <td class="@RG(fromCash)">@K0(fromCash)</td>
 
                 <td class="@CSS(y.Change.Total())">@y.ROI.LikeYear</td>
                 <td class="@CSS(y.ROI.StocksROI) mono-space">@($"{y.ROI.StocksROI,6:P1}")</td>
                 <td class="@CSS(y.ROI.BondsROI) mono-space">@($"{y.ROI.BondsROI,6:P1}")</td>
-                <td class="@CSS(y.Change.Total()) mono-space">@y.Change.Total().ToString("C0")</td>
-
-                <td>@y.Deposits.PostTax.ToString("C0")</td>
-                <td>@y.Deposits.Cash.ToString("C0")</td>
+                <td class="@CSS(y.Change.Total()) mono-space">@K0(y.Change.Total())</td>
             </tr>
         }
 
@@ -91,5 +92,8 @@
 
 
     static string CSS(double value) => value < 0.0 ? "text-danger" : string.Empty;
+
+    static string RG(double value) => value < 0.0 ? "text-danger" : "text-success";
+
 
 }

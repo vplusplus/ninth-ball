@@ -1,41 +1,61 @@
 ﻿
 namespace NinthBall
 {
-    /// <summary>
-    /// PCT of initial balance, yearly increment and optional periodic reset.
-    /// </summary>
-    public sealed class PreTaxWithdrawalObjective(SimConfig simConfig) : ISimObjective
+
+    sealed class FixedWithdrawalStrategy(FixedWithdrawal Options) : ISimObjective
     {
-        public readonly PreTaxWithdrawal PW = simConfig.PreTaxWithdrawal;
+        int ISimObjective.Order => 20;
 
-        int ISimObjective.Order => 2;
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(PW);
-
-        sealed class Strategy(PreTaxWithdrawal pw) : ISimStrategy
+        sealed class Strategy(FixedWithdrawal FW) : ISimStrategy
         {
-            double from401K = 5;
+            double from401K = 0;
 
             void ISimStrategy.Apply(ISimContext ctx)
             {
-                var year = ctx.YearIndex;
-                var initialPreTaxBalance = 0 == year ? ctx.PreTaxBalance.Amount : ctx.PriorYears[0].Jan.PreTax.Amount;
-                var currentPreTaxBalance = ctx.PreTaxBalance.Amount;
-
-                if (0 == year)
+                if (0 == ctx.YearIndex)
                 {
-                    // First year: Use PCT of initial balance
-                    from401K = initialPreTaxBalance * pw.FirstYearPct;
-                }
-                else if (null != pw.ResetYears && pw.ResetYears.Contains(year + 1))
-                {
-                    // Reset year: Use PCT of current balance
-                    from401K = currentPreTaxBalance * pw.FirstYearPct;
+                    from401K = FW.FirstYearAmount;
                 }
                 else
                 {
-                    // Other years: Increment withdrawal amount
-                    from401K *= 1 + pw.IncrementPct;
+                    from401K *= 1 + FW.Increment;
+                }
+
+                ctx.Withdrawals = ctx.Withdrawals with
+                {
+                    PreTax = from401K
+                };
+            }
+        }
+
+        public override string ToString() => $"Withdraw {Options.FirstYearAmount:C0} first year with {Options.Increment:P1} increment each year.";
+    }
+
+    sealed class PercentageWithdrawalStrategy(PercentageWithdrawal Options) : ISimObjective
+    {
+        int ISimObjective.Order => 20;
+
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
+
+        sealed class Strategy(PercentageWithdrawal PW) : ISimStrategy
+        {
+            double from401K = 0;
+
+            void ISimStrategy.Apply(ISimContext ctx)
+            {
+                if (0 == ctx.YearIndex)
+                {
+                    from401K = ctx.PreTaxBalance.Amount * PW.FirstYearPct;
+                }
+                else if (null != PW.ResetAtAge && PW.ResetAtAge.Contains(ctx.Age))
+                {
+                    from401K = ctx.PreTaxBalance.Amount * PW.FirstYearPct;
+                }
+                else
+                {
+                    from401K *= 1 + PW.Increment;
                 }
 
                 ctx.Withdrawals = ctx.Withdrawals with
@@ -46,7 +66,12 @@ namespace NinthBall
         }
 
         public override string ToString() => $"{WithdrawPctToString} {ResetYearsToString}";
-        string WithdrawPctToString => $"Withdraw {PW.FirstYearPct:P1} first year with {PW.IncrementPct:P1} increment each year.";
-        string ResetYearsToString => (null == PW.ResetYears || 0 == PW.ResetYears.Count) ? string.Empty : $"Reset to {PW.FirstYearPct:P1} on years [{string.Join(',', PW.ResetYears)}]";
+        string WithdrawPctToString => $"Withdraw {Options.FirstYearPct:P1} first year with {Options.Increment:P1} increment each year.";
+        string ResetYearsToString => (null == Options.ResetAtAge || 0 == Options.ResetAtAge.Count) ? string.Empty : $"Reset to {Options.FirstYearPct:P1} @[{string.Join(',', Options.ResetAtAge)}]";
+    }
+
+    sealed class VariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options) : ISimObjective
+    {
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => throw new NotImplementedException($"{nameof(VariablePercentageWithdrawalStrategy)} not yet implemented.");
     }
 }

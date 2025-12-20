@@ -83,7 +83,7 @@ namespace NinthBall
 
 
         /// <summary>
-        /// Given a future value, inflation rate and no of years, returns inflaton adjusted value in current present value.
+        /// Given a future value, inflation rate and no of years, returns inflation adjusted value in current present value.
         /// </summary>
         public static double InflationAdjustedValue(this double futureBalance, double inflationRate, int numberOfYears)
         {

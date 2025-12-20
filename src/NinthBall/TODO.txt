@@ -30,3 +30,13 @@ Q Should we package initial parameters to SimParams?
 * IDEA:
   Instead of generating static html, produce data.
   Implement a self-contained Razor pages to view the report.
+
+
+
+  Init			- 0
+  Income		- 10
+  Withdrawals	- 20
+  Exp			- 30		(fees, taxes, living exp)
+  Gain			- 40
+
+  

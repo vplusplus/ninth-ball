@@ -3,16 +3,11 @@ using System.Security.Cryptography;
 
 namespace NinthBall
 {
-
-    // TODO: Support first year PCT model. Q: Does it PCT of whole, PCT of Pre/PostTax assets?
-
-    internal class LivingExpensesObjective(SimConfig simConfig) : ISimObjective
+    sealed class LivingExpensesStrategy(LivingExpenses Options) : ISimObjective
     {
-        readonly LivingExpenses E = simConfig.LivingExpenses;
+        int ISimObjective.Order => 32;
 
-        int ISimObjective.Order => 10;
-
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(simConfig.LivingExpenses);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
         
         sealed record Strategy(LivingExpenses exp) : ISimStrategy
         {
@@ -24,24 +19,22 @@ namespace NinthBall
                 {
                     CYExp = 0 == context.YearIndex
                         ? amount = exp.FirstYearAmount
-                        : amount *= 1 + exp.IncrementPct
+                        : amount *= 1 + exp.Increment
                 };
             }
         }
 
-        public override string ToString() => $"Living expensed - First year: {E.FirstYearAmount:C0} | Yearly increment: {E.IncrementPct:P1}";
+        public override string ToString() => $"Living expenses - First year: {Options.FirstYearAmount:C0} | Yearly increment: {Options.Increment:P1}";
     }
 
 
-    /// <summary>
-    /// Pre-calculated withdrawal sequence from an external file.
-    /// </summary>
-    public sealed class PrecalculatedLivingExpensesObjective(SimConfig simConfig) : ISimObjective
+    sealed class PrecalculatedLivingExpensesStrategy(PrecalculatedLivingExpenses Options) : ISimObjective
     {
-        readonly SimConfig C = simConfig;
-        readonly PrecalculatedLivingExpenses Exp = simConfig.PrecalculatedLivingExpenses;
+        private readonly IReadOnlyList<double> ExpenseSequence = PrecalculatedLivingExpenseReader.ReadPrecalculatedLivingExpenses(Options.FileName, Options.SheetName);
 
-        public ISimStrategy CreateStrategy(int iterationIndex) => new Strategy(Exp.LivingExpensesSequence);
+        int ISimObjective.Order => 32;
+
+        public ISimStrategy CreateStrategy(int iterationIndex) => new Strategy(ExpenseSequence);
 
         sealed class Strategy(IReadOnlyList<double> sequence) : ISimStrategy
         {
@@ -51,12 +44,12 @@ namespace NinthBall
                 {
                     CYExp = context.YearIndex >= 0 && context.YearIndex < sequence.Count
                         ? sequence[context.YearIndex]
-                        : throw new IndexOutOfRangeException($"Year index #{context.YearIndex} is outside the range of the predfined expense list.")
+                        : throw new IndexOutOfRangeException($"Year index #{context.YearIndex} is outside the range of the predefined expense list.")
                 };
             }
         }
 
-        public override string ToString() => $"Living expenses - From {Path.GetFileName(Exp.FileName)} [sheet: {Exp.SheetName}]";
+        public override string ToString() => $"Living expenses - From {Path.GetFileName(Options.FileName)} [sheet: {Options.SheetName}]";
     }
 
 }
