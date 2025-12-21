@@ -75,6 +75,6 @@ namespace NinthBall
     sealed class VariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options) : ISimObjective
     {
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => throw new NotImplementedException($"{nameof(VariablePercentageWithdrawalStrategy)} not yet implemented.");
-        public override string ToString() => "Withdrawal | Variable percentage (not implemented)";
+        public override string ToString() => $"Withdrawal | Variable percentage ({Options.ROI:P1} ROI, {Options.Escalation:P1} Escalation) - (not implemented)";
     }
 }

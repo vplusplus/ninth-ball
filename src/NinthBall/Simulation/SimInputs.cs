@@ -5,9 +5,9 @@ using System.Text.Json.Serialization;
 
 namespace NinthBall
 {
-    public sealed record SimulationSeed(IConfiguration config)
+    public sealed record SimulationSeed(string? SeedHint)
     {
-        public readonly int Value = config.GetValue("RandomSeedHint", "JSR").GetPredictableHashCode();
+        public readonly int Value = (SeedHint ?? "JSR").GetPredictableHashCode();
     }
 
     public sealed record SimParams
