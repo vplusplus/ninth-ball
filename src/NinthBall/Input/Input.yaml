@@ -10,7 +10,7 @@ SimParams:
 
 InitialBalance:
   PreTax:
-    Amount: 1,000,000
+    Amount: 2,000,000
     Allocation: 60%
   PostTax:
     Amount: 1,000,000
@@ -61,7 +61,7 @@ LivingExpenses:
   FirstYearAmount: 130,000
   Increment: 2%
 
-PrecalculatedLivingExpenses:
+zzzPrecalculatedLivingExpenses:
   FileName: $(MyPath)/Withdrawals.xlsx
   SheetName: Withdrawals
 
@@ -69,7 +69,7 @@ PrecalculatedLivingExpenses:
 # PreTax asset depletion velocity
 # All three choices below are applicable ONLY to the PreTax assets
 # ............................................................
-FixedWithdrawal:
+ZZZFixedWithdrawal:
   FirstYearAmount: 80000
   Increment: 2%
 
@@ -78,9 +78,11 @@ ZZZPercentageWithdrawal:
   Increment:    2%
   ResetAtAge: [65, 70]
 
-ZZZVariablePercentageWithdrawal:
+VariablePercentageWithdrawal:
   ROI: 4%
-  Escalation: 2%
+  Inflation: 2%
+  Floor: 0
+  Ceiling: 150,000
 
 # ............................................................
 # Buffer cash strategies

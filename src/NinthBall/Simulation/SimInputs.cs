@@ -149,7 +149,9 @@ namespace NinthBall
     public sealed record VariablePercentageWithdrawal
     (
         [property: Range(0, 1)] double ROI,
-        [property: Range(0, 1)] double Escalation
+        [property: Range(0, 1)] double Inflation,
+        [property: Min(0)] double? Floor = null,
+        [property: Min(0)] double? Ceiling = null
     );
 
     public sealed record UseBufferCash

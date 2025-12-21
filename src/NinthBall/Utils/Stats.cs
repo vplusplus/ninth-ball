@@ -101,6 +101,39 @@ namespace NinthBall
         public static string Thousands(this double value, int decimalPlaces = 2) => $"{(value / 1000).ToString($"C{decimalPlaces}")} K";
         public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
 
+        /// <summary>
+        /// Calculates the annual withdrawal amount (Annuity Due) for a growing annuity that depletes a balance to zero.
+        /// PV = W * (1 + r) * [1 - ((1 + g) / (1 + r))^n] / (r - g)
+        /// </summary>
+        /// <param name="currentBalance">Present value of the asset pool.</param>
+        /// <param name="estimatedROI">Expected annual return (nominal).</param>
+        /// <param name="estimatedInflation">Expected annual increment (inflation).</param>
+        /// <param name="remainingYears">Number of years left (including current).</param>
+        /// <returns>The withdrawal amount for the current year.</returns>
+        public static double EquatedWithdrawal(double currentBalance, double estimatedROI, double estimatedInflation, int remainingYears)
+        {
+            if (remainingYears <= 0) return 0.0;
+            if (currentBalance <= 0) return 0.0;
+
+            // Special case: ROI matches Inflation
+            if (Math.Abs(estimatedROI - estimatedInflation) < 1e-9)
+            {
+                return currentBalance / remainingYears;
+            }
+
+            double r = estimatedROI;
+            double g = estimatedInflation;
+            int n = remainingYears;
+
+            // Growing Annuity Due Formula:
+            // W = PV * (r - g) / ((1 + r) * (1 - Math.Pow((1 + g) / (1 + r), n)))
+            
+            double numerator = currentBalance * (r - g);
+            double denominator = (1 + r) * (1 - Math.Pow((1 + g) / (1 + r), n));
+
+            return numerator / denominator;
+        }
+
         public static (double, double) Swap(double first, double second)
         {
             var temp = first; first = second; second = temp;

@@ -72,9 +72,51 @@ namespace NinthBall
     }
 
     [SimInput(typeof(VariablePercentageWithdrawalStrategy), typeof(VariablePercentageWithdrawal))]
-    sealed class VariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options) : ISimObjective
+    sealed class VariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options, SimParams Params) : ISimObjective
     {
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => throw new NotImplementedException($"{nameof(VariablePercentageWithdrawalStrategy)} not yet implemented.");
-        public override string ToString() => $"Withdrawal | Variable percentage ({Options.ROI:P1} ROI, {Options.Escalation:P1} Escalation) - (not implemented)";
+        int ISimObjective.Order => 20;
+
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options, Params);
+
+        sealed class Strategy(VariablePercentageWithdrawal VPW, SimParams P) : ISimStrategy
+        {
+            void ISimStrategy.Apply(ISimContext ctx)
+            {
+                int remainingYears = P.NoOfYears - ctx.YearIndex;
+                
+                // Calculate the "ideal" withdrawal to hit zero at the end of the horizon.
+                double amount = Stats.EquatedWithdrawal(
+                    currentBalance:     ctx.PreTaxBalance.Amount, 
+                    estimatedROI:       VPW.ROI, 
+                    estimatedInflation: VPW.Inflation, 
+                    remainingYears:     remainingYears
+                );
+
+                // Apply guardrails (adjusted for inflation)
+                double inflationFactor = Math.Pow(1 + VPW.Inflation, ctx.YearIndex);
+
+                if (VPW.Floor.HasValue)
+                {
+                    double currentFloor = VPW.Floor.Value * inflationFactor;
+                    amount = Math.Max(amount, currentFloor);
+                }
+
+                if (VPW.Ceiling.HasValue)
+                {
+                    double currentCeiling = VPW.Ceiling.Value * inflationFactor;
+                    amount = Math.Min(amount, currentCeiling);
+                }
+
+                ctx.Withdrawals = ctx.Withdrawals with
+                {
+                    PreTax = amount
+                };
+            }
+        }
+
+        public override string ToString() => $"Withdrawal | Variable percentage ({Options.ROI:P1} ROI, {Options.Inflation:P1} Inflation){GuardrailsToString}";
+        string GuardrailsToString => (Options.Floor.HasValue || Options.Ceiling.HasValue) 
+            ? $" | Guardrails: [{Options.Floor?.ToString("C0") ?? "None"} - {Options.Ceiling?.ToString("C0") ?? "None"}] (adj. for inflation)" 
+            : string.Empty;
     }
 }
