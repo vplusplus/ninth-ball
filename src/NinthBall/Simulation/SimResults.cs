@@ -63,17 +63,17 @@ namespace NinthBall
         Assets Dec
     );
 
-    public sealed record SimIteration(int Index, bool Success, IReadOnlyList<SimYear> ByYear)
+    public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear)
     {
-        public double StartingBalance => ByYear[0].Jan.Total();
-        public double EndingBalance => ByYear[^1].Dec.Total();
-        public int SurvivedYears => Success ? ByYear.Count : ByYear.Count - 1;
+        public double StartingBalance => ByYear.Span[0].Jan.Total();
+        public double EndingBalance => ByYear.Span[^1].Dec.Total();
+        public int SurvivedYears => Success ? ByYear.Length : ByYear.Length - 1;
     }
 
     public sealed record SimResult(IReadOnlyList<ISimObjective> Objectives, IReadOnlyList<SimIteration> Iterations)
     {
-        public int NoOfYears { get; init; } = Iterations.Max(x => x.ByYear.Count);
-        public double SurvivalRate { get; init; } = (double)Iterations.Count(x => x.Success) / (double)Iterations.Count;
+        public int NoOfYears { get; init; } = Iterations.Count == 0 ? 0 : Iterations.Max(x => x.ByYear.Length);
+        public double SurvivalRate { get; init; } = Iterations.Count == 0 ? 0.0 : (double)Iterations.Count(x => x.Success) / (double)Iterations.Count;
 
         public SimIteration Percentile(double percentile) =>
             percentile < 0.0 || percentile > 1.0 ? throw new ArgumentOutOfRangeException(nameof(percentile), "Percentile must be between 0.0 and 1.0") :

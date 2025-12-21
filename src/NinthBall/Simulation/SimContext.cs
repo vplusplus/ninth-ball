@@ -122,7 +122,7 @@ namespace NinthBall
         }
     }
 
-    sealed record SimContext(InitialBalance InitPortfolio, int IterationIndex, int StartAge) : ISimContext
+    sealed record SimContext(InitialBalance InitPortfolio, int IterationIndex, int StartAge, Memory<SimYear> MyStore) : ISimContext
     {
         // ..........................................
         // Running balances and prior year results
@@ -130,7 +130,6 @@ namespace NinthBall
         private readonly SplitBalance  MyPreTaxBalance  = new(InitPortfolio.PreTax.Amount, InitPortfolio.PreTax.Allocation);
         private readonly SplitBalance  MyPostTaxBalance = new(InitPortfolio.PostTax.Amount, InitPortfolio.PostTax.Allocation);
         private readonly CashBalance   MyCashBalance    = new(InitPortfolio.Cash.Amount);
-        private readonly List<SimYear> MyPriorYears     = new();
 
         // ..........................................
         // View of the running balances and prior year results
@@ -138,7 +137,8 @@ namespace NinthBall
         public IBalance PreTaxBalance  => MyPreTaxBalance;
         public IBalance PostTaxBalance => MyPostTaxBalance;
         public IBalance CashBalance    => MyCashBalance;
-        public IReadOnlyList<SimYear> PriorYears => MyPriorYears;
+        public ReadOnlyMemory<SimYear> PriorYears => MyStore.Slice(0, YearsCompleted);
+        public int YearsCompleted { get; private set; }
 
         // ..........................................
         // Current year 
@@ -216,21 +216,29 @@ namespace NinthBall
                 // Ending balance
                 var decBalance = GetPortfolioSnapshot();
 
-                MyPriorYears.Add(new SimYear(
+                MyStore.Span[YearIndex] = new SimYear(
                     Year: YearIndex, Age: Age, 
                     janBalance, 
                     Fees, Incomes, Expenses, adjustedWithdrawals, adjustedDeposits, ROI, growth, 
                     decBalance
-                ));
+                );
+                
+                YearsCompleted++;
             }
             else
             {
-                MyPriorYears.Add(new SimYear()
+                MyStore.Span[YearIndex] = new SimYear()
                 {
                     Year = YearIndex,
                     Age  = Age,
                     Jan  = janBalance,
-                });
+                };
+                
+                // We do NOT increment YearsCompleted here if we want to signal failure/truncation.
+                // However, the current logic adds a record anyway.
+                // If we want the ByYear.Length to represent correctly, we should probably increment it
+                // but then return failure. 
+                YearsCompleted++;
             }
 
             return success;

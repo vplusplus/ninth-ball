@@ -28,7 +28,7 @@ namespace NinthBall
         IBalance CashBalance { get; }
 
         // Prior year results
-        IReadOnlyList<SimYear> PriorYears { get; }
+        ReadOnlyMemory<SimYear> PriorYears { get; }
 
         // Current year
         public int IterationIndex { get; }

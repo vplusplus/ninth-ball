@@ -8,13 +8,22 @@ namespace NinthBall
             // Create simulation objectives.
             var objectives = MySimBuilder.SimulationObjectives;
 
-            // TODO: Consult current bootstrapper. Find max iterations that we can support.
+            // Consult current bootstrapper. Find max iterations that we can support.
             int maxIterations = Math.Min(MySimParams.Iterations, GrowthStrategy.MaxIterations);
+            int noOfYears = MySimParams.NoOfYears;
 
-            // RunAsync iterations; Collect results.
+            // Pre-allocate ONE giant contiguous block of memory for ALL results.
+            var dataStore = new SimYear[maxIterations * noOfYears];
+
+            // Run iterations in Parallel; Collect results.
             var iterationResults = Enumerable.Range(0, maxIterations)
-                .Select(iterationIndex => RunOneIteration(objectives, iterationIndex))
-                // .AsParallel()
+                .AsParallel()
+                .WithDegreeOfParallelism(Environment.ProcessorCount)
+                .Select(iterationIndex => 
+                {
+                    var mySlice = dataStore.AsMemory(iterationIndex * noOfYears, noOfYears);
+                    return RunOneIteration(objectives, iterationIndex, mySlice);
+                })
                 .ToList();
 
             // Sort the iteration results worst to best.
@@ -30,10 +39,10 @@ namespace NinthBall
             );
         }
     
-        private SimIteration RunOneIteration(IReadOnlyList<ISimObjective> objectives, int iterationIndex)
+        private SimIteration RunOneIteration(IReadOnlyList<ISimObjective> objectives, int iterationIndex, Memory<SimYear> myWorstCaseSlice)
         {
-            // SimContext that tracks running balance 
-            var ctx = new SimContext(InitPortfolio, IterationIndex: iterationIndex, StartAge: MySimParams.StartAge);
+            // SimContext that tracks running balance and writes to our slice.
+            var ctx = new SimContext(InitPortfolio, iterationIndex, MySimParams.StartAge, myWorstCaseSlice);
 
             // Strategies can be stateful; Create new set of strategies for each iteration.
             var strategies = objectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();

@@ -29,7 +29,7 @@ namespace NinthBall
                 {
                     PYTax = 0 == context.YearIndex 
                         ? TX.YearZeroTaxAmount 
-                        : ComputePriorYearTaxes(context.PriorYears[^1])
+                        : ComputePriorYearTaxes(context.PriorYears.Span[^1])
                 };
             }
 

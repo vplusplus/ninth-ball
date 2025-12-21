@@ -63,7 +63,7 @@
         {
             var from = i * 5;
             var to = from + 5 - 1;
-            var numFailed = Failed.Where(x => x.ByYear.Count - 1 >= from && x.ByYear.Count - 1 <= to).Count();
+            var numFailed = Failed.Where(x => x.ByYear.Length - 1 >= from && x.ByYear.Length - 1 <= to).Count();
             yield return new(from, to, numFailed);
         }
     }

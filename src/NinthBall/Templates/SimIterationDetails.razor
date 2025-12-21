@@ -40,7 +40,7 @@
         </tr>
 
         <!-- Details -->
-        @foreach (var y in Iteration.ByYear)
+        @foreach (var y in Iteration.ByYear.Span)
         {
             double fromPreTax = y.Withdrawals.PreTax * -1; 
             double fromPostTax = y.Deposits.PostTax - y.Withdrawals.PostTax;

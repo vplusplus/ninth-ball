@@ -34,7 +34,7 @@
 
                 if (iter.Success)
                 {
-                    var endBalance = iter.ByYear[^1].Dec.Total().InflationAdjustedValue(TheInflationRate, iter.SurvivedYears).Millions();
+                    var endBalance = iter.ByYear.Span[^1].Dec.Total().InflationAdjustedValue(TheInflationRate, iter.SurvivedYears).Millions();
                     <th>@endBalance</th>
                 }
                 else
@@ -51,7 +51,7 @@
 
                 if (iter.Success)
                 {
-                    var endBalance = iter.ByYear[^1].Dec.Total().Millions();
+                    var endBalance = iter.ByYear.Span[^1].Dec.Total().Millions();
                     <td class="text-secondary">@endBalance</td>
                 }
                 else
@@ -65,7 +65,7 @@
             @foreach (var p in PercentileTargets)
             {
                 var iter = Model.Percentile(p); 
-                var pctChange = iter.ByYear.Select(x => 0.0).ToArray().Annualize(); // TODO: STUBBED - Please fix
+                var pctChange = Enumerable.Repeat(0.0, iter.ByYear.Length).ToArray().Annualize(); // TODO: STUBBED - Please fix
                 <td class="text-secondary">
                     @($"{pctChange:P1}")
                 </td>

@@ -22,7 +22,7 @@ InitialBalance:
 Rebalance:
   MaxDrift: 5%
 
-zzReallocate:
+Reallocate:
   MaxDrift: 5%
   Steps:
     - AtAge: 70

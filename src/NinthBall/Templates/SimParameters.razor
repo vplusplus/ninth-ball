@@ -18,7 +18,7 @@
     [Parameter] public SimResult Model { get; set; } = null!;
 
 
-    Assets Starting => Model.Iterations[0].ByYear[0].Jan;
+    Assets Starting => Model.Iterations[0].ByYear.Span[0].Jan;
     double InitialBalance => Starting.Total();
     double StockAllocationPct => Starting.PreTax.Allocation;
     double BondAllocationPct => 1 - Starting.PreTax.Allocation;
