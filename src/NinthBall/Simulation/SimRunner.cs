@@ -56,6 +56,8 @@ namespace NinthBall
             var strategyTypes = typeof(Program).Assembly.GetTypes()
                 .Where(t => t.GetCustomAttributes<SimInputAttribute>(false).Any());
 
+            var activeStrategies = new List<(SimInputAttribute Attr, Type StrategyType)>();
+
             foreach (var type in strategyTypes)
             {
                 var attr = type.GetCustomAttribute<SimInputAttribute>(false)!;
@@ -69,12 +71,39 @@ namespace NinthBall
                     var optionsValue = prop.GetValue(config);
                     if (optionsValue != null)
                     {
+                        activeStrategies.Add((attr, type));
+                        
                         // Register the options instance
                         services.AddSingleton(attr.OptionsType, Validate(optionsValue));
                         
                         // Register the strategy as ISimObjective
                         services.AddSingleton(typeof(ISimObjective), type);
                     }
+                }
+            }
+
+            // Enforce exclusivity
+            EnforceExclusivity(activeStrategies);
+        }
+
+        private static void EnforceExclusivity(List<(SimInputAttribute Attr, Type StrategyType)> activeStrategies)
+        {
+            var exclusiveFamilies = new[]
+            {
+                StrategyFamily.LifestyleExpenses,
+                StrategyFamily.WithdrawalVelocity,
+                StrategyFamily.CashUsage,
+                StrategyFamily.CashRefill,
+                StrategyFamily.Taxes
+            };
+
+            foreach (var family in exclusiveFamilies)
+            {
+                var conflicting = activeStrategies.Where(s => s.Attr.Family == family).ToList();
+                if (conflicting.Count > 1)
+                {
+                    var names = string.Join(", ", conflicting.Select(s => s.StrategyType.Name));
+                    throw new InvalidOperationException($"Conflicting strategies detected in family '{family}': {names}. Only one strategy from this family can be active at a time.");
                 }
             }
         }

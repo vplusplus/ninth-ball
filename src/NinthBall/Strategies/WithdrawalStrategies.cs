@@ -2,7 +2,7 @@
 namespace NinthBall
 {
 
-    [SimInput(typeof(FixedWithdrawalStrategy), typeof(FixedWithdrawal))]
+    [SimInput(typeof(FixedWithdrawalStrategy), typeof(FixedWithdrawal), Family = StrategyFamily.WithdrawalVelocity)]
     sealed class FixedWithdrawalStrategy(FixedWithdrawal Options) : ISimObjective
     {
         int ISimObjective.Order => 20;
@@ -34,7 +34,7 @@ namespace NinthBall
         public override string ToString() => $"Withdrawal | Fixed {Options.FirstYearAmount:C0} (+{Options.Increment:P1}/yr)";
     }
 
-    [SimInput(typeof(PercentageWithdrawalStrategy), typeof(PercentageWithdrawal))]
+    [SimInput(typeof(PercentageWithdrawalStrategy), typeof(PercentageWithdrawal), Family = StrategyFamily.WithdrawalVelocity)]
     sealed class PercentageWithdrawalStrategy(PercentageWithdrawal Options) : ISimObjective
     {
         int ISimObjective.Order => 20;
@@ -71,7 +71,7 @@ namespace NinthBall
         string ResetYearsToString => (null == Options.ResetAtAge || 0 == Options.ResetAtAge.Count) ? string.Empty : $" | Reset to {Options.FirstYearPct:P1} @ age [{string.Join(',', Options.ResetAtAge)}]";
     }
 
-    [SimInput(typeof(VariablePercentageWithdrawalStrategy), typeof(VariablePercentageWithdrawal))]
+    [SimInput(typeof(VariablePercentageWithdrawalStrategy), typeof(VariablePercentageWithdrawal), Family = StrategyFamily.WithdrawalVelocity)]
     sealed class VariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options, SimParams Params) : ISimObjective
     {
         int ISimObjective.Order => 20;

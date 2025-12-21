@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace NinthBall
 {
-    [SimInput(typeof(LivingExpensesStrategy), typeof(LivingExpenses))]
+    [SimInput(typeof(LivingExpensesStrategy), typeof(LivingExpenses), Family = StrategyFamily.LifestyleExpenses)]
     sealed class LivingExpensesStrategy(LivingExpenses Options) : ISimObjective
     {
         int ISimObjective.Order => 32;
@@ -29,7 +29,7 @@ namespace NinthBall
     }
 
 
-    [SimInput(typeof(PrecalculatedLivingExpensesStrategy), typeof(PrecalculatedLivingExpenses))]
+    [SimInput(typeof(PrecalculatedLivingExpensesStrategy), typeof(PrecalculatedLivingExpenses), Family = StrategyFamily.LifestyleExpenses)]
     sealed class PrecalculatedLivingExpensesStrategy(PrecalculatedLivingExpenses Options) : ISimObjective
     {
         private readonly IReadOnlyList<double> ExpenseSequence = PrecalculatedLivingExpenseReader.ReadPrecalculatedLivingExpenses(Options.FileName, Options.SheetName);

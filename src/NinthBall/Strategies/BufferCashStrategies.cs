@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall
 {
-    [SimInput(typeof(UseBufferCashStrategy), typeof(UseBufferCash))]
+    [SimInput(typeof(UseBufferCashStrategy), typeof(UseBufferCash), Family = StrategyFamily.CashUsage)]
     sealed class UseBufferCashStrategy(UseBufferCash BC) : ISimObjective
     {
         int ISimObjective.Order => 20;
@@ -10,7 +10,7 @@ namespace NinthBall
         public override string ToString() => $"Buffer cash | Use cash if growth < {BC.GrowthThreshold:P1} (Max: {BC.MaxAmount:C0})";
     }
 
-    [SimInput(typeof(BufferRefillStrategy), typeof(BufferRefill))]
+    [SimInput(typeof(BufferRefillStrategy), typeof(BufferRefill), Family = StrategyFamily.CashRefill)]
     sealed class BufferRefillStrategy(BufferRefill RF) : ISimObjective
     {
         int ISimObjective.Order => 20;
