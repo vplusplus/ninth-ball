@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall
+namespace NinthBall.Core
 {
     // Historical returns:
     // REF: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com

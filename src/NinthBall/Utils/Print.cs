@@ -1,4 +1,6 @@
 ﻿
+using NinthBall.Core;
+
 namespace NinthBall
 {
     internal static class Print

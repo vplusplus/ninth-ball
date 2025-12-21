@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall
+namespace NinthBall.Core
 {
     [SimInput(typeof(AdditionalIncomeStrategy), typeof(AdditionalIncomes))]
     sealed class AdditionalIncomeStrategy(AdditionalIncomes options) : ISimObjective

@@ -1,5 +1,5 @@
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     internal static class MathUtils
     {

@@ -1,5 +1,6 @@
 
 using NinthBall;
+using NinthBall.Core;
 using Moq;
 
 namespace UnitTests

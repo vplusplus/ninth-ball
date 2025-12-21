@@ -1,7 +1,7 @@
 ﻿
 using System.Text.Json;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     /// <summary>
     /// Supports Json serializer.

@@ -1,4 +1,4 @@
-﻿namespace NinthBall
+﻿namespace NinthBall.Core
 {
     sealed class Simulation(SimParams MySimParams, InitialBalance InitPortfolio, SimBuilder MySimBuilder)
     {

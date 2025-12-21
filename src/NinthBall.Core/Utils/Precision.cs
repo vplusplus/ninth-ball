@@ -1,4 +1,4 @@
-namespace NinthBall
+namespace NinthBall.Core
 {
     public static class Precision
     {

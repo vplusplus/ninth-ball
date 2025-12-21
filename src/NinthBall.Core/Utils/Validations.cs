@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public sealed class MinAttribute(double Min) : ValidationAttribute

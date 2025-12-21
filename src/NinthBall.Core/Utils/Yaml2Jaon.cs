@@ -1,7 +1,7 @@
 ﻿
 using YamlDotNet.Serialization;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     public static class Yaml2Jaon
     {

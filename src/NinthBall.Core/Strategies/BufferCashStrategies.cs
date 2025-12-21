@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall
+namespace NinthBall.Core
 {
     [SimInput(typeof(UseBufferCashStrategy), typeof(UseBufferCash), Family = StrategyFamily.CashUsage)]
     sealed class UseBufferCashStrategy(UseBufferCash BC) : ISimObjective

@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall
+namespace NinthBall.Core
 {
     public sealed record Block(IReadOnlyList<HROI> Segment)
     {

@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall
+namespace NinthBall.Core
 {
 
     [SimInput(typeof(TaxStrategy), typeof(Taxes))]

@@ -1,7 +1,7 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     /// <summary>
     /// The root data structure representing a complete simulation configuration.

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     public sealed class SimRunner
     {

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using NinthBall.Core;
+
 namespace NinthBall.Templates
 {
     internal static class MyTemplates

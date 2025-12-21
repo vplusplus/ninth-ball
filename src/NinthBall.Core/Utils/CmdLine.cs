@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System.Text.RegularExpressions;
 
-namespace NinthBall.Hosting
+namespace NinthBall.Core
 {
     public static class CmdLine
     {

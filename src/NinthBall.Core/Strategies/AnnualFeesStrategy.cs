@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall
+namespace NinthBall.Core
 {
     [SimInput(typeof(AnnualFeesStrategy), typeof(FeesPCT))]
     sealed class AnnualFeesStrategy(FeesPCT Options) : ISimObjective, ISimStrategy

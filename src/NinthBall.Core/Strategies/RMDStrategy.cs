@@ -1,4 +1,4 @@
-﻿namespace NinthBall
+﻿namespace NinthBall.Core
 {
     [SimInput(typeof(RMDStrategy), typeof(RMD), Family = StrategyFamily.WithdrawalAdjustment)]
     sealed class RMDStrategy(RMD Options) : ISimObjective

@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall
+namespace NinthBall.Core
 {
 
     [SimInput(typeof(FixedWithdrawalStrategy), typeof(FixedWithdrawal), Family = StrategyFamily.WithdrawalVelocity)]

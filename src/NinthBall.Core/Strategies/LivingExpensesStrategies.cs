@@ -1,7 +1,7 @@
 ﻿
 using System.Security.Cryptography;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     [SimInput(typeof(LivingExpensesStrategy), typeof(LivingExpenses), Family = StrategyFamily.LifestyleExpenses)]
     sealed class LivingExpensesStrategy(LivingExpenses Options) : ISimObjective

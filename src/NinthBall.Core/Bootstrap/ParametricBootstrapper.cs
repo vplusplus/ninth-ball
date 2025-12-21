@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     internal sealed class ParametricBootstrapper(ParametricBootstrap Options, SimulationSeed Seed) : IBootstrapper
     {

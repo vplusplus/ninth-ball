@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     [SimInput(typeof(GrowthStrategy), typeof(Growth))]
     sealed class GrowthStrategy(IServiceProvider Services, SimParams SimParams, Growth Options) : ISimObjective

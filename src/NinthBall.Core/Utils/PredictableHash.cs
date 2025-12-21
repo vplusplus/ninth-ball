@@ -3,7 +3,7 @@ using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     internal static class PredictableHashCode
     {

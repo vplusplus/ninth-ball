@@ -2,7 +2,7 @@
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     // Can read the Worksheets (tabs), rows and cell values from Excel document.
     internal sealed class ExcelReader : IDisposable

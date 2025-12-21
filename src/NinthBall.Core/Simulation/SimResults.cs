@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI)
     {

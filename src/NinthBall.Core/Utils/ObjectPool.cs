@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace NinthBall
+namespace NinthBall.Core
 {
     public sealed class ObjectPool<T>(Func<T> factory) where T : class
     {

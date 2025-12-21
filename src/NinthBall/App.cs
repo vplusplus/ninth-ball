@@ -1,10 +1,9 @@
 ﻿
 using Microsoft.Extensions.Configuration;
-using NinthBall.Hosting;
+using NinthBall.Core;
 using NinthBall.Templates;
 using System.Diagnostics;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("UnitTests")]
 
 namespace NinthBall
 {

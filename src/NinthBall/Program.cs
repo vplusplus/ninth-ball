@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NinthBall.Hosting;
 using System.ComponentModel.DataAnnotations;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("UnitTests")]
+using NinthBall.Core;
 
 namespace NinthBall
 {
