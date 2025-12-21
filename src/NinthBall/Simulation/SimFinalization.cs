@@ -67,7 +67,7 @@ namespace NinthBall
             // First we will meet the expenses.
             // Do we have enough? 
             double deficit = Math.Max(0, Expenses.Total() - Incomes.Total() - withdrawals.Total());
-            if (deficit.IsMoreThanZero())
+            if (deficit.IsMoreThanZero(Precision.Amount))
             {
                 // Model is not withdrawing enough; we need more.
                 // Sequence:
@@ -78,7 +78,7 @@ namespace NinthBall
                 TryTransferFunds(ref deficit, ref available.PreTax,  ref withdrawals.PreTax);
                 TryTransferFunds(ref deficit, ref available.Cash,    ref withdrawals.Cash);
 
-                if (deficit.IsMoreThanZero())
+                if (deficit.IsMoreThanZero(Precision.Amount))
                 {
                     // Insufficient funds. Model failed.
                     adjustedWithdrawals = new();
@@ -92,7 +92,7 @@ namespace NinthBall
 
             // First, we will try to accommodate cash-refill aspiration.
             var refillTarget = SuggestedRefills.Cash;
-            if (refillTarget.IsMoreThanZero())
+            if (refillTarget.IsMoreThanZero(Precision.Amount))
             {
                 // Use unallocated cash-in-hand first
                 // If we need more try PostTax: Minimize tax, try to honor PreTax withdrawal velocity
@@ -104,7 +104,7 @@ namespace NinthBall
 
             // Now we try to accommodate fund transfer aspirations to PostTax account.
             refillTarget = SuggestedRefills.PostTax;
-            if (refillTarget.IsMoreThanZero())
+            if (refillTarget.IsMoreThanZero(Precision.Amount))
             {
                 // Use unallocated cash-in-hand first
                 // If we need more try PreTax:  Model is trying to spread the tax impact of PreTax funds
@@ -114,7 +114,7 @@ namespace NinthBall
 
             // One more thing...
             // All remaining surplus (if any) gets re-invested in post-tax assets
-            if (surplus.IsMoreThanZero())
+            if (surplus.IsMoreThanZero(Precision.Amount))
             {
                 deposits.PostTax += surplus;
                 surplus = 0;
@@ -132,7 +132,7 @@ namespace NinthBall
             // If suggested amount is not whatIHave, transfer available funds.
             static double TryTransferFunds(ref double whatWeNeed, ref double source, ref double target)
             {
-                if (whatWeNeed.IsMoreThanZero() && source.IsMoreThanZero())
+                if (whatWeNeed.IsMoreThanZero(Precision.Amount) && source.IsMoreThanZero(Precision.Amount))
                 {
                     double took = Math.Min(whatWeNeed, source);
                     source -= took;
@@ -164,34 +164,30 @@ namespace NinthBall
             var good = true;
 
             // Cashflow: (Incomes + Withdrawals) = (Expenses + Deposits)
-            good = AlmostSame(Incomes.Total() + Withdrawals.Total(), Expenses.Total() + Deposits.Total());
+            good = (Incomes.Total() + Withdrawals.Total()).AlmostSame(Expenses.Total() + Deposits.Total(), Precision.Amount);
             if (!good) throw new Exception($"Incomes {Incomes.Total():C0} + Withdrawals {Withdrawals.Total():C0} != Expenses {Expenses.Total():C0} + Deposits {Deposits.Total():C0}");
 
             // Expenses are met. (TODO: Fix rounding error here)
-            good = Incomes.Total() + Withdrawals.Total() + 0.01 >= Expenses.Total();
+            good = (Incomes.Total() + Withdrawals.Total() + Precision.Amount) >= Expenses.Total();
             if (!good) throw new Exception($"Incomes {Incomes.Total():C0} + Withdrawals {Withdrawals.Total():C0} is less than expenses {Expenses.Total():C0}");
 
             // Per-asset balance agrees: a.Starting - a.Fees - a.Withdrawals = a.Available
-            good &= AlmostSame(Jan.PreTax.Amount - Fees.PreTax - Withdrawals.PreTax, Available.PreTax);
-            good &= AlmostSame(Jan.PostTax.Amount - Fees.PostTax - Withdrawals.PostTax, Available.PostTax);
-            good &= AlmostSame(Jan.Cash.Amount - Fees.Cash - Withdrawals.Cash, Available.Cash);
+            good &= (Jan.PreTax.Amount - Fees.PreTax - Withdrawals.PreTax).AlmostSame(Available.PreTax, Precision.Amount);
+            good &= (Jan.PostTax.Amount - Fees.PostTax - Withdrawals.PostTax).AlmostSame(Available.PostTax, Precision.Amount);
+            good &= (Jan.Cash.Amount - Fees.Cash - Withdrawals.Cash).AlmostSame(Available.Cash, Precision.Amount);
             if (!good) throw new Exception("Starting - Fees - Withdrawals != Available");
 
             // Either withdrawals or Deposits should be zero.
-            good &= Withdrawals.PostTax.AlmostZero() || Deposits.PostTax.AlmostZero();
-            good &= Withdrawals.Cash.AlmostZero() || Deposits.Cash.AlmostZero();
+            good &= Withdrawals.PostTax.AlmostZero(Precision.Amount) || Deposits.PostTax.AlmostZero(Precision.Amount);
+            good &= Withdrawals.Cash.AlmostZero(Precision.Amount) || Deposits.Cash.AlmostZero(Precision.Amount);
             if (!good) throw new Exception($"Meaningless fund transfers. Both withdrawal and deposit can't be positive.");
         }
 
         //......................................................................
         #region Rounding and validation helpers 
         //......................................................................
-        const double TOLERANCE = 1e-6;
-
         // static double RoundToCents(this double value) => Math.Round(value, digits: 2, mode: MidpointRounding.AwayFromZero);
         // static double ZeroReset(this double value) => Math.Abs(value) <= TOLERANCE ? 0.0 : value;
-        static bool AlmostSame(double a, double b) => Math.Abs(a - b) < TOLERANCE;
-        static bool IsMoreThanZero(this double value) => value > TOLERANCE;
         static void ThrowIfNegative(this Assets x) => ThrowIfNegative(nameof(Assets), x.PreTax.Amount, x.PostTax.Amount, x.Cash.Amount);
         static void ThrowIfNegative(this Fees x) => ThrowIfNegative(nameof(Fees), x.PreTax, x.PostTax, x.Cash);
         static void ThrowIfNegative(this Incomes x) => ThrowIfNegative(nameof(Incomes), x.SS, x.Ann);

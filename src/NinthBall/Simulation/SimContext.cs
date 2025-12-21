@@ -28,7 +28,7 @@ namespace NinthBall
         double Bonds  = InitialBalance * (1 - InitialAllocation);
         double TargetAllocation = InitialAllocation;
 
-        double CurrentAllocation => 0 == (Stocks + Bonds) ? 0.0 : Stocks / (Stocks + Bonds + 0.0001);
+        double CurrentAllocation => 0 == (Stocks + Bonds) ? 0.0 : Stocks / (Stocks + Bonds + Precision.Rate);
         double CurrentDrift => Math.Abs(CurrentAllocation - TargetAllocation);
 
         public double Amount => Stocks + Bonds;
@@ -72,7 +72,7 @@ namespace NinthBall
             {
                 if (0 == withdrawalAmount) return;
                 if (withdrawalAmount < 0) throw new ArgumentException("Withdrawal amount must be positive.");
-                if (withdrawalAmount > Amount + 0.001) throw new InvalidOperationException($"Can't withdraw more than what we have | Available: {Amount:C0} | Requested: {withdrawalAmount:C0}");
+                if (withdrawalAmount > Amount + Precision.Amount) throw new InvalidOperationException($"Can't withdraw more than what we have | Available: {Amount:C0} | Requested: {withdrawalAmount:C0}");
 
                 // TODO: Revisit rounding issues
                 withdrawalAmount = Math.Min(withdrawalAmount, Amount);
@@ -90,27 +90,22 @@ namespace NinthBall
                 TryTake(ref Stocks, ref fromBond);
 
                 // We had enough funds. By now, both must be zero.
-                if (fromStock + fromBond > 0.0001) throw new InvalidOperationException("SplitBalance.Withdraw() - Unexpected mismatch in calculation.");
+                if ((fromStock + fromBond).IsMoreThanZero(Precision.Amount)) throw new InvalidOperationException("SplitBalance.Withdraw() - Unexpected mismatch in calculation.");
 
                 // Clean-up near zero
-                ResetNearZero(ref Stocks);
-                ResetNearZero(ref Bonds);
+                Stocks = Stocks.ResetNearZero(Precision.Amount);
+                Bonds  = Bonds.ResetNearZero(Precision.Amount);
                 return;
 
                 static void TryTake(ref double whatIHave, ref double whatINeed)
                 {
                     var taking = Math.Min(whatIHave, whatINeed);
 
-                    if (taking > 0.00001)
+                    if (taking.IsMoreThanZero(Precision.Rate))
                     {
                         whatIHave -= taking;
                         whatINeed -= taking;
                     }
-                }
-
-                static void ResetNearZero(ref double amount)
-                {
-                    if (Math.Abs(amount) < 1e-6) amount = 0;
                 }
             }
         }
