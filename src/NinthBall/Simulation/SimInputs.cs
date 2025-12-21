@@ -154,6 +154,11 @@ namespace NinthBall
         [property: Min(0)] double? Ceiling = null
     );
 
+    public sealed record RMD
+    (
+        [property: Range(70, 80)] int StartAge = 73
+    );
+
     public sealed record UseBufferCash
     (
         [property: Range(0, 1)] 

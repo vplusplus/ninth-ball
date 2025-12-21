@@ -84,6 +84,9 @@ VariablePercentageWithdrawal:
   Floor: 0
   Ceiling: 150,000
 
+RMD:
+  StartAge: 73
+
 # ............................................................
 # Buffer cash strategies
 # ............................................................

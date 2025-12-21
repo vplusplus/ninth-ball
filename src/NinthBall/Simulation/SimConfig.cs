@@ -30,6 +30,7 @@ namespace NinthBall
         FixedWithdrawal? FixedWithdrawal,
         PercentageWithdrawal? PercentageWithdrawal,
         VariablePercentageWithdrawal? VariablePercentageWithdrawal,
+        RMD? RMD,
         UseBufferCash? UseBufferCash,
         BufferRefill? BufferRefill
     );
