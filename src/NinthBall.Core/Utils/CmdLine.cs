@@ -11,9 +11,9 @@ namespace NinthBall.Core
         /// </summary>
         public static IConfiguration Current => LazyCommandLine.Value;
 
-        //public static string Optional(string name, string defaultValue) => Current.GetValue<string>(name, defaultValue);
+        public static string Optional(string name, string defaultValue) => Current.GetValue<string>(name, defaultValue);
         
-        //public static string Required(string name) => string.IsNullOrWhiteSpace(Current[name]) ? throw new FatalWarning($"Missing CommandLine arg | --{name}") : Current[name]!;
+        public static string Required(string name) => string.IsNullOrWhiteSpace(Current[name]) ? throw new FatalWarning($"Missing CommandLine arg | --{name}") : Current[name]!;
         
         public static bool Switch(string name) => Current.GetSection(name).Exists() && bool.Parse(Current[name]!);
 

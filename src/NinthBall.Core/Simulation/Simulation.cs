@@ -1,16 +1,17 @@
 ﻿namespace NinthBall.Core
 {
-    sealed class Simulation(SimParams MySimParams, InitialBalance InitPortfolio, SimBuilder MySimBuilder)
+    internal sealed class Simulation(
+        SimParams MySimParams,
+        InitialBalance InitPortfolio,
+        IEnumerable<ISimObjective> allObjectives)
     {
-        private readonly ObjectPool<SimContext> SimContextPool = new( () => new SimContext() );
+        private readonly ObjectPool<SimContext> SimContextPool = new(() => new SimContext());
+        private readonly IReadOnlyList<ISimObjective> _objectives = allObjectives.OrderBy(x => x.Order).ToList();
 
         public SimResult RunSimulation()
         {
-            // Create simulation objectives.
-            var objectives = MySimBuilder.SimulationObjectives;
-
             // Consult current objectives. Find max iterations that we can support.
-            int maxIterations = Math.Min(MySimParams.Iterations, objectives.Min(x => x.MaxIterations));
+            int maxIterations = Math.Min(MySimParams.Iterations, _objectives.Min(x => x.MaxIterations));
             int noOfYears = MySimParams.NoOfYears;
 
             // Pre-allocate ONE giant contiguous block of memory for ALL results.
@@ -20,10 +21,10 @@
             var iterationResults = Enumerable.Range(0, maxIterations)
                 .AsParallel()
                 .WithDegreeOfParallelism(Environment.ProcessorCount)
-                .Select(iterationIndex => 
+                .Select(iterationIndex =>
                 {
                     var mySlice = dataStore.AsMemory(iterationIndex * noOfYears, noOfYears);
-                    return RunOneIteration(objectives, iterationIndex, mySlice);
+                    return RunOneIteration(_objectives, iterationIndex, mySlice);
                 })
                 .ToList();
 
@@ -35,11 +36,11 @@
                 .AsReadOnly();
 
             return new SimResult(
-                objectives,
+                _objectives,
                 iterationResultsWorstToBest
             );
         }
-    
+
         private SimIteration RunOneIteration(IReadOnlyList<ISimObjective> objectives, int iterationIndex, Memory<SimYear> myWorstCaseSlice)
         {
             // Rent a context from the pool.
@@ -61,7 +62,7 @@
                 foreach (var strategy in strategies) strategy.Apply(ctx);
                 success = ctx.ImplementStrategies();
 
-                if (!success ) break;
+                if (!success) break;
             }
 
             return new(iterationIndex, success, ctx.PriorYears);

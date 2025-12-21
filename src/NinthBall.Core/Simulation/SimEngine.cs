@@ -5,20 +5,23 @@ using System.Reflection;
 
 namespace NinthBall.Core
 {
-    public sealed class SimRunner
+    /// <summary>
+    /// The Monte Carlo simulation engine. Orchestrates the entire simulation process.
+    /// </summary>
+    public static class SimEngine
     {
-        public SimResult Run(SimInput config)
+        public static SimResult Run(SimInput input)
         {
             var services = new ServiceCollection();
 
             // 1. Register Data
-            RegisterData(services, config);
+            RegisterData(services, input);
 
             // 2. Register Engine Infrastructure
             RegisterEngine(services);
 
             // 3. Register Strategies (Discovery)
-            RegisterStrategies(services, config);
+            RegisterStrategies(services, input);
 
             // 4. Build and Run
             using var provider = services.BuildServiceProvider();
@@ -47,7 +50,6 @@ namespace NinthBall.Core
             services.AddSingleton<SequentialBootstrapper>();
             services.AddSingleton<MovingBlockBootstrapper>();
             services.AddSingleton<ParametricBootstrapper>();
-            services.AddSingleton<SimBuilder>();
             services.AddSingleton<Simulation>();
         }
 

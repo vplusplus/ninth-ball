@@ -3,7 +3,7 @@ namespace NinthBall.Core
 {
     public static class SimInputReader
     {
-        public static SimInput FromYamlFile(string yamlFileName)
+        public static SimInput ReadFromYamlFile(string yamlFileName)
         {
             const string MyPathTag = "$(MyPath)";
 

@@ -10,7 +10,7 @@ namespace NinthBall.Core
     public sealed record SimInput
     (
         string? RandomSeedHint,
-        string? Output,
+        
         SimParams SimParams,
         InitialBalance InitialBalance,
 

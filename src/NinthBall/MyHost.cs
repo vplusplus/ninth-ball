@@ -14,12 +14,9 @@ namespace NinthBall.Hosting
 
             appBuilder.Configuration.AddConfiguration(CmdLine.Current);
 
-            appBuilder.Services
-                .AddSingleton<SimRunner>()
-                .AddTransient<App>()
-                ;
+            appBuilder.Services.AddSingleton<App>();
+
             return appBuilder.Build();
         }
-
     }
 }
