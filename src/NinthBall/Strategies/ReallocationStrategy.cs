@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall
 {
-    [SimInput(typeof(ReallocationStrategy), typeof(Reallocate))]
+    [SimInput(typeof(ReallocationStrategy), typeof(Reallocate), Family = StrategyFamily.PortfolioManagement)]
     sealed class ReallocationStrategy(Reallocate Options) : ISimObjective, ISimStrategy
     {
         int ISimObjective.Order => 1;
