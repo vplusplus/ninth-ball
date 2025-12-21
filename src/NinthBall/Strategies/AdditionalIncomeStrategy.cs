@@ -1,6 +1,7 @@
 ﻿
 namespace NinthBall
 {
+    [SimInput(typeof(AdditionalIncomeStrategy), typeof(AdditionalIncomes))]
     sealed class AdditionalIncomeStrategy(AdditionalIncomes options) : ISimObjective
     {
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(options);

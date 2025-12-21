@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace NinthBall
 {
+    [SimInput(typeof(GrowthStrategy), typeof(Growth))]
     sealed class GrowthStrategy(IServiceProvider Services, SimParams SimParams, Growth Options) : ISimObjective
     {
         int ISimObjective.Order => 40;

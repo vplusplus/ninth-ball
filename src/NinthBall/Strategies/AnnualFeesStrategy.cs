@@ -1,6 +1,7 @@
 ﻿
 namespace NinthBall
 {
+    [SimInput(typeof(AnnualFeesStrategy), typeof(FeesPCT))]
     sealed class AnnualFeesStrategy(FeesPCT Options) : ISimObjective, ISimStrategy
     {
         int ISimObjective.Order => 30;

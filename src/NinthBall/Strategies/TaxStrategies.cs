@@ -2,6 +2,7 @@
 namespace NinthBall
 {
 
+    [SimInput(typeof(TaxStrategy), typeof(Taxes))]
     sealed class TaxStrategy(Taxes Options) : ISimObjective
     {
         int ISimObjective.Order => 31;

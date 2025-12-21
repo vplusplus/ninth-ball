@@ -15,9 +15,15 @@ namespace NinthBall.Hosting
         /// Binds the config section as TOptions.
         /// Uses System.Text.Json to deserialize TOptions, with support for numbers with formatting represented as strings and percentage values.
         /// </summary>
-        public static TOptions GetEx<TOptions>(this IConfiguration configSection)
+        public static TOptions GetEx<TOptions>(this IConfiguration configSection) => (TOptions)GetEx(configSection, typeof(TOptions));
+
+        /// <summary>
+        /// Non-generic version of GetEx for reflection-based binding.
+        /// </summary>
+        public static object GetEx(this IConfiguration configSection, Type optionsType)
         {
             ArgumentNullException.ThrowIfNull(configSection);
+            ArgumentNullException.ThrowIfNull(optionsType);
 
             // Transcribe the config section to json
             var configSectionAsJsonNode = ConvertToJsonNode(configSection);
@@ -28,7 +34,7 @@ namespace NinthBall.Hosting
             options.Converters.Add(new PercentageToDoubleConverter());
 
             // Deserialize using System.Text.Json
-            return configSectionAsJsonNode.Deserialize<TOptions>(options) ?? throw new Exception($"Failed to deserialize config section | {typeof(TOptions).Name}");
+            return configSectionAsJsonNode.Deserialize(optionsType, options) ?? throw new Exception($"Failed to deserialize config section | {optionsType.Name}");
         }
 
         /// <summary>

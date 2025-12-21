@@ -21,62 +21,60 @@ namespace NinthBall.Hosting
                 ;
 
             appBuilder.Services
-                .RegisterMyConfigSections()
-                .AddMyStrategies()
+                .RegisterMyConfigSections(appBuilder.Configuration)
+                .AddMyStrategies(appBuilder.Configuration)
                 .AddTransient<App>()
                 ;
-
             return appBuilder.Build();
-        } 
-
-
-        static IServiceCollection RegisterMyConfigSections(this IServiceCollection services)
+        }
+        static IServiceCollection RegisterMyConfigSections(this IServiceCollection services, IConfiguration config)
         {
-            return services
-                .RegisterMyConfigSection<SimParams>()
+            // Mandatory configurations
+            services.RegisterMyConfigSection<SimParams>();
+            services.RegisterMyConfigSection<InitialBalance>();
 
-                .RegisterMyConfigSection<InitialBalance>()
-                .RegisterMyConfigSection<Rebalance>()
-                .RegisterMyConfigSection<Reallocate>()
+            // Historical data and bootstrappers
+            services.RegisterMyConfigSection<ROIHistory>();
+            services.RegisterMyConfigSection<FlatBootstrap>();
+            services.RegisterMyConfigSection<MovingBlockBootstrap>();
+            services.RegisterMyConfigSection<ParametricBootstrap>();
 
-                .RegisterMyConfigSection<AdditionalIncomes>()
-
-                .RegisterMyConfigSection<FeesPCT>()
-                .RegisterMyConfigSection<Taxes>()
-                .RegisterMyConfigSection<LivingExpenses>()
-                .RegisterMyConfigSection<PrecalculatedLivingExpenses>()
-
-                .RegisterMyConfigSection<FixedWithdrawal>()
-                .RegisterMyConfigSection<PercentageWithdrawal>()
-                .RegisterMyConfigSection<VariablePercentageWithdrawal>()
-                .RegisterMyConfigSection<UseBufferCash>()
-                .RegisterMyConfigSection<BufferRefill>()
-
-                .RegisterMyConfigSection<Growth>()
-                .RegisterMyConfigSection<ROIHistory>()
-                .RegisterMyConfigSection<FlatBootstrap>()
-                .RegisterMyConfigSection<MovingBlockBootstrap>()
-                .RegisterMyConfigSection<ParametricBootstrap>()
-                ;
+            return services;
         }
 
-        static IServiceCollection AddMyStrategies(this IServiceCollection services)
+        static IServiceCollection AddMyStrategies(this IServiceCollection services, IConfiguration config)
         {
-            return services
-                .AddSingleton<RebalancingStrategy>()
-                .AddSingleton<ReallocationStrategy>()
-                .AddSingleton<AdditionalIncomeStrategy>()
-                .AddSingleton<AnnualFeesStrategy>()
-                .AddSingleton<TaxStrategy>()
-                .AddSingleton<LivingExpensesStrategy>()
-                .AddSingleton<PrecalculatedLivingExpensesStrategy>()
-                .AddSingleton<FixedWithdrawalStrategy>()
-                .AddSingleton<PercentageWithdrawalStrategy>()
-                .AddSingleton<VariablePercentageWithdrawalStrategy>()
-                .AddSingleton<UseBufferCashStrategy>()
-                .AddSingleton<BufferRefillStrategy>()
-                .AddSingleton<GrowthStrategy>()
+            var strategyTypes = typeof(Program).Assembly.GetTypes()
+                .Where(t => t.GetCustomAttributes(typeof(SimInputAttribute), false).Any());
 
+            foreach (var type in strategyTypes)
+            {
+                var attr = (SimInputAttribute)type.GetCustomAttributes(typeof(SimInputAttribute), false).First();
+                var sectionName = attr.OptionsType.Name;
+                var section = config.GetSection(sectionName);
+
+                if (section.Exists())
+                {
+                    // Register Options
+                    services.AddSingleton(attr.OptionsType, sp => 
+                    {
+                        var cfg = sp.GetRequiredService<IConfiguration>();
+                        var options = cfg.GetSection(sectionName).GetEx(attr.OptionsType);
+                        return ThrowIfInvalidOption(options, attr.OptionsType);
+                    });
+
+                    // Register Strategy as ISimObjective
+                    services.AddSingleton(typeof(ISimObjective), type);
+                    
+                    // If it's GrowthStrategy, also register it as itself so Simulation can inject it
+                    if (type == typeof(GrowthStrategy))
+                    {
+                        services.AddSingleton(type, sp => sp.GetServices<ISimObjective>().First(o => o.GetType() == typeof(GrowthStrategy)));
+                    }
+                }
+            }
+
+            return services
                 .AddSingleton<HistoricalReturns>()
                 .AddSingleton<FlatBootstrapper>()
                 .AddSingleton<SequentialBootstrapper>()
@@ -140,16 +138,16 @@ namespace NinthBall.Hosting
                 var configSection = configuration.GetSection(configSectionName);
                 
                 return configSection.Exists() 
-                    ? configSection.GetEx<TOptions>().ThrowIfInvalidOption() 
+                    ? (TOptions)ThrowIfInvalidOption(configSection.GetEx<TOptions>(), typeof(TOptions)) 
                     : throw new FatalWarning($"ConfigSection not defined | '{configSectionName}'");
             });
 
             return services;
         }
 
-        private static TOption ThrowIfInvalidOption<TOption>(this TOption something)
+        private static object ThrowIfInvalidOption(object something, Type optionsType)
         {
-            if (null == something) throw new Exception($"{typeof(TOption).Name} was NULL.");
+            if (null == something) throw new Exception($"{optionsType.Name} was NULL.");
 
             var context = new ValidationContext(something, serviceProvider: null, items: null);
             var results = new List<ValidationResult>();
@@ -157,7 +155,7 @@ namespace NinthBall.Hosting
             if (isValid) return something;
 
             var csvValidationErrors = string.Join(Environment.NewLine, results.Select(x => x.ErrorMessage));
-            var errMsg = $"One or more {typeof(TOption).Name} properties were invalid. {Environment.NewLine}{csvValidationErrors}";
+            var errMsg = $"One or more {optionsType.Name} properties were invalid. {Environment.NewLine}{csvValidationErrors}";
             throw new ValidationException(errMsg);
         }
     }

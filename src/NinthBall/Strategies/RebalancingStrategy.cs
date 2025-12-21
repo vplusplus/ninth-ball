@@ -1,6 +1,7 @@
 ﻿
 namespace NinthBall
 {
+    [SimInput(typeof(RebalancingStrategy), typeof(Rebalance))]
     sealed class RebalancingStrategy(Rebalance Options) : ISimObjective, ISimStrategy
     {
         int ISimObjective.Order => 2;

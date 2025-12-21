@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 
 namespace NinthBall
 {
+    [SimInput(typeof(LivingExpensesStrategy), typeof(LivingExpenses))]
     sealed class LivingExpensesStrategy(LivingExpenses Options) : ISimObjective
     {
         int ISimObjective.Order => 32;
@@ -28,6 +29,7 @@ namespace NinthBall
     }
 
 
+    [SimInput(typeof(PrecalculatedLivingExpensesStrategy), typeof(PrecalculatedLivingExpenses))]
     sealed class PrecalculatedLivingExpensesStrategy(PrecalculatedLivingExpenses Options) : ISimObjective
     {
         private readonly IReadOnlyList<double> ExpenseSequence = PrecalculatedLivingExpenseReader.ReadPrecalculatedLivingExpenses(Options.FileName, Options.SheetName);

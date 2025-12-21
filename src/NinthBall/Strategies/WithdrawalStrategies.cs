@@ -2,6 +2,7 @@
 namespace NinthBall
 {
 
+    [SimInput(typeof(FixedWithdrawalStrategy), typeof(FixedWithdrawal))]
     sealed class FixedWithdrawalStrategy(FixedWithdrawal Options) : ISimObjective
     {
         int ISimObjective.Order => 20;
@@ -33,6 +34,7 @@ namespace NinthBall
         public override string ToString() => $"Withdrawal | Fixed {Options.FirstYearAmount:C0} (+{Options.Increment:P1}/yr)";
     }
 
+    [SimInput(typeof(PercentageWithdrawalStrategy), typeof(PercentageWithdrawal))]
     sealed class PercentageWithdrawalStrategy(PercentageWithdrawal Options) : ISimObjective
     {
         int ISimObjective.Order => 20;
@@ -69,6 +71,7 @@ namespace NinthBall
         string ResetYearsToString => (null == Options.ResetAtAge || 0 == Options.ResetAtAge.Count) ? string.Empty : $" | Reset to {Options.FirstYearPct:P1} @ age [{string.Join(',', Options.ResetAtAge)}]";
     }
 
+    [SimInput(typeof(VariablePercentageWithdrawalStrategy), typeof(VariablePercentageWithdrawal))]
     sealed class VariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options) : ISimObjective
     {
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => throw new NotImplementedException($"{nameof(VariablePercentageWithdrawalStrategy)} not yet implemented.");
