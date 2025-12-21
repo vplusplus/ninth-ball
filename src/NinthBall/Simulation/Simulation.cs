@@ -3,6 +3,8 @@ namespace NinthBall
 {
     sealed class Simulation(SimParams MySimParams, InitialBalance InitPortfolio, SimBuilder MySimBuilder, GrowthStrategy GrowthStrategy)
     {
+        private readonly ObjectPool<SimContext> SimContextPool = new( () => new SimContext() );
+
         public SimResult RunSimulation()
         {
             // Create simulation objectives.
@@ -41,8 +43,12 @@ namespace NinthBall
     
         private SimIteration RunOneIteration(IReadOnlyList<ISimObjective> objectives, int iterationIndex, Memory<SimYear> myWorstCaseSlice)
         {
-            // SimContext that tracks running balance and writes to our slice.
-            var ctx = new SimContext(InitPortfolio, iterationIndex, MySimParams.StartAge, myWorstCaseSlice);
+            // Rent a context from the pool.
+            using var lease = SimContextPool.Rent();
+            var ctx = lease.Instance;
+
+            // Reset the context for this iteration.
+            ctx.Reset(InitPortfolio, iterationIndex, MySimParams.StartAge, myWorstCaseSlice);
 
             // Strategies can be stateful; Create new set of strategies for each iteration.
             var strategies = objectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();

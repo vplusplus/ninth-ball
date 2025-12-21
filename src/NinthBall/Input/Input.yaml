@@ -10,7 +10,7 @@ SimParams:
 
 InitialBalance:
   PreTax:
-    Amount: 2,000,000
+    Amount: 1,000,000
     Allocation: 60%
   PostTax:
     Amount: 1,000,000
