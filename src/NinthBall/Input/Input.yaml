@@ -25,12 +25,18 @@ Rebalance:
 Reallocate:
   MaxDrift: 5%
   Steps:
+    - AtAge: 60
+      Allocation: 50%
+    - AtAge: 65
+      Allocation: 55%
     - AtAge: 70
       Allocation: 60%
+    - AtAge: 75
+      Allocation: 65%
     - AtAge: 80
       Allocation: 70%
-    - AtAge: 90
-      Allocation: 80%
+    - AtAge: 85
+      Allocation: 75%
 
 # Additional known incomes
 AdditionalIncomes:
