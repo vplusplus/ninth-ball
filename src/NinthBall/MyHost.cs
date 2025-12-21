@@ -21,13 +21,5 @@ namespace NinthBall.Hosting
             return appBuilder.Build();
         }
 
-        public static string YamlTextToJsonText(string yamlInput)
-        {
-            var yamlDeserializer = new DeserializerBuilder().WithAttemptingUnquotedStringTypeDeserialization().Build();
-            var yamlObject = yamlDeserializer.Deserialize<object>(new StringReader(yamlInput));
-            var jsonText = System.Text.Json.JsonSerializer.Serialize(yamlObject, options: new() { WriteIndented = true });
-
-            return jsonText;
-        }
     }
 }

@@ -4,5 +4,5 @@ using System.Text;
 
 namespace NinthBall
 {
-    internal sealed class FatalWarning(string message) : Exception(message);
+    public sealed class FatalWarning(string message) : Exception(message);
 }

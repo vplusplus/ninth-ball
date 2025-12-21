@@ -2,7 +2,7 @@
 
 namespace NinthBall
 {
-    internal static partial class Stats
+    public static partial class Stats
     {
         public static bool AlmostZero(this double number) => Math.Abs(number) <= 1e-6;
 

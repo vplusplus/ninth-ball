@@ -1,10 +1,42 @@
 ﻿
-using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace NinthBall
 {
+    /// <summary>
+    /// The root data structure representing a complete simulation configuration.
+    /// This is the "Domain Contract" that can be deserialized from YAML or populated by a UI.
+    /// </summary>
+    public sealed record SimInput
+    (
+        string? RandomSeedHint,
+        string? Output,
+        SimParams SimParams,
+        InitialBalance InitialBalance,
+
+        // Historical Data & Bootstrapping
+        ROIHistory? ROIHistory,
+        FlatBootstrap? FlatBootstrap,
+        MovingBlockBootstrap? MovingBlockBootstrap,
+        ParametricBootstrap? ParametricBootstrap,
+
+        // Strategies (Optional)
+        Rebalance? Rebalance,
+        Reallocate? Reallocate,
+        FeesPCT? FeesPCT,
+        Taxes? Taxes,
+        AdditionalIncomes? AdditionalIncomes,
+        LivingExpenses? LivingExpenses,
+        PrecalculatedLivingExpenses? PrecalculatedLivingExpenses,
+        FixedWithdrawal? FixedWithdrawal,
+        PercentageWithdrawal? PercentageWithdrawal,
+        VariablePercentageWithdrawal? VariablePercentageWithdrawal,
+        RMD? RMD,
+        Growth? Growth,
+        UseBufferCash? UseBufferCash,
+        BufferRefill? BufferRefill
+    );
+
     public sealed record SimulationSeed(string? SeedHint)
     {
         public readonly int Value = (SeedHint ?? "JSR").GetPredictableHashCode();

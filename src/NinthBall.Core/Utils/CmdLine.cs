@@ -4,30 +4,30 @@ using System.Text.RegularExpressions;
 
 namespace NinthBall.Hosting
 {
-    internal static partial class CmdLine
+    public static class CmdLine
     {
         /// <summary>
         /// Provides access to CommandLine options before host is built and configured.
         /// </summary>
         public static IConfiguration Current => LazyCommandLine.Value;
 
-        public static string Optional(string name, string defaultValue) => Current.GetValue<string>(name, defaultValue);
+        //public static string Optional(string name, string defaultValue) => Current.GetValue<string>(name, defaultValue);
         
-        public static string Required(string name) => string.IsNullOrWhiteSpace(Current[name]) ? throw new FatalWarning($"Missing CommandLine arg | --{name}") : Current[name]!;
+        //public static string Required(string name) => string.IsNullOrWhiteSpace(Current[name]) ? throw new FatalWarning($"Missing CommandLine arg | --{name}") : Current[name]!;
         
         public static bool Switch(string name) => Current.GetSection(name).Exists() && bool.Parse(Current[name]!);
 
         // Lazy initialized EnvVariables + CommandLine Options.
         private static readonly Lazy<IConfiguration> LazyCommandLine = new( ()=>
             new ConfigurationBuilder()
-                .AddEnvironmentVariables()
+                //.AddEnvironmentVariables()
                 .AddInMemoryCollection(ParseCommandLineOnce())
                 .Build()
         );
 
         private static IEnumerable<KeyValuePair<string, string?>> ParseCommandLineOnce()
         {
-            bool IsName(string something) => null != something && DashDashNoDash().IsMatch(something);
+            static bool IsName(string something) => null != something && DashDashNoDash.IsMatch(something);
 
             var args = Environment.GetCommandLineArgs().Skip(1).Where(x => !string.IsNullOrEmpty(x)).Select(x => x.Trim()).ToArray();
             var index = 0;
@@ -54,6 +54,6 @@ namespace NinthBall.Hosting
             }
         }
 
-        [GeneratedRegex("^--[^\\s-]+", RegexOptions.Compiled)] private static partial Regex DashDashNoDash();
+        private static readonly Regex DashDashNoDash = new("^--[^\\s-]+", RegexOptions.Compiled);
     }
 }

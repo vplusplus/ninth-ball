@@ -5,9 +5,9 @@ using System.Reflection;
 
 namespace NinthBall
 {
-    internal sealed class SimRunner
+    public sealed class SimRunner
     {
-        public SimResult Run(SimConfig config)
+        public SimResult Run(SimInput config)
         {
             var services = new ServiceCollection();
 
@@ -27,7 +27,7 @@ namespace NinthBall
             return simulation.RunSimulation();
         }
 
-        private static void RegisterData(IServiceCollection services, SimConfig config)
+        private static void RegisterData(IServiceCollection services, SimInput config)
         {
             services.AddSingleton(config.SimParams);
             services.AddSingleton(config.InitialBalance);
@@ -51,9 +51,9 @@ namespace NinthBall
             services.AddSingleton<Simulation>();
         }
 
-        private static void RegisterStrategies(IServiceCollection services, SimConfig config)
+        private static void RegisterStrategies(IServiceCollection services, SimInput config)
         {
-            var strategyTypes = typeof(Program).Assembly.GetTypes()
+            var strategyTypes = typeof(Simulation).Assembly.GetTypes()
                 .Where(t => t.GetCustomAttributes<SimInputAttribute>(false).Any());
 
             var activeStrategies = new List<(SimInputAttribute Attr, Type StrategyType)>();
@@ -62,8 +62,8 @@ namespace NinthBall
             {
                 var attr = type.GetCustomAttribute<SimInputAttribute>(false)!;
                 
-                // Find the property in SimConfig that matches the OptionsType
-                var prop = typeof(SimConfig).GetProperties()
+                // Find the property in SimInput that matches the OptionsType
+                var prop = typeof(SimInput).GetProperties()
                     .FirstOrDefault(p => p.PropertyType == attr.OptionsType);
 
                 if (prop != null)

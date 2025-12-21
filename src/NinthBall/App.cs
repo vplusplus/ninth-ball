@@ -20,7 +20,6 @@ namespace NinthBall
 
         public async Task RunAsync()
         {
-            // Process.
             if (WatchMode) await ProcessForever(InputFileName); else await ProcessOnce(InputFileName);
         }
 
@@ -74,7 +73,7 @@ namespace NinthBall
             try
             {
                 // Load Config
-                var simConfig = LoadConfig(inputFileName);
+                var simConfig = SimInputReader.FromYamlFile(inputFileName);
                 outputFileName = simConfig.Output ?? FallbackOutputFileName;
 
                 // Ensure output directory.
@@ -104,37 +103,37 @@ namespace NinthBall
             }
         }
 
-        private SimConfig LoadConfig(string path)
-        {
-            const string MyPathTag = "$(MyPath)";
+        //private SimInput LoadConfig(string path)
+        //{
+        //    const string MyPathTag = "$(MyPath)";
 
-            var yamlText = File.ReadAllText(path);
+        //    var yamlText = File.ReadAllText(path);
 
-            // Replace $(MyPath)
-            if (yamlText.Contains(MyPathTag, StringComparison.OrdinalIgnoreCase))
-            {
-                var myPath = Path.GetFullPath(Path.GetDirectoryName(path) ?? "./")
-                    .Replace('\\', '/')
-                    .TrimEnd('/');
+        //    // Replace $(MyPath)
+        //    if (yamlText.Contains(MyPathTag, StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        var myPath = Path.GetFullPath(Path.GetDirectoryName(path) ?? "./")
+        //            .Replace('\\', '/')
+        //            .TrimEnd('/');
 
-                yamlText = yamlText.Replace(MyPathTag, myPath, StringComparison.OrdinalIgnoreCase);
-            }
+        //        yamlText = yamlText.Replace(MyPathTag, myPath, StringComparison.OrdinalIgnoreCase);
+        //    }
 
-            var jsonText = MyHost.YamlTextToJsonText(yamlText);
+        //    var jsonText = MyHost.YamlTextToJsonText(yamlText);
             
-            var options = new System.Text.Json.JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                AllowTrailingCommas = true,
-                NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
-            };
+        //    var options = new System.Text.Json.JsonSerializerOptions
+        //    {
+        //        PropertyNameCaseInsensitive = true,
+        //        ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+        //        AllowTrailingCommas = true,
+        //        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+        //    };
 
-            options.Converters.Add(new PercentageToDoubleConverter());
-            options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        //    options.Converters.Add(new PercentageToDoubleConverter());
+        //    options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 
-            return System.Text.Json.JsonSerializer.Deserialize<SimConfig>(jsonText, options) 
-                ?? throw new Exception("Failed to deserialize SimConfig.");
-        }
+        //    return System.Text.Json.JsonSerializer.Deserialize<SimInput>(jsonText, options) 
+        //        ?? throw new Exception("Failed to deserialize SimInput.");
+        //}
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿
 using System.Text.Json;
 
 namespace NinthBall
@@ -30,6 +28,4 @@ namespace NinthBall
             else throw new Exception($"Cannot convert '{something}' to double value.");
         }
     }
-
-
 }

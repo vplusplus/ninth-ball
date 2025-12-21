@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NinthBall.Core\NinthBall.Core.csproj" />
     <ProjectReference Include="..\NinthBall\NinthBall.csproj" />
   </ItemGroup>
 

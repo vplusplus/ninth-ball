@@ -15,6 +15,10 @@ namespace NinthBall
         Income
     }
 
+
+    /// <summary>
+    /// Each strategy can declare the primary input it needs using SimInputAttribute
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     internal sealed class SimInputAttribute : System.Attribute
     {

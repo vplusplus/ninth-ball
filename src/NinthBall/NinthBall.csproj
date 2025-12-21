@@ -25,9 +25,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NinthBall.Core\NinthBall.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Input\**">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Hosting\" />
   </ItemGroup>
 
 </Project>
