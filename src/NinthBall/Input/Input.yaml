@@ -13,10 +13,10 @@ InitialBalance:
     Amount: 2,000,000
     Allocation: 60%
   PostTax:
-    Amount: 1,000,001
+    Amount: 1,000,000
     Allocation: 60%
   Cash:
-    Amount: 200,002
+    Amount: 0
 
 # Rebalancing and Reallocation strategies
 Rebalance:
