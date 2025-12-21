@@ -15,31 +15,39 @@ namespace NinthBall
             Console.WriteLine(DASHES);
         }
 
-        //public static void PrintParams(this SimConfig simConfig)
-        //{
-        //    var init = 0; // $"{simConfig.InitialBalance:C0}";
-        //    var aloc = 0; //  $"{simConfig.StockAllocation:P0}-{1-simConfig.StockAllocation:P0}";
-        //    var year = 0; //  $"{simConfig.NoOfYears}";
-        //    var iter = 0; // $"{simConfig.Iterations:#,0}";
+        public static void ErrorSummary(Exception err)
+        {
+            if (null == err) return;
 
-        //    Inform($"{init} | {aloc} | {year} years | {iter} iterations.");
-        //}
+            Console.WriteLine(RootCause(err));
+            if (null == err.InnerException)
+            {
+                Console.WriteLine("Additional details:");
+                while(null != err)
+                {
+                    Console.WriteLine(err.Message);
+                    err = err.InnerException!;
+                } 
+            }
 
-        public static void Footer(SimResult simResult, TimeSpan elapsed, string outputFileName) 
+            static string RootCause(Exception ex)
+            {
+                string rootCause = string.Empty;
+                while(null != ex)
+                {
+                    rootCause = ex.ToString();
+                    ex = ex.InnerException!;
+                }
+                return rootCause;
+            }
+        }
+
+        public static void Done(SimResult simResult, TimeSpan elapsed, string outputFileName) 
         {
             var survivalRate = simResult.SurvivalRate;
             var txtSurvivalRate = survivalRate > 0.99 ? $"{survivalRate:P1}" : $"{survivalRate:P0}";
 
-            Inform($"{txtSurvivalRate} survival | {elapsed.TotalMilliseconds:#,0} mSec | See {Path.GetFileName(outputFileName)}");
-        }
-
-        static void Inform(string something) => Console.WriteLine($" [{DateTime.Now:HH\\:mm\\:ss}] {something}");
-
-        public static void Error(Exception err)
-        {
-            Console.WriteLine();
-            Console.WriteLine("An error occurred:");
-            Console.WriteLine(err);
+            Console.WriteLine($" [{DateTime.Now:HH\\:mm\\:ss}] Done. {txtSurvivalRate} survival | {elapsed.TotalMilliseconds:#,0} mSec | See {Path.GetFileName(outputFileName)}");
         }
     }
 }
