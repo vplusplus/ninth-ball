@@ -55,7 +55,7 @@ namespace NinthBall.Hosting
                 .RegisterMyConfigSection<Growth>()
                 .RegisterMyConfigSection<ROIHistory>()
                 .RegisterMyConfigSection<FlatBootstrap>()
-                .RegisterMyConfigSection<MovingBlockBootstrapOptions>()
+                .RegisterMyConfigSection<MovingBlockBootstrap>()
                 .RegisterMyConfigSection<ParametricBootstrap>()
                 ;
         }

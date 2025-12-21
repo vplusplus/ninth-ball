@@ -7,7 +7,7 @@ namespace NinthBall
         public readonly int ChronoIndex = 0 == Segment.Count ? 0 : Segment[0].Year;
     }
 
-    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, MovingBlockBootstrapOptions Options) : IBootstrapper
+    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, MovingBlockBootstrap Options) : IBootstrapper
     {
         readonly Lazy<IReadOnlyList<Block>> AllBlocks = new(() =>
             ReadBlocksOnce(History.AllYears.ToArray(), Options.BlockSizes.ToArray())

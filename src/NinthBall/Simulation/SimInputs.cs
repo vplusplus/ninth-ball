@@ -30,7 +30,7 @@ namespace NinthBall
         InitialBalance.AA PostTax,
 
         [property: ValidateNested]
-        InitialBalance.AA Cash
+        InitialBalance.AA Cash          // Allocation is ignored for Cash assets
     )
     {
         public readonly record struct AA
@@ -178,7 +178,7 @@ namespace NinthBall
         [property: Required] string XLSheetName
     );
 
-    public sealed record MovingBlockBootstrapOptions(
+    public sealed record MovingBlockBootstrap(
         [property: Required] IReadOnlyList<int> BlockSizes, bool NoConsecutiveBlocks
     );
     
