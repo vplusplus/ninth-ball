@@ -9,13 +9,13 @@ namespace NinthBall
     {
         int ISimObjective.Order => 40;
 
-        readonly IBootstrapper MyBootstrapper = (Options.Bootstrapper ?? string.Empty).ToLower() switch
+        readonly IBootstrapper MyBootstrapper = Options.Bootstrapper switch
         {
-            "flat"        => Services.GetRequiredService<FlatBootstrapper>(),
-            "sequential"  => Services.GetRequiredService<SequentialBootstrapper>(),
-            "movingblock" => Services.GetRequiredService<MovingBlockBootstrapper>(),
-            "parametric"  => Services.GetRequiredService<ParametricBootstrapper>(),
-            _             => throw new Exception($"Unknown bootstrapper: {Options.Bootstrapper}")
+            BootstrapKind.Flat        => Services.GetRequiredService<FlatBootstrapper>(),
+            BootstrapKind.Sequential  => Services.GetRequiredService<SequentialBootstrapper>(),
+            BootstrapKind.MovingBlock => Services.GetRequiredService<MovingBlockBootstrapper>(),
+            BootstrapKind.Parametric  => Services.GetRequiredService<ParametricBootstrapper>(),
+            _                         => throw new Exception($"Unknown bootstrapper: {Options.Bootstrapper}")
         };
 
         int ISimObjective.MaxIterations => MyBootstrapper.GetMaxIterations(SimParams.NoOfYears);

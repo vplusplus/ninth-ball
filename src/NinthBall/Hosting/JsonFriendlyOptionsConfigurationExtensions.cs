@@ -32,6 +32,7 @@ namespace NinthBall.Hosting
             // Accept percentage values (Example: 60%)
             var options = new JsonSerializerOptions() { NumberHandling = JsonNumberHandling.AllowReadingFromString };
             options.Converters.Add(new PercentageToDoubleConverter());
+            options.Converters.Add(new JsonStringEnumConverter());
 
             // Deserialize using System.Text.Json
             return configSectionAsJsonNode.Deserialize(optionsType, options) ?? throw new Exception($"Failed to deserialize config section | {optionsType.Name}");

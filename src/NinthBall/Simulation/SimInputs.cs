@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace NinthBall
 {
@@ -166,9 +167,14 @@ namespace NinthBall
         [property: Min(0)] double MaxAmount
     );
 
+    public enum BootstrapKind
+    {
+        Flat, Sequential, MovingBlock, Parametric
+    }
+
     public sealed record Growth
     (
-        [property: Required]    string Bootstrapper, 
+        [property: Required]    BootstrapKind Bootstrapper, 
         [property: Range(0, 1)] double CashROI
     );
 
@@ -178,17 +184,18 @@ namespace NinthBall
         [property: Required] string XLSheetName
     );
 
-    public sealed record MovingBlockBootstrap(
-        [property: Required] IReadOnlyList<int> BlockSizes, 
-        [property: Required] bool NoConsecutiveBlocks
-    );
-    
     public sealed record FlatBootstrap
     (
         [property: Range(0, 1)] double Stocks,
         [property: Range(0, 1)] double Bonds
     );
 
+    public sealed record MovingBlockBootstrap
+    (
+        [property: Required] IReadOnlyList<int> BlockSizes, 
+        [property: Required] bool NoConsecutiveBlocks
+    );
+    
     public sealed record ParametricBootstrap
     (
         [property: Required]
