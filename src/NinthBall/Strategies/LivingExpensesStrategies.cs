@@ -24,7 +24,7 @@ namespace NinthBall
             }
         }
 
-        public override string ToString() => $"Living expenses - First year: {Options.FirstYearAmount:C0} | Yearly increment: {Options.Increment:P1}";
+        public override string ToString() => $"Living expenses | {Options.FirstYearAmount:C0} first year (+{Options.Increment:P1}/yr)";
     }
 
 
@@ -49,7 +49,7 @@ namespace NinthBall
             }
         }
 
-        public override string ToString() => $"Living expenses - From {Path.GetFileName(Options.FileName)} [sheet: {Options.SheetName}]";
+        public override string ToString() => $"Living expenses | Pre-calculated from {Path.GetFileName(Options.FileName)} [{Options.SheetName}]";
     }
 
 }

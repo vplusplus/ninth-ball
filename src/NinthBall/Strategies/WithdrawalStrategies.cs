@@ -30,7 +30,7 @@ namespace NinthBall
             }
         }
 
-        public override string ToString() => $"Withdraw {Options.FirstYearAmount:C0} first year with {Options.Increment:P1} increment each year.";
+        public override string ToString() => $"Withdrawal | Fixed {Options.FirstYearAmount:C0} (+{Options.Increment:P1}/yr)";
     }
 
     sealed class PercentageWithdrawalStrategy(PercentageWithdrawal Options) : ISimObjective
@@ -65,13 +65,13 @@ namespace NinthBall
             }
         }
 
-        public override string ToString() => $"{WithdrawPctToString} {ResetYearsToString}";
-        string WithdrawPctToString => $"Withdraw {Options.FirstYearPct:P1} first year with {Options.Increment:P1} increment each year.";
-        string ResetYearsToString => (null == Options.ResetAtAge || 0 == Options.ResetAtAge.Count) ? string.Empty : $"Reset to {Options.FirstYearPct:P1} @[{string.Join(',', Options.ResetAtAge)}]";
+        public override string ToString() => $"Withdrawal | {Options.FirstYearPct:P1} of PreTax (+{Options.Increment:P1}/yr){ResetYearsToString}";
+        string ResetYearsToString => (null == Options.ResetAtAge || 0 == Options.ResetAtAge.Count) ? string.Empty : $" | Reset to {Options.FirstYearPct:P1} @ age [{string.Join(',', Options.ResetAtAge)}]";
     }
 
     sealed class VariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options) : ISimObjective
     {
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => throw new NotImplementedException($"{nameof(VariablePercentageWithdrawalStrategy)} not yet implemented.");
+        public override string ToString() => "Withdrawal | Variable percentage (not implemented)";
     }
 }

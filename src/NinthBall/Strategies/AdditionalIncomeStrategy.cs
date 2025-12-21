@@ -23,6 +23,6 @@ namespace NinthBall
             }
         }
 
-        public override string ToString() => $"Incomes | SS: {options.SS.Amount:C0} from {options.SS.FromAge} with {options.SS.Increment:P1} increment | Ann: {options.Ann.Amount:C0} from {options.Ann.FromAge} with {options.Ann.Increment:P1} increment.";
+        public override string ToString() => $"Additional income | SS: {options.SS.Amount:C0} @ age {options.SS.FromAge} (+{options.SS.Increment:P1}/yr) | Ann: {options.Ann.Amount:C0} @ age {options.Ann.FromAge} (+{options.Ann.Increment:P1}/yr)";
     }
 }

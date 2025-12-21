@@ -56,7 +56,7 @@ namespace NinthBall
 
         static void ThrowIfZero(double d, string name) { if (d <= 0) throw new Exception($"{name} cannot be zero. Use some very low value, but not zero, to model zero-tax scenario"); }
 
-        public override string ToString() => $"Taxes | Ordinary income: {Options.TaxRates.OrdinaryIncome:P1} | Capital gains: {Options.TaxRates.CapitalGains:P1}";
+        public override string ToString() => $"Taxes | Ordinary: {Options.TaxRates.OrdinaryIncome:P1} | CapGains: {Options.TaxRates.CapitalGains:P1}";
     }
 }
 

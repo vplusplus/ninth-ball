@@ -35,7 +35,7 @@ zzReallocate:
 # Additional known incomes
 AdditionalIncomes:
   SS: 
-    FromAge: 60
+    FromAge: 70
     Amount: 70,000
     Increment: 2%
   Ann:

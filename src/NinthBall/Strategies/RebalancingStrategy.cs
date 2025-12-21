@@ -14,6 +14,6 @@ namespace NinthBall
             context.CashBalance.Rebalance(Options.MaxDrift);
         }
 
-        public override string ToString() => $"Rebalance yearly - MaxDrift: {Options.MaxDrift:P0}";
+        public override string ToString() => $"Rebalancing | Yearly if drift > {Options.MaxDrift:P0}";
     }
 }

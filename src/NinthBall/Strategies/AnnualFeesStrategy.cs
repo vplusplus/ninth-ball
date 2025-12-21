@@ -17,6 +17,6 @@ namespace NinthBall
             );
         }
 
-        public override string ToString() => $"Fees | PreTax: {Options.PreTax:P1} | PostTax: {Options.PostTax:P1} | Cash: {Options.Cash:P1}";
+        public override string ToString() => $"Annual fees | PreTax: {Options.PreTax:P1} | PostTax: {Options.PostTax:P1} | Cash: {Options.Cash:P1}";
     }
 }
