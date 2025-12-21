@@ -18,7 +18,7 @@ namespace NinthBall
             _             => throw new Exception($"Unknown bootstrapper: {Options.Bootstrapper}")
         };
 
-        public int MaxIterations => MyBootstrapper.GetMaxIterations(SimParams.NoOfYears);
+        int ISimObjective.MaxIterations => MyBootstrapper.GetMaxIterations(SimParams.NoOfYears);
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) 
         {

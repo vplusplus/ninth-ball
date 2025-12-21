@@ -1,7 +1,6 @@
-﻿
-namespace NinthBall
+﻿namespace NinthBall
 {
-    sealed class Simulation(SimParams MySimParams, InitialBalance InitPortfolio, SimBuilder MySimBuilder, GrowthStrategy GrowthStrategy)
+    sealed class Simulation(SimParams MySimParams, InitialBalance InitPortfolio, SimBuilder MySimBuilder)
     {
         private readonly ObjectPool<SimContext> SimContextPool = new( () => new SimContext() );
 
@@ -10,8 +9,8 @@ namespace NinthBall
             // Create simulation objectives.
             var objectives = MySimBuilder.SimulationObjectives;
 
-            // Consult current bootstrapper. Find max iterations that we can support.
-            int maxIterations = Math.Min(MySimParams.Iterations, GrowthStrategy.MaxIterations);
+            // Consult current objectives. Find max iterations that we can support.
+            int maxIterations = Math.Min(MySimParams.Iterations, objectives.Min(x => x.MaxIterations));
             int noOfYears = MySimParams.NoOfYears;
 
             // Pre-allocate ONE giant contiguous block of memory for ALL results.

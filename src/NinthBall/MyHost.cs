@@ -65,12 +65,6 @@ namespace NinthBall.Hosting
 
                     // Register Strategy as ISimObjective
                     services.AddSingleton(typeof(ISimObjective), type);
-                    
-                    // If it's GrowthStrategy, also register it as itself so Simulation can inject it
-                    if (type == typeof(GrowthStrategy))
-                    {
-                        services.AddSingleton(type, sp => sp.GetServices<ISimObjective>().First(o => o.GetType() == typeof(GrowthStrategy)));
-                    }
                 }
             }
 

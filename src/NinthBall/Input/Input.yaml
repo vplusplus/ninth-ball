@@ -97,7 +97,7 @@ ZZZBufferRefill:
 # Growth strategies 
 # ............................................................
 Growth:
-  Bootstrapper: Sequential     # Flat | Sequential | MovingBlock | Parametric
+  Bootstrapper: MovingBlock     # Flat | Sequential | MovingBlock | Parametric
   CashROI: 0%
 
 # ............................................................
