@@ -90,11 +90,11 @@ RMD:
 # ............................................................
 # Buffer cash strategies
 # ............................................................
-ZZZUseBufferCash:
+UseBufferCash:
   GrowthThreshold: 0.03
   MaxAmount: 100000
 
-ZZZBufferRefill:
+BufferRefill:
   GrowthThreshold: 0.03
   MaxAmount: 100000
 
@@ -102,7 +102,7 @@ ZZZBufferRefill:
 # Growth strategies 
 # ............................................................
 Growth:
-  Bootstrapper: MovingBlock     # Flat | Sequential | MovingBlock | Parametric
+  Bootstrapper: Parametric     # Flat | Sequential | MovingBlock | Parametric
   CashROI: 0%
 
 # ............................................................
@@ -126,12 +126,12 @@ ParametricBootstrap:
   Stocks:
     MeanReturn: 6.5%
     Volatility: 17%
-    Skewness: -0.5
-    Kurtosis: 5
-    AutoCorrelation: 0.1
+    Skewness: -0.3          # Prudent Stress: Slightly negative to capture downside bias without extreme "wipeouts"
+    Kurtosis: 4.0           # Prudent Stress: "Fat tails" (Normal=3). 4.0 models a 2008-style crisis every ~25 years.
+    AutoCorrelation: 0.05   # Momentum: Slight positive correlation to model market regimes.
   Bonds:
     MeanReturn: 3.5%
     Volatility: 8%
-    Skewness: 0
-    Kurtosis: 3
+    Skewness: 0             # Bonds are generally more symmetric in their annual return distribution.
+    Kurtosis: 3             # Normal distribution for bonds.
     AutoCorrelation: 0

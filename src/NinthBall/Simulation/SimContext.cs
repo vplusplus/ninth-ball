@@ -22,6 +22,9 @@ namespace NinthBall
         {
             var change = Amount * ROI;
             _cash += change;
+            
+            if (_cash < 0) { change -= _cash; _cash = 0; }
+            
             return change;
         }
     }
@@ -109,6 +112,9 @@ namespace NinthBall
 
             Stocks += sChange;
             Bonds += bChange;
+
+            if (Stocks < 0) { sChange -= Stocks; Stocks = 0; }
+            if (Bonds < 0) { bChange -= Bonds; Bonds = 0; }
 
             return sChange + bChange;
         }
