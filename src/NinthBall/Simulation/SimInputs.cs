@@ -45,7 +45,7 @@ namespace NinthBall
 
     public sealed record Rebalance
     (
-        [Range(0.0, 0.5)]
+        [property: Range(0.0, 0.5)]
         double MaxDrift
     );
 
@@ -174,12 +174,13 @@ namespace NinthBall
 
     public sealed record ROIHistory
     (
-        [property: Required] string XLFileName, 
+        [property: Required, FileExists] string XLFileName, 
         [property: Required] string XLSheetName
     );
 
     public sealed record MovingBlockBootstrap(
-        [property: Required] IReadOnlyList<int> BlockSizes, bool NoConsecutiveBlocks
+        [property: Required] IReadOnlyList<int> BlockSizes, 
+        [property: Required] bool NoConsecutiveBlocks
     );
     
     public sealed record FlatBootstrap
@@ -193,7 +194,7 @@ namespace NinthBall
         [property: Required]
         string DistributionType, 
 
-        [property: Range(0, 1)] 
+        [property: Range(-1.0, 1.0)] 
         double StocksBondCorrelation,
 
         [property: ValidateNested]
@@ -203,7 +204,11 @@ namespace NinthBall
         ParametricBootstrap.Dist Bonds)
     {
         public readonly record struct Dist(
-            double MeanReturn, double Volatility, double Skewness, double Kurtosis, double AutoCorrelation
+            [property: Range(-1.0, 1.0)] double MeanReturn, 
+            [property: Range(0.0, 1.0)]  double Volatility, 
+            [property: Range(-10.0, 10.0)] double Skewness, 
+            [property: Range(0.0, 100.0)]  double Kurtosis, 
+            [property: Range(-1.0, 1.0)]   double AutoCorrelation
         );
 
     }
