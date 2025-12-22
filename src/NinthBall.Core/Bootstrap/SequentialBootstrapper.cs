@@ -6,7 +6,7 @@ namespace NinthBall.Core
         // We have limited data. 
         public int GetMaxIterations(int numYears) => History.AllYears.Count - numYears + 1;
 
-
+        // Return exact sequence of history.
         public IReadOnlyList<HROI> GetROISequence(int iterationIndex, int numYears)
         {
             var availableYears = History.AllYears.Count - iterationIndex;

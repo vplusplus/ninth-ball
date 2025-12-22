@@ -12,8 +12,8 @@ namespace NinthBall.Core
 
         IReadOnlyList<HROI> ReadHistoryOnce()
         {
-            var xlFileName = options.XLFileName ?? throw new ArgumentException(nameof(options.XLFileName));
-            var sheetName  = options.XLSheetName?? throw new ArgumentException(nameof(options.XLSheetName));
+            var xlFileName = options.XLFileName  ?? throw new ArgumentNullException(nameof(options.XLFileName));
+            var sheetName  = options.XLSheetName ?? throw new ArgumentNullException(nameof(options.XLSheetName));
 
             List<HROI> history = [];
 

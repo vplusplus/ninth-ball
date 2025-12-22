@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿
 namespace NinthBall.Core
 {
-    internal sealed class ParametricBootstrapper(ParametricBootstrap Options, SimulationSeed Seed) : IBootstrapper
+    internal sealed class ParametricBootstrapper(ParametricBootstrap Options, SimulationSeed SimSeed) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
         public int GetMaxIterations(int numYears) => int.MaxValue;
@@ -11,8 +9,8 @@ namespace NinthBall.Core
         public IReadOnlyList<HROI> GetROISequence(int iterationIndex, int numYears)
         {
             // Use a deterministic seed based on iterationIndex and the global seed hint
-            var random = new Random(Seed.Value.GetHashCode() ^ iterationIndex);
-            
+            var random = new Random(PredictableHashCode.Combine(SimSeed.Value, iterationIndex));
+
             var sequence = new List<HROI>(numYears);
 
             // State for autocorrelation

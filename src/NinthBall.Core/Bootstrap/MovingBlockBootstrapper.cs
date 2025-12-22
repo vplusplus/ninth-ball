@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.ObjectModel;
+
 namespace NinthBall.Core
 {
     internal sealed record Block(IReadOnlyList<HROI> Segment)
@@ -69,7 +71,7 @@ namespace NinthBall.Core
 
         }
 
-        static IReadOnlyList<Block> ReadBlocksOnce(HROI[] history, int[] blockLengths)
+        static ReadOnlyCollection<Block> ReadBlocksOnce(HROI[] history, int[] blockLengths)
         {
             if (0 == blockLengths.Length) throw new ArgumentException("Invalid blockLength(s). Please specify at least one.");
             if (blockLengths.Length != blockLengths.Distinct().Count()) throw new ArgumentException("Invalid blockLength(s). Expecting distinct numbers.");

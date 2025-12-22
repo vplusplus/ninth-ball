@@ -95,11 +95,11 @@ RMD:
 # ............................................................
 # Buffer cash strategies
 # ............................................................
-UseBufferCash:
+zzz-UseBufferCash:
   GrowthThreshold: 0.03
   MaxAmount: 100000
 
-BufferRefill:
+zzz-BufferRefill:
   GrowthThreshold: 0.03
   MaxAmount: 100000
 
@@ -107,7 +107,7 @@ BufferRefill:
 # Growth strategies 
 # ............................................................
 Growth:
-  Bootstrapper: Parametric     # Flat | Sequential | MovingBlock | Parametric
+  Bootstrapper: MovingBlock     # Flat | Sequential | MovingBlock | Parametric
   CashROI: 0%
 
 # ............................................................
