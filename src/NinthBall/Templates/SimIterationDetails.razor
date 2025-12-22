@@ -2,7 +2,7 @@
 @using NinthBall.Core;
 
 <!-- Presents year-by-year details of single iteration -->
-<table id="@Id" class="table table-sm caption-top page-break mb-0" style="zzztable-layout: fixed; width: 100%;">
+<table id="@Id" class="table table-sm table-striped caption-top page-break mb-0" style="width: 100%;">
     <caption>
         <h3>@Caption</h3>
     </caption>
@@ -33,7 +33,9 @@
             <th>XCash</th>
 
             <th>Change</th>
-            <th>ROI (Y|S|B)</th>
+            <th>Like</th>
+            <th>Stocks</th>
+            <th>Bonds</th>
 
         </tr>
 
@@ -46,8 +48,9 @@
 
             // static string K0(double amount) => amount > 1 || amount < -1 ? $"{amount / 1000:C0}" : string.Empty;
             static string R100(double amount) => amount > 1 || amount < -1 ? $"{Math.Round(amount/100) * 100:C0}" : string.Empty;
-
             static string P0(double pct) => $"{pct:P0}";
+            string cssROI = CSS(y.Change.Total());
+
 
             <tr>
                 <td>@(y.Year + 1)</td>
@@ -68,12 +71,15 @@
                 <td class="@RG(fromPostTax)">@R100(fromPostTax)</td>
                 <td class="@RG(fromCash)">@R100(fromCash)</td>
 
-                <td class="@CSS(y.Change.Total())">
+                <td class="@cssROI">
                     @R100(y.Change.Total())
                 </td>
-                <td class="@CSS(y.Change.Total())">
-                    @y.ROI.LikeYear | @($"{y.ROI.StocksROI,6:P1}") | @($"{y.ROI.BondsROI,6:P1}")
+                <td class="mono-space @cssROI">
+                    @y.ROI.LikeYear
                 </td>
+                <td class="mono-space @cssROI">@($"{y.ROI.StocksROI,6:P1}")</td>
+                <td class="mono-space @cssROI">@($"{y.ROI.BondsROI,6:P1}")</td>
+
             </tr>
         }
 

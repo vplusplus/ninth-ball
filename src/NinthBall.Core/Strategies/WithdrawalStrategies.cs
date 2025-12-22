@@ -107,10 +107,10 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Withdrawal | Variable percentage ({Options.ROI:P1} ROI, {Options.Inflation:P1} Inflation){GuardrailsToString}";
+        public override string ToString() => $"Withdrawal | Variable percentage towards zero balance | Assumptions: {Options.ROI:P1} ROI, {Options.Inflation:P1} Inflation{GuardrailsToString}";
 
         string GuardrailsToString => (Options.Floor.HasValue || Options.Ceiling.HasValue) 
-            ? $" | Guardrails: [{Options.Floor?.ToString("C0") ?? "None"} - {Options.Ceiling?.ToString("C0") ?? "None"}] (adj. for inflation)" 
+            ? $" | Guardrails: [{Options.Floor?.ToString("C0") ?? "None"} - {Options.Ceiling?.ToString("C0") ?? "None"}] adjusted for inflation" 
             : string.Empty;
     }
 }

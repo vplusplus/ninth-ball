@@ -27,5 +27,7 @@ namespace NinthBall.Core
             Array.Fill(sequence, oneROI);
             return sequence.AsReadOnly();
         }
+
+        public override string ToString() => $"Flat growth | Stocks: {Options.Stocks:P1} Bonds: {Options.Stocks:P1}";
     }
 }

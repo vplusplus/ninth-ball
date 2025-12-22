@@ -9,6 +9,8 @@ namespace NinthBall.Core
         public SimIteration Percentile(double percentile) =>
             percentile < 0.0 || percentile > 1.0 ? throw new ArgumentOutOfRangeException(nameof(percentile), "Percentile must be between 0.0 and 1.0") :
             Iterations.Count == 0 ? throw new InvalidOperationException("No results available") :
+            0.0 == percentile ? Iterations.First() :
+            1.0 == percentile ? Iterations.Last() :
             Iterations[(int)(percentile * (Iterations.Count - 1))];
     }
 
@@ -32,7 +34,10 @@ namespace NinthBall.Core
         ROI         ROI,
         Change      Change,
         Assets      Dec
-    );
+    )
+    {
+        public readonly double ChangePCT => Change.Total() / ( Jan.Total() - Fees.Total() - Withdrawals.Total() );
+    }
 
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI)
     {

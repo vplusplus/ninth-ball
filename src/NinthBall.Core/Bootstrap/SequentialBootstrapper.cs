@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.Extensions.Options;
+
 namespace NinthBall.Core
 {
     /// <summary>
@@ -19,5 +21,7 @@ namespace NinthBall.Core
 
             return History.History.Skip(iterationIndex).Take(numYears).ToList();
         }
+
+        public override string ToString() => $"Sequence of historical returns from {History.History.Min(x => x.Year)} to {History.History.Max(x => x.Year)} data.";
     }
 }

@@ -39,6 +39,6 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Growth | {Options.Bootstrapper} bootstrap using historical data";
+        public override string ToString() => $"Growth | {MyBootstrapper.ToString()}";
     }
 }

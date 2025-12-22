@@ -66,6 +66,8 @@ namespace NinthBall.Core
             return sequence.AsReadOnly();
         }
 
+        public override string ToString() => $"Parametric Bootstrap | Stocks - Mean: {Options.Stocks.MeanReturn:P1} Volatility: {Options.Stocks.Volatility:P1} | Bonds - Mean: {Options.Bonds.MeanReturn:P1} Volatility: {Options.Bonds.Volatility:P1}";
+
         private static double NextSafeDouble(Random random)
         {
             double u = random.NextDouble();

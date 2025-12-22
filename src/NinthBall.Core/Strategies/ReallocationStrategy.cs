@@ -22,6 +22,6 @@ namespace NinthBall.Core
 
         public override string ToString() => $"Reallocation | Glide path: {CSVSteps}";
 
-        string CSVSteps => string.Join(", ", Options.Steps.Select(x => $"{x.Allocation:P0} @ {x.AtAge}"));
+        string CSVSteps => string.Join(", ", Options.Steps.Select(x => $"[{x.Allocation:P0} @ {x.AtAge}]"));
     }
 }
