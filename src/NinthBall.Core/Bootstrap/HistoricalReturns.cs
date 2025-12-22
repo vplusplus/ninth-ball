@@ -4,7 +4,7 @@ namespace NinthBall.Core
     // Historical returns:
     // REF: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com
 
-    public record struct HROI(int Year, double StocksROI, double BondROI); 
+    internal record struct HROI(int Year, double StocksROI, double BondROI); 
 
     internal sealed class HistoricalReturns(ROIHistory options)
     {

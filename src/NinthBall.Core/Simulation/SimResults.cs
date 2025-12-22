@@ -70,7 +70,9 @@ namespace NinthBall.Core
         public int SurvivedYears => Success ? ByYear.Length : ByYear.Length - 1;
     }
 
-    public sealed record SimResult(IReadOnlyList<ISimObjective> Objectives, IReadOnlyList<SimIteration> Iterations)
+    public sealed record SimResult(
+        IReadOnlyList<string> Strategies,
+        IReadOnlyList<SimIteration> Iterations)
     {
         public int NoOfYears { get; init; } = Iterations.Count == 0 ? 0 : Iterations.Max(x => x.ByYear.Length);
         public double SurvivalRate { get; init; } = Iterations.Count == 0 ? 0.0 : (double)Iterations.Count(x => x.Success) / (double)Iterations.Count;

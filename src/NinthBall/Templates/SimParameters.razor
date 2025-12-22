@@ -7,9 +7,9 @@
         @($"{InitialBalance:C0}") | @($"{StockAllocationPct:P0}") - @($"{BondAllocationPct:P0}") | @NumYears years | @NumIterations.ToString("#,0") iterations
     </h4>
     <ul>
-        @foreach (var obj in Model.Objectives)
+        @foreach (var strategy in Model.Strategies)
         {
-            <li>@obj.ToString()</li>
+            <li>@strategy</li>
         }
     </ul>
 </div>

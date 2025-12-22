@@ -35,8 +35,14 @@
                 .ToList()
                 .AsReadOnly();
 
+            // Extract strategy descriptions
+            var strategyDescriptions = _objectives
+                .Select(obj => obj.ToString() ?? "Unknown Strategy")
+                .ToList()
+                .AsReadOnly();
+
             return new SimResult(
-                _objectives,
+                strategyDescriptions,
                 iterationResultsWorstToBest
             );
         }

@@ -19,7 +19,7 @@ namespace NinthBall.Core
                 yamlText = yamlText.Replace(MyPathTag, myPath, StringComparison.OrdinalIgnoreCase);
             }
 
-            var jsonText = Yaml2Jaon.YamlTextToJsonText(yamlText);
+            var jsonText = Yaml2Json.YamlTextToJsonText(yamlText);
 
             var options = new System.Text.Json.JsonSerializerOptions
             {

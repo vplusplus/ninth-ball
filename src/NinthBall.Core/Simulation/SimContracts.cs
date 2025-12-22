@@ -1,19 +1,19 @@
 ﻿
 namespace NinthBall.Core
 {
-    public interface ISimObjective
+    internal interface ISimObjective
     {
         int Order { get => 50; }
         int MaxIterations { get => int.MaxValue; }
         ISimStrategy CreateStrategy(int iterationIndex);
     }
 
-    public interface ISimStrategy
+    internal interface ISimStrategy
     {
         void Apply(ISimContext context);
     }
 
-    public interface IBalance
+    internal interface IBalance
     {
         double Amount { get; }
         double Allocation { get; }
@@ -21,7 +21,7 @@ namespace NinthBall.Core
         bool Reallocate(double newAllocation, double maxDrift);
     }
 
-    public interface ISimContext
+    internal interface ISimContext
     {
         // Running balance (Jan)
         IBalance PreTaxBalance { get; }

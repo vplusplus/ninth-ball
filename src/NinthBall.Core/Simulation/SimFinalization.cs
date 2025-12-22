@@ -2,7 +2,7 @@
 
 namespace NinthBall.Core
 {
-    public static class SimFinalization
+    internal static class SimFinalization
     {
         /// <summary>
         /// Given known constraints (Jan, fees, incomes, expenses, etc.)

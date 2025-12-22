@@ -1,6 +1,6 @@
 namespace NinthBall.Core
 {
-    public static class Precision
+    internal static class Precision
     {
         // Amounts (Currency) - We care about cents, but simulation needs slightly more room for drift.
         public const double Amount = 0.001; 

@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    public sealed record Block(IReadOnlyList<HROI> Segment)
+    internal sealed record Block(IReadOnlyList<HROI> Segment)
     {
         public readonly IReadOnlyList<HROI> Segment = Segment ?? throw new ArgumentNullException(nameof(Segment));
         public readonly int ChronoIndex = 0 == Segment.Count ? 0 : Segment[0].Year;

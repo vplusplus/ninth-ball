@@ -3,7 +3,7 @@ using YamlDotNet.Serialization;
 
 namespace NinthBall.Core
 {
-    public static class Yaml2Jaon
+    internal static class Yaml2Json
     {
         public static string YamlTextToJsonText(string yamlInput)
         {
