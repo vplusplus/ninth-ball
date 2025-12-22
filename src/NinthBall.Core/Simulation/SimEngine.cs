@@ -10,6 +10,12 @@ namespace NinthBall.Core
     /// </summary>
     public static class SimEngine
     {
+        // Cache strategy metadata to avoid reflection on every run
+        private static readonly Lazy<IReadOnlyList<StrategyMetadata>> CachedStrategyMetadata = new(
+            () => DiscoverStrategyMetadata(),
+            LazyThreadSafetyMode.ExecutionAndPublication
+        );
+
         public static SimResult Run(SimInput input)
         {
             var services = new ServiceCollection();
@@ -53,12 +59,12 @@ namespace NinthBall.Core
             services.AddSingleton<Simulation>();
         }
 
-        private static void RegisterStrategies(IServiceCollection services, SimInput config)
+        private static IReadOnlyList<StrategyMetadata> DiscoverStrategyMetadata()
         {
             var strategyTypes = typeof(Simulation).Assembly.GetTypes()
                 .Where(t => t.GetCustomAttributes<SimInputAttribute>(false).Any());
 
-            var activeStrategies = new List<(SimInputAttribute Attr, Type StrategyType)>();
+            var metadata = new List<StrategyMetadata>();
 
             foreach (var type in strategyTypes)
             {
@@ -70,23 +76,42 @@ namespace NinthBall.Core
 
                 if (prop != null)
                 {
-                    var optionsValue = prop.GetValue(config);
-                    if (optionsValue != null)
-                    {
-                        activeStrategies.Add((attr, type));
-                        
-                        // Register the options instance
-                        services.AddSingleton(attr.OptionsType, Validate(optionsValue));
-                        
-                        // Register the strategy as ISimObjective
-                        services.AddSingleton(typeof(ISimObjective), type);
-                    }
+                    metadata.Add(new StrategyMetadata(type, attr, prop));
+                }
+            }
+
+            return metadata.AsReadOnly();
+        }
+
+        private static void RegisterStrategies(IServiceCollection services, SimInput config)
+        {
+            var activeStrategies = new List<(SimInputAttribute Attr, Type StrategyType)>();
+
+            // Use cached metadata instead of reflection
+            foreach (var meta in CachedStrategyMetadata.Value)
+            {
+                var optionsValue = meta.Property.GetValue(config);
+                if (optionsValue != null)
+                {
+                    activeStrategies.Add((meta.Attribute, meta.StrategyType));
+                    
+                    // Register the options instance
+                    services.AddSingleton(meta.Attribute.OptionsType, Validate(optionsValue));
+                    
+                    // Register the strategy as ISimObjective
+                    services.AddSingleton(typeof(ISimObjective), meta.StrategyType);
                 }
             }
 
             // Enforce exclusivity
             EnforceExclusivity(activeStrategies);
         }
+
+        private readonly record struct StrategyMetadata(
+            Type StrategyType,
+            SimInputAttribute Attribute,
+            PropertyInfo Property
+        );
 
         private static void EnforceExclusivity(List<(SimInputAttribute Attr, Type StrategyType)> activeStrategies)
         {
