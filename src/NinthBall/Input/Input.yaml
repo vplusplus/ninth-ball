@@ -93,17 +93,6 @@ RMD:
   StartAge: 73
 
 # ............................................................
-# Buffer cash strategies
-# ............................................................
-zzz-UseBufferCash:
-  GrowthThreshold: 0.03
-  MaxAmount: 100000
-
-zzz-BufferRefill:
-  GrowthThreshold: 0.03
-  MaxAmount: 100000
-
-# ............................................................
 # Growth strategies 
 # ............................................................
 Growth:

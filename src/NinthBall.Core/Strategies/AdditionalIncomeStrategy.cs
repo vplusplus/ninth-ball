@@ -8,7 +8,6 @@ namespace NinthBall.Core
 
         int ISimObjective.Order => 10;
 
-
         sealed record Strategy(AdditionalIncomes options) : ISimStrategy
         {
             double ssAmount  = 0;

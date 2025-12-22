@@ -32,9 +32,7 @@ namespace NinthBall.Core
         PercentageWithdrawal? PercentageWithdrawal,
         VariablePercentageWithdrawal? VariablePercentageWithdrawal,
         RMD? RMD,
-        Growth? Growth,
-        UseBufferCash? UseBufferCash,
-        BufferRefill? BufferRefill
+        Growth? Growth
     );
 
     public sealed record SimulationSeed(string? SeedHint)
@@ -189,21 +187,6 @@ namespace NinthBall.Core
     public sealed record RMD
     (
         [property: Range(70, 80)] int StartAge = 73
-    );
-
-    public sealed record UseBufferCash
-    (
-        [property: Range(0, 1)] 
-        double GrowthThreshold, 
-
-        [property: Min(0)] 
-        double MaxAmount
-    );
-
-    public sealed record BufferRefill
-    (
-        [property: Range(0, 1)] double GrowthThreshold, 
-        [property: Min(0)] double MaxAmount
     );
 
     public enum BootstrapKind
