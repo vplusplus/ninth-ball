@@ -17,7 +17,7 @@ namespace UnitTests
                 Bonds: new ParametricBootstrap.Dist(0.03, 0.05, 0, 3, 0)
             );
             var seed = new SimulationSeed("test");
-            var bootstrapper = new ParametricBootstrapper(options, seed);
+            var bootstrapper = new ParametricBootstrapper(seed, options);
 
             var sequence = bootstrapper.GetROISequence(0, 1000);
             

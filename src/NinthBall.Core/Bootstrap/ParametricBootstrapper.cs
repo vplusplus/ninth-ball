@@ -1,16 +1,21 @@
 ﻿
 namespace NinthBall.Core
 {
-    internal sealed class ParametricBootstrapper(ParametricBootstrap Options, SimulationSeed SimSeed) : IBootstrapper
+    /// <summary>
+    /// Generates repeatable synthetic sequence of returns using statistical parameters.
+    /// </summary>
+    internal sealed class ParametricBootstrapper(SimulationSeed SimSeed, ParametricBootstrap Options) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
         public int GetMaxIterations(int numYears) => int.MaxValue;
 
+        /// <summary>
+        /// Generates repeatable synthetic sequence of returns using statistical parameters.
+        /// </summary>
         public IReadOnlyList<HROI> GetROISequence(int iterationIndex, int numYears)
         {
             // Use a deterministic seed based on iterationIndex and the global seed hint
             var random = new Random(PredictableHashCode.Combine(SimSeed.Value, iterationIndex));
-
             var sequence = new List<HROI>(numYears);
 
             // State for autocorrelation
@@ -19,38 +24,46 @@ namespace NinthBall.Core
 
             for (int i = 0; i < numYears; i++)
             {
-                // 1. Generate independent normal deviates using InverseNormalCDF
+                // 1.1 Generate independent normal deviates, uniform distribution (0 to 1)
                 double u1 = NextSafeDouble(random);
                 double u2 = NextSafeDouble(random);
 
+                // 1.2 Convert into bell-curve centered at zero, using InverseNormalCDF
                 double z1 = MathUtils.InverseNormalCDF(u1);
                 double z2 = MathUtils.InverseNormalCDF(u2);
 
                 // 2. Apply Correlation (Cholesky)
+                // Introduces dependency between stocks and bonds
                 var (c1, c2) = MathUtils.Correlate(z1, z2, Options.StocksBondCorrelation);
 
                 // 3. Apply AutoCorrelation (AR1)
                 // Z_t = rho * Z_{t-1} + sqrt(1 - rho^2) * epsilon_t
                 // This ensures the process remains standard normal (mean 0, var 1) if rho < 1.
+                // Introduces momentum or persistence over time.
+                // Current year depends partly on previous year
                 double arStocks = ApplyAR1(c1, prevZStocks, Options.Stocks.AutoCorrelation);
-                double arBonds = ApplyAR1(c2, prevZBonds, Options.Bonds.AutoCorrelation);
+                double arBonds  = ApplyAR1(c2, prevZBonds, Options.Bonds.AutoCorrelation);
 
                 prevZStocks = arStocks;
                 prevZBonds = arBonds;
 
                 // 4. Apply Cornish-Fisher (Skewness/Kurtosis)
+                // Warps the bell curve.
+                // Negative skew ~> deeper crashes.
+                // High kurtosis ~> rare but extreme events.
                 double cfStocks = MathUtils.CornishFisher(arStocks, Options.Stocks.Skewness, Options.Stocks.Kurtosis);
                 double cfBonds = MathUtils.CornishFisher(arBonds, Options.Bonds.Skewness, Options.Bonds.Kurtosis);
 
                 // 5. Scale by Mean and Volatility
+                // Converts abstract scaling factor into percentage returns
                 // Cap returns at -100% (total loss) as you can't lose more than you have.
                 double rStocks = Math.Max(-1.0, Options.Stocks.MeanReturn + cfStocks * Options.Stocks.Volatility);
                 double rBonds = Math.Max(-1.0, Options.Bonds.MeanReturn + cfBonds * Options.Bonds.Volatility);
 
-                sequence.Add(new HROI(i, rStocks, rBonds));
+                sequence.Add(new HROI(0, rStocks, rBonds));
             }
 
-            return sequence;
+            return sequence.AsReadOnly();
         }
 
         private static double NextSafeDouble(Random random)

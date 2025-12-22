@@ -3,101 +3,102 @@ using System.Collections.ObjectModel;
 
 namespace NinthBall.Core
 {
-    internal sealed record Block(IReadOnlyList<HROI> Segment)
+    /// <summary>
+    /// Represents a small slice of historical returns.
+    /// </summary>
+    internal sealed record HBlock(IReadOnlyList<HROI> Segment)
     {
         public readonly IReadOnlyList<HROI> Segment = Segment ?? throw new ArgumentNullException(nameof(Segment));
         public readonly int ChronoIndex = 0 == Segment.Count ? 0 : Segment[0].Year;
     }
 
+    /// <summary>
+    /// Replays random blocks (with replacement) of historical returns.
+    /// </summary>
     internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, MovingBlockBootstrap Options) : IBootstrapper
     {
-        readonly Lazy<IReadOnlyList<Block>> AllBlocks = new(() =>
-            ReadBlocksOnce(History.AllYears.ToArray(), Options.BlockSizes.ToArray())
-        );
+        // Prepare all available blocks once.
+        readonly Lazy<IReadOnlyList<HBlock>> AllBlocks = new( () => ReadBlocksOnce(History.History, Options.BlockSizes) );
 
         // We can produce theoretically unlimited possible combinations.
         public int GetMaxIterations(int numYears) => int.MaxValue;
 
+        // Random blocks of history (with replacement)
         public IReadOnlyList<HROI> GetROISequence(int iterationIndex, int numYears)
         {
             var iterRand = new Random(PredictableHashCode.Combine(SimSeed.Value, iterationIndex));
-            var roiSequence = SampleRandomMovingBlocks(iterRand, AllBlocks.Value, numYears, Options.NoConsecutiveBlocks);
-            return roiSequence;
-        }
+            var sequence = new List<HROI>(numYears);
 
-        static HROI[] SampleRandomMovingBlocks(Random rand, IReadOnlyList<Block> allBlocks, int numYears, bool noConsecutiveRepetition)
-        {
-            ArgumentNullException.ThrowIfNull(rand);
-            ArgumentNullException.ThrowIfNull(allBlocks);
+            HBlock prevBlock = null!;
 
-            List<HROI> roiRandomSamples = new(numYears);
-            Block prevBlock = null!;
-
-            while (roiRandomSamples.Count < numYears)
+            while (sequence.Count < numYears)
             {
-                // Next random block index, ranging from 0 to Count-1
-                var blockIndex = rand.Next(0, allBlocks.Count);
-                var nextBlock = allBlocks[blockIndex];
+                // Pick next random block with uniform distribution with replacement.
+                var nextBlock = AllBlocks.Value[iterRand.Next(0, AllBlocks.Value.Count)];
 
-                // OPTIONAL constraint intended only for stress-testing / what-if scenarios.
-                // Prevents drawing consecutive allBlocks with at least two years of overlapping sequence.
-                // Intention is to reducing the chance of unrealistic repeated historical regimes (e.g., severe crash periods repeating back-to-back).
-                // In normal runs, leave disabled to preserve pure bootstrap behavior.
-                const int TwoYears = 2;
-                if (noConsecutiveRepetition && null != prevBlock && HasOverlappingYears(prevBlock, nextBlock, maxOverlap: TwoYears)) continue;
+                // OPTIONAL constraint:
+                // Prevents drawing consecutive blocks with at least two years of overlapping sequence.
+                // Intention is to avoid two random samples producing unrealistic repeated historical regimes.
+                // For example, avoid severe identical crash sequences repeating back-to-back.
+                if (Options.NoConsecutiveBlocks && null != prevBlock)
+                {
+                    const int TwoYears = 2;
+                    var overlaps = prevBlock.Segment.Intersect(nextBlock.Segment).Count() >= TwoYears;
+                    if (overlaps)
+                    {
+                        // Remove console print after testing.
+                        Console.WriteLine($"Skipping overlapping blocls | {prevBlock.ChronoIndex} & {nextBlock.ChronoIndex}");
+                        continue;
+                    }
+                } 
 
                 // Collect
-                roiRandomSamples.AddRange(nextBlock.Segment);
+                sequence.AddRange(nextBlock.Segment);
                 prevBlock = nextBlock;
             }
 
             // The last sample may provide more years than what we need.
             // Clip the sequence for number of years of interest.
-            var roiSequence = roiRandomSamples.Take(numYears).ToArray();
-
-            return roiSequence.ToArray();
-
-
-            static bool HasOverlappingYears(Block prevBlock, Block nextBlock, int maxOverlap)
-            {
-                int overlapCount = 0;
-
-                foreach (var yPrev in prevBlock.Segment)
-                    foreach (var yNext in nextBlock.Segment)
-                        if (yPrev == yNext && ++overlapCount >= maxOverlap) return true;
-
-                return false;
-            }
-
+            return sequence.Take(numYears).ToArray().AsReadOnly();
         }
 
-        static ReadOnlyCollection<Block> ReadBlocksOnce(HROI[] history, int[] blockLengths)
+        /// <summary>
+        /// Prepare all available overlapping-blocks of suggested sequence lengths.
+        /// </summary>
+        static ReadOnlyCollection<HBlock> ReadBlocksOnce(IReadOnlyList<HROI> history, IReadOnlyList<int> blockLengths)
         {
-            if (0 == blockLengths.Length) throw new ArgumentException("Invalid blockLength(s). Please specify at least one.");
-            if (blockLengths.Length != blockLengths.Distinct().Count()) throw new ArgumentException("Invalid blockLength(s). Expecting distinct numbers.");
-            if (blockLengths.Any(x => x > history.Length)) throw new ArgumentException($"Invalid blockLength(s). Block size cannot be larger than history length ({history.Length}).");
+            ArgumentNullException.ThrowIfNull(history);
+            ArgumentNullException.ThrowIfNull(blockLengths);
+
+            if (0 == blockLengths.Count) throw new ArgumentException("Invalid blockLength(s). Please specify at least one.");
+            if (blockLengths.Count != blockLengths.Distinct().Count()) throw new ArgumentException("Invalid blockLength(s). Expecting distinct numbers.");
+            if (blockLengths.Any(x => x > history.Count)) throw new ArgumentException($"Invalid blockLength(s). Block size cannot be larger than history length ({history.Count}).");
+
+            // Since we will repeatedly use Array.Copy()
+            var arrHistory = history.ToArray();
+            var allBlocks  = blockLengths.SelectMany(blockLength => ReadBlocks(arrHistory, blockLength));
 
             // We want repeatability in results.
-            // The source data may not be pre-sorted, though its likely, we do not know.
-            // The sampling technique will draw random block with uniform distribution.
-            // Ordering the allBlocks here is only for repeatability across runs even if the source data sequence changes.
-            return blockLengths
-                .SelectMany(blockLength => ReadBlocks(history, blockLength))
+            // The source data may not be pre-sorted, may be it is, we do not know.
+            // The sampling technique will draw random blocks with uniform distribution.
+            // Ordering the blocks here is only for repeatability across runs even if the source data sequence changes.
+            return allBlocks
                 .OrderBy(b => b.ChronoIndex)
                 .ThenBy(b => b.Segment.Count)
                 .ToList()
                 .AsReadOnly();
+        }
 
-            static IEnumerable<Block> ReadBlocks(HROI[] history, int sequenceLength)
+        // All available blocks of same length (sequenceLength)
+        static IEnumerable<HBlock> ReadBlocks(HROI[] history, int sequenceLength)
+        {
+            if (history.Length < sequenceLength) throw new Exception($"Too few elements in history | Expecting at least {sequenceLength}");
+
+            for (int i = 0; i <= (history.Length - sequenceLength); i++)
             {
-                if (history.Length < sequenceLength) throw new Exception($"Too few elements in history | Expecting at least {sequenceLength}");
-
-                for (int i = 0; i <= (history.Length - sequenceLength); i++)
-                {
-                    HROI[] segment = new HROI[sequenceLength];
-                    Array.Copy(history, i, segment, 0, sequenceLength);
-                    yield return new Block(segment);
-                }
+                HROI[] segment = new HROI[sequenceLength];
+                Array.Copy(history, i, segment, 0, sequenceLength);
+                yield return new HBlock(segment.AsReadOnly());
             }
         }
     }

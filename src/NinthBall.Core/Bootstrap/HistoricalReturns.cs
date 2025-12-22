@@ -2,18 +2,23 @@
 namespace NinthBall.Core
 {
     // Historical returns:
-    // REF: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com
+    // Credits: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com
 
-    internal record struct HROI(int Year, double StocksROI, double BondROI); 
+    /// <summary>
+    /// Represents stocks and bonds ROI on a specific (historical) year.
+    /// </summary>
+    internal readonly record struct HROI(int Year, double StocksROI, double BondROI); 
 
     internal sealed class HistoricalReturns(ROIHistory options)
     {
-        public IReadOnlyList<HROI> AllYears => field ??= ReadHistoryOnce();
+        public IReadOnlyList<HROI> History => field ??= ReadHistoryOnce();
 
         IReadOnlyList<HROI> ReadHistoryOnce()
         {
             var xlFileName = options.XLFileName  ?? throw new ArgumentNullException(nameof(options.XLFileName));
             var sheetName  = options.XLSheetName ?? throw new ArgumentNullException(nameof(options.XLSheetName));
+
+            Console.WriteLine($"Reading ROI History from {Path.GetFileName(xlFileName)}[{sheetName}]");
 
             List<HROI> history = [];
 
