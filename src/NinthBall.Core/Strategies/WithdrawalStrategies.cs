@@ -13,20 +13,13 @@ namespace NinthBall.Core
         {
             double from401K = 0;
 
-            void ISimStrategy.Apply(ISimContext ctx)
+            void ISimStrategy.Apply(ISimContext context)
             {
-                if (0 == ctx.YearIndex)
+                context.Withdrawals = context.Withdrawals with
                 {
-                    from401K = FW.FirstYearAmount;
-                }
-                else
-                {
-                    from401K *= 1 + FW.Increment;
-                }
-
-                ctx.Withdrawals = ctx.Withdrawals with
-                {
-                    PreTax = from401K
+                    PreTax = 0 == context.YearIndex
+                        ? from401K = FW.FirstYearAmount
+                        : from401K *= 1 + FW.Increment
                 };
             }
         }
@@ -115,6 +108,7 @@ namespace NinthBall.Core
         }
 
         public override string ToString() => $"Withdrawal | Variable percentage ({Options.ROI:P1} ROI, {Options.Inflation:P1} Inflation){GuardrailsToString}";
+
         string GuardrailsToString => (Options.Floor.HasValue || Options.Ceiling.HasValue) 
             ? $" | Guardrails: [{Options.Floor?.ToString("C0") ?? "None"} - {Options.Ceiling?.ToString("C0") ?? "None"}] (adj. for inflation)" 
             : string.Empty;

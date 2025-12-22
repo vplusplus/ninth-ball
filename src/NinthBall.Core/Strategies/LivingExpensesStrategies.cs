@@ -10,7 +10,7 @@ namespace NinthBall.Core
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
         
-        sealed record Strategy(LivingExpenses exp) : ISimStrategy
+        sealed record Strategy(LivingExpenses LExp) : ISimStrategy
         {
             double amount = 0;
 
@@ -19,8 +19,8 @@ namespace NinthBall.Core
                 context.Expenses = context.Expenses with
                 {
                     CYExp = 0 == context.YearIndex
-                        ? amount = exp.FirstYearAmount
-                        : amount *= 1 + exp.Increment
+                        ? amount = LExp.FirstYearAmount
+                        : amount *= 1 + LExp.Increment
                 };
             }
         }
@@ -38,14 +38,14 @@ namespace NinthBall.Core
 
         public ISimStrategy CreateStrategy(int iterationIndex) => new Strategy(ExpenseSequence);
 
-        sealed class Strategy(IReadOnlyList<double> sequence) : ISimStrategy
+        sealed class Strategy(IReadOnlyList<double> ExpSeq) : ISimStrategy
         {
             void ISimStrategy.Apply(ISimContext context)
             {
                 context.Expenses = context.Expenses with
                 {
-                    CYExp = context.YearIndex >= 0 && context.YearIndex < sequence.Count
-                        ? sequence[context.YearIndex]
+                    CYExp = context.YearIndex >= 0 && context.YearIndex < ExpSeq.Count
+                        ? ExpSeq[context.YearIndex]
                         : throw new IndexOutOfRangeException($"Year index #{context.YearIndex} is outside the range of the predefined expense list.")
                 };
             }
@@ -53,5 +53,4 @@ namespace NinthBall.Core
 
         public override string ToString() => $"Living expenses | Pre-calculated from {Path.GetFileName(Options.FileName)} [{Options.SheetName}]";
     }
-
 }
