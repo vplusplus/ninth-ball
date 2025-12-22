@@ -1,31 +1,31 @@
 ﻿namespace NinthBall.Core
 {
-    internal sealed class Simulation(
-        SimParams MySimParams,
-        InitialBalance InitPortfolio,
-        IEnumerable<ISimObjective> allObjectives)
+    internal sealed class Simulation(SimParams MySimParams, InitialBalance InitPortfolio, IEnumerable<ISimObjective> Objectives)
     {
         private readonly ObjectPool<SimContext> SimContextPool = new(() => new SimContext());
-        private readonly IReadOnlyList<ISimObjective> _objectives = allObjectives.OrderBy(x => x.Order).ToList();
+        private readonly IReadOnlyList<ISimObjective> OrderedObjectives = Objectives.OrderBy(x => x.Order).ToList();
 
         public SimResult RunSimulation()
         {
-            // Consult current objectives. Find max iterations that we can support.
-            int maxIterations = Math.Min(MySimParams.Iterations, _objectives.Min(x => x.MaxIterations));
+            ArgumentNullException.ThrowIfNull(MySimParams);
+            ArgumentNullException.ThrowIfNull(InitPortfolio);
+            ArgumentNullException.ThrowIfNull(Objectives);
+
+            // Find max iterations that we can support.
+            int maxIterations = Math.Min(MySimParams.Iterations, OrderedObjectives.Min(x => x.MaxIterations));
             int noOfYears = MySimParams.NoOfYears;
 
-            // Pre-allocate ONE giant contiguous block of memory for ALL results.
+            // Pre-allocate ONE giant contiguous block of memory for ALL results (total simYears = maxIterations * noOfYears)
             var dataStore = new SimYear[maxIterations * noOfYears];
 
             // Run iterations in Parallel; Collect results.
             var iterationResults = Enumerable.Range(0, maxIterations)
                 .AsParallel()
                 .WithDegreeOfParallelism(Environment.ProcessorCount)
-                .Select(iterationIndex =>
-                {
-                    var mySlice = dataStore.AsMemory(iterationIndex * noOfYears, noOfYears);
-                    return RunOneIteration(_objectives, iterationIndex, mySlice);
-                })
+                .Select(iterationIndex => RunOneIteration(
+                    iterationIndex, 
+                    dataStore.AsMemory(iterationIndex * noOfYears, noOfYears))
+                )
                 .ToList();
 
             // Sort the iteration results worst to best.
@@ -36,7 +36,7 @@
                 .AsReadOnly();
 
             // Extract strategy descriptions
-            var strategyDescriptions = _objectives
+            var strategyDescriptions = OrderedObjectives
                 .Select(obj => obj.ToString() ?? "Unknown Strategy")
                 .ToList()
                 .AsReadOnly();
@@ -47,17 +47,17 @@
             );
         }
 
-        private SimIteration RunOneIteration(IReadOnlyList<ISimObjective> objectives, int iterationIndex, Memory<SimYear> myWorstCaseSlice)
+        private SimIteration RunOneIteration(int iterationIndex, Memory<SimYear> myPrivateSliceOfMemory)
         {
             // Rent a context from the pool.
             using var lease = SimContextPool.Rent();
             var ctx = lease.Instance;
 
             // Reset the context for this iteration.
-            ctx.Reset(InitPortfolio, iterationIndex, MySimParams.StartAge, myWorstCaseSlice);
+            ctx.Reset(InitPortfolio, iterationIndex, MySimParams.StartAge, myPrivateSliceOfMemory);
 
             // Strategies can be stateful; Create new set of strategies for each iteration.
-            var strategies = objectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();
+            var strategies = OrderedObjectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();
 
             // Assess each year.
             var success = false;

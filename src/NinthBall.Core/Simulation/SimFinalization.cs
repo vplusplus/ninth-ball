@@ -33,35 +33,35 @@ namespace NinthBall.Core
             SuggestedWithdrawals.ThrowIfNegative();
 
             // Temp working memory, we will adjust these numbers.
-            ThreeD available = new("Available", Jan.PreTax.Amount, Jan.PostTax.Amount, Jan.Cash.Amount);
+            ThreeD available   = new("Available", Jan.PreTax.Amount, Jan.PostTax.Amount, Jan.Cash.Amount);
             ThreeD withdrawals = new("Withdrawals", SuggestedWithdrawals.PreTax, SuggestedWithdrawals.PostTax, SuggestedWithdrawals.Cash);
-            TwoD deposits = new("Deposits", 0, 0);
+            TwoD deposits      = new("Deposits", 0, 0);
 
-            // Let's taking care of one meaningless fund transfer.
-            // Take 100K from post-tax, refill 50K to post-tax = taking 50K from post-tax
-            // Take 50K from cash, refill 100K to cash-buffer  = taking Zero from cash. 
+            // Let's take care of one meaningless fund transfer.
+            // Take 100K from post-tax, refill 50K to post-tax = take 50K from post-tax
+            // Take 50K from cash, refill 100K to cash-buffer  = take Zero from cash. 
             withdrawals.PostTax = Math.Max(0, withdrawals.PostTax - SuggestedRefills.PostTax);
-            withdrawals.Cash = Math.Max(0, withdrawals.Cash - SuggestedRefills.Cash);
+            withdrawals.Cash    = Math.Max(0, withdrawals.Cash - SuggestedRefills.Cash);
 
             // Fees goes first. 
-            available.PreTax  -= Fees.PreTax;
-            available.PostTax -= Fees.PostTax;
-            available.Cash    -= Fees.Cash;
+            available.PreTax   -= Fees.PreTax;
+            available.PostTax  -= Fees.PostTax;
+            available.Cash     -= Fees.Cash;
 
             // Fees can't make balance go negative. If that happens, assume zero balance.
-            available.PreTax  = Math.Max(0.0, available.PreTax);
-            available.PostTax = Math.Max(0.0, available.PostTax);
-            available.Cash    = Math.Max(0.0, available.Cash);
+            available.PreTax    = Math.Max(0.0, available.PreTax);
+            available.PostTax   = Math.Max(0.0, available.PostTax);
+            available.Cash      = Math.Max(0.0, available.Cash);
 
             // We can't withdraw more than what we have after deducting fees.
-            withdrawals.PreTax  = Math.Min(available.PreTax, withdrawals.PreTax);
+            withdrawals.PreTax  = Math.Min(available.PreTax,  withdrawals.PreTax);
             withdrawals.PostTax = Math.Min(available.PostTax, withdrawals.PostTax);
-            withdrawals.Cash    = Math.Min(available.Cash, withdrawals.Cash);
+            withdrawals.Cash    = Math.Min(available.Cash,    withdrawals.Cash);
 
             // Take the withdrawals
-            available.PreTax  -= withdrawals.PreTax;
-            available.PostTax -= withdrawals.PostTax;
-            available.Cash    -= withdrawals.Cash;
+            available.PreTax   -= withdrawals.PreTax;
+            available.PostTax  -= withdrawals.PostTax;
+            available.Cash     -= withdrawals.Cash;
 
             // We will come to refill aspirations later.
             // First we will meet the expenses.
@@ -70,7 +70,7 @@ namespace NinthBall.Core
             if (deficit.IsMoreThanZero(Precision.Amount))
             {
                 // Model is not withdrawing enough; we need more.
-                // Sequence:
+                // Priority:
                 // 1. PostTax - Minimize tax, try to honor PreTax withdrawal velocity
                 // 2. PreTax  - Cash reserve is for emergency, give max control to the model
                 // 3. Cash    - Survival is better than keeping the cash for future emergency
@@ -107,7 +107,7 @@ namespace NinthBall.Core
             if (refillTarget.IsMoreThanZero(Precision.Amount))
             {
                 // Use unallocated cash-in-hand first
-                // If we need more try PreTax:  Model is trying to spread the tax impact of PreTax funds
+                // If we need more try PreTax; Model is trying to spread the tax impact of PreTax funds
                 TryTransferFunds(ref refillTarget, ref surplus, ref deposits.PostTax);
                 withdrawals.PreTax += TryTransferFunds(ref refillTarget, ref available.PreTax, ref deposits.PostTax);
             }
@@ -167,27 +167,25 @@ namespace NinthBall.Core
             good = (Incomes.Total() + Withdrawals.Total()).AlmostSame(Expenses.Total() + Deposits.Total(), Precision.Amount);
             if (!good) throw new Exception($"Incomes {Incomes.Total():C0} + Withdrawals {Withdrawals.Total():C0} != Expenses {Expenses.Total():C0} + Deposits {Deposits.Total():C0}");
 
-            // Expenses are met. (TODO: Fix rounding error here)
+            // Expenses are met.
             good = (Incomes.Total() + Withdrawals.Total() + Precision.Amount) >= Expenses.Total();
             if (!good) throw new Exception($"Incomes {Incomes.Total():C0} + Withdrawals {Withdrawals.Total():C0} is less than expenses {Expenses.Total():C0}");
 
-            // Per-asset balance agrees: a.Starting - a.Fees - a.Withdrawals = a.Available
-            good &= (Jan.PreTax.Amount - Fees.PreTax - Withdrawals.PreTax).AlmostSame(Available.PreTax, Precision.Amount);
+            // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
+            good &= (Jan.PreTax.Amount  - Fees.PreTax  - Withdrawals.PreTax ).AlmostSame(Available.PreTax,  Precision.Amount);
             good &= (Jan.PostTax.Amount - Fees.PostTax - Withdrawals.PostTax).AlmostSame(Available.PostTax, Precision.Amount);
-            good &= (Jan.Cash.Amount - Fees.Cash - Withdrawals.Cash).AlmostSame(Available.Cash, Precision.Amount);
+            good &= (Jan.Cash.Amount    - Fees.Cash    - Withdrawals.Cash   ).AlmostSame(Available.Cash,    Precision.Amount);
             if (!good) throw new Exception("Starting - Fees - Withdrawals != Available");
 
             // Either withdrawals or Deposits should be zero.
             good &= Withdrawals.PostTax.AlmostZero(Precision.Amount) || Deposits.PostTax.AlmostZero(Precision.Amount);
-            good &= Withdrawals.Cash.AlmostZero(Precision.Amount) || Deposits.Cash.AlmostZero(Precision.Amount);
+            good &= Withdrawals.Cash.AlmostZero(Precision.Amount)    || Deposits.Cash.AlmostZero(Precision.Amount);
             if (!good) throw new Exception($"Meaningless fund transfers. Both withdrawal and deposit can't be positive.");
         }
 
         //......................................................................
-        #region Rounding and validation helpers 
+        #region Validation helpers 
         //......................................................................
-        // static double RoundToCents(this double value) => Math.Round(value, digits: 2, mode: MidpointRounding.AwayFromZero);
-        // static double ZeroReset(this double value) => Math.Abs(value) <= TOLERANCE ? 0.0 : value;
         static void ThrowIfNegative(this Assets x) => ThrowIfNegative(nameof(Assets), x.PreTax.Amount, x.PostTax.Amount, x.Cash.Amount);
         static void ThrowIfNegative(this Fees x) => ThrowIfNegative(nameof(Fees), x.PreTax, x.PostTax, x.Cash);
         static void ThrowIfNegative(this Incomes x) => ThrowIfNegative(nameof(Incomes), x.SS, x.Ann);

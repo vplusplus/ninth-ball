@@ -2,7 +2,7 @@
 @using NinthBall.Core;
 
 <!-- Presents year-by-year details of single iteration -->
-<table id="@Id" class="table table-sm caption-top page-break mb-0" style="table-layout: fixed; width: 100%;">
+<table id="@Id" class="table table-sm caption-top page-break mb-0" style="zzztable-layout: fixed; width: 100%;">
     <caption>
         <h3>@Caption</h3>
     </caption>
@@ -18,11 +18,9 @@
             <th>Age</th>
 
             <th>J-401K</th>
-            <th></th>
             <th>J-Inv</th>
-            <th></th>
-            <th>J-Cash</th>
-
+            <th>Alloc</th>
+           
             <th>Fees</th>
             <th>Taxes</th>
             <th>Exp</th>
@@ -34,49 +32,48 @@
             <th>XInv</th>
             <th>XCash</th>
 
-            <th>Like</th>
-            <th>Stocks</th>
-            <th>Bonds</th>
             <th>Change</th>
+            <th>ROI (Y|S|B)</th>
+
         </tr>
 
         <!-- Details -->
         @foreach (var y in Iteration.ByYear.Span)
         {
-            double fromPreTax = y.Withdrawals.PreTax * -1; 
+            double fromPreTax  = y.Withdrawals.PreTax * -1; 
             double fromPostTax = y.Deposits.PostTax - y.Withdrawals.PostTax;
             double fromCash    = y.Deposits.Cash - y.Withdrawals.Cash;
 
+            // static string K0(double amount) => amount > 1 || amount < -1 ? $"{amount / 1000:C0}" : string.Empty;
+            static string R100(double amount) => amount > 1 || amount < -1 ? $"{Math.Round(amount/100) * 100:C0}" : string.Empty;
 
-            static string K0(double amount) => amount > 1 || amount < -1 ? $"{amount / 1000:C0}" : string.Empty;
             static string P0(double pct) => $"{pct:P0}";
 
             <tr>
                 <td>@(y.Year + 1)</td>
                 <td>@y.Age</td>
 
-                <td>@K0(y.Jan.PreTax.Amount)</td>
-                <td>@P0(y.Jan.PreTax.Allocation)</td>
-                <td>@K0(y.Jan.PostTax.Amount)</td>
-                <td>@P0(y.Jan.PostTax.Allocation)</td>
-                <td>@K0(y.Jan.Cash.Amount)</td>
+                <td>@R100(y.Jan.PreTax.Amount)</td>
+                <td>@R100(y.Jan.PostTax.Amount)</td>
+                <td>@P0(y.Jan.PreTax.Allocation) | @P0(y.Jan.PostTax.Allocation)</td>
 
-                <td>@K0(y.Fees.Total())</td>
+                <td>@R100(y.Fees.Total())</td>
+                <td>@R100(y.Expenses.PYTax)</td>
+                <td>@R100(y.Expenses.CYExp)</td>
 
-                <td>@K0(y.Expenses.PYTax)</td>
-                <td>@K0(y.Expenses.CYExp)</td>
+                <td>@R100(y.Incomes.SS)</td>
+                <td>@R100(y.Incomes.Ann)</td>
 
-                <td>@K0(y.Incomes.SS)</td>
-                <td>@K0(y.Incomes.Ann)</td>
+                <td class="@RG(fromPreTax)">@R100(fromPreTax)</td>
+                <td class="@RG(fromPostTax)">@R100(fromPostTax)</td>
+                <td class="@RG(fromCash)">@R100(fromCash)</td>
 
-                <td class="@RG(fromPreTax)">@K0(fromPreTax)</td>
-                <td class="@RG(fromPostTax)">@K0(fromPostTax)</td>
-                <td class="@RG(fromCash)">@K0(fromCash)</td>
-
-                <td class="@CSS(y.Change.Total())">@y.ROI.LikeYear</td>
-                <td class="@CSS(y.ROI.StocksROI) mono-space">@($"{y.ROI.StocksROI,6:P1}")</td>
-                <td class="@CSS(y.ROI.BondsROI) mono-space">@($"{y.ROI.BondsROI,6:P1}")</td>
-                <td class="@CSS(y.Change.Total()) mono-space">@K0(y.Change.Total())</td>
+                <td class="@CSS(y.Change.Total())">
+                    @R100(y.Change.Total())
+                </td>
+                <td class="@CSS(y.Change.Total())">
+                    @y.ROI.LikeYear | @($"{y.ROI.StocksROI,6:P1}") | @($"{y.ROI.BondsROI,6:P1}")
+                </td>
             </tr>
         }
 

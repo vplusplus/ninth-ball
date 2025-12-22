@@ -2,33 +2,42 @@
 
 namespace NinthBall.Core
 {
+    /// <summary>
+    /// Maintains running balance of cash asset.
+    /// </summary>
     sealed class CashBalance : IBalance
     {
-        private double _cash;
+        private double Cash;
 
-        public double Amount => _cash;
-        public double Allocation => 1.0;
+        public double Amount => Cash;
+
+        public double Allocation => 1.0;                        // Single asset. Allocation is not applicable
 
         public void Reset(double initialBalance)
         {
-            _cash = initialBalance < 0 ? throw new ArgumentException("Initial balance must be >= 0") : initialBalance;
+            Cash = initialBalance < 0 ? throw new ArgumentException("Initial balance must be >= 0") : initialBalance;
         }
 
-        public bool Rebalance(double _) => false;
-        public bool Reallocate(double _, double __) => false;
-        public void Post(double amount) => _cash += amount;
+        public bool Rebalance(double _) => false;               // Single asset. Nothing to rebalance
+
+        public bool Reallocate(double _, double __) => false;   // Single asset. Allocation is not applicable
+
+        public void Post(double amount) => Cash += amount;
 
         public double Grow(double ROI)
         {
-            var change = Amount * ROI;
-            _cash += change;
-            
-            if (_cash < 0) { change -= _cash; _cash = 0; }
+            var change = Cash * ROI;
+
+            Cash += change;
+            Cash = Cash.ResetNearZero(Precision.Amount);
             
             return change;
         }
     }
 
+    /// <summary>
+    /// Maintains running balance of split asset (stocks and bonds).
+    /// </summary>
     sealed class SplitBalance : IBalance
     {
         private double Stocks;
@@ -54,6 +63,9 @@ namespace NinthBall.Core
                 double tmpAmount = Stocks + Bonds;
                 Stocks = tmpAmount * TargetAllocation;
                 Bonds  = tmpAmount - Stocks;
+
+                Stocks = Stocks.ResetNearZero(Precision.Amount);
+                Bonds  = Bonds.ResetNearZero(Precision.Amount);
                 return true;
             }
             return false;
@@ -111,15 +123,20 @@ namespace NinthBall.Core
             var bChange = Bonds * bondsROI;
 
             Stocks += sChange;
-            Bonds += bChange;
+            Bonds  += bChange;
 
-            if (Stocks < 0) { sChange -= Stocks; Stocks = 0; }
-            if (Bonds < 0) { bChange -= Bonds; Bonds = 0; }
+            Stocks = Stocks.ResetNearZero(Precision.Amount);
+            Bonds  = Bonds.ResetNearZero(Precision.Amount);
 
             return sChange + bChange;
         }
     }
 
+    /// <summary>
+    /// Tracks running balances.
+    /// Provides a working-memory for strategy recommendations.
+    /// Validates and appliesd the strategy recommendations.
+    /// </summary>
     sealed class SimContext : ISimContext
     {
         // ..........................................
@@ -127,7 +144,7 @@ namespace NinthBall.Core
         // ..........................................
         private readonly SplitBalance MyPreTaxBalance  = new();
         private readonly SplitBalance MyPostTaxBalance = new();
-        private readonly CashBalance  MyCashBalance = new();
+        private readonly CashBalance  MyCashBalance    = new();
         private Memory<SimYear>       MyPriorYears;
 
         // ..........................................
@@ -138,12 +155,16 @@ namespace NinthBall.Core
         public IBalance CashBalance    => MyCashBalance;
         public ReadOnlyMemory<SimYear> PriorYears => MyPriorYears.Slice(0, YearsCompleted);
 
-        public int YearsCompleted { get; private set; }
-        public int IterationIndex { get; private set; }
+        // ..........................................
+        // About current iteration
+        // ..........................................
         public int StartAge { get; private set; }
+        public int IterationIndex { get; private set; }
+        public int YearsCompleted { get; private set; }
+
 
         // ..........................................
-        // Current year 
+        // Current year strategy recommendations
         // ..........................................
         public int YearIndex { get; private set; }
         public int Age => StartAge + YearIndex;
@@ -161,13 +182,13 @@ namespace NinthBall.Core
             MyPreTaxBalance.Reset(initialBalance.PreTax.Amount, initialBalance.PreTax.Allocation);
             MyPostTaxBalance.Reset(initialBalance.PostTax.Amount, initialBalance.PostTax.Allocation);
             MyCashBalance.Reset(initialBalance.Cash.Amount);
-            
-            IterationIndex = iterationIndex;
-            YearIndex = 0;
-            StartAge = startAge;
-            YearsCompleted = 0;
 
             MyPriorYears = store;
+
+            IterationIndex = iterationIndex;
+            StartAge = startAge;
+            YearIndex = 0;
+            YearsCompleted = 0;
 
             Fees = default;
             Incomes = default;
@@ -190,29 +211,44 @@ namespace NinthBall.Core
 
         public bool ImplementStrategies()
         {
+            // Take snapshot of jan 1st balance
             var jan = new Assets(AsReadOnly(MyPreTaxBalance), AsReadOnly(MyPostTaxBalance), AsReadOnly(MyCashBalance));
 
-            var success = SimFinalization.FinalizeWithdrawals(
-                jan, Fees, Incomes, Expenses, Withdrawals, Refills,
+            // Validate and adjust withdrawals and deposits
+            var success = SimFinalization.FinalizeWithdrawals
+            (
+                jan, 
+                Fees, Incomes, Expenses, Withdrawals, Refills,
                 out var adjustedWithdrawal, out var adjustedDeposits
             );
 
             if (success)
             {
-                MyPreTaxBalance.Post(-Fees.PreTax - adjustedWithdrawal.PreTax);
-                MyPostTaxBalance.Post(-Fees.PostTax - adjustedWithdrawal.PostTax);
-                MyCashBalance.Post(-Fees.Cash - adjustedWithdrawal.Cash);
+                // Fees goes first
+                MyPreTaxBalance.Post(   -Fees.PreTax);
+                MyPostTaxBalance.Post(  -Fees.PostTax);
+                MyCashBalance.Post(     -Fees.Cash);
 
-                var growth = new Change(
-                    MyPreTaxBalance.Grow(ROI.StocksROI, ROI.BondsROI),
-                    MyPostTaxBalance.Grow(ROI.StocksROI, ROI.BondsROI),
-                    MyCashBalance.Grow(ROI.CashROI)
+                // Take withdrawals
+                MyPreTaxBalance.Post(   -adjustedWithdrawal.PreTax);
+                MyPostTaxBalance.Post(  -adjustedWithdrawal.PostTax);
+                MyCashBalance.Post(     -adjustedWithdrawal.Cash);
+
+                // Apply ROI 
+                var growth = new Change
+                (
+                    MyPreTaxBalance.Grow(   ROI.StocksROI, ROI.BondsROI),
+                    MyPostTaxBalance.Grow(  ROI.StocksROI, ROI.BondsROI),
+                    MyCashBalance.Grow(     ROI.CashROI)
                 );
 
-                MyPostTaxBalance.Post(adjustedDeposits.PostTax);
-                MyCashBalance.Post(adjustedDeposits.Cash);
+                // Apply deposits
+                MyPostTaxBalance.Post(  adjustedDeposits.PostTax);
+                MyCashBalance.Post(     adjustedDeposits.Cash);
 
+                // Take snapshot of ending balance
                 var dec = new Assets(AsReadOnly(MyPreTaxBalance), AsReadOnly(MyPostTaxBalance), AsReadOnly(MyCashBalance));
+
                 MyPriorYears.Span[YearIndex] = new SimYear(YearIndex, Age, jan, Fees, Incomes, Expenses, adjustedWithdrawal, adjustedDeposits, ROI, growth, dec);
             }
             else
@@ -226,5 +262,4 @@ namespace NinthBall.Core
 
         private static Asset AsReadOnly(IBalance x) => new(x.Amount, x.Allocation);
     }
-
 }

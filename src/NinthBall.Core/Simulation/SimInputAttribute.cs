@@ -4,20 +4,19 @@ namespace NinthBall.Core
     internal enum StrategyFamily
     {
         None,
+        PortfolioManagement,
+        Income,
+        Taxes,
+        Fees,
         LifestyleExpenses,
         WithdrawalVelocity,
         WithdrawalAdjustment,
         CashUsage,
         CashRefill,
-        PortfolioManagement,
-        Taxes,
-        Fees,
-        Income
     }
 
-
     /// <summary>
-    /// Each strategy can declare the primary input it needs using SimInputAttribute
+    /// Each strategy can declare the primary input it depends on using SimInputAttribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     internal sealed class SimInputAttribute : System.Attribute

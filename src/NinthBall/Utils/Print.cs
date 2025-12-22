@@ -22,7 +22,8 @@ namespace NinthBall
             if (null == err) return;
 
             Console.WriteLine(RootCause(err));
-            if (null == err.InnerException)
+
+            if (null != err.InnerException)
             {
                 Console.WriteLine("Additional details:");
                 while(null != err)
@@ -37,7 +38,7 @@ namespace NinthBall
                 string rootCause = string.Empty;
                 while(null != ex)
                 {
-                    rootCause = ex.ToString();
+                    rootCause = ex.Message;
                     ex = ex.InnerException!;
                 }
                 return rootCause;

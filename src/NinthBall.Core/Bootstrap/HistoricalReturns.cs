@@ -18,7 +18,7 @@ namespace NinthBall.Core
             var xlFileName = options.XLFileName  ?? throw new ArgumentNullException(nameof(options.XLFileName));
             var sheetName  = options.XLSheetName ?? throw new ArgumentNullException(nameof(options.XLSheetName));
 
-            Console.WriteLine($"Reading ROI History from {Path.GetFileName(xlFileName)}[{sheetName}]");
+            Console.WriteLine($" Reading ROI History from {Path.GetFileName(xlFileName)}[{sheetName}]");
 
             List<HROI> history = [];
 

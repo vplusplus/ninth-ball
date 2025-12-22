@@ -1,5 +1,7 @@
 
+
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
@@ -10,110 +12,92 @@ namespace NinthBall.Core
     /// </summary>
     public static class SimEngine
     {
-        // Cache strategy metadata to avoid reflection on every run
-        private static readonly Lazy<IReadOnlyList<StrategyMetadata>> CachedStrategyMetadata = new(
-            () => DiscoverStrategyMetadata(),
-            LazyThreadSafetyMode.ExecutionAndPublication
-        );
-
         public static SimResult Run(SimInput input)
         {
-            var services = new ServiceCollection();
+            // Deconstruct SimInput components, ignore nulls and validate if specified.
+            var validInputs = input.DeconstructAndValidateSimulationInputs();
 
-            // 1. Register Data
-            RegisterData(services, input);
+            // Register components for the simulation.
+            // Note: Dispose on return.
+            using var services = new ServiceCollection()
+                .AddSingleton(new SimulationSeed(input.RandomSeedHint))
+                .RegisterSimulationInputs(validInputs)
+                .RegisterActiveStrategies(validInputs)
+                .RegisterHistoricalReturnsAndBootstrappers()
+                .AddSingleton<Simulation>()
+                .BuildServiceProvider();
 
-            // 2. Register Engine Infrastructure
-            RegisterEngine(services);
-
-            // 3. Register Strategies (Discovery)
-            RegisterStrategies(services, input);
-
-            // 4. Build and Run
-            using var provider = services.BuildServiceProvider();
-            var simulation = provider.GetRequiredService<Simulation>();
-            
-            return simulation.RunSimulation();
+            // Run
+            return services
+                .GetRequiredService<Simulation>()
+                .RunSimulation();
         }
 
-        private static void RegisterData(IServiceCollection services, SimInput config)
+        private static IServiceCollection RegisterHistoricalReturnsAndBootstrappers(this IServiceCollection services)
         {
-            services.AddSingleton(config.SimParams);
-            services.AddSingleton(config.InitialBalance);
-            services.AddSingleton(new SimulationSeed(config.RandomSeedHint));
-
-            if (config.ROIHistory != null) services.AddSingleton(Validate(config.ROIHistory));
-            if (config.Growth != null) services.AddSingleton(Validate(config.Growth));
-            if (config.FlatBootstrap != null) services.AddSingleton(Validate(config.FlatBootstrap));
-            if (config.MovingBlockBootstrap != null) services.AddSingleton(Validate(config.MovingBlockBootstrap));
-            if (config.ParametricBootstrap != null) services.AddSingleton(Validate(config.ParametricBootstrap));
+            return services
+                .AddSingleton<HistoricalReturns>()
+                .AddSingleton<FlatBootstrapper>()
+                .AddSingleton<SequentialBootstrapper>()
+                .AddSingleton<MovingBlockBootstrapper>()
+                .AddSingleton<ParametricBootstrapper>()
+                .AddSingleton<Simulation>()
+                ;
         }
 
-        private static void RegisterEngine(IServiceCollection services)
+        private static Dictionary<PropertyInfo, object> DeconstructAndValidateSimulationInputs(this SimInput simInput)
         {
-            services.AddSingleton<HistoricalReturns>();
-            services.AddSingleton<FlatBootstrapper>();
-            services.AddSingleton<SequentialBootstrapper>();
-            services.AddSingleton<MovingBlockBootstrapper>();
-            services.AddSingleton<ParametricBootstrapper>();
-            services.AddSingleton<Simulation>();
-        }
+            ArgumentNullException.ThrowIfNull(simInput);
 
-        private static IReadOnlyList<StrategyMetadata> DiscoverStrategyMetadata()
-        {
-            var strategyTypes = typeof(Simulation).Assembly.GetTypes()
-                .Where(t => t.GetCustomAttributes<SimInputAttribute>(false).Any());
+            Dictionary<PropertyInfo, object> pairs = new();
 
-            var metadata = new List<StrategyMetadata>();
-
-            foreach (var type in strategyTypes)
+            foreach (var prop in LazySimInputProperties.Value)
             {
-                var attr = type.GetCustomAttribute<SimInputAttribute>(false)!;
-                
-                // Find the property in SimInput that matches the OptionsType
-                var prop = typeof(SimInput).GetProperties()
-                    .FirstOrDefault(p => p.PropertyType == attr.OptionsType);
+                // Read the SimInput component. 
+                var value = prop.GetValue(simInput);
 
-                if (prop != null)
-                {
-                    metadata.Add(new StrategyMetadata(type, attr, prop));
-                }
+                // Ignore nulls. If present, validate the input.
+                if (null != value) pairs.Add(prop, ThrowIfInvalid(value));
             }
 
-            return metadata.AsReadOnly();
+            return pairs;
         }
 
-        private static void RegisterStrategies(IServiceCollection services, SimInput config)
+        private static IServiceCollection RegisterSimulationInputs(this IServiceCollection services, Dictionary<PropertyInfo, object> availableInputs)
         {
-            var activeStrategies = new List<(SimInputAttribute Attr, Type StrategyType)>();
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(availableInputs);
 
-            // Use cached metadata instead of reflection
-            foreach (var meta in CachedStrategyMetadata.Value)
-            {
-                var optionsValue = meta.Property.GetValue(config);
-                if (optionsValue != null)
-                {
-                    activeStrategies.Add((meta.Attribute, meta.StrategyType));
-                    
-                    // Register the options instance
-                    services.AddSingleton(meta.Attribute.OptionsType, Validate(optionsValue));
-                    
-                    // Register the strategy as ISimObjective
-                    services.AddSingleton(typeof(ISimObjective), meta.StrategyType);
-                }
-            }
-
-            // Enforce exclusivity
-            EnforceExclusivity(activeStrategies);
+            // Strategies look for simulation inputs from DI container.
+            // Register all available inputs.
+            foreach (var pair in availableInputs) services.AddSingleton(pair.Value.GetType(), pair.Value);
+            return services;
         }
 
-        private readonly record struct StrategyMetadata(
-            Type StrategyType,
-            SimInputAttribute Attribute,
-            PropertyInfo Property
-        );
+        private static IServiceCollection RegisterActiveStrategies(this IServiceCollection services, Dictionary<PropertyInfo, object> availableInputs)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(availableInputs);
 
-        private static void EnforceExclusivity(List<(SimInputAttribute Attr, Type StrategyType)> activeStrategies)
+            // Strategies are active if:
+            // - They had not declared required input
+            // - The required input is available in the SimInput
+            var activeStrategies = SimObjectivesCache.StrategyMetaData
+                .Where(x => null == x.SimInputProperty || availableInputs.ContainsKey(x.SimInputProperty))
+                .ToList();
+
+            // Ensure more than one strategy is not active with-in each exclusive families
+            EnforceStrategyExclusivity(activeStrategies);
+
+            // Register active strategies to the DI system
+            foreach(var strategy in activeStrategies) services.AddSingleton(typeof(ISimObjective), strategy.StrategyType);
+
+            return services;
+        }
+
+        // For some strategy families, only one of its kind is allowed.
+        // Throws an exceotion if more than one strategy is activated with-in each exclusive-families.
+        private static void EnforceStrategyExclusivity(IList<SimObjectivesCache.MetaData> activeStrategies)
         {
             var exclusiveFamilies = new[]
             {
@@ -126,42 +110,44 @@ namespace NinthBall.Core
 
             foreach (var family in exclusiveFamilies)
             {
-                var conflicting = activeStrategies.Where(s => s.Attr.Family == family).ToList();
+                var conflicting = activeStrategies.Where(s => s.Family == family).ToList();
                 if (conflicting.Count > 1)
                 {
                     var names = string.Join(", ", conflicting.Select(s => s.StrategyType.Name));
-                    throw new InvalidOperationException($"Conflicting strategies detected in family '{family}': {names}. Only one strategy from this family can be active at a time.");
+                    throw new FatalWarning($"Conflicting strategies detected in family '{family}' [{names}] | Only one strategy from this family can be active at a time.");
                 }
             }
         }
 
-        private static T Validate<T>(T something) where T : class
+        // Readable top level properties of the SimInput.
+        // Complex types from the same namespace of SimInput.
+        // Discovered using reflection ONCE.
+        static readonly Lazy<ReadOnlyCollection<PropertyInfo>> LazySimInputProperties = new(() =>
         {
-            var context = new ValidationContext(something, serviceProvider: null, items: null);
-            var results = new List<ValidationResult>();
-            var isValid = Validator.TryValidateObject(something, context, results, validateAllProperties: true);
-            
-            if (!isValid)
-            {
-                var csvValidationErrors = string.Join(Environment.NewLine, results.Select(x => x.ErrorMessage));
-                throw new ValidationException($"Validation failed for {typeof(T).Name}:{Environment.NewLine}{csvValidationErrors}");
-            }
-            
-            return something;
-        }
+            var myNamespace = typeof(SimInput).Namespace;
 
-        private static object Validate(object something)
+            return typeof(SimInput)
+                .GetProperties()
+                .Where(p => p.CanRead)
+                .Where(p => p.PropertyType.Namespace == myNamespace)
+                .ToList()
+                .AsReadOnly();
+        });
+
+        // Consult DataAnnotations attributes.
+        // Throw if validation fails.
+        private static object ThrowIfInvalid(object something)
         {
             var context = new ValidationContext(something, serviceProvider: null, items: null);
             var results = new List<ValidationResult>();
             var isValid = Validator.TryValidateObject(something, context, results, validateAllProperties: true);
-            
+
             if (!isValid)
             {
                 var csvValidationErrors = string.Join(Environment.NewLine, results.Select(x => x.ErrorMessage));
                 throw new ValidationException($"Validation failed for {something.GetType().Name}:{Environment.NewLine}{csvValidationErrors}");
             }
-            
+
             return something;
         }
     }

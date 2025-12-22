@@ -36,7 +36,7 @@ namespace NinthBall.Core
         public int YearIndex { get; }
         public int Age { get; }
 
-        // Current year 
+        // Current year strategy recommendations
         Fees Fees { get; set; }
         Incomes Incomes { get; set; }
         Expenses Expenses { get; set; }
