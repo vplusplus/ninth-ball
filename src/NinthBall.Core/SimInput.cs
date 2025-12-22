@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations;
 namespace NinthBall.Core
 {
     /// <summary>
-    /// The root data structure representing a complete simulation configuration.
-    /// This is the "Domain Contract" that can be deserialized from YAML or populated by a UI.
+    /// Immutable data structure(s) representing simulation inputs.
+    /// This is the "Domain Contract" that can be deserialized from YAML/Json or populated by a UX.
     /// </summary>
     public sealed record SimInput
     (
@@ -23,15 +23,18 @@ namespace NinthBall.Core
         // Strategies (Optional)
         Rebalance? Rebalance,
         Reallocate? Reallocate,
+        AdditionalIncomes? AdditionalIncomes,
+        
         FeesPCT? FeesPCT,
         Taxes? Taxes,
-        AdditionalIncomes? AdditionalIncomes,
         LivingExpenses? LivingExpenses,
         PrecalculatedLivingExpenses? PrecalculatedLivingExpenses,
+        
         FixedWithdrawal? FixedWithdrawal,
         PercentageWithdrawal? PercentageWithdrawal,
         VariablePercentageWithdrawal? VariablePercentageWithdrawal,
         RMD? RMD,
+        
         Growth? Growth
     );
 
@@ -239,6 +242,5 @@ namespace NinthBall.Core
             [property: Range(0.0, 100.0)]  double Kurtosis, 
             [property: Range(-1.0, 1.0)]   double AutoCorrelation
         );
-
     }
 }
