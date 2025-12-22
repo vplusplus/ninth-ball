@@ -4,9 +4,6 @@ namespace NinthBall.Core
 {
     public static partial class Stats
     {
-        public static bool AlmostZero(this double number) => Math.Abs(number) <= 1e-6;
-
-
         /// <summary>
         /// Computes the standard deviation (volatility) of a sequence of periodic returns.
         /// </summary>
@@ -132,12 +129,6 @@ namespace NinthBall.Core
             double denominator = (1 + r) * (1 - Math.Pow((1 + g) / (1 + r), n));
 
             return numerator / denominator;
-        }
-
-        public static (double, double) Swap(double first, double second)
-        {
-            var temp = first; first = second; second = temp;
-            return (first, second);
         }
     }
 }

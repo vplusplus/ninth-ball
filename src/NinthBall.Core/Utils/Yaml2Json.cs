@@ -1,6 +1,4 @@
 ﻿
-using YamlDotNet.Serialization;
-
 namespace NinthBall.Core
 {
     internal static class Yaml2Json
@@ -9,11 +7,17 @@ namespace NinthBall.Core
         {
             ArgumentNullException.ThrowIfNull(yamlInput);
 
-            var yamlDeserializer = new DeserializerBuilder().WithAttemptingUnquotedStringTypeDeserialization().Build();
-            var yamlObject = yamlDeserializer.Deserialize<object>(new StringReader(yamlInput));
-            var jsonText = System.Text.Json.JsonSerializer.Serialize(yamlObject, options: new() { WriteIndented = true });
-
-            return jsonText;
+            try
+            {
+                var yamlDeserializer = new YamlDotNet.Serialization.DeserializerBuilder().WithAttemptingUnquotedStringTypeDeserialization().Build();
+                var yamlObject = yamlDeserializer.Deserialize<object>(new StringReader(yamlInput));
+                var jsonText = System.Text.Json.JsonSerializer.Serialize(yamlObject, options: new() { WriteIndented = true });
+                return jsonText;
+            }
+            catch (Exception ex) 
+            {
+                throw new Exception("Error converting YAML text to Json text.", ex);
+            }
         }
     }
 }

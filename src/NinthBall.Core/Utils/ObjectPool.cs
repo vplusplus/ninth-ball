@@ -2,13 +2,18 @@ using System.Collections.Concurrent;
 
 namespace NinthBall.Core
 {
-    public sealed class ObjectPool<T>(Func<T> factory) where T : class
+    public sealed class ObjectPool<T>(Func<T> factory, int MaxItems = 100) where T : class
     {
-        private readonly ConcurrentQueue<T> _pool = new();
+        private readonly ConcurrentQueue<T> InstancePool = new();
 
-        public Lease Rent() => new Lease(this, _pool.TryDequeue(out var item) ? item : factory());
+        // Return an instance from the pool. Create new instance if none available in the pool.
+        public Lease Rent() => new Lease(this, InstancePool.TryDequeue(out var item) ? item : factory());
 
-        private void Return(T item) => _pool.Enqueue(item);
+        private void Return(T item)
+        {
+            // Throw away the instance if too many in the pool
+            if (InstancePool.Count < MaxItems) InstancePool.Enqueue(item);
+        }
 
         public readonly struct Lease(ObjectPool<T> pool, T instance) : IDisposable
         {

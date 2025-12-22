@@ -6,6 +6,13 @@ namespace NinthBall.Core
 {
     public static class CmdLine
     {
+        // Lazy initialized CommandLine Options.
+        private static readonly Lazy<IConfiguration> LazyCommandLine = new(() =>
+            new ConfigurationBuilder()
+                .AddInMemoryCollection(ParseCommandLineOnce())
+                .Build()
+        );
+
         /// <summary>
         /// Provides access to CommandLine options before host is built and configured.
         /// </summary>
@@ -16,14 +23,6 @@ namespace NinthBall.Core
         public static string Required(string name) => string.IsNullOrWhiteSpace(Current[name]) ? throw new FatalWarning($"Missing CommandLine arg | --{name}") : Current[name]!;
         
         public static bool Switch(string name) => Current.GetSection(name).Exists() && bool.Parse(Current[name]!);
-
-        // Lazy initialized EnvVariables + CommandLine Options.
-        private static readonly Lazy<IConfiguration> LazyCommandLine = new( ()=>
-            new ConfigurationBuilder()
-                //.AddEnvironmentVariables()
-                .AddInMemoryCollection(ParseCommandLineOnce())
-                .Build()
-        );
 
         private static IEnumerable<KeyValuePair<string, string?>> ParseCommandLineOnce()
         {
