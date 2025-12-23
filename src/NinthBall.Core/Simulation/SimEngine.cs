@@ -41,7 +41,6 @@ namespace NinthBall.Core
                 .AddSingleton<SequentialBootstrapper>()
                 .AddSingleton<MovingBlockBootstrapper>()
                 .AddSingleton<ParametricBootstrapper>()
-                .AddSingleton<Simulation>()
                 ;
         }
 
@@ -80,8 +79,8 @@ namespace NinthBall.Core
             ArgumentNullException.ThrowIfNull(availableInputs);
 
             // Strategies are active if:
-            // - They had not declared required input
-            // - The required input is available in the SimInput
+            // - They had not declared required input.
+            // - They have declared required input and the required input is available in the SimInput.
             var activeStrategies = SimObjectivesCache.StrategyMetaData
                 .Where(x => null == x.SimInputProperty || availableInputs.ContainsKey(x.SimInputProperty))
                 .ToList();
