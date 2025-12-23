@@ -103,7 +103,6 @@ namespace NinthBall.Core
         }
 
         public override string ToString() => $"Moving Block Bootstrap (MBB) using random blocks [{CSVBlockSizes}] from  {History.History.Min(x => x.Year)} to {History.History.Max(x => x.Year)} data.{TxtNoConsecutiveBlocks}";
-
         string CSVBlockSizes => string.Join(",", Options.BlockSizes);
         string TxtNoConsecutiveBlocks => Options.NoConsecutiveBlocks ? " (No back to back repetition)" : string.Empty;
     }

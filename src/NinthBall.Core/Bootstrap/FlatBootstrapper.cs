@@ -22,9 +22,8 @@ namespace NinthBall.Core
         // Prepare an array with exactly same ROI.
         static ReadOnlyCollection<HROI> FillSameROI(double stocksROI, double bondsROI, int numItems)
         {
-            var oneROI = new HROI(0, stocksROI, bondsROI);
             var sequence = new HROI[numItems];
-            Array.Fill(sequence, oneROI);
+            Array.Fill(sequence, new HROI(0, stocksROI, bondsROI));
             return sequence.AsReadOnly();
         }
 
