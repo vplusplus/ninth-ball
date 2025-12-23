@@ -8,20 +8,12 @@ namespace NinthBall.Core
     sealed class CashBalance : IBalance
     {
         private double Cash;
+        double IBalance.Amount => Cash;
+        double IBalance.Allocation => 1.0;                        // Single asset. Allocation is not applicable
 
-        public double Amount => Cash;
-
-        public double Allocation => 1.0;                        // Single asset. Allocation is not applicable
-
-        public void Reset(double initialBalance)
-        {
-            Cash = initialBalance < 0 ? throw new ArgumentException("Initial balance must be >= 0") : initialBalance;
-        }
-
+        public void Reset(double initialBalance) => Cash = initialBalance < 0 ? throw new ArgumentException("Initial balance must be >= 0") : initialBalance;
         public bool Rebalance(double _) => false;               // Single asset. Nothing to rebalance
-
         public bool Reallocate(double _, double __) => false;   // Single asset. Allocation is not applicable
-
         public void Post(double amount) => Cash += amount;
 
         public double Grow(double ROI)
@@ -161,7 +153,6 @@ namespace NinthBall.Core
         public int StartAge { get; private set; }
         public int IterationIndex { get; private set; }
         public int YearsCompleted { get; private set; }
-
 
         // ..........................................
         // Current year strategy recommendations

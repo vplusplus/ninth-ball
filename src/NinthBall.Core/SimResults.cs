@@ -39,10 +39,7 @@ namespace NinthBall.Core
         public readonly double ChangePCT => Change.Total() / ( Jan.Total() - Fees.Total() - Withdrawals.Total() );
     }
 
-    public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI)
-    {
-        public override string ToString() => $"[Y:{LikeYear}]{StocksROI:P1}/{BondsROI:P1}/{CashROI:P1}";
-    }
+    public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI);
 
     public readonly record struct Asset(double Amount, double Allocation);
 
