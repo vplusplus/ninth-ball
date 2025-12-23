@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 
 namespace NinthBall.Core
 {
-    public sealed class ObjectPool<T>(Func<T> factory, int MaxItems = 100) where T : class
+    internal sealed class ObjectPool<T>(Func<T> factory, int MaxItems = 100) where T : class
     {
         private readonly ConcurrentQueue<T> InstancePool = new();
 
