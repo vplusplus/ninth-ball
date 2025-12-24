@@ -19,14 +19,14 @@
                 if (factor <= 0) throw new InvalidOperationException($"RMD table data missing for age {context.Age}. Please update the IRS Uniform Lifetime Table in {nameof(RMDStrategy)}.");
 
                 // Calculate required minimum ditribution
-                double requiredRMD = context.PreTaxBalance.Amount / factor;
+                double requiredMinimumDistributionAmount = context.PreTaxBalance.Amount / factor;
 
                 // Adjust up if current withdrawal is less than RMD
-                if (context.Withdrawals.PreTax < requiredRMD)
+                if (context.Withdrawals.PreTax < requiredMinimumDistributionAmount)
                 {
                     context.Withdrawals = context.Withdrawals with
                     {
-                        PreTax = requiredRMD
+                        PreTax = requiredMinimumDistributionAmount
                     };
                 }
             }

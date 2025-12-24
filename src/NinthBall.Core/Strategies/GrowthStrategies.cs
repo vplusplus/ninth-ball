@@ -7,8 +7,6 @@ namespace NinthBall.Core
     [SimInput(typeof(GrowthStrategy), typeof(Growth))]
     sealed class GrowthStrategy(IServiceProvider Services, SimParams SimParams, Growth Options) : ISimObjective
     {
-        int ISimObjective.Order => 40;
-
         readonly IBootstrapper MyBootstrapper = Options.Bootstrapper switch
         {
             BootstrapKind.Flat        => Services.GetRequiredService<FlatBootstrapper>(),
@@ -17,6 +15,8 @@ namespace NinthBall.Core
             BootstrapKind.Parametric  => Services.GetRequiredService<ParametricBootstrapper>(),
             _                         => throw new Exception($"Unknown bootstrapper: {Options.Bootstrapper}")
         };
+
+        int ISimObjective.Order => 40;
 
         int ISimObjective.MaxIterations => MyBootstrapper.GetMaxIterations(SimParams.NoOfYears);
 
@@ -27,7 +27,7 @@ namespace NinthBall.Core
             return new Strategy(roiSequence, Options.CashROI);
         }
 
-        sealed class Strategy(IReadOnlyList<HROI> MyROISequence, double cashGrowth) : ISimStrategy
+        sealed class Strategy(IReadOnlyList<HROI> MyROISequence, double CashGrowth) : ISimStrategy
         {
             void ISimStrategy.Apply(ISimContext context)
             {
@@ -35,7 +35,7 @@ namespace NinthBall.Core
                     ? MyROISequence[context.YearIndex]
                     : throw new IndexOutOfRangeException($"Iteration #{context.IterationIndex} year #{context.YearIndex} is outside the range of this growth strategy");
 
-                context.ROI = new ROI(roi.Year, roi.StocksROI, roi.BondROI, cashGrowth);
+                context.ROI = new ROI(roi.Year, roi.StocksROI, roi.BondROI, CashGrowth);
             }
         }
 

@@ -1,7 +1,6 @@
 ﻿
 namespace NinthBall.Core
 {
-
     [SimInput(typeof(TaxStrategy), typeof(Taxes))]
     sealed class TaxStrategy(Taxes Options) : ISimObjective
     {
@@ -48,11 +47,11 @@ namespace NinthBall.Core
                     // Capital gains
                     + ComputeTax(priorYear.Change.PostTax,      HundredPCT, TX.TaxRates.CapitalGains)
                  );
-            }
 
-            // Some of the gains (taxable income) may be negative.
-            // Taxes can't be negative. If the amount is negative, compute as ZERO tax.
-            static double ComputeTax(double income, double pctIncomeTaxed, double taxRate) => Math.Max(0, income * pctIncomeTaxed * taxRate);
+                // Some of the gains (taxable income) may be negative.
+                // Taxes can't be negative. If the amount is negative, compute as ZERO tax.
+                static double ComputeTax(double income, double pctIncomeTaxed, double taxRate) => Math.Max(0, income * pctIncomeTaxed * taxRate);
+            }
         }
 
         static void ThrowIfZero(double d, string name) { if (d <= 0) throw new Exception($"{name} cannot be zero. Use some very low value, but not zero, to model zero-tax scenario"); }
