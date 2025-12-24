@@ -4,6 +4,11 @@ namespace NinthBall.Core
 {
     public static partial class Stats
     {
+        public static double RoundX(this double value, int roundTo) => Math.Round(value / roundTo) * roundTo;
+
+        public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
+
+
         /// <summary>
         /// Computes the standard deviation (volatility) of a sequence of periodic returns.
         /// </summary>
@@ -90,13 +95,6 @@ namespace NinthBall.Core
             double presentValue = futureBalance / inflationFactor;
             return presentValue;
         }
-
-        public static double RoundX(this double value, int roundTo) => Math.Round(value / roundTo) * roundTo;
-        public static double Round10(this double value) => RoundX(value, 10);
-        public static double Round100(this double value) => RoundX(value, 100);
-        public static double Round1000(this double value) => RoundX(value, 1000);
-        public static string Thousands(this double value, int decimalPlaces = 2) => $"{(value / 1000).ToString($"C{decimalPlaces}")} K";
-        public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
 
         /// <summary>
         /// Calculates the annual withdrawal amount (Annuity Due) for a growing annuity that depletes a balance to zero.
