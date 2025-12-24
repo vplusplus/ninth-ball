@@ -127,7 +127,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Tracks running balances.
     /// Provides a working-memory for strategy recommendations.
-    /// Validates and appliesd the strategy recommendations.
+    /// Validates and applies the strategy recommendations.
     /// </summary>
     sealed class SimContext : ISimContext
     {
@@ -168,6 +168,10 @@ namespace NinthBall.Core
         public ROI ROI { get; set; }
         // ..........................................
 
+        /// <summary>
+        /// SimCOntext instanced are pooled and re-used.
+        /// Erase the memory of prior iteration, and start a fresh iteration.
+        /// </summary>
         public void Reset(InitialBalance initialBalance, int iterationIndex, int startAge, Memory<SimYear> store)
         {
             MyPreTaxBalance.Reset(initialBalance.PreTax.Amount, initialBalance.PreTax.Allocation);
@@ -189,6 +193,10 @@ namespace NinthBall.Core
             ROI = default;
         }
 
+
+        /// <summary>
+        /// Erase the memory of prior year, and start a new year.
+        /// </summary>
         public void BeginNewYear(int yearIndex)
         {
             YearIndex = yearIndex;
@@ -200,6 +208,10 @@ namespace NinthBall.Core
             ROI = default;
         }
 
+        /// <summary>
+        /// Validate and apply strategy recommendations.
+        /// Returns false if the model failed.
+        /// </summary>
         public bool ImplementStrategies()
         {
             // Take snapshot of jan 1st balance

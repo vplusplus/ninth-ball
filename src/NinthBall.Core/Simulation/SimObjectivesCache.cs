@@ -41,7 +41,7 @@ namespace NinthBall.Core
                 // Strategy can optionaly declare its family.
                 StrategyFamily family = null != attr ? attr.Family : StrategyFamily.None;
 
-                // Strategy can optionaly declare the simulation input type (hence the SimInpt property it wants)
+                // Strategy can optionaly declare the simulation input type (hence the SimInput property it wants)
                 var inputProperty = null != attr && null != attr.OptionsType 
                     ? typeof(SimInput).GetProperties().FirstOrDefault(p => p.PropertyType == attr.OptionsType) 
                     : null;

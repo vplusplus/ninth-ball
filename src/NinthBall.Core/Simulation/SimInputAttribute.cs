@@ -16,7 +16,7 @@ namespace NinthBall.Core
     }
 
     /// <summary>
-    /// Each strategy can declare the primary input it depends on using SimInputAttribute
+    /// Each strategy can declare its primary input and family identifier.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     internal sealed class SimInputAttribute : System.Attribute
