@@ -43,6 +43,15 @@ namespace NinthBall.Core
             withdrawals.PostTax = Math.Max(0, withdrawals.PostTax - SuggestedRefills.PostTax);
             withdrawals.Cash    = Math.Max(0, withdrawals.Cash - SuggestedRefills.Cash);
 
+            // We do not plan prcise fractions for withdrawals and deposits.
+            // Adjust suggested withdrawals and deposit amounts to the nearest multiples of $120
+            static double Round120(double value) => Math.Round(value / 120.0, MidpointRounding.AwayFromZero) * 120.0;
+            withdrawals.PreTax  = Round120(withdrawals.PreTax);
+            withdrawals.PostTax = Round120(withdrawals.PostTax);
+            withdrawals.Cash    = Round120(withdrawals.Cash);
+            deposits.PostTax    = Round120(deposits.PostTax);
+            deposits.Cash       = Round120(deposits.Cash);
+
             // Fees goes first. 
             available.PreTax   -= Fees.PreTax;
             available.PostTax  -= Fees.PostTax;
