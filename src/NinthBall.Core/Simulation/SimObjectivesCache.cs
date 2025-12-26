@@ -5,7 +5,7 @@ using System.Reflection;
 namespace NinthBall.Core
 {
     /// <summary>
-    /// Cache of metadata of the strategy implementations, discovered once using reflection.
+    /// Provides ISimObjective metadata, discovered ONCE using reflection.
     /// </summary>
     internal static class SimObjectivesCache
     {
