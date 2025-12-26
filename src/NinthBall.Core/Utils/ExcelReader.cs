@@ -17,7 +17,7 @@ namespace NinthBall.Core
             MyFileStream = File.Open(excelFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             MyDocument = SpreadsheetDocument.Open(MyFileStream, isEditable: false);
 
-            // We need one and only once instance of CellReader.
+            // We need one and only one instance of CellReader.
             MyCellReader = new(this);
         }
 

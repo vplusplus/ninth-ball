@@ -15,7 +15,7 @@ namespace NinthBall.Core
         public readonly record struct MetaData(Type StrategyType, StrategyFamily Family, PropertyInfo? SimInputProperty);
 
         /// <summary>
-        /// Provideds meta-data of ISimObjective implementations
+        /// Provides meta-data of ISimObjective implementations
         /// </summary>
         public static IReadOnlyCollection<MetaData> StrategyMetaData => Cache.Value;
 
@@ -38,10 +38,10 @@ namespace NinthBall.Core
                 // Optional meta-data attribute
                 var attr = type.GetCustomAttribute<SimInputAttribute>(inherit: false);
 
-                // Strategy can optionaly declare its family.
+                // Strategy can optionally declare its family.
                 StrategyFamily family = null != attr ? attr.Family : StrategyFamily.None;
 
-                // Strategy can optionaly declare the simulation input type (hence the SimInput property it wants)
+                // Strategy can optionally declare the simulation input type (hence the SimInput property it wants)
                 var inputProperty = null != attr && null != attr.OptionsType 
                     ? typeof(SimInput).GetProperties().FirstOrDefault(p => p.PropertyType == attr.OptionsType) 
                     : null;

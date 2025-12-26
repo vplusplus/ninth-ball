@@ -6,7 +6,7 @@ using System.Text;
 namespace NinthBall.Core
 {
     /// <summary>
-    /// Deterministic, corss-process and cross-platform hash code generation.
+    /// Deterministic, cross-process and cross-platform hash code generation.
     /// </summary>
     internal static class PredictableHashCode
     {

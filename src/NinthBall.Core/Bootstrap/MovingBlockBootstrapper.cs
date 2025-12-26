@@ -47,7 +47,7 @@ namespace NinthBall.Core
                     if (overlaps)
                     {
                         // Remove console print after testing.
-                        // Console.WriteLine($"Skipping overlapping blocls | {prevBlock.ChronoIndex} & {nextBlock.ChronoIndex}");
+                        // Console.WriteLine($"Skipping overlapping blocks | {prevBlock.ChronoIndex} & {nextBlock.ChronoIndex}");
                         continue;
                     }
                 } 

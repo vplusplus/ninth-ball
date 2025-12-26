@@ -95,7 +95,7 @@ namespace NinthBall.Core
         }
 
         // For some strategy families, only one of its kind is allowed.
-        // Throws an exceotion if more than one strategy is activated with-in each exclusive-families.
+        // Throws an exception if more than one strategy is activated with-in each exclusive-families.
         private static void EnforceStrategyExclusivity(IList<SimObjectivesCache.MetaData> activeStrategies)
         {
             var exclusiveFamilies = new[]
