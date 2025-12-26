@@ -174,7 +174,7 @@ namespace NinthBall.Core
         public int YearsCompleted { get; private set; }
 
         // ..........................................
-        // Current year strategy recommendations
+        // Current year information and strategy recommendations
         // ..........................................
         public int YearIndex { get; private set; }
         public int Age => StartAge + YearIndex;
@@ -188,7 +188,7 @@ namespace NinthBall.Core
         // ..........................................
 
         /// <summary>
-        /// SimCOntext instanced are pooled and re-used.
+        /// SimCOntext instances are pooled and re-used.
         /// Erase the memory of prior iteration, and start a fresh iteration.
         /// </summary>
         public void Reset(InitialBalance initialBalance, int iterationIndex, int startAge, Memory<SimYear> store)
@@ -211,7 +211,6 @@ namespace NinthBall.Core
             Refills = default;
             ROI = default;
         }
-
 
         /// <summary>
         /// Erase the memory of prior year, and start a new year.
@@ -244,6 +243,7 @@ namespace NinthBall.Core
                 out var adjustedWithdrawal, out var adjustedDeposits
             );
 
+            // If we survived, apply the changes.
             if (success)
             {
                 // Fees goes first

@@ -18,7 +18,7 @@ namespace NinthBall.Core
             var validInputs = input.DeconstructAndValidateSimulationInputs();
 
             // Register components for the simulation.
-            // Note: Dispose on return.
+            // NOTE: Dispose ServiceCollection on return. We will prepare fresh one for each run.
             using var services = new ServiceCollection()
                 .AddSingleton(new SimulationSeed(input.RandomSeedHint))
                 .RegisterSimulationInputs(validInputs)
