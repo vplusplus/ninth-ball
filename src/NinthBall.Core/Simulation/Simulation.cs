@@ -1,18 +1,23 @@
-﻿namespace NinthBall.Core
+﻿using System.Collections.ObjectModel;
+
+namespace NinthBall.Core
 {
     internal sealed class Simulation(SimParams MySimParams, InitialBalance InitPortfolio, IEnumerable<ISimObjective> Objectives)
     {
+        // A pool of SimContext instances, reset & reused for each iteration.
         private readonly ObjectPool<SimContext> SimContextPool = new(() => new SimContext());
-        private readonly IReadOnlyList<ISimObjective> OrderedObjectives = Objectives.OrderBy(x => x.Order).ToList();
-
+ 
         public SimResult RunSimulation()
         {
             ArgumentNullException.ThrowIfNull(MySimParams);
             ArgumentNullException.ThrowIfNull(InitPortfolio);
             ArgumentNullException.ThrowIfNull(Objectives);
 
+            // List of simulation objective, sorted by execution order.
+            ReadOnlyCollection<ISimObjective> orderedObjectives = Objectives.OrderBy(x => x.Order).ToList().AsReadOnly();
+
             // Find max iterations that we can support.
-            int maxIterations = Math.Min(MySimParams.Iterations, OrderedObjectives.Min(x => x.MaxIterations));
+            int maxIterations = Math.Min(MySimParams.Iterations, orderedObjectives.Min(x => x.MaxIterations));
             int noOfYears = MySimParams.NoOfYears;
 
             // Pre-allocate ONE giant contiguous block of memory for ALL results (total simYears = maxIterations * noOfYears)
@@ -24,6 +29,7 @@
                 .WithDegreeOfParallelism(Environment.ProcessorCount)
                 .Select(iterationIndex => RunOneIteration(
                     iterationIndex, 
+                    orderedObjectives,
                     dataStore.AsMemory(iterationIndex * noOfYears, noOfYears))
                 )
                 .ToList();
@@ -36,7 +42,7 @@
                 .AsReadOnly();
 
             // Extract strategy descriptions
-            var strategyDescriptions = OrderedObjectives
+            var strategyDescriptions = orderedObjectives
                 .Select(obj => obj.ToString() ?? "Unknown Strategy")
                 .ToList()
                 .AsReadOnly();
@@ -47,7 +53,7 @@
             );
         }
 
-        private SimIteration RunOneIteration(int iterationIndex, Memory<SimYear> myPrivateSliceOfMemory)
+        private SimIteration RunOneIteration(int iterationIndex, ReadOnlyCollection<ISimObjective> orderedObjectives, Memory<SimYear> myPrivateSliceOfMemory)
         {
             // Rent a context from the pool.
             using var lease = SimContextPool.Rent();
@@ -57,7 +63,7 @@
             ctx.Reset(InitPortfolio, iterationIndex, MySimParams.StartAge, myPrivateSliceOfMemory);
 
             // Strategies can be stateful; Create new set of strategies for each iteration.
-            var strategies = OrderedObjectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();
+            var strategies = orderedObjectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();
 
             // Assess each year.
             var success = false;
