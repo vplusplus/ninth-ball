@@ -48,7 +48,7 @@ namespace NinthBall.Core
         {
             ArgumentNullException.ThrowIfNull(simInput);
 
-            Dictionary<PropertyInfo, object> pairs = new();
+            Dictionary<PropertyInfo, object> pairs = new(LazySimInputProperties.Value.Count);
 
             foreach (var prop in LazySimInputProperties.Value)
             {
