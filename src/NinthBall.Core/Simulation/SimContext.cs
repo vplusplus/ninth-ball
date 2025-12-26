@@ -10,11 +10,26 @@ namespace NinthBall.Core
         private double Cash;
         double IBalance.Amount => Cash;
         double IBalance.Allocation => 1.0;                        // Single asset. Allocation is not applicable
-
         public void Reset(double initialBalance) => Cash = initialBalance < 0 ? throw new ArgumentException("Initial balance must be >= 0") : initialBalance;
         public bool Rebalance(double _) => false;               // Single asset. Nothing to rebalance
         public bool Reallocate(double _, double __) => false;   // Single asset. Allocation is not applicable
-        public void Post(double amount) => Cash += amount;
+        public void Post(double amount)
+        {
+            if (amount > 0) Deposit(amount); else Withdraw(Math.Abs(amount));
+            return;
+
+            void Deposit(double depositAmount) 
+            {
+                Cash += depositAmount;
+            }
+
+            void Withdraw(double withdrawalAmount) 
+            {
+                if (withdrawalAmount > Cash  + Precision.Amount) throw new Exception($"Cannot withdraw more than what we have | Available: {Cash:C0} | Requested: {withdrawalAmount:C0}");
+                Cash -= withdrawalAmount;
+                Cash = Cash.ResetNearZero(Precision.Amount);
+            }
+        }
 
         public double Grow(double ROI)
         {
@@ -37,7 +52,8 @@ namespace NinthBall.Core
         private double TargetAllocation;
 
         public double Amount => Stocks + Bonds;
-        public double Allocation => 0 == (Stocks + Bonds) ? 0.0 : Stocks / (Stocks + Bonds + Precision.Rate);
+
+        public double Allocation => 0 == Stocks ? 0.0 : 0 == Bonds ? 1.0 : Stocks / (Stocks + Bonds + Precision.Rate);
 
         double CurrentDrift => Math.Abs(Allocation - TargetAllocation);
 
@@ -50,7 +66,7 @@ namespace NinthBall.Core
 
         public bool Rebalance(double maxDrift)
         {
-            if (CurrentDrift > Math.Abs(maxDrift))
+            if (Math.Abs(CurrentDrift) > Math.Abs(maxDrift))
             {
                 double tmpAmount = Stocks + Bonds;
                 Stocks = tmpAmount * TargetAllocation;
@@ -87,8 +103,7 @@ namespace NinthBall.Core
             void Withdraw(double withdrawalAmount)
             {
                 if (0 == withdrawalAmount) return;
-
-                withdrawalAmount = Math.Min(withdrawalAmount, Amount);
+                if (withdrawalAmount > Amount + Precision.Amount) throw new Exception($"Cannot withdraw more than what we have | Available: {Amount:C0} | Requested: {withdrawalAmount:C0}");
 
                 double fromStock = withdrawalAmount * TargetAllocation;
                 double fromBond  = withdrawalAmount - fromStock;
@@ -104,7 +119,11 @@ namespace NinthBall.Core
                 static void TryTake(ref double whatIHave, ref double whatINeed)
                 {
                     var taking = Math.Min(whatIHave, whatINeed);
-                    if (taking.IsMoreThanZero(Precision.Rate)) { whatIHave -= taking; whatINeed -= taking; }
+                    if (taking.IsMoreThanZero(Precision.Amount)) 
+                    { 
+                        whatIHave -= taking; 
+                        whatINeed -= taking; 
+                    }
                 }
             }
         }
