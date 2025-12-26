@@ -2,7 +2,7 @@
 
 namespace NinthBall.Core
 {
-    internal sealed class Simulation(SimParams MySimParams, InitialBalance InitPortfolio, IEnumerable<ISimObjective> Objectives)
+    internal sealed class Simulation(InitialBalance InitPortfolio, SimParams MySimParams, IEnumerable<ISimObjective> Objectives)
     {
         // A pool of SimContext instances, reset & reused for each iteration.
         private readonly ObjectPool<SimContext> SimContextPool = new(() => new SimContext());
