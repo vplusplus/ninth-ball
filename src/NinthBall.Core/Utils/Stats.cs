@@ -4,10 +4,12 @@ namespace NinthBall.Core
 {
     public static partial class Stats
     {
-        public static double RoundX(this double value, int roundTo) => Math.Round(value / roundTo) * roundTo;
+        public static double RoundToMultiples(this double value, double step, MidpointRounding mode = MidpointRounding.ToEven) => 
+            step <= 0 
+                ? throw new ArgumentOutOfRangeException(nameof(step)) 
+                : Math.Round(value / step, mode) * step;
 
         public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
-
 
         /// <summary>
         /// Computes the standard deviation (volatility) of a sequence of periodic returns.

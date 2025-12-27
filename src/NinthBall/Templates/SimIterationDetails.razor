@@ -47,8 +47,8 @@
             double fromCash    = y.Deposits.Cash - y.Withdrawals.Cash;
 
             // static string K0(double amount) => amount > 1 || amount < -1 ? $"{amount / 1000:C0}" : string.Empty;
-            static string R100(double amount) => amount > 1 || amount < -1 ? $"{Math.Round(amount/100) * 100:C0}" : string.Empty;
-            static string P0(double pct) => $"{pct:P0}";
+            static string C0(double amount) => Math.Abs(amount) > 1.0 ? $"{amount:C0}" : string.Empty;
+            static string P0(double pct) => Math.Abs(pct) > 0.001 ? $"{pct:P0}" : string.Empty;
             string cssROI = CSS(y.Change.Total());
 
 
@@ -56,23 +56,23 @@
                 <td>@(y.Year + 1)</td>
                 <td>@y.Age</td>
 
-                <td>@R100(y.Jan.PreTax.Amount)</td>
-                <td>@R100(y.Jan.PostTax.Amount)</td>
+                <td>@C0(y.Jan.PreTax.Amount)</td>
+                <td>@C0(y.Jan.PostTax.Amount)</td>
                 <td>@P0(y.Jan.PreTax.Allocation) | @P0(y.Jan.PostTax.Allocation)</td>
 
-                <td>@R100(y.Fees.Total())</td>
-                <td>@R100(y.Expenses.PYTax)</td>
-                <td>@R100(y.Expenses.CYExp)</td>
+                <td>@C0(y.Fees.Total())</td>
+                <td>@C0(y.Expenses.PYTax)</td>
+                <td>@C0(y.Expenses.CYExp)</td>
 
-                <td>@R100(y.Incomes.SS)</td>
-                <td>@R100(y.Incomes.Ann)</td>
+                <td>@C0(y.Incomes.SS)</td>
+                <td>@C0(y.Incomes.Ann)</td>
 
-                <td class="@RG(fromPreTax)">@R100(fromPreTax)</td>
-                <td class="@RG(fromPostTax)">@R100(fromPostTax)</td>
-                <td class="@RG(fromCash)">@R100(fromCash)</td>
+                <td class="@RG(fromPreTax)">@C0(fromPreTax)</td>
+                <td class="@RG(fromPostTax)">@C0(fromPostTax)</td>
+                <td class="@RG(fromCash)">@C0(fromCash)</td>
 
                 <td class="@cssROI">
-                    @R100(y.Change.Total())
+                    @C0(y.Change.Total())
                 </td>
                 <td class="mono-space @cssROI">
                     @y.ROI.LikeYear

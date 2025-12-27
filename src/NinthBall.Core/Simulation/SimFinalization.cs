@@ -33,9 +33,9 @@ namespace NinthBall.Core
             SuggestedWithdrawals.ThrowIfNegative();
 
             // Temp working memory, we will adjust these numbers.
-            ThreeD available   = new("Available", Jan.PreTax.Amount, Jan.PostTax.Amount, Jan.Cash.Amount);
-            ThreeD withdrawals = new("Withdrawals", SuggestedWithdrawals.PreTax, SuggestedWithdrawals.PostTax, SuggestedWithdrawals.Cash);
-            TwoD deposits      = new("Deposits", 0, 0);
+            ThreeD available    = new("Available", Jan.PreTax.Amount, Jan.PostTax.Amount, Jan.Cash.Amount);
+            ThreeD withdrawals  = new("Withdrawals", SuggestedWithdrawals.PreTax, SuggestedWithdrawals.PostTax, SuggestedWithdrawals.Cash);
+            TwoD deposits       = new("Deposits", 0, 0);
 
             // Let's take care of one meaningless fund transfer.
             // Take 100K from post-tax, refill 50K to post-tax = take 50K from post-tax
@@ -43,14 +43,13 @@ namespace NinthBall.Core
             withdrawals.PostTax = Math.Max(0, withdrawals.PostTax - SuggestedRefills.PostTax);
             withdrawals.Cash    = Math.Max(0, withdrawals.Cash - SuggestedRefills.Cash);
 
-            // We do not plan prcise fractions for withdrawals and deposits.
-            // Adjust suggested withdrawals and deposit amounts to the nearest multiples of $120
-            static double Round120(double value) => Math.Round(value / 120.0, MidpointRounding.AwayFromZero) * 120.0;
-            withdrawals.PreTax  = Round120(withdrawals.PreTax);
-            withdrawals.PostTax = Round120(withdrawals.PostTax);
-            withdrawals.Cash    = Round120(withdrawals.Cash);
-            deposits.PostTax    = Round120(deposits.PostTax);
-            deposits.Cash       = Round120(deposits.Cash);
+            // We do not plan or transact at fractions.
+            // Adjust suggested withdrawal and deposit amounts to the nearest multiples of $120
+            //withdrawals.PreTax  = withdrawals.PreTax.RoundToMultiples(120);
+            //withdrawals.PostTax = withdrawals.PostTax.RoundToMultiples(120);
+            //withdrawals.Cash    = withdrawals.Cash.RoundToMultiples(120);
+            //deposits.PostTax    = deposits.PostTax.RoundToMultiples(120);
+            //deposits.Cash       = deposits.Cash.RoundToMultiples(120);
 
             // Fees goes first. 
             available.PreTax   -= Fees.PreTax;
