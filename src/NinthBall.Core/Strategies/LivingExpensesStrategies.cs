@@ -14,16 +14,36 @@ namespace NinthBall.Core
 
             void ISimStrategy.Apply(ISimContext context)
             {
-                context.Expenses = context.Expenses with
+                if (0 == context.YearIndex)
                 {
-                    CYExp = 0 == context.YearIndex
-                        ? amount = LExp.FirstYearAmount
-                        : amount *= 1 + LExp.Increment
-                };
+                    // Year #0 - Use firt year amount
+                    context.Expenses = context.Expenses with
+                    {
+                        CYExp = (amount = LExp.FirstYearAmount)
+                    };
+                }
+                else
+                {
+                    // On StepDown years (if specified), reduce prior year amount by suggested number
+                    if (null != LExp.StepDown && LExp.StepDown.Any(x => x.AtAge == context.Age))
+                    {
+                        amount -= LExp.StepDown.Single(x => x.AtAge == context.Age).Reduction;
+                    }
+
+                    // Increment prior year amount by suggested increment
+                    context.Expenses = context.Expenses with
+                    {
+                        CYExp = (amount *= 1 + LExp.Increment)
+                    };
+                }
             }
         }
 
-        public override string ToString() => $"Living expenses | {Options.FirstYearAmount:C0} first year (+{Options.Increment:P1}/yr)";
+        public override string ToString() => $"Living expenses | {Options.FirstYearAmount:C0} first year (+{Options.Increment:P1}/yr){CSVStepDown}";
+
+        string CSVStepDown => null != Options.StepDown && Options.StepDown.Count > 0
+            ? $" | Stepdown: {string.Join(", ", Options.StepDown.Select(x => $"[-{x.Reduction:C0} @ {x.AtAge}]"))}"
+            : string.Empty;
     }
 
 

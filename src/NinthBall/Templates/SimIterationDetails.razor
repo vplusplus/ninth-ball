@@ -2,7 +2,7 @@
 @using NinthBall.Core;
 
 <!-- Presents year-by-year details of single iteration -->
-<table id="@Id" class="table table-sm table-striped caption-top page-break mb-0" style="width: 100%;">
+<table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%;">
     <caption>
         <h3>@Caption</h3>
     </caption>
@@ -10,7 +10,45 @@
     </thead>
     <tbody>
 
+        @{
+            var totalFees = Sum(Iteration.ByYear.Span, x => x.Fees.Total());
+            var totalTaxes = Sum(Iteration.ByYear.Span, x => x.Expenses.PYTax);
+            var totalExp = Sum(Iteration.ByYear.Span, x => x.Expenses.CYExp);
+            var totalSS = Sum(Iteration.ByYear.Span, x => x.Incomes.SS);
+            var totalAnn = Sum(Iteration.ByYear.Span, x => x.Incomes.Ann);
+
+            var totalXPreTax = Sum(Iteration.ByYear.Span, x => x.Withdrawals.PreTax);
+            var totalXPostTax = Sum(Iteration.ByYear.Span, x => x.Withdrawals.PostTax);
+            var totalXCash = Sum(Iteration.ByYear.Span, x => x.Withdrawals.Cash);
+
+            var totalChange = Sum(Iteration.ByYear.Span, x => x.Change.Total());
+        }
+
         <!-- Summary row (totals, ann-returns, etc.) on top -->
+        <tr>
+            <td></td>
+            <td></td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+
+            <td class="text-secondary">@totalFees.Millions()</td>
+            <td class="text-secondary">@totalTaxes.Millions()</td>
+            <td class="text-secondary">@totalExp.Millions()</td>
+
+            <td class="text-secondary">@totalSS.Millions()</td>
+            <td class="text-secondary">@totalAnn.Millions()</td>
+
+            <td class="text-secondary">@totalXPreTax.Millions()</td>
+            <td class="text-secondary">@totalXPostTax.Millions()</td>
+            <td class="text-secondary">@totalXCash.Millions()</td>
+
+            <td class="text-secondary">@totalChange.Millions()</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
 
         <!-- Labels are printed summary row on top -->
         <tr>
@@ -36,7 +74,6 @@
             <th>Like</th>
             <th>Stocks</th>
             <th>Bonds</th>
-
         </tr>
 
         <!-- Details -->
@@ -50,7 +87,6 @@
             static string C0(double amount) => Math.Abs(amount) > 1.0 ? $"{amount:C0}" : string.Empty;
             static string P0(double pct) => Math.Abs(pct) > 0.001 ? $"{pct:P0}" : string.Empty;
             string cssROI = CSS(y.Change.Total());
-
 
             <tr>
                 <td>@(y.Year + 1)</td>
@@ -94,10 +130,19 @@
     [Parameter] public string Caption { get; set; } = "";
     [Parameter] public SimIteration Iteration { get; set; } = null!;
 
-
     static string CSS(double value) => value < 0.0 ? "text-danger" : string.Empty;
 
     static string RG(double value) => value < 0.0 ? "text-danger" : "text-success";
 
+    static double Sum(ReadOnlySpan<SimYear> byYear, Func<SimYear, double> fxValueSelector)
+    {
+        double sumAmount = 0.0;
 
+        for(int i=0; i<byYear.Length; i++)
+        {
+            sumAmount += fxValueSelector(byYear[i]);
+        }
+
+        return sumAmount;
+    }
 }

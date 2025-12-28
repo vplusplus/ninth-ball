@@ -61,18 +61,25 @@ Taxes:
     OrdinaryIncome: 22%
     CapitalGains: 15%
 
+# ............................................................
 # Expense modelling
+# ............................................................
 LivingExpenses:
   FirstYearAmount: 130,000
   Increment: 2%
+  StepDown:
+    - AtAge: 65           # Stop paying Life Ins
+      Reduction: 30000
+    - AtAge: 70           # Reduction in Med Ins.
+      Reduction: 12000
 
 zzzPrecalculatedLivingExpenses:
   FileName: $(MyPath)/Withdrawals.xlsx
   SheetName: Withdrawals
 
 # ............................................................
-# PreTax asset depletion velocity
-# All three choices below are applicable ONLY to the PreTax assets
+# PreTax (401K) depletion velocity; Pick one.
+# All choices below are applicable ONLY to the PreTax assets
 # ............................................................
 ZZZFixedWithdrawal:
   FirstYearAmount: 80000
@@ -94,26 +101,30 @@ RMD:
 
 # ............................................................
 # Growth strategies 
+# Availble options: Flat | Sequential | MovingBlock | Parametric
 # ............................................................
 Growth:
-  Bootstrapper: MovingBlock     # Flat | Sequential | MovingBlock | Parametric
+  Bootstrapper: MovingBlock     
   CashROI: 0%
 
 # ............................................................
-# Supporting data for ROI Bootstrap options
+# Supporting configurations for ROI Bootstrap options
 # ............................................................
 ROIHistory:
   XLFileName:  $(MyPath)/ROI-History.xlsx
   XLSheetName: DATA
 
+# Useful for baseliing and validting the calculations.
 FlatBootstrap:
   Stocks: 5%
   Bonds: 5%
-  
+
+# Repeats random slices of history
 MovingBlockBootstrap:
   BlockSizes: [3,4,5]
   NoConsecutiveBlocks: true
 
+# Stats driven
 ParametricBootstrap:
   DistributionType: LogNormal
   StocksBondCorrelation: -0.15

@@ -24,7 +24,7 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Withdrawal | Fixed {Options.FirstYearAmount:C0} (+{Options.Increment:P1}/yr)";
+        public override string ToString() => $"Pre-Tax Drawdown | Fixed {Options.FirstYearAmount:C0} (+{Options.Increment:P1}/yr)";
     }
 
     [SimInput(typeof(PercentageWithdrawalStrategy), typeof(PercentageWithdrawal), Family = StrategyFamily.WithdrawalVelocity)]
@@ -60,7 +60,7 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Withdrawal | {Options.FirstYearPct:P1} of PreTax (+{Options.Increment:P1}/yr){ResetYearsToString}";
+        public override string ToString() => $"Pre-Tax Drawdown | {Options.FirstYearPct:P1} of PreTax (+{Options.Increment:P1}/yr){ResetYearsToString}";
         string ResetYearsToString => (null == Options.ResetAtAge || 0 == Options.ResetAtAge.Count) ? string.Empty : $" | Reset to {Options.FirstYearPct:P1} @ age [{string.Join(',', Options.ResetAtAge)}]";
     }
 
@@ -107,7 +107,7 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Withdrawal | Variable percentage towards zero balance | Assumptions: {Options.ROI:P1} ROI, {Options.Inflation:P1} Inflation{GuardrailsToString}";
+        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {Options.ROI:P1} ROI, {Options.Inflation:P1} Inflation{GuardrailsToString}";
 
         string GuardrailsToString => (Options.Floor.HasValue || Options.Ceiling.HasValue) 
             ? $" | Guardrails: [{Options.Floor?.ToString("C0") ?? "None"} - {Options.Ceiling?.ToString("C0") ?? "None"}] adjusted for inflation" 

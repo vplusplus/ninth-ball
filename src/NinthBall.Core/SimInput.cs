@@ -147,9 +147,17 @@ namespace NinthBall.Core
 
     public sealed record LivingExpenses
     (
-        [property:Min(0)]       double FirstYearAmount,
-        [property:Range(0,1)]   double Increment
-    );
+        [property:Min(0)]           double FirstYearAmount,
+        [property:Range(0,1)]       double Increment,
+        [property: ValidateNested]  IReadOnlyList<LivingExpenses.ARD> StepDown
+    )
+    {
+        public readonly record struct ARD
+        (
+            [property: Min(50)] int     AtAge,
+            [property: Min(00)] double  Reduction
+        );
+    }
 
     public sealed record PrecalculatedLivingExpenses
     (
