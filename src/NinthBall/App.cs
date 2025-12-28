@@ -1,13 +1,11 @@
 ﻿
-using Microsoft.Extensions.Configuration;
 using NinthBall.Core;
 using NinthBall.Templates;
 using System.Diagnostics;
 
-
 namespace NinthBall
 {
-    internal sealed class App(IConfiguration config)
+    internal sealed class App
     {
         static readonly TimeSpan TwoSeconds  = TimeSpan.FromSeconds(2);
         static readonly TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
@@ -76,7 +74,6 @@ namespace NinthBall
             {
                 // Load Config
                 var simConfig = SimInputReader.ReadFromYamlFile(InputFileName);
-
 
                 // Run simulation
                 var timer = Stopwatch.StartNew();
