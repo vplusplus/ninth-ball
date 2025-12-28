@@ -17,6 +17,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Hosting\**" />
+    <Content Remove="Hosting\**" />
+    <EmbeddedResource Remove="Hosting\**" />
+    <None Remove="Hosting\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="UnitTests" />
   </ItemGroup>
 
@@ -37,10 +44,6 @@
     <None Update="Input\**">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Hosting\" />
   </ItemGroup>
 
 </Project>

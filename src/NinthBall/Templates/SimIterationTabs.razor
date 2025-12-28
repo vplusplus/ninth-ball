@@ -8,12 +8,12 @@
         <li class="nav-item">
             <a class="nav-link disabled" aria-disabled="true">Details: </a>
         </li>
-        @foreach (var p in PercentileTargets)
+        @foreach (var p in Percentiles.Items)
         {
-            var pctlId = PercentileId(p);
-            var pctlCaption = PercentileCaption(p);
+            var pctlId = PercentileId(p.Pctl);
+            var pctlCaption = p.Caption;
 
-            var isActive = p == TargetPctl ? "active" : "";
+            var isActive = p.Pctl == Percentiles.Target ? "active" : "";
 
             <li class="nav-item">
                 <a class="nav-link @isActive" data-bs-toggle="tab" href="#@(pctlId)">@pctlCaption</a>
@@ -22,12 +22,12 @@
     </ul>
 
     <div class="tab-content">
-        @foreach (var p in PercentileTargets)
+        @foreach (var p in Percentiles.Items)
         {
-            var iter = Model.Percentile(p);
-            var pctlId = PercentileId(p);
-            var caption = $"{PercentileCaption(p)} Percentile";
-            var isActive = p == TargetPctl ? "active" : "";
+            var iter = Model.Percentile(p.Pctl);
+            var pctlId = PercentileId(p.Pctl);
+            var caption = $"{p.Caption} Percentile";
+            var isActive = p.Pctl == Percentiles.Target ? "active" : "";
             <div class="tab-pane @isActive" id="@(pctlId)">
                 <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter />
             </div>
@@ -39,16 +39,6 @@
 {
     [Parameter] public SimResult Model { get; set; } = null!;
 
-    const double TargetPctl = 0.2;
-    static readonly double[] PercentileTargets = [0.00, 0.05, 0.10, 0.20, 0.50, 0.80, 0.90];
-
     static string PercentileId(double pctl) => $"{pctl * 100:00}";
 
-    static string PercentileCaption(double pctl)
-    {
-        // TODO: Percentile targets and captions are repeated. Consolidate
-        var pct100 = (int)(pctl * 100);
-        var caption = 0 == pct100 ? "0th" : 1 == pct100 ? "1st" : 2 == pct100 ? "2nd" : 3 == pct100 ? "3rd" : $"{pct100}th";
-        return caption;
-    }
 }

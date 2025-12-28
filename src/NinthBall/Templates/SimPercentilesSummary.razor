@@ -9,28 +9,25 @@
     <tbody>
         <tr>
             <th></th>
-            @foreach (var p in PercentileTargets)
+            @foreach (var p in Percentiles.Items)
             {
-                var pct100 = (int)(p * 100);
-                var caption = 0 == pct100 ? "0th" : 1 == pct100 ? "1st" : 2 == pct100 ? "2nd" : 3 == pct100 ? "3rd" : $"{pct100}th";
-
                 <td class="text-primary">
-                    @caption
+                    @p.Caption
                 </td>
             }
         </tr>
         <tr>
             <th></th>
-            @foreach (var mood in PercentileSentiments)
+            @foreach (var p in Percentiles.Items)
             {
-                <td class="text-secondary">@mood</td>
+                <td class="text-secondary">@p.Tag</td>
             }
         </tr>
         <tr>
             <th>End (Real)</th>
-            @foreach (var p in PercentileTargets)
+            @foreach (var p in Percentiles.Items)
             {
-                var iter = Model.Percentile(p);
+                var iter = Model.Percentile(p.Pctl);
 
                 if (iter.Success)
                 {
@@ -45,9 +42,9 @@
         </tr>
         <tr>
             <td>End (Nominal)</td>
-            @foreach (var p in PercentileTargets)
+            @foreach (var p in Percentiles.Items)
             {
-                var iter = Model.Percentile(p);
+                var iter = Model.Percentile(p.Pctl);
 
                 if (iter.Success)
                 {
@@ -62,9 +59,9 @@
         </tr>
         <tr>
             <td>Change (Annualized)</td>
-            @foreach (var p in PercentileTargets)
+            @foreach (var p in Percentiles.Items)
             {
-                var iter = Model.Percentile(p);
+                var iter = Model.Percentile(p.Pctl);
                 var pctChange = AnnualizeChangePCT(iter.ByYear);
                 <td class="text-secondary">
                     @($"{pctChange:P1}")
@@ -79,14 +76,8 @@
 {
     [Parameter] public SimResult Model { get; set; } = null!;
 
-    // TODO: Percentile targets and captions are repeated. Consolidate
-    static readonly double[] PercentileTargets = [0.00, 0.05, 0.10, 0.20, 0.50, 0.80, 0.90];
-    static readonly string[] PercentileSentiments = ["Disaster", "Unlucky", "Unfortunate", "Target", "Coin-flip", "Fortunate", "Lucky"];
-    const double TargetPctl = 0.2;
-
     // TODO: Externalize. 
     const double TheInflationRate = 0.03;
-
 
     static double AnnualizeChangePCT(ReadOnlyMemory<SimYear> byYear)
     {
@@ -102,5 +93,4 @@
 
         return 0 == count ? 0.0 : Math.Pow(compoundReturn, 1.0 / count) - 1;
     }
-
 }
