@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace NinthBall.Core
 {
@@ -11,6 +12,8 @@ namespace NinthBall.Core
     /// </summary>
     public sealed class ExcelWriter : IDisposable
     {
+        static readonly Regex RxInvalidSheetName = new(@"[\\\\[\\]\\*\\?:\\/]", RegexOptions.Compiled);
+
         readonly string FilePath;
         readonly string TempFilePath;
 
@@ -39,26 +42,37 @@ namespace NinthBall.Core
         public WorksheetWriter BeginSheet(string sheetName)
         {
             ThrowIfDisposed();
-            ArgumentNullException.ThrowIfNull(sheetName);
+
+            sheetName = ThrowIfInvalidSheetName(sheetName);
 
             // Create WorksheetPart and xml-Writer for the WorksheetPart
             var worksheetPart = WorkbookPart.AddNewPart<WorksheetPart>();
             var sheetXmlWriter = OpenXmlWriter.Create(worksheetPart);
 
-            // Link Sheet in Workbook
-            Sheets sheets = WorkbookPart.Workbook.GetFirstChild<Sheets>() ?? throw new Exception("Unexpected. Sheets was null.");
-            var nextSheetId = sheets.Elements<Sheet>().Max(x => x?.SheetId?.Value).GetValueOrDefault(0) + 1;
-
-            var sheet = new Sheet()
+            // Link Sheet to the Workbook
+            var sheets = WorkbookPart.Workbook.GetFirstChild<Sheets>() ?? throw new Exception("Unexpected. Sheets was null.");
+            var nextSheetId = 1 + sheets.Elements<Sheet>().Max(x => x?.SheetId?.Value).GetValueOrDefault(0);
+            sheets.Append(new Sheet()
             {
                 Id = WorkbookPart.GetIdOfPart(worksheetPart),
                 SheetId = nextSheetId,
                 Name = sheetName
-            };
-            sheets.Append(sheet);
+            });
 
             // Provide a writer chain. 
             return new WorksheetWriter(sheetXmlWriter).BeginWorksheet();
+
+            static string ThrowIfInvalidSheetName(string sheetName)
+            {
+                if (string.IsNullOrWhiteSpace(sheetName)) throw new FatalWarning("Invalid Excel sheet name | Was NULL or Empty");
+
+                sheetName = sheetName.Trim('\'');
+                if (sheetName.Length > 31) throw new FatalWarning("Invalid Excel sheet name | Must be <= 31 chars.");
+                if ("History".Equals(sheetName, StringComparison.OrdinalIgnoreCase)) throw new FatalWarning("Invalid Excel sheet name | 'History' is a reerve name.");
+                if (RxInvalidSheetName.IsMatch(sheetName)) throw new FatalWarning("Invalid Excel sheet name | Has invalid chars.");
+
+                return sheetName;
+            }
         }
 
         public void Save()
@@ -117,21 +131,35 @@ namespace NinthBall.Core
                 return this;
             }
 
-            public WorksheetWriter WriteColumns(params double[] widths)
+            public readonly void EndWorksheet()
+            {
+                Writer.WriteEndElement();   // End worksheet
+                Writer.Dispose();           // IMPORTANT: Writer is no longer valid
+            }
+
+            /// <summary>
+            /// One-shot helper to set optional column widths.
+            /// Set column widths once and before calling BeginSheetData().
+            /// </summary>
+            public WorksheetWriter WriteColumns(params ReadOnlySpan<double?> columnWidths)
             {
                 // <cols>
                 Writer.WriteStartElement(OneColumns);
 
-                for (int i = 0; i < widths.Length; i++)
+                for (int i = 0; i < columnWidths.Length; i++)
                 {
                     var colIndex = (uint)(i + 1);
-                    var colWidth = widths[i];
+                    var colWidth = columnWidths[i];
 
-                    // <col />
-                    OneColumn.Min = OneColumn.Max = colIndex;
-                    OneColumn.Width = colWidth;
-                    OneColumn.CustomWidth = true;
-                    Writer.WriteElement(OneColumn);
+                    // Null implies, do not explicitly set width for this column.
+                    if (colWidth.HasValue)
+                    {
+                        // <col />
+                        OneColumn.Min = OneColumn.Max = colIndex;
+                        OneColumn.Width = colWidth;
+                        OneColumn.CustomWidth = true;
+                        Writer.WriteElement(OneColumn);
+                    }
                 }
 
                 // </cols>
@@ -140,16 +168,11 @@ namespace NinthBall.Core
                 return this;
             }
 
-            public SheetDataWriter BeginData()
-            {
-                return OneSheetDataWriter.BeginSheetData();
-            }
-
-            public readonly void EndWorksheet()
-            {
-                Writer.WriteEndElement(); // End worksheet
-                Writer.Dispose();
-            }
+            /// <summary>
+            /// Start writing rows and cells.
+            /// Dispose me to close the SheetData.
+            /// </summary>
+            public SheetDataWriter BeginSheetData() => OneSheetDataWriter.BeginSheetData();
 
             public readonly void Dispose() => EndWorksheet();
         }
@@ -159,13 +182,15 @@ namespace NinthBall.Core
             readonly SheetData OneSheetData = new();
             readonly RowWriter OneRowWriter = new(Writer);
 
-            internal SheetDataWriter BeginSheetData()
+            // <sheetData>
+            internal SheetDataWriter BeginSheetData()                     
             {
                 Writer.WriteStartElement(OneSheetData);
                 return this;
             }
 
-            public void EndSheetData() => Writer.WriteEndElement(); // </sheetData>
+            // </sheetData>
+            public void EndSheetData() => Writer.WriteEndElement(); 
 
             public readonly RowWriter BeginRow() => OneRowWriter.BeginRow();
 
