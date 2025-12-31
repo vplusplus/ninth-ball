@@ -10,30 +10,43 @@ namespace NinthBall.Core
         
         sealed record Strategy(LivingExpenses LExp) : ISimStrategy
         {
-            double amount = 0;
+            double livingExpense = 0;
 
             void ISimStrategy.Apply(ISimContext context)
             {
                 if (0 == context.YearIndex)
                 {
-                    // Year #0 - Use firt year amount
+                    // Year #0 - Use firt year livingExpense
+                    livingExpense = LExp.FirstYearAmount;
+
                     context.Expenses = context.Expenses with
                     {
-                        CYExp = (amount = LExp.FirstYearAmount)
+                        // Do not round to multiples of $120/year. Doing so may be confusing for the reviewer.
+                        // Just drop the fractions (if any)
+                        CYExp = Math.Round(livingExpense)
                     };
                 }
                 else
                 {
-                    // On StepDown years (if specified), reduce prior year amount by suggested number
-                    if (null != LExp.StepDown && LExp.StepDown.Any(x => x.AtAge == context.Age))
+                    // On StepDown years (if specified), find the step-down amount for the current age (if specified)
+                    // Assume zero if neither of the condition is true
+                    var stepDown = null != LExp.StepDown ? LExp.StepDown.Where(x => x.AtAge == context.Age).DefaultIfEmpty().Max(x => x.Reduction) : 0;
+
+                    // Reduce prior year livingExpense by suggested amount
+                    if (stepDown > 0)
                     {
-                        amount -= LExp.StepDown.Single(x => x.AtAge == context.Age).Reduction;
+                        // Can't go negative
+                        livingExpense = Math.Max(0, livingExpense - stepDown);
                     }
 
-                    // Increment prior year amount by suggested increment
+                    // Increment prior year livingExpense by suggested increment
+                    livingExpense *= 1 + LExp.Increment;
+
                     context.Expenses = context.Expenses with
                     {
-                        CYExp = (amount *= 1 + LExp.Increment)
+                        // We do not spend in fractions.
+                        // Round to multiples of $120/year ($10/month)
+                        CYExp = livingExpense.RoundToMultiples(120.0)
                     };
                 }
             }
@@ -60,11 +73,16 @@ namespace NinthBall.Core
         {
             void ISimStrategy.Apply(ISimContext context)
             {
+                // Use the precalculated input for current year.
+                var cyExp = context.YearIndex >= 0 && context.YearIndex < ExpSeq.Count
+                    ? ExpSeq[context.YearIndex]
+                    : throw new IndexOutOfRangeException($"Year index #{context.YearIndex} is outside the range of the predefined expense list.");
+
                 context.Expenses = context.Expenses with
                 {
-                    CYExp = context.YearIndex >= 0 && context.YearIndex < ExpSeq.Count
-                        ? ExpSeq[context.YearIndex]
-                        : throw new IndexOutOfRangeException($"Year index #{context.YearIndex} is outside the range of the predefined expense list.")
+                    // Amount is pre-calculated. Do not adjust.
+                    // Just drop fractions (if any).
+                    CYExp = Math.Round(cyExp)
                 };
             }
         }
@@ -72,3 +90,4 @@ namespace NinthBall.Core
         public override string ToString() => $"Living expenses | Pre-calculated from {Path.GetFileName(Options.FileName)} [{Options.SheetName}]";
     }
 }
+

@@ -15,11 +15,14 @@ namespace NinthBall.Core
 
             void ISimStrategy.Apply(ISimContext context)
             {
+                var take = 0 == context.YearIndex
+                    ? from401K = FW.FirstYearAmount
+                    : from401K *= 1 + FW.Increment;
+
                 context.Withdrawals = context.Withdrawals with
                 {
-                    PreTax = 0 == context.YearIndex
-                        ? from401K = FW.FirstYearAmount
-                        : from401K *= 1 + FW.Increment
+                    // Adjust to multiples of $120/year i.e. $10/month
+                    PreTax = take.RoundToMultiples(120.0)   
                 };
             }
         }
@@ -55,7 +58,8 @@ namespace NinthBall.Core
 
                 ctx.Withdrawals = ctx.Withdrawals with
                 {
-                    PreTax = from401K
+                    // Adjust to multiples of $120/year i.e. $10/month
+                    PreTax = from401K.RoundToMultiples(120.0)
                 };
             }
         }
@@ -102,7 +106,8 @@ namespace NinthBall.Core
 
                 ctx.Withdrawals = ctx.Withdrawals with
                 {
-                    PreTax = amount
+                    // Adjust to multiples of $120/year i.e. $10/month
+                    PreTax = amount.RoundToMultiples(120.0)
                 };
             }
         }

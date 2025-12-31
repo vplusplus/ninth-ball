@@ -49,7 +49,7 @@ namespace NinthBall.Core
                  );
 
                 // Some of the gains (taxable income) may be negative.
-                // Taxes can't be negative. If the amount is negative, compute as ZERO tax.
+                // Taxes can't be negative. If the pyAmount is negative, compute as ZERO tax.
                 static double ComputeTax(double income, double pctIncomeTaxed, double taxRate) => Math.Max(0, income * pctIncomeTaxed * taxRate);
             }
         }

@@ -137,7 +137,7 @@ namespace NinthBall.Core
             return true;
 
             // Try to transfer suggested funds from source to target.
-            // If suggested amount is not whatIHave, transfer available funds.
+            // If suggested pyAmount is not whatIHave, transfer available funds.
             static double TryTransferFunds(ref double whatWeNeed, ref double source, ref double target)
             {
                 if (whatWeNeed.IsMoreThanZero(Precision.Amount) && source.IsMoreThanZero(Precision.Amount))

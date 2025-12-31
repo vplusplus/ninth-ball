@@ -82,19 +82,19 @@ namespace NinthBall
 
                 var htmlFileName = OutputFileName;
                 await HtmlOutput.Generate(simResult, htmlFileName);
-                Console.WriteLine($"Html report available at {htmlFileName}");
+                Console.WriteLine($" Html report available at {htmlFileName}");
 
                 try
                 {
                     var excelFileName = Path.ChangeExtension(htmlFileName, ".xlsx");
                     await ExcelOutput.Generate(simResult, excelFileName);
-                    Console.WriteLine($"Excel report available at {excelFileName}");
+                    Console.WriteLine($" Excel report available at {excelFileName}");
                 }
                 catch(System.IO.IOException ioErr)
                 {
                     // Excel file is probably currently open.
-                    Console.WriteLine("WRNING: Excel report not generted, if present, may not agree with html report.");
-                    Console.WriteLine(ioErr.Message);
+                    Console.WriteLine(" WRNING: Excel report not generted, if present, may not agree with html report.");
+                    Console.WriteLine($" {ioErr.Message}");
                 }
 
                 // Inform                

@@ -33,7 +33,7 @@ namespace NinthBall.Core
 
         public double Grow(double ROI)
         {
-            var change = Cash * ROI;
+            var change = Math.Round(Cash * ROI);
 
             Cash += change;
             Cash = Cash.ResetNearZero(Precision.Amount);
@@ -130,8 +130,8 @@ namespace NinthBall.Core
 
         public double Grow(double stocksROI, double bondsROI)
         {
-            var sChange = Stocks * stocksROI;
-            var bChange = Bonds * bondsROI;
+            var sChange = Math.Round(Stocks * stocksROI);
+            var bChange = Math.Round(Bonds * bondsROI);
 
             Stocks += sChange;
             Bonds  += bChange;

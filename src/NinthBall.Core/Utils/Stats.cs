@@ -99,14 +99,14 @@ namespace NinthBall.Core
         }
 
         /// <summary>
-        /// Calculates the annual withdrawal amount (Annuity Due) for a growing annuity that depletes a balance to zero.
+        /// Calculates the annual withdrawal pyAmount (Annuity Due) for a growing annuity that depletes a balance to zero.
         /// PV = W * (1 + r) * [1 - ((1 + g) / (1 + r))^n] / (r - g)
         /// </summary>
         /// <param name="currentBalance">Present value of the asset pool.</param>
         /// <param name="estimatedROI">Expected annual return (nominal).</param>
         /// <param name="estimatedInflation">Expected annual increment (inflation).</param>
         /// <param name="remainingYears">Number of years left (including current).</param>
-        /// <returns>The withdrawal amount for the current year.</returns>
+        /// <returns>The withdrawal pyAmount for the current year.</returns>
         public static double EquatedWithdrawal(double currentBalance, double estimatedROI, double estimatedInflation, int remainingYears)
         {
             if (remainingYears <= 0) return 0.0;

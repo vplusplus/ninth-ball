@@ -17,8 +17,8 @@ namespace NinthBall.Core
             {
                 context.Incomes = context.Incomes with
                 {
-                    SS  = context.Age == options.SS.FromAge  ? ssAmount  = options.SS.Amount  : ssAmount  *= 1 + options.SS.Increment,
-                    Ann = context.Age == options.Ann.FromAge ? annAmount = options.Ann.Amount : annAmount *= 1 + options.Ann.Increment,
+                    SS  = Math.Round(context.Age == options.SS.FromAge  ? ssAmount  = options.SS.Amount  : ssAmount  *= 1 + options.SS.Increment),
+                    Ann = Math.Round(context.Age == options.Ann.FromAge ? annAmount = options.Ann.Amount : annAmount *= 1 + options.Ann.Increment),
                 };
             }
         }

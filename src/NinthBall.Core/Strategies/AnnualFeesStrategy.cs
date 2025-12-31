@@ -12,9 +12,9 @@ namespace NinthBall.Core
         {
             // Calculate fees
             context.Fees = new(
-                context.PreTaxBalance.Amount * Options.PreTax,
-                context.PostTaxBalance.Amount * Options.PostTax,
-                context.CashBalance.Amount * Options.Cash
+                Math.Ceiling(context.PreTaxBalance.Amount * Options.PreTax),
+                Math.Ceiling(context.PostTaxBalance.Amount * Options.PostTax),
+                Math.Ceiling(context.CashBalance.Amount * Options.Cash)
             );
         }
 
