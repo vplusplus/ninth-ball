@@ -291,7 +291,7 @@ namespace NinthBall.Core
 
             public InlineStringCell()
             {
-                CellText = new();
+                CellText = new() { Space = SpaceProcessingModeValues.Preserve };
                 Cell = new Cell(new InlineString(CellText)) { DataType = CellValues.InlineString };
             }
 

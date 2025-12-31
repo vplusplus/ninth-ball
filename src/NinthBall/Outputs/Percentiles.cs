@@ -1,6 +1,9 @@
 ﻿
 namespace NinthBall
 {
+    /// <summary>
+    /// Percentiles generted on html and excel outputs.
+    /// </summary>
     internal sealed class Percentiles
     {
         public readonly record struct PCT(double Pctl, string Caption, string Tag);

@@ -45,12 +45,12 @@ namespace NinthBall
             }
         }
 
-        public static void Done(SimResult simResult, TimeSpan elapsed, string outputFileName) 
+        public static void Done(SimResult simResult, TimeSpan elapsed) 
         {
             var survivalRate = simResult.SurvivalRate;
             var txtSurvivalRate = survivalRate > 0.99 ? $"{survivalRate:P1}" : $"{survivalRate:P0}";
 
-            Console.WriteLine($" [{DateTime.Now:HH\\:mm\\:ss}] Done. {txtSurvivalRate} survival | {elapsed.TotalMilliseconds:#,0} mSec | See {Path.GetFileName(outputFileName)}");
+            Console.WriteLine($" [{DateTime.Now:HH\\:mm\\:ss}] Done. {txtSurvivalRate} survival | {elapsed.TotalMilliseconds:#,0} mSec.");
         }
     }
 }

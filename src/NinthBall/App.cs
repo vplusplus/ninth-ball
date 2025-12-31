@@ -80,12 +80,25 @@ namespace NinthBall
                 var simResult = SimEngine.Run(simConfig);
                 timer.Stop();
 
-                // Generate html report
-                var html = await MyTemplates.GenerateSimReportAsync(simResult).ConfigureAwait(false);
-                File.WriteAllText(OutputFileName, html);
+                var htmlFileName = OutputFileName;
+                await HtmlOutput.Generate(simResult, htmlFileName);
+                Console.WriteLine($"Html report available at {htmlFileName}");
+
+                try
+                {
+                    var excelFileName = Path.ChangeExtension(htmlFileName, ".xlsx");
+                    await ExcelOutput.Generate(simResult, excelFileName);
+                    Console.WriteLine($"Excel report available at {excelFileName}");
+                }
+                catch(System.IO.IOException ioErr)
+                {
+                    // Excel file is probably currently open.
+                    Console.WriteLine("WRNING: Excel report not generted, if present, may not agree with html report.");
+                    Console.WriteLine(ioErr.Message);
+                }
 
                 // Inform                
-                Print.Done(simResult, timer.Elapsed, OutputFileName);
+                Print.Done(simResult, timer.Elapsed);
             }
             catch (Exception err)
             {
