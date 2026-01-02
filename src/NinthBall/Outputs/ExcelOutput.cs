@@ -1,19 +1,38 @@
 ﻿
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.Spreadsheet;
 using NinthBall.Core;
 
 namespace NinthBall
 {
     internal static class ExcelOutput
     {
-        readonly record struct SID(
-            uint C0, uint C1, 
-            uint P0, uint P1,
-            uint BRC0, uint BRC1,
-            uint BRP0, uint BRP1
+        static class MyColors
+        {
+            public const uint Black  = 0xFF000000;
+            public const uint Red    = 0xFFC00000;
+            public const uint Green  = 0xFF00B050;
+            public const uint Blue   = 0xFF0070C0;
+            public const uint Purple = 0xFF7030A0;
+        };
+
+        // StyleIDs used by our report.
+        readonly record struct MyStyles
+        (
+            uint Title,
+            uint FootNote,
+            uint C0, uint C0Red, uint C0Green,
+            uint C1,
+            uint P0,
+            uint ROI, uint ROIRed, uint ROIGreen,
+
+            uint YYYY, uint YYYYRed
         );
+
+        //readonly record struct SID(
+        //    uint C0, uint C1, 
+        //    uint P0, uint P1,
+        //    uint BRC0, uint BRC1,
+        //    uint BRP0, uint BRP1
+        //);
 
         // For annualization
         const double InflationRate = 0.03;
@@ -23,29 +42,50 @@ namespace NinthBall
             ArgumentNullException.ThrowIfNull(simResult);
             ArgumentNullException.ThrowIfNull(excelFileName);
 
-            var stylesheet = ExcelStylesheet
-                .Empty()
-                .WithDefaultStyles(out var defaultStyles);
+            var BASE = new XLStyle()
+            {
+                NumberFormat = "General",
+                FontName = "Aptos Narrow",
+                FontSize = 11,
+                IsBold = false,
+                FontColorHex = MyColors.Black,
+                HorizontalAlignment = HAlign.Left,
+                VerticalAlignment = VAlign.Middle
+            };
 
-            var myStyles = new SID
+            // Some additional support specs for readability.
+            var N0 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.N0 };
+            var C0 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.C0 };
+            var C1 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.C1 };
+            var P0 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.P0 };
+            var P1 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.P1 };
+
+            // Register the styles used by our report. Capture the CellFormatIds.
+            var ssb = new ExcelStylesheetBuilder();
+            var myStyles = new MyStyles
             (
-                // Default defaultStyles
-                C0: defaultStyles.C0,
-                C1: defaultStyles.C1,
-                P0: defaultStyles.P0,
-                P1: defaultStyles.P1,
+                Title:      ssb.RegisterStyle(BASE with { FontSize = BASE.FontSize + 1, IsBold = true }),
+                FootNote:   ssb.RegisterStyle(BASE with { FontSize = BASE.FontSize - 1, FontColorHex = MyColors.Purple }),
 
-                // Black and Red
-                BRC0: stylesheet.GetOrAddCellFormat("$#,##0;[Red]-$#,##0;;"),
-                BRC1: stylesheet.GetOrAddCellFormat("$#,##0.0;[Red]-$#,##0.0;;"),
-                BRP0: stylesheet.GetOrAddCellFormat("#0%;[Red]-#0%;;"),
-                BRP1: stylesheet.GetOrAddCellFormat("#0.0%;[Red]-#0.0%;;")
+                C0:         ssb.RegisterStyle(C0),
+                C0Red:      ssb.RegisterStyle(C0 with { FontColorHex = MyColors.Red }),
+                C0Green:    ssb.RegisterStyle(C0 with { FontColorHex = MyColors.Green }),
+                C1:         ssb.RegisterStyle(C1),
+
+                P0:         ssb.RegisterStyle(P0 with { HorizontalAlignment = HAlign.Center }),
+                ROI:        ssb.RegisterStyle(P1 with { HorizontalAlignment = HAlign.Center }),
+                ROIRed:     ssb.RegisterStyle(P1 with { HorizontalAlignment = HAlign.Center, FontColorHex = MyColors.Red }),
+                ROIGreen:   ssb.RegisterStyle(P1 with { HorizontalAlignment = HAlign.Center, FontColorHex = MyColors.Green }),
+
+                YYYY:       ssb.RegisterStyle(N0 with { HorizontalAlignment = HAlign.Center }),
+                YYYYRed:    ssb.RegisterStyle(N0 with { HorizontalAlignment = HAlign.Center, FontColorHex = MyColors.Red })
             );
+            var stylesheet = ssb.Build();
 
             using(var xl = new ExcelWriter(excelFileName, stylesheet))
             {
                 // Render chosen strategies and related assumptions.
-                RenderStrategy(xl, simResult);
+                RenderStrategy(xl, myStyles, simResult);
 
                 // Render Summary sheet
                 RenderSummary(xl, myStyles, simResult);
@@ -61,7 +101,7 @@ namespace NinthBall
             }
         }
 
-        static void RenderStrategy(ExcelWriter xl, SimResult simResult)
+        static void RenderStrategy(ExcelWriter xl, MyStyles styles, SimResult simResult)
         {
             using (var sheet = xl.BeginSheet("Strategy"))
             {
@@ -76,13 +116,13 @@ namespace NinthBall
                     rows
                         .BeginRow()
                         .Append("PreTax (401K)")
-                        .Append($"{firstYear.Jan.PreTax.Amount/1000000:C2} M")
+                        .Append($"{firstYear.Jan.PreTax.Amount/1000000:C2} M", styles.Title)
                         .EndRow();
 
                     rows
                         .BeginRow()
                         .Append("PostTax")
-                        .Append($"{firstYear.Jan.PostTax.Amount/1000000:C2} M")
+                        .Append($"{firstYear.Jan.PostTax.Amount/1000000:C2} M", styles.Title)
                         .EndRow();
 
                     rows
@@ -122,7 +162,7 @@ namespace NinthBall
             }
         }
 
-        static void RenderSummary(ExcelWriter xl, SID styles, SimResult simResult)
+        static void RenderSummary(ExcelWriter xl, MyStyles styles, SimResult simResult)
         {
             const double W10 = 10;
             const double W20 = 20;
@@ -136,7 +176,7 @@ namespace NinthBall
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Survival rate");
-                        row.Append(simResult.SurvivalRate, styles.P0);
+                        row.Append(simResult.SurvivalRate, styles.Title);
                     }
 
                     using (var row = rows.BeginRow())
@@ -165,7 +205,7 @@ namespace NinthBall
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             var m = p.EndingBalance.InflationAdjustedValue(InflationRate, p.SurvivedYears).Mil();
-                            row.Append(m, styles.BRC1);
+                            row.Append(m, styles.C1);
                         }
                         row.Append(" millions");
                     }
@@ -177,7 +217,7 @@ namespace NinthBall
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             var m = p.EndingBalance.Mil();
-                            row.Append(m, styles.BRC1);
+                            row.Append(m, styles.C1);
                         }
                         row.Append(" millions");
                     }
@@ -189,7 +229,7 @@ namespace NinthBall
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             var chng = AnnualizeChangePCT(p.ByYear);
-                            row.Append(chng, styles.BRP1);
+                            row.Append(chng, styles.ROI);
                         }
                         row.Append("");
                     }
@@ -197,7 +237,7 @@ namespace NinthBall
             }
         }
 
-        static void RenderPercentile(ExcelWriter xl, SID styles, SimResult simResult, Percentiles.PCT pctl)
+        static void RenderPercentile(ExcelWriter xl, MyStyles styles, SimResult simResult, Percentiles.PCT pctl)
         {
             const double Blank = 3;
             const double W4 = 4;
@@ -272,45 +312,47 @@ namespace NinthBall
 
                         using (var row = rows.BeginRow())
                         {
+                            uint likeYearStyle = y.ROI.StocksROI < 0 || y.ROI.BondsROI < 0 ? styles.ROIRed : styles.ROIGreen;
+
                             row
                                 .Append(y.Year + 1)
                                 .Append(y.Age)
 
                                 // Jan, Alloc and Fees
-                                .Append(y.Jan.PreTax.Amount, styles.BRC0)
+                                .Append(y.Jan.PreTax.Amount, styles.C0)
                                 .Append(y.Jan.PreTax.Allocation, styles.P0)
-                                .Append(y.Jan.PostTax.Amount, styles.BRC0)
+                                .Append(y.Jan.PostTax.Amount, styles.C0)
                                 .Append(y.Jan.PostTax.Allocation, styles.P0)
-                                .Append(y.Fees.Total(), styles.BRC0)
+                                .Append(y.Fees.Total(), styles.C0)
                                 .Append("")
 
                                 // Incomes & withdrawals
-                                .Append(y.Incomes.SS, styles.BRC0)
-                                .Append(y.Incomes.Ann, styles.BRC0)
-                                .Append(y.Withdrawals.PreTax, styles.BRC0)
-                                .Append(y.Withdrawals.PostTax, styles.BRC0)
-                                .Append(y.Withdrawals.Cash, styles.BRC0)
+                                .Append(y.Incomes.SS, styles.C0)
+                                .Append(y.Incomes.Ann, styles.C0)
+                                .Append(y.Withdrawals.PreTax, styles.C0)
+                                .Append(y.Withdrawals.PostTax, styles.C0)
+                                .Append(y.Withdrawals.Cash, styles.C0)
                                 .Append("")
 
                                 // Expenses
-                                .Append(y.Expenses.PYTax, styles.BRC0)
-                                .Append(y.Expenses.CYExp, styles.BRC0)
+                                .Append(y.Expenses.PYTax, styles.C0)
+                                .Append(y.Expenses.CYExp, styles.C0)
                                 .Append("")
 
                                 // Change in value and excess deposits
-                                .Append(y.Change.PreTax, styles.BRC0)
-                                .Append(y.Change.PostTax, styles.BRC0)
-                                .Append(y.Deposits.PostTax, styles.BRC0)
-                                .Append(y.Deposits.Cash, styles.BRC0)
+                                .Append(y.Change.PreTax, y.Change.PreTax < 0 ? styles.C0Red : styles.C0Green)
+                                .Append(y.Change.PostTax, y.Change.PostTax < 0 ? styles.C0Red : styles.C0Green)
+                                .Append(y.Deposits.PostTax, styles.C0)
+                                .Append(y.Deposits.Cash, styles.C0)
                                 .Append("")
 
-                                .Append(y.Dec.PreTax.Amount, styles.BRC0)
-                                .Append(y.Dec.PostTax.Amount, styles.BRC0)
+                                .Append(y.Dec.PreTax.Amount, styles.C0)
+                                .Append(y.Dec.PostTax.Amount, styles.C0)
                                 .Append("")
 
-                                .Append(y.ROI.LikeYear)
-                                .Append(y.ROI.StocksROI, styles.BRP1)
-                                .Append(y.ROI.BondsROI, styles.BRP1)
+                                .Append(y.ROI.LikeYear,  y.ROI.StocksROI < 0 || y.ROI.BondsROI < 0 ? styles.YYYYRed : styles.YYYY)
+                                .Append(y.ROI.StocksROI, y.ROI.StocksROI < 0 ? styles.ROIRed : styles.ROIGreen)
+                                .Append(y.ROI.BondsROI,  y.ROI.BondsROI < 0  ? styles.ROIRed : styles.ROIGreen)
                                 ;
                         }
                     }
