@@ -9,13 +9,13 @@ namespace NinthBall.Core
 
     public readonly record struct XLStyle
     (
-        string NumberFormat = "General",
+        string Format = "General",
         string FontName = "Aptos Narrow",
-        uint FontSize = 11,
-        uint FontColorHex = 0xFF000000,
-        bool IsBold = false,
-        HAlign HorizontalAlignment = HAlign.Left,
-        VAlign VerticalAlignment = VAlign.Top
+        uint   FontSize = 11,
+        uint   FontColor = 0xFF000000,
+        bool   IsBold = false,
+        HAlign HAlign = HAlign.Left,
+        VAlign VAlign = VAlign.Top
     );
 
     public sealed class ExcelStylesheetBuilder
@@ -55,10 +55,10 @@ namespace NinthBall.Core
         /// </summary>
         public uint RegisterStyle(XLStyle spec) => GetOrAddCellFormat
         (
-            numberFormatId: GetOrAddNumberFormat(spec.NumberFormat),
-            fontId: GetOrAddFont(spec.FontName, spec.FontSize, spec.FontColorHex, spec.IsBold),
-            spec.HorizontalAlignment,
-            spec.VerticalAlignment
+            numberFormatId: GetOrAddNumberFormat(spec.Format),
+            fontId: GetOrAddFont(spec.FontName, spec.FontSize, spec.FontColor, spec.IsBold),
+            spec.HAlign,
+            spec.VAlign
         );
 
         /// <summary>
@@ -224,24 +224,24 @@ namespace NinthBall.Core
             public const string General = "General";
 
             // Number formats (N)
-            public const string N0 = "#,##0";           // Integer with thousands separator
-            public const string N1 = "#,##0.0";         // 1 decimal place
-            public const string N2 = "#,##0.00";        // 2 decimal places
+            public const string N0 = "#,##0;-#,##0;;";          // Integer with thousands separator
+            public const string N1 = "#,##0.0;-#,##0.0;;";      // 1 decimal place
+            public const string N2 = "#,##0.00;-#,##0.00;;";    // 2 decimal places
 
             // Currency formats (C) - US locale
-            public const string C0 = "$#,##0";          // Currency, no decimals
-            public const string C1 = "$#,##0.0";        // Currency, 1 decimal
-            public const string C2 = "$#,##0.00";       // Currency, 2 decimals
+            public const string C0 = "$#,##0;-$#,##0;;";        // Currency, no decimals
+            public const string C1 = "$#,##0.0;-$#,##0.0;;";    // Currency, 1 decimal
+            public const string C2 = "$#,##0.00;-$#,##0.00;;";  // Currency, 2 decimals
 
             // Percent formats (P)
-            public const string P0 = "0%";              // Percent, no decimals
-            public const string P1 = "0.0%";            // Percent, 1 decimal
-            public const string P2 = "0.00%";           // Percent, 2 decimals
+            public const string P0 = "0%;-0%;;";                // Percent, no decimals
+            public const string P1 = "0.0%;-0.0%;;";            // Percent, 1 decimal
+            public const string P2 = "0.00%;-0.00%;;";          // Percent, 2 decimals
 
             // Fixed-point formats (F)
-            public const string F0 = "0";               // Integer, no separator
-            public const string F1 = "0.0";             // 1 decimal, no separator
-            public const string F2 = "0.00";            // 2 decimals, no separator
+            public const string F0 = "0;-0;;";                  // Integer, no separator
+            public const string F1 = "0.0;-0.0;;";              // 1 decimal, no separator
+            public const string F2 = "0.00;-0.00;;";            // 2 decimals, no separator
 
             // Date formats (D)
             public const string DateMDY = "m/d/yyyy";   // 1/15/2026

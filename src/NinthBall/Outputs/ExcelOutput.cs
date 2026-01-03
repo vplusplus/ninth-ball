@@ -1,5 +1,7 @@
 ﻿
+
 using NinthBall.Core;
+using NF = NinthBall.Core.ExcelStylesheetBuilder.NumberFormats; 
 
 namespace NinthBall
 {
@@ -12,27 +14,26 @@ namespace NinthBall
             public const uint Green  = 0xFF00B050;
             public const uint Blue   = 0xFF0070C0;
             public const uint Purple = 0xFF7030A0;
+            public const uint Gray   = 0x808080;
         };
 
         // StyleIDs used by our report.
-        readonly record struct MyStyles
+        private readonly record struct MyStyles
         (
-            uint Title,
-            uint FootNote,
+            uint ColHeader,
+
+            uint Alloc,
             uint C0, uint C0Red, uint C0Green,
-            uint C1,
-            uint P0,
+
+            //uint C1,
+            //uint P0,
             uint ROI, uint ROIRed, uint ROIGreen,
+
+            uint SumTxt, uint SumC, uint SumP, uint SRate,
 
             uint YYYY, uint YYYYRed
         );
 
-        //readonly record struct SID(
-        //    uint C0, uint C1, 
-        //    uint P0, uint P1,
-        //    uint BRC0, uint BRC1,
-        //    uint BRP0, uint BRP1
-        //);
 
         // For annualization
         const double InflationRate = 0.03;
@@ -44,41 +45,40 @@ namespace NinthBall
 
             var BASE = new XLStyle()
             {
-                NumberFormat = "General",
+                Format = "General",
                 FontName = "Aptos Narrow",
                 FontSize = 11,
                 IsBold = false,
-                FontColorHex = MyColors.Black,
-                HorizontalAlignment = HAlign.Left,
-                VerticalAlignment = VAlign.Middle
+                FontColor = MyColors.Black,
+                HAlign = HAlign.Left,
+                VAlign = VAlign.Middle
             };
-
-            // Some additional support specs for readability.
-            var N0 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.N0 };
-            var C0 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.C0 };
-            var C1 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.C1 };
-            var P0 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.P0 };
-            var P1 = BASE with { NumberFormat = ExcelStylesheetBuilder.NumberFormats.P1 };
+            var CENT = BASE with { HAlign = HAlign.Center };
 
             // Register the styles used by our report. Capture the CellFormatIds.
             var ssb = new ExcelStylesheetBuilder();
             var myStyles = new MyStyles
             (
-                Title:      ssb.RegisterStyle(BASE with { FontSize = BASE.FontSize + 1, IsBold = true }),
-                FootNote:   ssb.RegisterStyle(BASE with { FontSize = BASE.FontSize - 1, FontColorHex = MyColors.Purple }),
+                ColHeader:  ssb.RegisterStyle(CENT with { IsBold = true }),
 
-                C0:         ssb.RegisterStyle(C0),
-                C0Red:      ssb.RegisterStyle(C0 with { FontColorHex = MyColors.Red }),
-                C0Green:    ssb.RegisterStyle(C0 with { FontColorHex = MyColors.Green }),
-                C1:         ssb.RegisterStyle(C1),
+                SumTxt:     ssb.RegisterStyle(CENT),
+                SumC:       ssb.RegisterStyle(CENT with { Format = NF.C1 }),
+                SumP:       ssb.RegisterStyle(CENT with { Format = NF.P1 }),
+                SRate:      ssb.RegisterStyle(CENT with { Format = NF.P1, FontColor = MyColors.Purple }),
 
-                P0:         ssb.RegisterStyle(P0 with { HorizontalAlignment = HAlign.Center }),
-                ROI:        ssb.RegisterStyle(P1 with { HorizontalAlignment = HAlign.Center }),
-                ROIRed:     ssb.RegisterStyle(P1 with { HorizontalAlignment = HAlign.Center, FontColorHex = MyColors.Red }),
-                ROIGreen:   ssb.RegisterStyle(P1 with { HorizontalAlignment = HAlign.Center, FontColorHex = MyColors.Green }),
+                C0:         ssb.RegisterStyle(BASE with { Format = NF.C0 }),
+                C0Red:      ssb.RegisterStyle(BASE with { Format = NF.C0, FontColor = MyColors.Red }),
+                C0Green:    ssb.RegisterStyle(BASE with { Format = NF.C0, FontColor = MyColors.Green }),
 
-                YYYY:       ssb.RegisterStyle(N0 with { HorizontalAlignment = HAlign.Center }),
-                YYYYRed:    ssb.RegisterStyle(N0 with { HorizontalAlignment = HAlign.Center, FontColorHex = MyColors.Red })
+                Alloc:      ssb.RegisterStyle(CENT with { Format = NF.P0, FontColor = MyColors.Gray}),
+
+
+                ROI:        ssb.RegisterStyle(BASE with { Format = NF.P1 }),
+                ROIRed:     ssb.RegisterStyle(BASE with { Format = NF.P1, FontColor = MyColors.Red }),
+                ROIGreen:   ssb.RegisterStyle(BASE with { Format = NF.P1, FontColor = MyColors.Green }),
+
+                YYYY:       ssb.RegisterStyle(CENT with { Format = "0;-0;;", }),
+                YYYYRed:    ssb.RegisterStyle(CENT with { Format = "0;-0;;", FontColor = MyColors.Red })
             );
             var stylesheet = ssb.Build();
 
@@ -91,10 +91,7 @@ namespace NinthBall
                 RenderSummary(xl, myStyles, simResult);
 
                 // Render one sheet per percentile
-                foreach(var pctl in Percentiles.Items.OrderByDescending(x => x.Pctl))
-                {
-                    RenderPercentile(xl, myStyles, simResult, pctl);
-                }
+                foreach(var pctl in Percentiles.Items) RenderPercentile(xl, myStyles, simResult, pctl);
 
                 // NOTE: Dispose will not save. We have to save.
                 xl.Save();
@@ -116,13 +113,13 @@ namespace NinthBall
                     rows
                         .BeginRow()
                         .Append("PreTax (401K)")
-                        .Append($"{firstYear.Jan.PreTax.Amount/1000000:C2} M", styles.Title)
+                        .Append($"{firstYear.Jan.PreTax.Amount/1000000:C2} M")
                         .EndRow();
 
                     rows
                         .BeginRow()
                         .Append("PostTax")
-                        .Append($"{firstYear.Jan.PostTax.Amount/1000000:C2} M", styles.Title)
+                        .Append($"{firstYear.Jan.PostTax.Amount/1000000:C2} M")
                         .EndRow();
 
                     rows
@@ -176,7 +173,7 @@ namespace NinthBall
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Survival rate");
-                        row.Append(simResult.SurvivalRate, styles.Title);
+                        row.Append(simResult.SurvivalRate, styles.SRate);
                     }
 
                     using (var row = rows.BeginRow())
@@ -187,16 +184,29 @@ namespace NinthBall
                     using (var row = rows.BeginRow())
                     {
                         row.Append("");
-                        foreach(var pctl in Percentiles.Items) row.Append(pctl.Tag);
+                        foreach(var pctl in Percentiles.Items) row.Append(pctl.Tag, styles.SumTxt);
                         row.Append("");
                     }
 
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Percentiles");
-                        foreach (var pctl in Percentiles.Items) row.Append(pctl.Caption);
+                        foreach (var pctl in Percentiles.Items) row.Append(pctl.Caption, styles.SumTxt);
                         row.Append(" percentile");
                     }
+
+                    using (var row = rows.BeginRow())
+                    {
+                        row.Append("Start (Real)");
+                        foreach (var pctl in Percentiles.Items)
+                        {
+                            var p = simResult.Percentile(pctl.Pctl);
+                            var m = p.StartingBalance.Mil();
+                            row.Append(m, styles.SumC);
+                        }
+                        row.Append(" millions");
+                    }
+
 
                     using (var row = rows.BeginRow())
                     {
@@ -205,7 +215,7 @@ namespace NinthBall
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             var m = p.EndingBalance.InflationAdjustedValue(InflationRate, p.SurvivedYears).Mil();
-                            row.Append(m, styles.C1);
+                            row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");
                     }
@@ -217,7 +227,7 @@ namespace NinthBall
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             var m = p.EndingBalance.Mil();
-                            row.Append(m, styles.C1);
+                            row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");
                     }
@@ -229,7 +239,7 @@ namespace NinthBall
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             var chng = AnnualizeChangePCT(p.ByYear);
-                            row.Append(chng, styles.ROI);
+                            row.Append(chng, styles.SumP);
                         }
                         row.Append("");
                     }
@@ -239,10 +249,10 @@ namespace NinthBall
 
         static void RenderPercentile(ExcelWriter xl, MyStyles styles, SimResult simResult, Percentiles.PCT pctl)
         {
-            const double Blank = 3;
+            const double Blank = 2;
             const double W4 = 4;
             const double W6 = 6;
-            const double W10 = 10;
+            const double W8 = 8;
             const double W12 = 12;
 
             var sheetName = $"{pctl.Caption}-{pctl.Tag}";
@@ -250,15 +260,14 @@ namespace NinthBall
 
             using (var sheet = xl.BeginSheet(sheetName))
             {
-                sheet.WriteColumns(
-                    W4, W4,                             // Year, Age
-                    W12, W6, W12, W6, W12, Blank,       // Jan & Fees
-                    W10, W10, W10, W10, W10, Blank,     // SS, ANN, 4K, Inv, Cash
-                    W10, W10, Blank,                    // Tax, Exp
-                    W12, W12, W12, W12, Blank,          // Change & Deposits
-                    W12, W12, Blank,                    // Dec
-                    W6, W10, W10                        // ROI-History
-                );
+                double?[] colWidths = Enumerable.Range(0, 23).Select(x => (double?)W12).ToArray();
+                colWidths[0] = colWidths[1] = W4;
+                colWidths[3] = colWidths[5] = W6;
+                colWidths[7] = colWidths[12] = colWidths[15] = colWidths[19] = Blank;
+                colWidths[20] = W6;
+                colWidths[21] = colWidths[22] = W8;
+
+                sheet.WriteColumns(colWidths.AsSpan());
 
                 using (var rows = sheet.BeginSheetData())
                 {
@@ -266,40 +275,35 @@ namespace NinthBall
                     using (var row = rows.BeginRow())
                     {
                         row
-                            .Append("Year")
-                            .Append("Age")
+                            .Append("Year", styles.ColHeader)
+                            .Append("Age", styles.ColHeader)
 
-                            .Append("Jan-401K")     // Jan, alloc and less fees
-                            .Append("Alloc")
-                            .Append("Jan-Inv")
-                            .Append("Alloc")
-                            .Append("Fees")
-                            .Append("")
+                            .Append("Jan-401K", styles.ColHeader)     // Jan, alloc and less fees
+                            .Append("Alloc", styles.ColHeader)
+                            .Append("Jan-Inv", styles.ColHeader)
+                            .Append("Alloc", styles.ColHeader)
+                            .Append("Fees", styles.ColHeader)
+                            .Append("", styles.ColHeader)
 
-                            .Append("SS")           // Incomes & Withdrawals (inflow)
-                            .Append("ANN")
-                            .Append("401K")
-                            .Append("Inv")
-                            .Append("Cash")
-                            .Append("")
+                            .Append("SS", styles.ColHeader)           // Incomes & Withdrawals (inflow)
+                            .Append("ANN", styles.ColHeader)
+                            .Append("401K", styles.ColHeader)
+                            .Append("Inv", styles.ColHeader)
+                            // .Append("Cash", styles.ColHeader)
+                            .Append("", styles.ColHeader)
 
-                            .Append("PYTax")        // Expenses (outflow)
-                            .Append("CYExp")
-                            .Append("")
+                            .Append("PYTax", styles.ColHeader)        // Expenses (outflow)
+                            .Append("CYExp", styles.ColHeader)
+                            .Append("", styles.ColHeader)
 
-                            .Append("ROI-401K")     // ROI-Change and excess deposits
-                            .Append("ROI-Inv")
-                            .Append("Deposits-Inv")
-                            .Append("Deposits-Cash")
-                            .Append("")
+                            .Append("ROI-401K", styles.ColHeader)     // ROI-Change and excess deposits
+                            .Append("ROI-Inv", styles.ColHeader)
+                            .Append("Deposits-Inv", styles.ColHeader)
+                            .Append("", styles.ColHeader)
 
-                            .Append("Dec-401K")     // December
-                            .Append("Dec-Inv")
-                            .Append("")
-
-                            .Append("Like")         // ROI History
-                            .Append("ROI Stocks")
-                            .Append("ROI Bonds")
+                            .Append("Like", styles.ColHeader)         // ROI History
+                            .Append("Stocks", styles.ColHeader)
+                            .Append("Bonds", styles.ColHeader)
                             ;
 
                     }
@@ -320,9 +324,9 @@ namespace NinthBall
 
                                 // Jan, Alloc and Fees
                                 .Append(y.Jan.PreTax.Amount, styles.C0)
-                                .Append(y.Jan.PreTax.Allocation, styles.P0)
+                                .Append(y.Jan.PreTax.Allocation, styles.Alloc)
                                 .Append(y.Jan.PostTax.Amount, styles.C0)
-                                .Append(y.Jan.PostTax.Allocation, styles.P0)
+                                .Append(y.Jan.PostTax.Allocation, styles.Alloc)
                                 .Append(y.Fees.Total(), styles.C0)
                                 .Append("")
 
@@ -331,7 +335,7 @@ namespace NinthBall
                                 .Append(y.Incomes.Ann, styles.C0)
                                 .Append(y.Withdrawals.PreTax, styles.C0)
                                 .Append(y.Withdrawals.PostTax, styles.C0)
-                                .Append(y.Withdrawals.Cash, styles.C0)
+                                // .Append(y.Withdrawals.Cash, styles.C0)
                                 .Append("")
 
                                 // Expenses
@@ -343,11 +347,6 @@ namespace NinthBall
                                 .Append(y.Change.PreTax, y.Change.PreTax < 0 ? styles.C0Red : styles.C0Green)
                                 .Append(y.Change.PostTax, y.Change.PostTax < 0 ? styles.C0Red : styles.C0Green)
                                 .Append(y.Deposits.PostTax, styles.C0)
-                                .Append(y.Deposits.Cash, styles.C0)
-                                .Append("")
-
-                                .Append(y.Dec.PreTax.Amount, styles.C0)
-                                .Append(y.Dec.PostTax.Amount, styles.C0)
                                 .Append("")
 
                                 .Append(y.ROI.LikeYear,  y.ROI.StocksROI < 0 || y.ROI.BondsROI < 0 ? styles.YYYYRed : styles.YYYY)
