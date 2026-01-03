@@ -114,8 +114,7 @@ namespace NinthBall.Core
             var newFormat = new NumberingFormat() { NumberFormatId = nextId, FormatCode = formatCode };
 
             MyStylesheet.NumberingFormats!.Append(newFormat);
-            NFIdCache[formatCode] = nextId;
-            return nextId;
+            return NFIdCache[formatCode] = nextId;
         }
 
         #endregion
