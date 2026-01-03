@@ -46,10 +46,10 @@ namespace NinthBall
             var BASE = new XLStyle()
             {
                 Format = "General",
-                FontName = "Aptos Narrow",
-                FontSize = 11,
+                FName = "Aptos Narrow",
+                FSize = 11,
                 IsBold = false,
-                FontColor = MyColors.Black,
+                FColor = MyColors.Black,
                 HAlign = HAlign.Left,
                 VAlign = VAlign.Middle
             };
@@ -64,21 +64,21 @@ namespace NinthBall
                 SumTxt:     ssb.RegisterStyle(CENT),
                 SumC:       ssb.RegisterStyle(CENT with { Format = NF.C1 }),
                 SumP:       ssb.RegisterStyle(CENT with { Format = NF.P1 }),
-                SRate:      ssb.RegisterStyle(CENT with { Format = NF.P1, FontColor = MyColors.Purple }),
+                SRate:      ssb.RegisterStyle(CENT with { Format = NF.P1, FColor = MyColors.Purple }),
 
                 C0:         ssb.RegisterStyle(BASE with { Format = NF.C0 }),
-                C0Red:      ssb.RegisterStyle(BASE with { Format = NF.C0, FontColor = MyColors.Red }),
-                C0Green:    ssb.RegisterStyle(BASE with { Format = NF.C0, FontColor = MyColors.Green }),
+                C0Red:      ssb.RegisterStyle(BASE with { Format = NF.C0, FColor = MyColors.Red }),
+                C0Green:    ssb.RegisterStyle(BASE with { Format = NF.C0, FColor = MyColors.Green }),
 
-                Alloc:      ssb.RegisterStyle(CENT with { Format = NF.P0, FontColor = MyColors.Gray}),
+                Alloc:      ssb.RegisterStyle(CENT with { Format = NF.P0, FColor = MyColors.Gray}),
 
 
                 ROI:        ssb.RegisterStyle(BASE with { Format = NF.P1 }),
-                ROIRed:     ssb.RegisterStyle(BASE with { Format = NF.P1, FontColor = MyColors.Red }),
-                ROIGreen:   ssb.RegisterStyle(BASE with { Format = NF.P1, FontColor = MyColors.Green }),
+                ROIRed:     ssb.RegisterStyle(BASE with { Format = NF.P1, FColor = MyColors.Red }),
+                ROIGreen:   ssb.RegisterStyle(BASE with { Format = NF.P1, FColor = MyColors.Green }),
 
                 YYYY:       ssb.RegisterStyle(CENT with { Format = "0;-0;;", }),
-                YYYYRed:    ssb.RegisterStyle(CENT with { Format = "0;-0;;", FontColor = MyColors.Red })
+                YYYYRed:    ssb.RegisterStyle(CENT with { Format = "0;-0;;", FColor = MyColors.Red })
             );
             var stylesheet = ssb.Build();
 

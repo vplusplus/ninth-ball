@@ -10,9 +10,9 @@ namespace NinthBall.Core
     public readonly record struct XLStyle
     (
         string Format = "General",
-        string FontName = "Aptos Narrow",
-        uint   FontSize = 11,
-        uint   FontColor = 0xFF000000,
+        string FName  = "Aptos Narrow",
+        uint   FSize  = 11,
+        uint   FColor = 0xFF000000,
         bool   IsBold = false,
         HAlign HAlign = HAlign.Left,
         VAlign VAlign = VAlign.Top
@@ -56,7 +56,7 @@ namespace NinthBall.Core
         public uint RegisterStyle(XLStyle spec) => GetOrAddCellFormat
         (
             numberFormatId: GetOrAddNumberFormat(spec.Format),
-            fontId: GetOrAddFont(spec.FontName, spec.FontSize, spec.FontColor, spec.IsBold),
+            fontId: GetOrAddFont(spec.FName, spec.FSize, spec.FColor, spec.IsBold),
             spec.HAlign,
             spec.VAlign
         );
@@ -108,11 +108,14 @@ namespace NinthBall.Core
         {
             if (string.IsNullOrWhiteSpace(formatCode)) throw new ArgumentException("Format code cannot be empty", nameof(formatCode));
 
+            // Check cache
             if (NFIdCache.TryGetValue(formatCode, out var existingId)) return existingId;
 
+            // Prepare new instance
             var nextId = NextNumberFormatId++;
             var newFormat = new NumberingFormat() { NumberFormatId = nextId, FormatCode = formatCode };
 
+            // Append, and cache index
             MyStylesheet.NumberingFormats!.Append(newFormat);
             return NFIdCache[formatCode] = nextId;
         }
@@ -130,10 +133,11 @@ namespace NinthBall.Core
         {
             if (string.IsNullOrWhiteSpace(fontName)) throw new ArgumentException("Font name cannot be empty", nameof(fontName));
 
+            // Check cache
             FontKey key = new(fontName, fontSize, fontColorHex, isBold);
-
             if (FontIdCache.TryGetValue(key, out var existing)) return existing;
 
+            // Prepare new instance
             Font newFont = new
             (
                 new FontName { Val = fontName },
@@ -144,6 +148,7 @@ namespace NinthBall.Core
             );
             if (isBold) newFont.AppendChild(new Bold());
 
+            // Append and cache index.
             return FontIdCache[key] = AppendN(MyStylesheet.Fonts!, newFont);
         }
 
@@ -166,10 +171,11 @@ namespace NinthBall.Core
 
         uint GetOrAddCellFormat(uint numberFormatId, uint fontId, HAlign hAlign, VAlign vAlign)
         {
+            // Check cache.
             CFKey key = new(numberFormatId, fontId, FillId: 0, BorderId: 0, hAlign, vAlign);
-
             if (CellFormatIdCache.TryGetValue(key, out var existing)) return existing;
 
+            // Prepare new instance
             var newCellFormat = new CellFormat
             {
                 FormatId = 0,
@@ -185,14 +191,16 @@ namespace NinthBall.Core
                 ApplyAlignment = HasAlignment(hAlign, vAlign),
             };
 
+            // Append and cache index.
             return CellFormatIdCache[key] = AppendN(MyStylesheet.CellFormats!, newCellFormat);
 
+
             static HorizontalAlignmentValues ToHAV(HAlign a) => a == HAlign.Left ? HorizontalAlignmentValues.Left : a == HAlign.Right ? HorizontalAlignmentValues.Right : HorizontalAlignmentValues.Center;
-            static VerticalAlignmentValues ToVAV(VAlign a) => a == VAlign.Top ? VerticalAlignmentValues.Top : a == VAlign.Bottom ? VerticalAlignmentValues.Bottom : VerticalAlignmentValues.Center;
-            static bool HasAlignment(HAlign ha, VAlign va) => ha != HAlign.Left || va != VAlign.Top;
+            static VerticalAlignmentValues ToVAV(VAlign a)   => a == VAlign.Top ? VerticalAlignmentValues.Top : a == VAlign.Bottom ? VerticalAlignmentValues.Bottom : VerticalAlignmentValues.Center;
+            static bool HasAlignment(HAlign ha, VAlign va)   => ha != HAlign.Left || va != VAlign.Top;
             static Alignment? ToOpenXmlAlignment(HAlign ha, VAlign va) => HasAlignment(ha, va) ? new Alignment()
             {
-                Vertical = va == VAlign.Top ? null : ToVAV(va),
+                Vertical   = va == VAlign.Top  ? null : ToVAV(va),
                 Horizontal = ha == HAlign.Left ? null : ToHAV(ha)
             } : null;
         }
@@ -200,10 +208,13 @@ namespace NinthBall.Core
         #endregion
 
         //......................................................................
-        #region Utils
+        #region Utils - AppendN()
         //......................................................................
         private static uint AppendN(OpenXmlElement parent, OpenXmlElement oneChild)
         {
+            ArgumentNullException.ThrowIfNull(parent);
+            ArgumentNullException.ThrowIfNull(oneChild);
+
             parent.AppendChild(oneChild);
             return (uint)parent.ChildElements.Count - 1;
         }
