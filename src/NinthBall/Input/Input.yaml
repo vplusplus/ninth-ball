@@ -9,10 +9,10 @@ SimParams:
 
 InitialBalance:
   PreTax:
-    Amount: 2,000,000
+    Amount: 1,250,000
     Allocation: 60%
   PostTax:
-    Amount: 1,000,000
+    Amount: 1,250,000
     Allocation: 60%
   Cash:
     Amount: 0
@@ -21,7 +21,7 @@ InitialBalance:
 Rebalance:
   MaxDrift: 5%
 
-Reallocate:
+ZZZReallocate:
   MaxDrift: 5%
   Steps:
     - AtAge: 60

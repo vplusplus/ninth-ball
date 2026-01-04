@@ -2,36 +2,46 @@
 @using NinthBall.Core;
 
 <!-- Presents year-by-year details of single iteration -->
+<!-- 
+<table id="@Id" class="table table-sm caption-top page-break mb-0" style="table-layout: fixed; width: 100%;">
+-->
 <table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%;">
+
     <caption>
-        <h3>@Caption</h3>
+        <div>
+            <h3 class="mb-0">
+                @Caption
+            </h3>
+        </div>
     </caption>
-    <thead>
-    </thead>
+
+    <colgroup>
+        <col style="width:2%">
+        <col style="width:2%">
+        <col span="15" style="width:5%">
+    </colgroup>
+
     <tbody>
 
+        <!-- Summary row (totals, ann-returns, etc.) on top -->
         @{
-            var totalFees = Sum(Iteration.ByYear.Span, x => x.Fees.Total());
-            var totalTaxes = Sum(Iteration.ByYear.Span, x => x.Expenses.PYTax);
-            var totalExp = Sum(Iteration.ByYear.Span, x => x.Expenses.CYExp);
-            var totalSS = Sum(Iteration.ByYear.Span, x => x.Incomes.SS);
-            var totalAnn = Sum(Iteration.ByYear.Span, x => x.Incomes.Ann);
-
-            var totalXPreTax = Sum(Iteration.ByYear.Span, x => x.Withdrawals.PreTax);
-            var totalXPostTax = Sum(Iteration.ByYear.Span, x => x.Withdrawals.PostTax);
-            var totalXCash = Sum(Iteration.ByYear.Span, x => x.Withdrawals.Cash);
-
-            var totalChange = Sum(Iteration.ByYear.Span, x => x.Change.Total());
+            var totalFees = Iteration.ByYear.SumX(x => x.Fees.Total());
+            var totalTaxes = Iteration.ByYear.SumX(x => x.Expenses.PYTax);
+            var totalExp = Iteration.ByYear.SumX(x => x.Expenses.CYExp);
+            var totalSS = Iteration.ByYear.SumX(x => x.Incomes.SS);
+            var totalAnn = Iteration.ByYear.SumX(x => x.Incomes.Ann);
+            var totalXPreTax = Iteration.ByYear.SumX(x => x.Withdrawals.PreTax);
+            var totalXPostTax = Iteration.ByYear.SumX(x => x.Withdrawals.PostTax);
+            var totalXCash = Iteration.ByYear.SumX(x => x.Withdrawals.Cash);
+            var totalChange = Iteration.ByYear.SumX(x => x.Change.Total());
         }
 
-        <!-- Summary row (totals, ann-returns, etc.) on top -->
-        <tr>
-            <td></td>
-            <td></td>
-
-            <td></td>
-            <td></td>
-            <td></td>
+        <tr class="text-end">
+            <td colspan="4" class="text-start">
+                <small class="text-muted">
+                    All numbers are dispayed in thousands.
+                </small>
+            </td>
 
             <td class="text-secondary">@totalFees.Millions()</td>
             <td class="text-secondary">@totalTaxes.Millions()</td>
@@ -39,25 +49,25 @@
 
             <td class="text-secondary">@totalSS.Millions()</td>
             <td class="text-secondary">@totalAnn.Millions()</td>
-
             <td class="text-secondary">@totalXPreTax.Millions()</td>
             <td class="text-secondary">@totalXPostTax.Millions()</td>
-            <td class="text-secondary">@totalXCash.Millions()</td>
 
             <td class="text-secondary">@totalChange.Millions()</td>
             <td></td>
             <td></td>
             <td></td>
+
+            <td></td>
+            <td></td>
         </tr>
 
         <!-- Labels are printed summary row on top -->
-        <tr>
-            <th>Yr</th>
-            <th>Age</th>
+        <tr class="text-end">
+            <th class="text-center">Yr</th>
+            <th class="text-center">Age</th>
 
-            <th>J-401K</th>
-            <th>J-Inv</th>
-            <th>Alloc</th>
+            <th>Jan 401K</th>
+            <th>Jan Inv</th>
            
             <th>Fees</th>
             <th>Taxes</th>
@@ -65,56 +75,69 @@
 
             <th>SS</th>
             <th>ANN</th>
-
             <th>X401K</th>
             <th>XInv</th>
-            <th>XCash</th>
 
             <th>Change</th>
             <th>Like</th>
             <th>Stocks</th>
             <th>Bonds</th>
+
+            <th>Dec 401K</th>
+            <th>Dec Inv</th>
+
         </tr>
 
         <!-- Details -->
         @foreach (var y in Iteration.ByYear.Span)
         {
-            double fromPreTax  = y.Withdrawals.PreTax * -1; 
-            double fromPostTax = y.Deposits.PostTax - y.Withdrawals.PostTax;
-            double fromCash    = y.Deposits.Cash - y.Withdrawals.Cash;
+            static string RG(double value) => value < 0.0 ? "text-danger" : "text-success";
 
-            // static string K0(double amount) => amount > 1 || amount < -1 ? $"{amount / 1000:C0}" : string.Empty;
-            static string C0(double amount) => Math.Abs(amount) > 1.0 ? $"{amount:C0}" : string.Empty;
-            static string P0(double pct) => Math.Abs(pct) > 0.001 ? $"{pct:P0}" : string.Empty;
-            string cssROI = CSS(y.Change.Total());
+            double janPreTax  = y.Jan.PreTax.Amount;
+            double janPostTax = y.Jan.PostTax.Amount;
+            double fees       = y.Fees.Total();
+            double pyTax      = y.Expenses.PYTax;
+            double cyExp      = y.Expenses.CYExp;
+            double ss         = y.Incomes.SS;
+            double ann        = y.Incomes.Ann;
+            double xPreTax    = y.Withdrawals.PreTax * -1;
+            double xPostTax   = y.Deposits.PostTax - y.Withdrawals.PostTax;
+            double xCash      = y.Deposits.Cash - y.Withdrawals.Cash;
+            double change     = y.Change.Total();
+            double decPreTax  = y.Dec.PreTax.Amount;
+            double decPostTax = y.Dec.PostTax.Amount;
 
-            <tr>
-                <td>@(y.Year + 1)</td>
-                <td>@y.Age</td>
 
-                <td>@C0(y.Jan.PreTax.Amount)</td>
-                <td>@C0(y.Jan.PostTax.Amount)</td>
-                <td>@P0(y.Jan.PreTax.Allocation) | @P0(y.Jan.PostTax.Allocation)</td>
+            var cssPreTax  = RG(xPreTax);
+            var cssPostTax = RG(xPostTax);
+            var cssROI     = RG(change);
 
-                <td>@C0(y.Fees.Total())</td>
-                <td>@C0(y.Expenses.PYTax)</td>
-                <td>@C0(y.Expenses.CYExp)</td>
+            static string K0(double value) => Math.Abs(value) >= 999.0 ? $"{value/1000:C0}" : string.Empty; 
+            static string P1(double pct)   => $"{pct:P1}";
 
-                <td>@C0(y.Incomes.SS)</td>
-                <td>@C0(y.Incomes.Ann)</td>
+            <tr class="text-end">
+                <td class="text-center">@(y.Year + 1)</td>
+                <td class="text-center">@y.Age</td>
 
-                <td class="@RG(fromPreTax)">@C0(fromPreTax)</td>
-                <td class="@RG(fromPostTax)">@C0(fromPostTax)</td>
-                <td class="@RG(fromCash)">@C0(fromCash)</td>
+                <td>@K0(janPreTax)</td>
+                <td>@K0(janPostTax)</td>
 
-                <td class="@cssROI">
-                    @C0(y.Change.Total())
-                </td>
-                <td class="mono-space @cssROI">
-                    @y.ROI.LikeYear
-                </td>
-                <td class="mono-space @cssROI">@($"{y.ROI.StocksROI,6:P1}")</td>
-                <td class="mono-space @cssROI">@($"{y.ROI.BondsROI,6:P1}")</td>
+                <td>@K0(fees)</td>
+                <td>@K0(pyTax)</td>
+                <td>@K0(cyExp)</td>
+
+                <td>@K0(ss)</td>
+                <td>@K0(ann)</td>
+                <td class="@cssPreTax">@K0(xPreTax)</td>
+                <td class="@cssPostTax">@K0(xPostTax)</td>
+
+                <td class="@cssROI">@K0(change)</td>
+                <td class="@cssROI">@y.ROI.LikeYear</td>
+                <td class="@cssROI">@P1(y.ROI.StocksROI)</td>
+                <td class="@cssROI">@P1(y.ROI.BondsROI)</td>
+
+                <td>@K0(decPreTax)</td>
+                <td>@K0(decPostTax)</td>
 
             </tr>
         }
@@ -129,10 +152,6 @@
     [Parameter] public string Id { get; set; } = null!;
     [Parameter] public string Caption { get; set; } = "";
     [Parameter] public SimIteration Iteration { get; set; } = null!;
-
-    static string CSS(double value) => value < 0.0 ? "text-danger" : string.Empty;
-
-    static string RG(double value) => value < 0.0 ? "text-danger" : "text-success";
 
     static double Sum(ReadOnlySpan<SimYear> byYear, Func<SimYear, double> fxValueSelector)
     {
