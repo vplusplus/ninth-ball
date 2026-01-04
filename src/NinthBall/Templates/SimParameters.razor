@@ -1,28 +1,31 @@
 ﻿@using System;
 @using NinthBall.Core;
 
-<!-- Simulation parameters -->
 <div>
+
+    @{
+        SimYear Y0 = Model.Iterations[0].ByYear.Span[0];
+
+        double startPreTax  = Y0.Jan.PreTax.Amount;
+        double startPostTax = Y0.Jan.PostTax.Amount;
+        double startAlloc   = Y0.Jan.PreTax.Allocation;
+        int numYears = Model.NoOfYears;
+        int numIterations = Model.Iterations.Count;
+    }
+
     <h4 class="mt-3">
-        @($"{InitialBalance:C0}") | @($"{StockAllocationPct:P0}") - @($"{BondAllocationPct:P0}") | @NumYears years | @NumIterations.ToString("#,0") iterations
+        @($"{startPreTax:C0}") pre-tax + @($"{startPostTax:C0}") post-tax = @($"{startPreTax + startPostTax:C0}") | @($"{startAlloc:P0}") stocks | @(numYears) years | @($"{numIterations:#,0}") iterations
     </h4>
+
     <ul>
-        @foreach (var strategy in Model.Strategies)
-        {
+        @foreach (var strategy in Model.Strategies) {
             <li>@strategy</li>
         }
     </ul>
+
 </div>
 
 @code
 {
     [Parameter] public SimResult Model { get; set; } = null!;
-
-
-    Assets Starting => Model.Iterations[0].ByYear.Span[0].Jan;
-    double InitialBalance => Starting.Total();
-    double StockAllocationPct => Starting.PreTax.Allocation;
-    double BondAllocationPct => 1 - Starting.PreTax.Allocation;
-    int    NumYears => Model.NoOfYears;
-    int    NumIterations => Model.Iterations.Count;
 }

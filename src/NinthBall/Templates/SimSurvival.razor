@@ -1,0 +1,76 @@
+﻿@using System;
+@using NinthBall.Core;
+
+<!-- Survival rate and failures by year -->
+<table class="table table-sm caption-top" style="table-layout: fixed; width: 100%;">
+    @{
+        var survivalRate = Model.SurvivalRate;
+        var txtSurvivalRate = survivalRate >= 0.98 && survivalRate != 1.0 ? $"{survivalRate:P1}" : $"{survivalRate:P0}";
+        var cssSurvivalRate = survivalRate < 0.9 ? "text-danger" : survivalRate >= 0.95 ? "text-success" : "";
+
+        var failureBuckets = GetFailureBuckets();
+        var totalFailures = Model.Iterations.Count(x => !x.Success);
+    }
+    <caption>
+        <h3>Survival rate: <span class="@cssSurvivalRate">@txtSurvivalRate</span></h3>
+    </caption>
+    <thead>
+        <tr>
+            <td>
+                Years:
+            </td>
+            @foreach (var bucket in failureBuckets)
+            {
+                var caption = $"{bucket.FromYear}-{bucket.ToYear}";
+
+                <td class="text-primary">
+                    Years @caption
+                </td>
+            }
+
+            <td class="text-primary">
+                Total
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td>
+                Failures:
+            </td>
+            @foreach (var bucket in failureBuckets)
+            {
+                var txtFailed = 0 == bucket.NumFailed ? "" : $"{bucket.NumFailed}";
+                <th>@txtFailed</th>
+            }
+            <th>@totalFailures</th>
+        </tr>
+    </tbody>
+
+</table>
+
+@code
+{
+    [Parameter] public SimResult Model { get; set; } = null!;
+
+    readonly record struct FailureBucket(int FromYear, int ToYear, int NumFailed);
+
+    IList<FailureBucket> GetFailureBuckets()
+    {
+        // Prepare five-year-buckets with start and end years.
+        // You can't directly use GroupBy() on Model.Iterations, which will miss buckets with no failures.
+        var fiveYearBuckets = Enumerable.Range(0, Model.NoOfYears).Select(y => y / 5).Distinct().Select(y => new { Start = 1 + (y * 5), End = 5 + (y * 5) });
+
+        // Count no of failures in each bucket.
+        // Note: Failed year = One Plus SurvivedYears
+        return fiveYearBuckets
+            .Select(y => new FailureBucket
+            (
+                FromYear:  y.Start, 
+                ToYear:    y.End,
+                NumFailed: Model.Iterations.Count(x => !x.Success && x.SurvivedYears + 1 >= y.Start && x.SurvivedYears + 1 <= y.End)
+            ))
+            .ToList();
+    }
+}
