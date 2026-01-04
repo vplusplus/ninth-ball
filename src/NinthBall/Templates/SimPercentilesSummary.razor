@@ -7,8 +7,11 @@
         <h3>Percentiles</h3>
     </caption>
     <tbody>
+
+        <!-- Percentile Tags -->
         <tr>
-            <th></th>
+            <td>Percentile</td>
+
             @foreach (var p in Percentiles.Items)
             {
                 <td class="text-primary">
@@ -16,22 +19,31 @@
                 </td>
             }
         </tr>
+
+        <!-- Percentile sentiments -->
         <tr>
             <th></th>
+
             @foreach (var p in Percentiles.Items)
             {
                 <td class="text-secondary">@p.Tag</td>
             }
         </tr>
+
+        <!-- Ending balance (Real) -->
         <tr>
             <th>End (Real)</th>
+
             @foreach (var p in Percentiles.Items)
             {
                 var iter = Model.Percentile(p.Pctl);
 
                 if (iter.Success)
                 {
-                    var endBalance = iter.ByYear.Span[^1].Dec.Total().InflationAdjustedValue(TheInflationRate, iter.SurvivedYears).Millions();
+                    // Assuming 3% inflation to calculate inflation adjusted real purchasing power.
+                    const double TheInflationRate = 0.03;   
+
+                    var endBalance = iter.EndingBalance.InflationAdjustedValue(TheInflationRate, iter.SurvivedYears).Millions();
                     <th>@endBalance</th>
                 }
                 else
@@ -40,15 +52,18 @@
                 }
             }
         </tr>
+
+        <!-- Ending balance (Nominal) -->
         <tr>
             <td>End (Nominal)</td>
+
             @foreach (var p in Percentiles.Items)
             {
                 var iter = Model.Percentile(p.Pctl);
 
                 if (iter.Success)
                 {
-                    var endBalance = iter.ByYear.Span[^1].Dec.Total().Millions();
+                    var endBalance = iter.EndingBalance.Millions();
                     <td class="text-secondary">@endBalance</td>
                 }
                 else
@@ -57,17 +72,22 @@
                 }
             }
         </tr>
+
+        <!-- End-to-end ROI (Annualized) -->
         <tr>
             <td>Change (Annualized)</td>
+
             @foreach (var p in Percentiles.Items)
             {
                 var iter = Model.Percentile(p.Pctl);
-                var pctChange = AnnualizeChangePCT(iter.ByYear);
+                var pctChange = iter.ByYear.AnnualizeChangePCT();
+
                 <td class="text-secondary">
                     @($"{pctChange:P1}")
                 </td>
             }
         </tr>
+
     </tbody>
 
 </table>
@@ -76,21 +96,4 @@
 {
     [Parameter] public SimResult Model { get; set; } = null!;
 
-    // TODO: Externalize. 
-    const double TheInflationRate = 0.03;
-
-    static double AnnualizeChangePCT(ReadOnlyMemory<SimYear> byYear)
-    {
-        double compoundReturn = 1;
-        int count = 0;
-
-        for(int i=0; i<byYear.Length; i++)
-        {
-            var r = byYear.Span[i].ChangePCT;
-            checked { compoundReturn *= (1 + r); }
-            count++;
-        }
-
-        return 0 == count ? 0.0 : Math.Pow(compoundReturn, 1.0 / count) - 1;
-    }
 }
