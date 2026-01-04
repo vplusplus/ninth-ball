@@ -28,8 +28,8 @@ namespace NinthBall
             err = err ?? new Exception("Sorry, error object itself was null.");
 
             // Prepare model, and render html
-            Dictionary<string, object?> templateParameters = new() { [nameof(Templates.ErrorDetails.Ex)] = err };
-            var html = await HtmlTemplates.RenderTemplateAsync<Templates.ErrorDetails>(services, templateParameters).ConfigureAwait(false);
+            Dictionary<string, object?> templateParameters = new() { [nameof(Templates.SimErrors.Ex)] = err };
+            var html = await HtmlTemplates.RenderTemplateAsync<Templates.SimErrors>(services, templateParameters).ConfigureAwait(false);
 
             // Save
             FileSystem.EnsureDirectoryForFile(outputFileName);

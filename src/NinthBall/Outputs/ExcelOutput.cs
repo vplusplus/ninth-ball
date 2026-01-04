@@ -21,16 +21,10 @@ namespace NinthBall
         private readonly record struct MyStyles
         (
             uint ColHeader,
-
             uint Alloc,
             uint C0, uint C0Red, uint C0Green,
-
-            //uint C1,
-            //uint P0,
             uint ROI, uint ROIRed, uint ROIGreen,
-
             uint SumTxt, uint SumC, uint SumP, uint SRate,
-
             uint YYYY, uint YYYYRed
         );
 
@@ -238,7 +232,8 @@ namespace NinthBall
                         foreach (var pctl in Percentiles.Items)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
-                            var chng = AnnualizeChangePCT(p.ByYear);
+                            //var chng = AnnualizeChangePCT(p.ByYear);
+                            var chng = p.ByYear.AnnualizeChangePCT();
                             row.Append(chng, styles.SumP);
                         }
                         row.Append("");
@@ -359,20 +354,6 @@ namespace NinthBall
             }
         }
 
-        static double AnnualizeChangePCT(ReadOnlyMemory<SimYear> byYear)
-        {
-            double compoundReturn = 1;
-            int count = 0;
-
-            for (int i = 0; i < byYear.Length; i++)
-            {
-                var r = byYear.Span[i].ChangePCT;
-                checked { compoundReturn *= (1 + r); }
-                count++;
-            }
-
-            return 0 == count ? 0.0 : Math.Pow(compoundReturn, 1.0 / count) - 1;
-        }
 
         static double Mil(this double value) => value / 1000000.0;
     }

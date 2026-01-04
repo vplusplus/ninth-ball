@@ -8,28 +8,33 @@
 }
 else
 {
+    // Print root cause
     <h3>@FindRootCause(Ex)</h3>
 
-    <h4>Errors:</h4>
-    <div>
-        <ul>
-        @foreach(var msg in InnerMessages(Ex))
-        {
-            <li>@msg</li>
-        }
-        </ul>
-    </div>
+    // If this is an error-chain, print chain of error messages
+    if (null != Ex.InnerException)
+    {
+        <h4>Errors:</h4>
+        <div>
+            <ul>
+                @foreach (var msg in InnerMessages(Ex))
+                {
+                    <li>@msg</li>
+                }
+            </ul>
+        </div>
+    }
 
-    <h4>Details</h4>
+    // Error details
+    <h4>Details:</h4>
     <pre>
-    @Ex.ToString()
+        @Ex.ToString()
     </pre>
 }
 
 @code {
 
     [Parameter] public Exception Ex { get; set; } = null!;
-
 
     static string FindRootCause(Exception err)
     {
