@@ -50,7 +50,7 @@ namespace NinthBall
             var survivalRate = simResult.SurvivalRate;
             var txtSurvivalRate = survivalRate > 0.99 ? $"{survivalRate:P1}" : $"{survivalRate:P0}";
 
-            Console.WriteLine($" [{DateTime.Now:HH\\:mm\\:ss}] Done. {txtSurvivalRate} survival | {elapsed.TotalMilliseconds:#,0} mSec.");
+            Console.WriteLine($" Done | {txtSurvivalRate} survival | {elapsed.TotalMilliseconds:#,0} mSec.");
         }
     }
 }

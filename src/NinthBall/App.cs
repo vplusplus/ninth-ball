@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace NinthBall
 {
-    internal sealed class App
+    internal sealed class App(IServiceProvider Services)
     {
         static readonly TimeSpan TwoSeconds  = TimeSpan.FromSeconds(2);
         static readonly TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
@@ -81,14 +81,14 @@ namespace NinthBall
                 timer.Stop();
 
                 var htmlFileName = OutputFileName;
-                await HtmlOutput.Generate(simResult, htmlFileName);
-                Console.WriteLine($" Html report available at {htmlFileName}");
+                await HtmlOutput.GenerateAsync(Services, simResult, htmlFileName);
+                Console.WriteLine($" Html report  | See {htmlFileName}");
 
                 try
                 {
                     var excelFileName = Path.ChangeExtension(htmlFileName, ".xlsx");
                     await ExcelOutput.Generate(simResult, excelFileName);
-                    Console.WriteLine($" Excel report available at {excelFileName}");
+                    Console.WriteLine($" Excel report | See {excelFileName}");
                 }
                 catch(System.IO.IOException ioErr)
                 {
@@ -106,8 +106,7 @@ namespace NinthBall
                 Print.ErrorSummary(err);
 
                 // Capture details to output file.
-                var html = await MyTemplates.GenerateErrorHtmlAsync(err).ConfigureAwait(false);
-                File.WriteAllText(OutputFileName, html);
+                await HtmlOutput.GenerateErrorHtmlAsync(Services, err, OutputFileName).ConfigureAwait(false);
             }
         }
     }
