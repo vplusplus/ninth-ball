@@ -17,11 +17,25 @@
         @($"{startPreTax:C0}") pre-tax + @($"{startPostTax:C0}") post-tax = @($"{startPreTax + startPostTax:C0}") | @($"{startAlloc:P0}") stocks | @(numYears) years | @($"{numIterations:#,0}") iterations
     </h4>
 
-    <ul>
-        @foreach (var strategy in Model.Strategies) {
-            <li>@strategy</li>
-        }
-    </ul>
+    <div class="accordion accordion-flush" id="accAssumptions">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="accAssumptionsTitle">
+                <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#accAssumptionsBlock" aria-expanded="false" aria-controls="accAssumptionsBlock">
+                    Expand to view strategies and assumptions:
+                </button>
+            </h2>
+            <div id="accAssumptionsBlock" class="accordion-collapse collapse" aria-labelledby="accAssumptionsTitle" data-bs-parent="#accAssumptions">
+                <div class="accordion-body">
+                    <ul>
+                        @foreach (var strategy in Model.Strategies)
+                        {
+                            <li>@strategy</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 
