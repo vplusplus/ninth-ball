@@ -6,7 +6,9 @@ namespace NinthBall.Core
     internal sealed class FlatBootstrapper(SimParams SimParams, FlatBootstrap Options) : IBootstrapper
     {
         // Prepare ROI sequence once.
-        readonly ReadOnlyCollection<HROI> FlatSequence = FillSameROI(Options.Stocks, Options.Bonds, numItems: SimParams.NoOfYears);
+        readonly ReadOnlyCollection<HROI> FlatSequence = FillSameROI(
+            Options.Stocks, Options.Bonds, numItems: SimParams.NoOfYears
+        );
 
         // Growth is flat, meaningless to perform more than one iteration.
         public int GetMaxIterations(int numYears) => 1;

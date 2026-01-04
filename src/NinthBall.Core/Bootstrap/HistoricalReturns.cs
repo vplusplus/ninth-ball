@@ -2,7 +2,7 @@
 namespace NinthBall.Core
 {
     // Historical returns:
-    // Credits: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com
+    // REF: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com
 
     /// <summary>
     /// Represents stocks and bonds ROI on a specific year.
@@ -18,8 +18,8 @@ namespace NinthBall.Core
 
         IReadOnlyList<HROI> ReadHistoryOnce()
         {
-            var xlFileName = options.XLFileName  ?? throw new ArgumentNullException(nameof(options.XLFileName));
-            var sheetName  = options.XLSheetName ?? throw new ArgumentNullException(nameof(options.XLSheetName));
+            var xlFileName = options.XLFileName  ?? throw new ArgumentNullException("ROIHistory.XLFileName");
+            var sheetName  = options.XLSheetName ?? throw new ArgumentNullException("ROIHistory.XLSheetName");
 
             Console.WriteLine($" Reading ROI-history from {Path.GetFileName(xlFileName)}[{sheetName}]");
 
@@ -27,14 +27,17 @@ namespace NinthBall.Core
 
             using (var xlReader = new ExcelReader(xlFileName))
             {
-                var sheet = xlReader.GetSheets().Where(s => sheetName.Equals(s.SheetName, StringComparison.OrdinalIgnoreCase)).SingleOrDefault()
+                var sheet = xlReader
+                    .GetSheets()
+                    .Where(s => sheetName.Equals(s.SheetName, StringComparison.OrdinalIgnoreCase))
+                    .SingleOrDefault()
                     ?? throw new Exception($"Sheet not found | File: {Path.GetFileName(xlFileName)} | Sheet: '{sheetName}'");
 
                 foreach (var row in sheet.GetRows())
                 {
                     if (null == row) continue;
 
-                    // Skip first (header) row.  Do not use IEnumerable.Skip(1) option; Use Rowindex.
+                    // Skip first (header) row.  Do not use IEnumerable.Skip(1). Check Rowindex.
                     var isFirstRow = null != row.RowIndex && 1 == row.RowIndex.Value;
                     if (isFirstRow) continue;
 

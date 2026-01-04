@@ -63,7 +63,7 @@ namespace NinthBall.Core
     [SimInput(typeof(PrecalculatedLivingExpensesStrategy), typeof(PrecalculatedLivingExpenses), Family = StrategyFamily.LifestyleExpenses)]
     sealed class PrecalculatedLivingExpensesStrategy(PrecalculatedLivingExpenses Options) : ISimObjective
     {
-        private readonly IReadOnlyList<double> ExpenseSequence = PrecalculatedLivingExpenseReader.ReadPrecalculatedLivingExpenses(Options.FileName, Options.SheetName);
+        private readonly IReadOnlyList<double> ExpenseSequence = ReadPrecalculatedLivingExpenses(Options.FileName, Options.SheetName);
 
         int ISimObjective.Order => 32;
 
@@ -88,6 +88,39 @@ namespace NinthBall.Core
         }
 
         public override string ToString() => $"Living expenses | Pre-calculated from {Path.GetFileName(Options.FileName)} [{Options.SheetName}]";
+
+        public static IReadOnlyList<double> ReadPrecalculatedLivingExpenses(string xlFileName, string sheetName)
+        {
+            var sequence = new List<double>();
+
+            using (var xlReader = new ExcelReader(xlFileName))
+            {
+                var sheet = xlReader.GetSheets().Where(s => sheetName.Equals(s.SheetName, StringComparison.OrdinalIgnoreCase)).SingleOrDefault()
+                    ?? throw new FatalWarning($"Sheet not found | File: {Path.GetFileName(xlFileName)} | Sheet: '{sheetName}'");
+
+                foreach (var row in sheet.GetRows())
+                {
+                    if (null == row) continue;
+
+                    // Skip first (header) row.  Do not use IEnumerable.Skip(1) option; Use Rowindex.
+                    var isFirstRow = null != row.RowIndex && 1 == row.RowIndex.Value;
+                    if (isFirstRow) continue;
+
+                    var cells = row.GetCellValues().ToArray();
+
+                    if (
+                        null != cells
+                        && cells.Length >= 1
+                        && double.TryParse(cells[0], out var amount)
+                    )
+                    {
+                        sequence.Add(amount);
+                    }
+                }
+            }
+
+            return sequence.AsReadOnly();
+        }
     }
 }
 

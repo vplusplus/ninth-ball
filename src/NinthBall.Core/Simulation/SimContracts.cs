@@ -23,20 +23,28 @@ namespace NinthBall.Core
 
     internal interface ISimContext
     {
+        //....................................................
         // Running balance (Jan)
+        //....................................................
         IBalance PreTaxBalance { get; }
         IBalance PostTaxBalance { get; }
         IBalance CashBalance { get; }
 
+        //....................................................
         // Prior year results
+        //....................................................
         ReadOnlyMemory<SimYear> PriorYears { get; }
 
+        //....................................................
         // Current year
+        //....................................................
         public int IterationIndex { get; }
         public int YearIndex { get; }
         public int Age { get; }
 
+        //....................................................
         // Current year strategy recommendations
+        //....................................................
         Fees Fees { get; set; }
         Incomes Incomes { get; set; }
         Expenses Expenses { get; set; }
@@ -45,4 +53,3 @@ namespace NinthBall.Core
         ROI ROI { get; set; }
     }
 }
-

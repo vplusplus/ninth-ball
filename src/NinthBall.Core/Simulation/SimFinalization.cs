@@ -33,23 +33,15 @@ namespace NinthBall.Core
             SuggestedWithdrawals.ThrowIfNegative();
 
             // Temp working memory, we will adjust these numbers.
-            ThreeD available    = new("Available", Jan.PreTax.Amount, Jan.PostTax.Amount, Jan.Cash.Amount);
-            ThreeD withdrawals  = new("Withdrawals", SuggestedWithdrawals.PreTax, SuggestedWithdrawals.PostTax, SuggestedWithdrawals.Cash);
-            TwoD deposits       = new("Deposits", 0, 0);
+            ThreeD available    = new(Jan.PreTax.Amount, Jan.PostTax.Amount, Jan.Cash.Amount);
+            ThreeD withdrawals  = new(SuggestedWithdrawals.PreTax, SuggestedWithdrawals.PostTax, SuggestedWithdrawals.Cash);
+            TwoD deposits       = new(0, 0);
 
             // Let's take care of one meaningless fund transfer.
             // Take 100K from post-tax, refill 50K to post-tax = take 50K from post-tax
             // Take 50K from cash, refill 100K to cash-buffer  = take Zero from cash. 
             withdrawals.PostTax = Math.Max(0, withdrawals.PostTax - SuggestedRefills.PostTax);
             withdrawals.Cash    = Math.Max(0, withdrawals.Cash - SuggestedRefills.Cash);
-
-            // We do not plan or transact at fractions.
-            // Adjust suggested withdrawal and deposit amounts to the nearest multiples of $120
-            //withdrawals.PreTax  = withdrawals.PreTax.RoundToMultiples(120);
-            //withdrawals.PostTax = withdrawals.PostTax.RoundToMultiples(120);
-            //withdrawals.Cash    = withdrawals.Cash.RoundToMultiples(120);
-            //deposits.PostTax    = deposits.PostTax.RoundToMultiples(120);
-            //deposits.Cash       = deposits.Cash.RoundToMultiples(120);
 
             // Fees goes first. 
             available.PreTax   -= Fees.PreTax;
@@ -217,25 +209,21 @@ namespace NinthBall.Core
         //......................................................................
         #region Temp data structures for tracking and adjusting numbers
         //......................................................................
-        private struct ThreeD(string name, double PreTax, double PostTax, double Cash)
+        private struct ThreeD(double PreTax, double PostTax, double Cash)
         {
             // Temp data structure to track the three asset values.
             public double PreTax = PreTax;
             public double PostTax = PostTax;
             public double Cash = Cash;
             public double Total() => PreTax + PostTax + Cash;
-
-            public override string ToString() => $"{name}: {{ PreTax: {PreTax:F0}, PostTax: {PostTax:F0}, Cash: {Cash:F0} }}";
         }
 
-        private struct TwoD(string name, double PostTax, double Cash)
+        private struct TwoD(double PostTax, double Cash)
         {
             // Temp data structure to track assets except PreTax
             public double PostTax = PostTax;
             public double Cash = Cash;
             public double Total() => PostTax + Cash;
-
-            public override string ToString() => $"{name}: {{ PostTax: {PostTax:F0}, Cash: {Cash:F0} }}";
         }
 
         #endregion

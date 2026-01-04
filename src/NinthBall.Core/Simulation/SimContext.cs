@@ -188,7 +188,7 @@ namespace NinthBall.Core
         // ..........................................
 
         /// <summary>
-        /// SimCOntext instances are pooled and re-used.
+        /// SimContext instances are pooled and re-used.
         /// Erase the memory of prior iteration, and start a fresh iteration.
         /// </summary>
         public void Reset(InitialBalance initialBalance, int iterationIndex, int startAge, Memory<SimYear> store)
@@ -233,7 +233,11 @@ namespace NinthBall.Core
         public bool ImplementStrategies()
         {
             // Take snapshot of jan 1st balance
-            var jan = new Assets(AsReadOnly(MyPreTaxBalance), AsReadOnly(MyPostTaxBalance), AsReadOnly(MyCashBalance));
+            var jan = new Assets(
+                AsReadOnly(MyPreTaxBalance), 
+                AsReadOnly(MyPostTaxBalance), 
+                AsReadOnly(MyCashBalance)
+            );
 
             // Validate and adjust withdrawals and deposits
             var success = SimFinalization.FinalizeWithdrawals
@@ -269,9 +273,19 @@ namespace NinthBall.Core
                 MyCashBalance.Post(     adjustedDeposits.Cash);
 
                 // Take snapshot of ending balance
-                var dec = new Assets(AsReadOnly(MyPreTaxBalance), AsReadOnly(MyPostTaxBalance), AsReadOnly(MyCashBalance));
+                var dec = new Assets(
+                    AsReadOnly(MyPreTaxBalance), 
+                    AsReadOnly(MyPostTaxBalance), 
+                    AsReadOnly(MyCashBalance)
+                );
 
-                MyPriorYears.Span[YearIndex] = new SimYear(YearIndex, Age, jan, Fees, Incomes, Expenses, adjustedWithdrawal, adjustedDeposits, ROI, growth, dec);
+                // Track year-by-year performance.
+                MyPriorYears.Span[YearIndex] = new SimYear(
+                    YearIndex, Age, 
+                    jan, 
+                    Fees, Incomes, Expenses, adjustedWithdrawal, adjustedDeposits, ROI, growth, 
+                    dec
+                );
             }
             else
             {
