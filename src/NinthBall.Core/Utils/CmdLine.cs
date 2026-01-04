@@ -4,18 +4,19 @@ using System.Text.RegularExpressions;
 
 namespace NinthBall.Core
 {
+
+    /// <summary>
+    /// Provides access to CommandLine options before host is built and configured.
+    /// </summary>
     public static class CmdLine
     {
         // Lazy initialized CommandLine Options.
-        private static readonly Lazy<IConfiguration> LazyCommandLine = new(() =>
+        static readonly Lazy<IConfiguration> LazyCommandLine = new(() =>
             new ConfigurationBuilder()
                 .AddInMemoryCollection(ParseCommandLineOnce())
                 .Build()
         );
 
-        /// <summary>
-        /// Provides access to CommandLine options before host is built and configured.
-        /// </summary>
         public static IConfiguration Current => LazyCommandLine.Value;
 
         public static string Optional(string name, string defaultValue) => Current.GetValue<string>(name, defaultValue);

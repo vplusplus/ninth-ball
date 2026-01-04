@@ -4,13 +4,6 @@ namespace NinthBall.Core
 {
     public static partial class Stats
     {
-        public static double RoundToMultiples(this double value, double step, MidpointRounding mode = MidpointRounding.ToEven) => 
-            step <= 0 
-                ? throw new ArgumentOutOfRangeException(nameof(step)) 
-                : Math.Round(value / step, mode) * step;
-
-        public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
-
         /// <summary>
         /// Computes the standard deviation (volatility) of a sequence of periodic returns.
         /// </summary>
@@ -85,7 +78,6 @@ namespace NinthBall.Core
                 : Math.Pow(compoundReturn, 1.0 / count) - 1;
         }
 
-
         /// <summary>
         /// Given a future value, inflation rate and no of years, returns inflation adjusted value in current present value.
         /// </summary>
@@ -99,35 +91,31 @@ namespace NinthBall.Core
         }
 
         /// <summary>
-        /// Calculates the annual withdrawal pyAmount (Annuity Due) for a growing annuity that depletes a balance to zero.
+        /// Calculates the first year amount (growing annually at estimatedInflation) 
+        /// to reach zero balance after remainingYears 
+        /// with estmated flat-growth rate.
         /// PV = W * (1 + r) * [1 - ((1 + g) / (1 + r))^n] / (r - g)
         /// </summary>
-        /// <param name="currentBalance">Present value of the asset pool.</param>
-        /// <param name="estimatedROI">Expected annual return (nominal).</param>
-        /// <param name="estimatedInflation">Expected annual increment (inflation).</param>
-        /// <param name="remainingYears">Number of years left (including current).</param>
-        /// <returns>The withdrawal pyAmount for the current year.</returns>
         public static double EquatedWithdrawal(double currentBalance, double estimatedROI, double estimatedInflation, int remainingYears)
         {
+            // Edge cases...
             if (remainingYears <= 0) return 0.0;
             if (currentBalance <= 0) return 0.0;
 
             // Special case: ROI matches Inflation
-            if (Math.Abs(estimatedROI - estimatedInflation) < 1e-9)
-            {
-                return currentBalance / remainingYears;
-            }
+            if (Math.Abs(estimatedROI - estimatedInflation) < 1e-9) return currentBalance / remainingYears;
 
-            double r = estimatedROI;
-            double g = estimatedInflation;
-            int n = remainingYears;
-
+            //................................................
             // Growing Annuity Due Formula:
             // W = PV * (r - g) / ((1 + r) * (1 - Math.Pow((1 + g) / (1 + r), n)))
-            
-            double numerator = currentBalance * (r - g);
-            double denominator = (1 + r) * (1 - Math.Pow((1 + g) / (1 + r), n));
+            //................................................
+            double r = estimatedROI;
+            double g = estimatedInflation;
+            int    n = remainingYears;
 
+            double numerator   = currentBalance * (r - g);
+            double denominator = (1 + r) * (1 - Math.Pow((1 + g) / (1 + r), n));
+            
             return numerator / denominator;
         }
     }

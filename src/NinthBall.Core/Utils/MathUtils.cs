@@ -1,7 +1,7 @@
 
 namespace NinthBall.Core
 {
-    internal static class MathUtils
+    public static class MathUtils
     {
         /// <summary>
         /// Acklam's approximation for the inverse normal cumulative distribution function.
@@ -92,5 +92,19 @@ namespace NinthBall.Core
                 + (z * z * z - 3 * z) * k / 24 
                 - (2 * z * z * z - 5 * z) * s * s / 36;
         }
+
+        /// <summary>
+        /// Cosmetics - Round double value to multiples of given step.
+        /// </summary>
+        public static double RoundToMultiples(this double value, double step, MidpointRounding mode = MidpointRounding.ToEven) =>
+            step <= 0
+                ? throw new ArgumentOutOfRangeException(nameof(step))
+                : Math.Round(value / step, mode) * step;
+
+        /// <summary>
+        /// Cosmetics - Formats given number as Millions of $s (culture sensitive).
+        /// </summary>
+        public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
+
     }
 }

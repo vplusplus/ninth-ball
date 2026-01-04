@@ -1,5 +1,8 @@
 namespace NinthBall.Core
 {
+    /// <summary>
+    /// Helpers to compare or adjust double precision fractions. 
+    /// </summary>
     internal static class Precision
     {
         // Amounts (Currency) - We care about cents, but simulation needs slightly more room for drift.
