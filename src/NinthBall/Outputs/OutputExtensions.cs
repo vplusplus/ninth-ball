@@ -7,7 +7,7 @@ namespace NinthBall
     /// </summary>
     internal static class OutputExtensions
     {
-        public static double AnnualizeChangePCT(this ReadOnlyMemory<SimYear> byYear)
+        internal static double AnnualizeChangePCT(this ReadOnlyMemory<SimYear> byYear)
         {
             double compoundReturn = 1;
             int count = 0;
@@ -22,7 +22,7 @@ namespace NinthBall
             return 0 == count ? 0.0 : Math.Pow(compoundReturn, 1.0 / count) - 1;
         }
 
-        public static double SumX(this ReadOnlyMemory<SimYear> byYear, Func<SimYear, double> fxValueSelector)
+        internal static double SumX(this ReadOnlyMemory<SimYear> byYear, Func<SimYear, double> fxValueSelector)
         {
             ArgumentNullException.ThrowIfNull(fxValueSelector);
 
@@ -35,5 +35,11 @@ namespace NinthBall
 
             return sumAmount;
         }
+
+        /// <summary>
+        /// Cosmetics - Formats given number as Millions of $s (culture sensitive).
+        /// </summary>
+        internal static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
+
     }
 }

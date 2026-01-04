@@ -2,9 +2,6 @@
 @using NinthBall.Core;
 
 <!-- Presents year-by-year details of single iteration -->
-<!-- 
-<table id="@Id" class="table table-sm caption-top page-break mb-0" style="table-layout: fixed; width: 100%;">
--->
 <table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%;">
 
     <caption>
@@ -18,7 +15,29 @@
     <colgroup>
         <col style="width:2%">
         <col style="width:2%">
-        <col span="15" style="width:5%">
+
+        <col style="width:6%">
+        <col style="width:6%">
+        <col style="width:6%">
+
+        <col style="width:4%">
+        <col style="width:4%">
+        <col style="width:4%">
+        <col style="width:4%">
+        <col style="width:4%">
+
+        <col style="width:6%">
+        <col style="width:6%">
+        <col style="width:6%">
+
+        <col style="width:6%">
+        <col style="width:6%">
+        <col style="width:6%">
+
+        <col style="width:3%">
+        <col style="width:3%">
+        <col style="width:3%">
+
     </colgroup>
 
     <tbody>
@@ -37,7 +56,7 @@
         }
 
         <tr class="text-end">
-            <td colspan="4" class="text-start">
+            <td colspan="5" class="text-start">
                 <small class="text-muted">
                     All numbers are dispayed in thousands.
                 </small>
@@ -51,14 +70,17 @@
             <td class="text-secondary">@totalAnn.Millions()</td>
             <td class="text-secondary">@totalXPreTax.Millions()</td>
             <td class="text-secondary">@totalXPostTax.Millions()</td>
-
             <td class="text-secondary">@totalChange.Millions()</td>
+
+            <!--
             <td></td>
             <td></td>
             <td></td>
 
             <td></td>
             <td></td>
+            <td></td>
+            -->
         </tr>
 
         <!-- Labels are printed summary row on top -->
@@ -68,6 +90,7 @@
 
             <th>Jan 401K</th>
             <th>Jan Inv</th>
+            <th title="Approx asset value (401K less 25% + Inv - Fees)" class="text-primary">~Total</th>
            
             <th>Fees</th>
             <th>Taxes</th>
@@ -77,15 +100,15 @@
             <th>ANN</th>
             <th>X401K</th>
             <th>XInv</th>
-
             <th>Change</th>
-            <th>Like</th>
-            <th>Stocks</th>
-            <th>Bonds</th>
 
             <th>Dec 401K</th>
             <th>Dec Inv</th>
+            <th title="Approx asset value (401K less 25% + Inv)" class="text-primary">~Total</th>
 
+            <th>Like</th>
+            <th>Stocks</th>
+            <th>Bonds</th>
         </tr>
 
         <!-- Details -->
@@ -95,6 +118,8 @@
 
             double janPreTax  = y.Jan.PreTax.Amount;
             double janPostTax = y.Jan.PostTax.Amount;
+            double janAssets  = (y.Jan.PreTax.Amount * 0.75) + y.Jan.PostTax.Amount - y.Fees.Total();
+
             double fees       = y.Fees.Total();
             double pyTax      = y.Expenses.PYTax;
             double cyExp      = y.Expenses.CYExp;
@@ -106,7 +131,7 @@
             double change     = y.Change.Total();
             double decPreTax  = y.Dec.PreTax.Amount;
             double decPostTax = y.Dec.PostTax.Amount;
-
+            double decAssets  = (y.Dec.PreTax.Amount * 0.75) + y.Dec.PostTax.Amount;
 
             var cssPreTax  = RG(xPreTax);
             var cssPostTax = RG(xPostTax);
@@ -116,11 +141,13 @@
             static string P1(double pct)   => $"{pct:P1}";
 
             <tr class="text-end">
+
                 <td class="text-center">@(y.Year + 1)</td>
                 <td class="text-center">@y.Age</td>
 
                 <td>@K0(janPreTax)</td>
                 <td>@K0(janPostTax)</td>
+                <td class="text-primary">@K0(janAssets)</td>
 
                 <td>@K0(fees)</td>
                 <td>@K0(pyTax)</td>
@@ -130,15 +157,15 @@
                 <td>@K0(ann)</td>
                 <td class="@cssPreTax">@K0(xPreTax)</td>
                 <td class="@cssPostTax">@K0(xPostTax)</td>
-
                 <td class="@cssROI">@K0(change)</td>
-                <td class="@cssROI">@y.ROI.LikeYear</td>
-                <td class="@cssROI">@P1(y.ROI.StocksROI)</td>
-                <td class="@cssROI">@P1(y.ROI.BondsROI)</td>
 
                 <td>@K0(decPreTax)</td>
                 <td>@K0(decPostTax)</td>
+                <td class="text-primary">@K0(decAssets)</td>
 
+                <td class="@cssROI">@y.ROI.LikeYear</td>
+                <td class="@cssROI">@P1(y.ROI.StocksROI)</td>
+                <td class="@cssROI">@P1(y.ROI.BondsROI)</td>
             </tr>
         }
 
@@ -153,15 +180,4 @@
     [Parameter] public string Caption { get; set; } = "";
     [Parameter] public SimIteration Iteration { get; set; } = null!;
 
-    static double Sum(ReadOnlySpan<SimYear> byYear, Func<SimYear, double> fxValueSelector)
-    {
-        double sumAmount = 0.0;
-
-        for(int i=0; i<byYear.Length; i++)
-        {
-            sumAmount += fxValueSelector(byYear[i]);
-        }
-
-        return sumAmount;
-    }
 }

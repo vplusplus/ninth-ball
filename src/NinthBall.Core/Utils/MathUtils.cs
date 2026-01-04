@@ -101,10 +101,5 @@ namespace NinthBall.Core
                 ? throw new ArgumentOutOfRangeException(nameof(step))
                 : Math.Round(value / step, mode) * step;
 
-        /// <summary>
-        /// Cosmetics - Formats given number as Millions of $s (culture sensitive).
-        /// </summary>
-        public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
-
     }
 }
