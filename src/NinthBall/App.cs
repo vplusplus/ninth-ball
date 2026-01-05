@@ -11,8 +11,8 @@ namespace NinthBall
         static readonly TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
         static readonly TimeSpan TenMinutes  = TimeSpan.FromMinutes(10);
 
-        string InputFileName => Path.GetFullPath(CmdLine.Required("In"));
-        string OutputFileName => Path.GetFullPath(CmdLine.Optional("Out", "./SimReport.html"));
+        string InputFileName  => Path.GetFullPath(CmdLine.Required("In"));
+        string OutputFileName => Path.GetFullPath(CmdLine.Optional("Out", Path.ChangeExtension(InputFileName, ".html") ));
         bool WatchMode => CmdLine.Switch("watch");
 
         public async Task RunAsync()
