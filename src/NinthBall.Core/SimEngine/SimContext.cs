@@ -183,7 +183,6 @@ namespace NinthBall.Core
         public Incomes Incomes { get; set; }
         public Expenses Expenses { get; set; }
         public Withdrawals Withdrawals { get; set; }
-        public Deposits Refills { get; set; }
         public ROI ROI { get; set; }
         // ..........................................
 
@@ -208,7 +207,6 @@ namespace NinthBall.Core
             Incomes = default;
             Expenses = default;
             Withdrawals = default;
-            Refills = default;
             ROI = default;
         }
 
@@ -222,7 +220,6 @@ namespace NinthBall.Core
             Incomes = default;
             Expenses = default;
             Withdrawals = default;
-            Refills = default;
             ROI = default;
         }
 
@@ -243,7 +240,7 @@ namespace NinthBall.Core
             var success = SimFinalization.FinalizeWithdrawals
             (
                 jan, 
-                Fees, Incomes, Expenses, Withdrawals, Refills,
+                Fees, Incomes, Expenses, Withdrawals, 
                 out var adjustedWithdrawal, out var adjustedDeposits
             );
 

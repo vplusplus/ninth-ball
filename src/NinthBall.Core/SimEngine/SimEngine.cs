@@ -101,9 +101,7 @@ namespace NinthBall.Core
             var exclusiveFamilies = new[]
             {
                 StrategyFamily.LifestyleExpenses,
-                StrategyFamily.WithdrawalVelocity,
-                StrategyFamily.CashUsage,
-                StrategyFamily.CashRefill,
+                StrategyFamily.PreTaxWithdrawalVelocity,
                 StrategyFamily.Taxes
             };
 

@@ -6,7 +6,6 @@ namespace NinthBall.Core
     {
         /// <summary>
         /// Given known constraints (Jan, fees, incomes, expenses, etc.)
-        /// and given withdrawal and refill (deposit) aspirations,
         /// calculates the financially viable withdrawal and deposit amounts.
         /// Returns false if essential expenses can't be met.
         /// </summary>
@@ -17,9 +16,8 @@ namespace NinthBall.Core
             Incomes Incomes,                        // Known guaranteed additional incomes
             Expenses Expenses,                      // Prior year tax and current year expenses
             Withdrawals SuggestedWithdrawals,       // Withdrawal scheme suggested by the model (we may adjust this)
-            Deposits SuggestedRefills,              // Refill aspirations suggested by the model (we may adjust this)
             out Withdrawals adjustedWithdrawals,    // Adjusted withdrawal amounts that aligns with realities
-            out Deposits adjustedDeposits           // Max permissible adjusted refill (deposit) amounts
+            out Deposits adjustedDeposits           // Deposit of excess income (if any)
         )
         {
             // Model works on all +ve numbers. 
@@ -29,19 +27,12 @@ namespace NinthBall.Core
             Fees.ThrowIfNegative();
             Incomes.ThrowIfNegative();
             Expenses.ThrowIfNegative();
-            SuggestedRefills.ThrowIfNegative();
             SuggestedWithdrawals.ThrowIfNegative();
 
             // Temp working memory, we will adjust these numbers.
             ThreeD available    = new(Jan.PreTax.Amount, Jan.PostTax.Amount, Jan.Cash.Amount);
             ThreeD withdrawals  = new(SuggestedWithdrawals.PreTax, SuggestedWithdrawals.PostTax, SuggestedWithdrawals.Cash);
             TwoD deposits       = new(0, 0);
-
-            // Let's take care of one meaningless fund transfer.
-            // Take 100K from post-tax, refill 50K to post-tax = take 50K from post-tax
-            // Take 50K from cash, refill 100K to cash-buffer  = take Zero from cash. 
-            withdrawals.PostTax = Math.Max(0, withdrawals.PostTax - SuggestedRefills.PostTax);
-            withdrawals.Cash    = Math.Max(0, withdrawals.Cash - SuggestedRefills.Cash);
 
             // Fees goes first. 
             available.PreTax   -= Fees.PreTax;
@@ -63,8 +54,6 @@ namespace NinthBall.Core
             available.PostTax  -= withdrawals.PostTax;
             available.Cash     -= withdrawals.Cash;
 
-            // We will come to refill aspirations later.
-            // First we will meet the expenses.
             // Do we have enough? 
             double deficit = Math.Max(0, Expenses.Total() - Incomes.Total() - withdrawals.Total());
             if (deficit.IsMoreThanZero(Precision.Amount))
@@ -88,44 +77,22 @@ namespace NinthBall.Core
             }
 
             // We survived. We may even have some surplus.
-            var surplus = Math.Max(0, Incomes.Total() + withdrawals.Total() - Expenses.Total());
-
-            // First, we will try to accommodate cash-refill aspiration.
-            var refillTarget = SuggestedRefills.Cash;
-            if (refillTarget.IsMoreThanZero(Precision.Amount))
-            {
-                // Use unallocated cash-in-hand first
-                // If we need more try PostTax: Minimize tax, try to honor PreTax withdrawal velocity
-                // If we need more try PreTax:  Model is trying to catch-up with prior cash drain.
-                TryTransferFunds(ref refillTarget, ref surplus, ref deposits.Cash);
-                withdrawals.PostTax += TryTransferFunds(ref refillTarget, ref available.PostTax, ref deposits.Cash);
-                withdrawals.PreTax  += TryTransferFunds(ref refillTarget, ref available.PreTax,  ref deposits.Cash);
-            }
-
-            // Now we try to accommodate fund transfer aspirations to PostTax account.
-            refillTarget = SuggestedRefills.PostTax;
-            if (refillTarget.IsMoreThanZero(Precision.Amount))
-            {
-                // Use unallocated cash-in-hand first
-                // If we need more try PreTax; Model is trying to spread the tax impact of PreTax funds
-                TryTransferFunds(ref refillTarget, ref surplus, ref deposits.PostTax);
-                withdrawals.PreTax += TryTransferFunds(ref refillTarget, ref available.PreTax, ref deposits.PostTax);
-            }
-
-            // One more thing...
             // All remaining surplus (if any) gets re-invested in post-tax assets
+            var surplus = Math.Max(0, Incomes.Total() + withdrawals.Total() - Expenses.Total());
             if (surplus.IsMoreThanZero(Precision.Amount))
             {
                 deposits.PostTax += surplus;
                 surplus = 0;
             }
 
+            // This is our final withdrawal and deposit (if any) amounts.
             adjustedWithdrawals = new(withdrawals.PreTax, withdrawals.PostTax, withdrawals.Cash);
             adjustedDeposits    = new(deposits.PostTax, deposits.Cash);
 
             // Independent validation of math integrity
             VerifyWithdrawals(Jan, Fees, Incomes, Expenses, adjustedWithdrawals, adjustedDeposits, available);
 
+            // Done.
             return true;
 
             // Try to transfer suggested funds from source to target.

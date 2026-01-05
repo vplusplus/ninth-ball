@@ -21,7 +21,7 @@ namespace NinthBall.Core
 
                     context.Expenses = context.Expenses with
                     {
-                        // Do not round to multiples of $120/year. Doing so may be confusing for the reviewer.
+                        // Do not round to multiples of $120. Doing so may be confusing for the reviewer.
                         // Just drop the fractions (if any)
                         CYExp = Math.Round(livingExpense)
                     };
@@ -45,7 +45,7 @@ namespace NinthBall.Core
                     context.Expenses = context.Expenses with
                     {
                         // We do not spend in fractions.
-                        // Round to multiples of $120/year ($10/month)
+                        // Round to multiples of $120 i.e $10/month
                         CYExp = livingExpense.RoundToMultiples(120.0)
                     };
                 }

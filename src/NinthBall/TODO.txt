@@ -1,3 +1,4 @@
 ﻿
-* Consider adding INput file name to the SimResult.
+* 
+* Consider adding Input file name to the SimResult.
 

@@ -49,7 +49,6 @@ namespace NinthBall.Core
         Incomes Incomes { get; set; }
         Expenses Expenses { get; set; }
         Withdrawals Withdrawals { get; set; }
-        Deposits Refills { get; set; }
         ROI ROI { get; set; }
     }
 }

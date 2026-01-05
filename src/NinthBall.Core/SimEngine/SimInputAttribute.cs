@@ -7,12 +7,9 @@ namespace NinthBall.Core
         PortfolioManagement,
         Income,
         Taxes,
-        Fees,
         LifestyleExpenses,
-        WithdrawalVelocity,
-        WithdrawalAdjustment,
-        CashUsage,
-        CashRefill,
+        PreTaxWithdrawalVelocity,
+        PreTaxWithdrawalAdjustment,
     }
 
     /// <summary>

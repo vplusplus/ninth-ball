@@ -2,8 +2,8 @@
 namespace NinthBall.Core
 {
 
-    [SimInput(typeof(FixedWithdrawalStrategy), typeof(FixedWithdrawal), Family = StrategyFamily.WithdrawalVelocity)]
-    sealed class FixedWithdrawalStrategy(FixedWithdrawal Options) : ISimObjective
+    [SimInput(typeof(PreTaxFixedWithdrawalStrategy), typeof(FixedWithdrawal), Family = StrategyFamily.PreTaxWithdrawalVelocity)]
+    sealed class PreTaxFixedWithdrawalStrategy(FixedWithdrawal Options) : ISimObjective
     {
         int ISimObjective.Order => 20;
 
@@ -21,7 +21,7 @@ namespace NinthBall.Core
 
                 context.Withdrawals = context.Withdrawals with
                 {
-                    // Adjust to multiples of $120/year i.e. $10/month
+                    // Adjust to multiples of $120 i.e. $10/month
                     PreTax = take.RoundToMultiples(120.0)   
                 };
             }
@@ -30,8 +30,8 @@ namespace NinthBall.Core
         public override string ToString() => $"Pre-Tax Drawdown | Fixed {Options.FirstYearAmount:C0} (+{Options.Increment:P1}/yr)";
     }
 
-    [SimInput(typeof(PercentageWithdrawalStrategy), typeof(PercentageWithdrawal), Family = StrategyFamily.WithdrawalVelocity)]
-    sealed class PercentageWithdrawalStrategy(PercentageWithdrawal Options) : ISimObjective
+    [SimInput(typeof(PreTaxPercentageWithdrawalStrategy), typeof(PercentageWithdrawal), Family = StrategyFamily.PreTaxWithdrawalVelocity)]
+    sealed class PreTaxPercentageWithdrawalStrategy(PercentageWithdrawal Options) : ISimObjective
     {
         int ISimObjective.Order => 20;
 
@@ -58,7 +58,7 @@ namespace NinthBall.Core
 
                 ctx.Withdrawals = ctx.Withdrawals with
                 {
-                    // Adjust to multiples of $120/year i.e. $10/month
+                    // Adjust to multiples of $120 i.e. $10/month
                     PreTax = from401K.RoundToMultiples(120.0)
                 };
             }
@@ -68,8 +68,8 @@ namespace NinthBall.Core
         string ResetYearsToString => (null == Options.ResetAtAge || 0 == Options.ResetAtAge.Count) ? string.Empty : $" | Reset to {Options.FirstYearPct:P1} @ age [{string.Join(',', Options.ResetAtAge)}]";
     }
 
-    [SimInput(typeof(VariablePercentageWithdrawalStrategy), typeof(VariablePercentageWithdrawal), Family = StrategyFamily.WithdrawalVelocity)]
-    sealed class VariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options, SimParams Params) : ISimObjective
+    [SimInput(typeof(PreTaxVariablePercentageWithdrawalStrategy), typeof(VariablePercentageWithdrawal), Family = StrategyFamily.PreTaxWithdrawalVelocity)]
+    sealed class PreTaxVariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options, SimParams Params) : ISimObjective
     {
         int ISimObjective.Order => 20;
 
@@ -106,7 +106,7 @@ namespace NinthBall.Core
 
                 ctx.Withdrawals = ctx.Withdrawals with
                 {
-                    // Adjust to multiples of $120/year i.e. $10/month
+                    // Adjust to multiples of $120 i.e. $10/month
                     PreTax = amount.RoundToMultiples(120.0)
                 };
             }

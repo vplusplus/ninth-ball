@@ -23,6 +23,7 @@ namespace NinthBall.Core
         // Strategies (Optional)
         Rebalance? Rebalance,
         Reallocate? Reallocate,
+
         AdditionalIncomes? AdditionalIncomes,
         
         FeesPCT? FeesPCT,
