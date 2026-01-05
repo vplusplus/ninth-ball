@@ -5,14 +5,17 @@ namespace NinthBall
 {
     internal static class HtmlOutput
     {
-        public static async Task GenerateAsync(IServiceProvider services, SimResult simResult, string outputFileName)
+        public static async Task GenerateAsync(IServiceProvider services, SimResult simResult, string inputFileName, string outputFileName)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(simResult);
             ArgumentNullException.ThrowIfNull(outputFileName);
 
             // Prepare model, and render html
-            Dictionary<string, object?> templateParameters = new() { [nameof(Templates.SimReport.Model)] = simResult };
+            Dictionary<string, object?> templateParameters = new() { 
+                [nameof(Templates.SimReport.InputFileName)] = inputFileName,
+                [nameof(Templates.SimReport.Model)] = simResult,
+            };
             var html = await HtmlTemplates.RenderTemplateAsync<Templates.SimReport>(services, templateParameters).ConfigureAwait(false);
 
             // Save

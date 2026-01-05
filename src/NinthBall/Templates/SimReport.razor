@@ -28,7 +28,7 @@
     <div class="container-fluid">
 
         <div>
-            <SimParameters Model=Model />
+            <SimParameters Model=Model InputFileName="@InputFileName" />
             <SimSurvival Model=Model />
             <SimPercentilesSummary Model=Model />
             <SimIterationTabs Model=Model />
@@ -48,5 +48,6 @@
 
 @code
 {
+    [Parameter] public string InputFileName { get; set; } = null!;
     [Parameter] public SimResult Model { get; set; } = null!;
 }

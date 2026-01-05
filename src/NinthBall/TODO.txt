@@ -1,2 +1,3 @@
 ﻿
-* Test error output.
+* Consider adding INput file name to the SimResult.
+

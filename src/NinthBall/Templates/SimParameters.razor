@@ -6,8 +6,8 @@
     @{
         SimYear Y0 = Model.Iterations[0].ByYear.Span[0];
 
-        var startPreTax  = Y0.Jan.PreTax.Amount.ToString("C0");
-        var startPostTax = Y0.Jan.PostTax.Amount.ToString("C0");
+        var startPreTax  = $"{Y0.Jan.PreTax.Amount:C0}";
+        var startPostTax = $"{Y0.Jan.PostTax.Amount:C0}";
         var startAlloc   = Y0.Jan.PreTax.Allocation;
         int numYears = Model.NoOfYears;
         int numIterations = Model.Iterations.Count;
@@ -26,7 +26,14 @@
             </h2>
             <div id="accAssumptionsBlock" class="accordion-collapse collapse" aria-labelledby="accAssumptionsTitle" data-bs-parent="#accAssumptions">
                 <div class="accordion-body">
-                    <ul> 
+                    <ul>
+                        @if(!string.IsNullOrWhiteSpace(InputFileName))
+                        {
+                            <li>
+                                Input | @(Path.GetFileName(InputFileName))
+                            </li>
+                        }
+                    
                         @foreach (var strategy in Model.Strategies)
                         {
                             <li>@strategy</li>
@@ -41,5 +48,6 @@
 
 @code
 {
-    [Parameter] public SimResult Model { get; set; } = null!;
+    [Parameter] public string InputFileName { get; set; }
+    [Parameter] public SimResult Model { get; set; }
 }

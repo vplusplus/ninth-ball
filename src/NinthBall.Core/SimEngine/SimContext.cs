@@ -290,6 +290,16 @@ namespace NinthBall.Core
             else
             {
                 MyPriorYears.Span[YearIndex] = new SimYear() { Year = YearIndex, Age = Age, Jan = jan };
+
+                MyPriorYears.Span[YearIndex] = new SimYear()
+                {
+                    Year = YearIndex,
+                    Age = Age,
+                    Jan = jan,
+                    Fees = Fees,
+                    Incomes = Incomes,
+                    Expenses = Expenses,
+                };
             }
 
             YearsCompleted++;

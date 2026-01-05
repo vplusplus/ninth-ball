@@ -81,7 +81,7 @@ namespace NinthBall
                 timer.Stop();
 
                 var htmlFileName = OutputFileName;
-                await HtmlOutput.GenerateAsync(Services, simResult, htmlFileName);
+                await HtmlOutput.GenerateAsync(Services, simResult, InputFileName, htmlFileName);
                 Console.WriteLine($" Html report  | See {htmlFileName}");
 
                 try

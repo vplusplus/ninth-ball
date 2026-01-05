@@ -137,8 +137,9 @@
             var cssPostTax = RG(xPostTax);
             var cssROI     = RG(change);
 
-            static string K0(double value) => Math.Abs(value) >= 999.0 ? $"{value/1000:C0}" : string.Empty; 
-            static string P1(double pct)   => $"{pct:P1}";
+            static string K0(double value) => Math.Abs(value) >= 999.0 ? $"{value/1000:C0}" : string.Empty;
+            static string P1(double pct) => Math.Abs(pct) > 0.001 ? $"{pct:P1}" : string.Empty;
+            static string Y4(int year) => year > 0 ? $"{year:0000}" : string.Empty;
 
             <tr class="text-end">
 
@@ -163,7 +164,7 @@
                 <td>@K0(decPostTax)</td>
                 <td class="text-primary">@K0(decAssets)</td>
 
-                <td class="@cssROI">@y.ROI.LikeYear</td>
+                <td class="@cssROI">@Y4(y.ROI.LikeYear)</td>
                 <td class="@cssROI">@P1(y.ROI.StocksROI)</td>
                 <td class="@cssROI">@P1(y.ROI.BondsROI)</td>
             </tr>
