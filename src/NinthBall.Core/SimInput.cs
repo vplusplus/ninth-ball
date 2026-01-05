@@ -23,11 +23,10 @@ namespace NinthBall.Core
         Taxes? Taxes,
         LivingExpenses? LivingExpenses,
 
-        // Pretax distribution        
+        // Pretax distribution (RMD is given, always added, not configurable)
         FixedWithdrawal? FixedWithdrawal,
         PercentageWithdrawal? PercentageWithdrawal,
         VariablePercentageWithdrawal? VariablePercentageWithdrawal,
-        RMD? RMD,
 
         // Growth strategy, Historical Data & Bootstrapping
         Growth? Growth,
@@ -175,11 +174,6 @@ namespace NinthBall.Core
         [property: Range(0, 1)] double Inflation,
         [property: Min(0)] double? Floor = null,
         [property: Min(0)] double? Ceiling = null
-    );
-
-    public sealed record RMD
-    (
-        [property: Range(70, 80)] int StartAge = 73
     );
 
     public enum BootstrapKind

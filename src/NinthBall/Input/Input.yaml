@@ -28,7 +28,9 @@ Rebalance:
     - AtAge: 80
       Allocation: 80%
 
+# ............................................................
 # Additional known incomes
+# ............................................................
 AdditionalIncomes:
   SS: 
     FromAge: 70
@@ -39,13 +41,14 @@ AdditionalIncomes:
     Amount: 50,000
     Increment: 0%
 
-# Fees (in pct)
+# ............................................................
+# Fees and Taxes
+# ............................................................
 FeesPCT:
   PreTax:   0.2%    # 401K account
   PostTax:  0.9%    # Joint investments
   Cash:     0%      # HY Savings
 
-# Tax model
 Taxes:
   YearZeroTaxAmount: 25,000
   TaxRates:
@@ -83,9 +86,6 @@ VariablePercentageWithdrawal:
   Floor: 0
   Ceiling: 150,000
 
-RMD:
-  StartAge: 73
-
 # ............................................................
 # Growth strategies 
 # Availble options: Flat | Sequential | MovingBlock | Parametric
@@ -94,9 +94,7 @@ Growth:
   Bootstrapper: MovingBlock     
   CashROI: 0%
 
-# ............................................................
-# Supporting configurations for ROI Bootstrap options
-# ............................................................
+# Historical returns - external data
 ROIHistory:
   XLFileName:  $(MyPath)/ROI-History.xlsx
   XLSheetName: DATA

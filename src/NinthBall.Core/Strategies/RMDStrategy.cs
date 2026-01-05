@@ -1,17 +1,18 @@
 ﻿namespace NinthBall.Core
 {
-    [SimInput(typeof(RMDStrategy), typeof(RMD), Family = StrategyFamily.PreTaxWithdrawalAdjustment)]
-    sealed class RMDStrategy(RMD Options) : ISimObjective
+    sealed class RMDStrategy : ISimObjective
     {
+        const int RMDStartAge = 73;
+
         int ISimObjective.Order => 29;
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy();
 
-        sealed class Strategy(RMD R) : ISimStrategy
+        sealed class Strategy : ISimStrategy
         {
             void ISimStrategy.Apply(ISimContext context)
             {
-                if (context.Age < R.StartAge) return;
+                if (context.Age < RMDStartAge) return;
 
                 double factor = GetRMDFactor(context.Age);
                 
@@ -50,6 +51,6 @@
             }
         }
 
-        public override string ToString() => $"RMD | Starting at age {Options.StartAge}";
+        public override string ToString() => $"RMD | Starting at age {RMDStartAge}";
     }
 }

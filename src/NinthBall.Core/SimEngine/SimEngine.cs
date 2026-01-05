@@ -23,6 +23,7 @@ namespace NinthBall.Core
                 .AddSingleton(new SimulationSeed(input.RandomSeedHint))
                 .RegisterSimulationInputs(validInputs)
                 .RegisterActiveStrategies(validInputs)
+                .AddSingleton<RMDStrategy>()
                 .RegisterHistoricalReturnsAndBootstrappers()
                 .AddSingleton<Simulation>()
                 .BuildServiceProvider();
