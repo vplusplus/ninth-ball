@@ -2,7 +2,7 @@
 namespace NinthBall
 {
     /// <summary>
-    /// Percentiles generted on html and excel outputs.
+    /// Percentiles presented in the html and excel outputs.
     /// </summary>
     internal sealed class Percentiles
     {
