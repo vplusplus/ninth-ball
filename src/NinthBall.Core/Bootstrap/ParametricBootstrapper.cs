@@ -56,9 +56,9 @@ namespace NinthBall.Core
 
                 // 5. Scale by Mean and Volatility
                 // Converts abstract scaling factor into percentage returns
-                // Cap returns at -100% (total loss) as you can't lose more than you have.
-                double rStocks = Math.Max(-1.0, Options.Stocks.MeanReturn + cfStocks * Options.Stocks.Volatility);
-                double rBonds = Math.Max(-1.0, Options.Bonds.MeanReturn + cfBonds * Options.Bonds.Volatility);
+                // Cap returns between -60% and +60%
+                double rStocks = Math.Min(+0.6, Math.Max(-0.6, Options.Stocks.MeanReturn + cfStocks * Options.Stocks.Volatility));
+                double rBonds =  Math.Min(+0.6, Math.Max(-0.6, Options.Bonds.MeanReturn + cfBonds * Options.Bonds.Volatility));
 
                 sequence.Add(new HROI(0, rStocks, rBonds));
             }
@@ -66,7 +66,7 @@ namespace NinthBall.Core
             return sequence.AsReadOnly();
         }
 
-        public override string ToString() => $"Parametric Bootstrap | Stocks - Mean: {Options.Stocks.MeanReturn:P1} Volatility: {Options.Stocks.Volatility:P1} | Bonds - Mean: {Options.Bonds.MeanReturn:P1} Volatility: {Options.Bonds.Volatility:P1}";
+        public override string ToString() => $"Parametric Bootstrap | Stocks - Mean: {Options.Stocks.MeanReturn:P1} Volatility: {Options.Stocks.Volatility:P1} | Bonds - Mean: {Options.Bonds.MeanReturn:P1} Volatility: {Options.Bonds.Volatility:P1} | Cap: +/- 60%";
 
         private static double NextSafeDouble(Random random)
         {

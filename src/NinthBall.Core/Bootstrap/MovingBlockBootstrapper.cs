@@ -36,13 +36,14 @@ namespace NinthBall.Core
                 var nextBlock = AllBlocks.Value[iterRand.Next(0, AllBlocks.Value.Count)];
 
                 // OPTIONAL constraint:
-                // Prevents drawing consecutive blocks with at least two years of overlapping sequence.
+                // Prevents drawing consecutive overlapping sequence.
                 // Intention is to avoid two random samples producing unrealistic repeated historical regimes.
                 // For example, avoid severe identical crash sequences repeating back-to-back.
                 if (Options.NoConsecutiveBlocks && null != prevBlock)
                 {
-                    const int TwoYears = 2;
-                    var overlaps = prevBlock.Segment.Intersect(nextBlock.Segment).Count() >= TwoYears;
+                    // Next block overlaps (repeats in part or full) the previous block
+                    var overlaps = prevBlock.Segment.Intersect(nextBlock.Segment).Count() > 0;
+
                     if (overlaps)
                     {
                         // Remove console print after testing.
