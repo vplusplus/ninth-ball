@@ -316,26 +316,31 @@ namespace NinthBall.Core
                 );
 
                 // Track year-by-year performance.
-                MyPriorYears.Span[YearIndex] = new SimYear(
+                MyPriorYears.Span[YearIndex] = new SimYear
+                (
                     YearIndex, Age, 
                     jan, 
-                    Fees, Incomes, Expenses, adjustedWithdrawal, adjustedDeposits, ROI, growth, 
+                    Fees, Incomes, Expenses, 
+                    adjustedWithdrawal, adjustedDeposits, 
+                    ROI, growth, 
                     dec
                 );
             }
             else
             {
-                MyPriorYears.Span[YearIndex] = new SimYear() { Year = YearIndex, Age = Age, Jan = jan };
+                MyPriorYears.Span[YearIndex] = new SimYear
+                (
+                    // Information retained
+                    YearIndex, Age,
+                    jan,
+                    Fees, Incomes, Expenses,
 
-                MyPriorYears.Span[YearIndex] = new SimYear()
-                {
-                    Year = YearIndex,
-                    Age = Age,
-                    Jan = jan,
-                    Fees = Fees,
-                    Incomes = Incomes,
-                    Expenses = Expenses,
-                };
+                    Withdrawals: default,       // Since we didn't withdraw any amount.
+                    Deposits: default,          // Since we can't even meet expenses.
+                    ROI: default,               // Irrelevant
+                    Change: default,            // Since ROI is irrelevant
+                    Dec: default                // Let go all assets, zero ending balance signals failed iteration
+                );
             }
 
             YearsCompleted++;
