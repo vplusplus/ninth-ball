@@ -14,7 +14,7 @@ namespace NinthBall.Core
 
             if (reallocateThisYear)
             {
-                // Reallocate asstes on targetted years (will also trigger rebalance)
+                // Reallocate assets on targetted years (will also trigger rebalance)
                 var newAllocation = Options.Reallocate!.Single(x => x.AtAge == context.Age).Allocation;
                 context.PreTaxBalance.Reallocate(newAllocation, Options.MaxDrift);
                 context.PostTaxBalance.Reallocate(newAllocation, Options.MaxDrift);
