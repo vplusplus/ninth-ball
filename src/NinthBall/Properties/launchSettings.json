@@ -2,7 +2,7 @@
   "profiles": {
     "9-ball": {
       "commandName": "Project",
-      "commandLineArgs": "--in $(SolutionDir)NinthBall/Input/SampleInput.yaml --Out D:/Junk/SimReport.html --zzwatch --sampleinput"
+      "commandLineArgs": "--in $(SolutionDir)NinthBall/Input/SampleInput.yaml --Out D:/Junk/SimReport.html --zzwatch --zzhelp --zzsampleInput"
     }
   }
 }

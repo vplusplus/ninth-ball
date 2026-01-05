@@ -1,13 +1,14 @@
 ﻿
 Usage:
- {me} --help
- {me} --sampleinput
  {me} --in Input.yaml --out Output.html --watch
+ {me} --sampleinput
+ {me} --help
+
+Switches:
+ --help         Display this help text.
+ --sampleInput  Write a sample input file to ./SampleInput.yaml
+ --watch        Watch the input file for changes and automatically reprocess it.
 
 Parameters:
- --help         Print this help
- --sampleInput  Export Sample yaml input to ./SampleInput.yaml
- --in           Input file name
- --out          Output (html) file name. Defaults to InputFileName.html 
- --watch        Watch for changes to input filename, reprocess on change
-
+ --in           Path to the input YAML file.
+ --out          Path to the output HTML file. Defaults to <input>.html if not specified.
