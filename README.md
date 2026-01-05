@@ -1,41 +1,63 @@
 # NinthBall
 
-**Beyond the 8-Ball** – A Monte Carlo simulation framework for portfolio planning, grounded in math and probability.
+**Beyond the 8-Ball** – A Monte Carlo simulation framework for financial planning, grounded in math and probability.
 
 ## What It Does
 
-NinthBall runs thousands of simulated scenarios to help you understand how your portfolio might perform under different market conditions. Instead of relying on simple assumptions, it uses historical market data and statistical methods to model realistic outcomes.
+NinthBall runs thousands of simulated scenarios to help you understand how your portfolio might perform under different market conditions. Instead of relying on simple assumptions, it uses historical market data and statistical methods to model realistic outcomes across multiple account types with tax-aware strategies for long-term financial planning.
 
 ## Key Features
 
-### Historical Data-Driven Simulations
-- Uses actual historical stock and bond returns
-- Employs Moving Block Bootstrap methodology to preserve realistic market patterns
-- Accounts for market volatility, sequences of returns, and temporal dependencies
+### Multi-Account Portfolio Support
+- **PreTax accounts** (401K, Traditional IRA) with RMD calculations
+- **PostTax accounts** (taxable investments) with capital gains tax modeling
+- **Cash accounts** (savings, money market) with configurable returns
+- Independent allocation and fee structures for each account type
+
+### Tax-Aware Planning
+- Ordinary income and capital gains tax rates
+- Year-zero tax liability for prior year taxes
+- Tax-efficient withdrawal sequencing across account types
+- Required Minimum Distributions (RMD) starting at configurable age
+
+### Income and Expense Modeling
+- **Additional income sources**: Social Security and annuities with age triggers and inflation adjustments
+- **Living expenses**: Annual expenses with inflation and age-based step-downs (e.g., life insurance, Medicare transitions)
+- Precalculated expense schedules from Excel for complex scenarios
+
+### Advanced Bootstrap Methods
+- **Flat**: Constant returns for baseline testing
+- **Sequential**: Historical data in chronological order
+- **Moving Block**: Random blocks of historical data preserving temporal patterns and market correlations
+- **Parametric**: Statistical distribution-based (LogNormal) with configurable skewness, kurtosis, and autocorrelation for stress-testing
 
 ### Flexible Withdrawal Strategies
-- Percentage-based withdrawals with optional annual increments and periodic resets
-- Pre-calculated custom withdrawal schedules from Excel
-- Adaptive strategies that respond to market performance
+- **Fixed**: Dollar amount with annual increments
+- **Percentage**: Percentage-based with increments and age-based resets
+- **Variable Percentage**: Dynamic withdrawals based on portfolio performance with floor/ceiling constraints
+- **RMD**: Required Minimum Distributions from PreTax accounts
 
-### Optimization Techniques
-- **Buffer Cash**: Tap into reserve funds during poor market years
-- **Dynamic Withdrawal Reduction**: Temporarily reduce withdrawals when portfolio underperforms
-- Configurable rebalancing with drift tolerance
+### Portfolio Management
+- **Rebalancing**: Maintain target allocation with drift tolerance
+- **Reallocation (Glide Path)**: Age-based allocation changes for risk reduction over time
+- Account-specific annual fees
 
 ### Comprehensive Analysis
 - Run 10,000+ iterations to capture full range of outcomes
 - View results across multiple percentiles to understand the distribution of outcomes
-- HTML reports with detailed statistics and visualizations
-- Both nominal and inflation-adjusted (real) balances presented
+- **HTML reports** with detailed statistics, percentile analysis, and year-by-year breakdowns
+- **Excel reports** with same data in spreadsheet format for custom analysis
+- Both nominal and inflation-adjusted balances presented
 
 ## How It Works
 
 1. **Configure** your simulation using a simple YAML file:
-   - Starting balance and asset allocation
-   - Withdrawal strategy
-   - Time horizon (years)
-   - Number of iterations
+   - Starting age and time horizon
+   - Initial balances and allocations for PreTax, PostTax, and Cash accounts
+   - Withdrawal strategy and RMD settings
+   - Tax rates and additional income sources
+   - Living expenses with step-downs
+   - Bootstrap method and number of iterations
    
    See [Inputs.md](Inputs.md) for complete configuration reference.
 
@@ -43,26 +65,37 @@ NinthBall runs thousands of simulated scenarios to help you understand how your 
    ```
    NinthBall --in Input.yaml
    ```
+   
+   Or use **watch mode** for continuous regeneration:
+   ```
+   NinthBall --in Input.yaml --watch
+   ```
 
-3. **Review** the generated HTML report showing:
+3. **Review** the generated reports showing:
    - Probability of portfolio survival
-   - Expected ending balances at different percentiles
+   - Expected ending balances at different percentiles (10th, 25th, 50th, 75th, 90th)
    - Year-by-year performance across scenarios
+   - Tax liabilities and withdrawal patterns
+   - Account-specific balances and allocations
 
 ## What Makes It Different
 
-- **Mathematically Sound**: Uses Moving Block Bootstrap to maintain realistic correlation between consecutive years
+- **Tax-Aware**: Models PreTax, PostTax, and Cash accounts with appropriate tax treatment
+- **Mathematically Sound**: Multiple bootstrap methods including parametric distributions with fat tails and autocorrelation
+- **Comprehensive**: Handles RMDs, Social Security, annuities, age-based expense changes, and reallocation strategies
 - **Configurable**: All parameters defined in readable YAML files
 - **Fast**: Runs thousands of iterations in seconds
 - **Transparent**: Open methodology based on established statistical principles
-- **Practical**: Supports real-world scenarios like variable withdrawals and emergency reserves
+- **Practical**: Supports real-world scenarios like variable withdrawals, glide paths, and multi-account optimization
 
 ## Use Cases
 
-- Portfolio planning and "safe withdrawal rate" analysis
+- Financial planning and "safe withdrawal rate" analysis
+- Tax-efficient withdrawal strategy optimization across account types
+- RMD impact assessment and planning
 - Stress-testing portfolio strategies against historical market conditions
-- Comparing different asset allocations and withdrawal approaches
-- Understanding the impact of fees, inflation adjustments, and market timing
+- Comparing different asset allocations, withdrawal approaches, and reallocation strategies
+- Understanding the impact of fees, Social Security timing, and expense changes
 
 ---
 
