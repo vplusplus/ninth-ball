@@ -127,7 +127,7 @@ namespace NinthBall
         {
             const string SampleInputFilePath = "./SampleInput.yaml";
 
-            var resourceName = typeof(App).Assembly.GetManifestResourceNames().Where( x => x.EndsWith("input.yaml", StringComparison.OrdinalIgnoreCase)).Single();
+            var resourceName = typeof(App).Assembly.GetManifestResourceNames().Where( x => x.EndsWith("SampleInput.yaml", StringComparison.OrdinalIgnoreCase)).Single();
             using var resStream = typeof(App).Assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Unexpected | Resource stream was null.");
             using var reader = new StreamReader(resStream);
             var sampleYaml = reader.ReadToEnd();

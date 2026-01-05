@@ -9,10 +9,10 @@ SimParams:
 
 InitialBalance:
   PreTax:
-    Amount: 1,250,000
+    Amount: 1,000,000
     Allocation: 60%
   PostTax:
-    Amount: 1,250,000
+    Amount: 1,000,000
     Allocation: 60%
   Cash:
     Amount: 0
@@ -34,19 +34,19 @@ Rebalance:
 AdditionalIncomes:
   SS: 
     FromAge: 70
-    Amount: 70,000
+    Amount: 15,000
     Increment: 2%
   Ann:
     FromAge: 70
-    Amount: 50,000
+    Amount: 10,000
     Increment: 0%
 
 # ............................................................
 # Fees and Taxes
 # ............................................................
 FeesPCT:
-  PreTax:   0.2%    # 401K account
-  PostTax:  0.9%    # Joint investments
+  PreTax:   0.2%    # Tax deferred account
+  PostTax:  0.9%    # Investment account
   Cash:     0%      # HY Savings
 
 Taxes:
@@ -59,26 +59,26 @@ Taxes:
 # Expense modelling
 # ............................................................
 LivingExpenses:
-  FirstYearAmount: 130,000
+  FirstYearAmount: 100,000
   Increment: 2%
   StepDown:
-    - AtAge: 65           # Stop paying Life Ins
-      Reduction: 30000
-    - AtAge: 70           # Reduction in Med Ins.
-      Reduction: 12000
+    - AtAge: 65           # Example: Stop paying Life Ins
+      Reduction: 10000
+    - AtAge: 70           # Example: Reduction in Med Ins.
+      Reduction: 5000
 
 # ............................................................
 # PreTax (401K) depletion velocity; Pick one.
 # All choices below are applicable ONLY to the PreTax assets
 # ............................................................
 ZZZFixedWithdrawal:
-  FirstYearAmount: 80000
+  FirstYearAmount: 80,000
   Increment: 2%
 
 ZZZPercentageWithdrawal:
   FirstYearPct: 4%
   Increment:    2%
-  ResetAtAge: [65, 70]
+  ResetAtAge:   [65, 70]
 
 VariablePercentageWithdrawal:
   ROI: 4%
@@ -93,11 +93,6 @@ VariablePercentageWithdrawal:
 Growth:
   Bootstrapper: MovingBlock     
   CashROI: 0%
-
-# Historical returns - external data
-ROIHistory:
-  XLFileName:  $(MyPath)/ROI-History.xlsx
-  XLSheetName: DATA
 
 # Useful for baseliing and validting the calculations.
 FlatBootstrap:
@@ -125,3 +120,9 @@ ParametricBootstrap:
     Skewness: 0             # Bonds are generally more symmetric in their annual return distribution.
     Kurtosis: 3             # Normal distribution for bonds.
     AutoCorrelation: 0
+
+# Historical returns - external data
+ROIHistory:
+  XLFileName:  $(MyPath)/ROI-History.xlsx
+  XLSheetName: DATA
+

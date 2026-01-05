@@ -31,10 +31,12 @@ namespace NinthBall.Core
         {
             void ISimStrategy.Apply(ISimContext context)
             {
+                // Apply ROI as suggested by chosen bootstrapper.
                 var roi = context.YearIndex >= 0 && context.YearIndex < MyROISequence.Count
                     ? MyROISequence[context.YearIndex]
                     : throw new IndexOutOfRangeException($"Iteration #{context.IterationIndex} year #{context.YearIndex} is outside the range of this growth strategy");
 
+                // Modelling high-yield-savings account (for example)
                 context.ROI = new ROI(roi.Year, roi.StocksROI, roi.BondROI, CashGrowth);
             }
         }
