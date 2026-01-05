@@ -8,11 +8,23 @@ namespace NinthBall.Core
     sealed class CashBalance : IBalance
     {
         private double Cash;
+
+        // Current balance
         double IBalance.Amount => Cash;
-        double IBalance.Allocation => 1.0;                        // Single asset. Allocation is not applicable
+
+        // Single asset. Allocation is not applicable
+        double IBalance.Allocation => 1.0;                        
+        
+        // Initialize
         public void Reset(double initialBalance) => Cash = initialBalance < 0 ? throw new ArgumentException("Initial balance must be >= 0") : initialBalance;
-        public bool Rebalance(double _) => false;               // Single asset. Nothing to rebalance
-        public bool Reallocate(double _, double __) => false;   // Single asset. Allocation is not applicable
+
+        // Single asset. Nothing to rebalance
+        public bool Rebalance(double _) => false;
+
+        // Single asset. Allocation is not applicable
+        public bool Reallocate(double _, double __) => false;   
+
+        // Accept the change, reset near zero values.
         public void Post(double amount)
         {
             if (amount > 0) Deposit(amount); else Withdraw(Math.Abs(amount));
@@ -21,13 +33,14 @@ namespace NinthBall.Core
             void Deposit(double depositAmount) 
             {
                 Cash += depositAmount;
+                ResetNearZeroAndKillFractions();
             }
 
             void Withdraw(double withdrawalAmount) 
             {
                 if (withdrawalAmount > Cash  + Precision.Amount) throw new Exception($"Cannot withdraw more than what we have | Available: {Cash:C0} | Requested: {withdrawalAmount:C0}");
                 Cash -= withdrawalAmount;
-                Cash = Cash.ResetNearZero(Precision.Amount);
+                ResetNearZeroAndKillFractions();
             }
         }
 
@@ -36,10 +49,20 @@ namespace NinthBall.Core
             var change = Math.Round(Cash * ROI);
 
             Cash += change;
-            Cash = Cash.ResetNearZero(Precision.Amount);
-            
+            ResetNearZeroAndKillFractions();
+
             return change;
         }
+
+        void ResetNearZeroAndKillFractions()
+        {
+            // Almost zero is as good as zero
+            Cash = Cash.ResetNearZero(Precision.Amount);
+
+            // Keep cents, kill fractional-cents.
+            Cash = Math.Round(Cash, 2);
+        }
+
     }
 
     /// <summary>
@@ -61,6 +84,8 @@ namespace NinthBall.Core
         {
             Stocks = initialBalance < 0 ? throw new ArgumentException("Initial balance must be >= 0") : initialBalance * initialAllocation;
             Bonds  = initialBalance * (1 - initialAllocation);
+            ResetNearZeroAndKillFractions();
+
             TargetAllocation = initialAllocation;
         }
 
@@ -71,9 +96,8 @@ namespace NinthBall.Core
                 double tmpAmount = Stocks + Bonds;
                 Stocks = tmpAmount * TargetAllocation;
                 Bonds  = tmpAmount - Stocks;
+                ResetNearZeroAndKillFractions();
 
-                Stocks = Stocks.ResetNearZero(Precision.Amount);
-                Bonds  = Bonds.ResetNearZero(Precision.Amount);
                 return true;
             }
             return false;
@@ -98,6 +122,7 @@ namespace NinthBall.Core
 
                 Stocks += stockChange;
                 Bonds  += bondChange;
+                ResetNearZeroAndKillFractions();
             }
 
             void Withdraw(double withdrawalAmount)
@@ -105,16 +130,21 @@ namespace NinthBall.Core
                 if (0 == withdrawalAmount) return;
                 if (withdrawalAmount > Amount + Precision.Amount) throw new Exception($"Cannot withdraw more than what we have | Available: {Amount:C0} | Requested: {withdrawalAmount:C0}");
 
+                // Withdrawal implies selling assets.
+                // Real-world withdrawal my be optmized for taxes & fees.
+                // For our modelling, keeping it simple.
+                // Start with TargetAllocation as a guide.
                 double fromStock = withdrawalAmount * TargetAllocation;
                 double fromBond  = withdrawalAmount - fromStock;
 
+                // Try correct asset.
+                // If required, try the other asset.
                 TryTake(ref Stocks, ref fromStock);
                 TryTake(ref Bonds,  ref fromBond);
                 TryTake(ref Bonds,  ref fromStock);
                 TryTake(ref Stocks, ref fromBond);
 
-                Stocks = Stocks.ResetNearZero(Precision.Amount);
-                Bonds  = Bonds.ResetNearZero(Precision.Amount);
+                ResetNearZeroAndKillFractions();
 
                 static void TryTake(ref double whatIHave, ref double whatINeed)
                 {
@@ -135,11 +165,20 @@ namespace NinthBall.Core
 
             Stocks += sChange;
             Bonds  += bChange;
+            ResetNearZeroAndKillFractions();
 
+            return sChange + bChange;
+        }
+
+        void ResetNearZeroAndKillFractions()
+        {
+            // Almost zero is as good as zero
             Stocks = Stocks.ResetNearZero(Precision.Amount);
             Bonds  = Bonds.ResetNearZero(Precision.Amount);
 
-            return sChange + bChange;
+            // Keep cents, kill fractional-cents.
+            Stocks = Math.Round(Stocks, 2);
+            Bonds  = Math.Round(Bonds, 2);
         }
     }
 
