@@ -189,7 +189,7 @@ namespace NinthBall.Core
 
     public sealed record ROIHistory
     (
-        [property: Required, FileExists] string XLFileName, 
+        [property: Required] string XLFileName, 
         [property: Required] string XLSheetName
     );
 

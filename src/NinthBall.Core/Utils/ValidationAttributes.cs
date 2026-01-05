@@ -31,19 +31,19 @@ namespace NinthBall.Core
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-    public sealed class FileExistsAttribute : ValidationAttribute
-    {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            // 'Required' is not my concern.
-            if (value == null) return ValidationResult.Success;
+    //[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+    //public sealed class FileExistsAttribute : ValidationAttribute
+    //{
+    //    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    //    {
+    //        // 'Required' is not my concern.
+    //        if (value == null) return ValidationResult.Success;
 
-            return value is not string fileName ? ValidationResult.Success
-                : File.Exists(fileName) ? ValidationResult.Success
-                : new ValidationResult($"{validationContext.MemberName} | File not found | {Path.GetFileName(fileName)}");
-        }
-    }
+    //        return value is not string fileName ? ValidationResult.Success
+    //            : File.Exists(fileName) ? ValidationResult.Success
+    //            : new ValidationResult($"{validationContext.MemberName} | File not found | {Path.GetFileName(fileName)}");
+    //    }
+    //}
 
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class ValidateNestedAttribute : ValidationAttribute
