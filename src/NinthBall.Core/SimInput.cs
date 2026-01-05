@@ -12,30 +12,29 @@ namespace NinthBall.Core
         string? RandomSeedHint,
         
         SimParams SimParams,
+
+        // Portfolio management
         InitialBalance InitialBalance,
-
-        // Historical Data & Bootstrapping
-        ROIHistory? ROIHistory,
-        FlatBootstrap? FlatBootstrap,
-        MovingBlockBootstrap? MovingBlockBootstrap,
-        ParametricBootstrap? ParametricBootstrap,
-
-        // Strategies (Optional)
         Rebalance? Rebalance,
-        Reallocate? Reallocate,
-
-        AdditionalIncomes? AdditionalIncomes,
-        
         FeesPCT? FeesPCT,
+
+        // Inccome and expenses
+        AdditionalIncomes? AdditionalIncomes,
         Taxes? Taxes,
         LivingExpenses? LivingExpenses,
-        
+
+        // Pretax distribution        
         FixedWithdrawal? FixedWithdrawal,
         PercentageWithdrawal? PercentageWithdrawal,
         VariablePercentageWithdrawal? VariablePercentageWithdrawal,
         RMD? RMD,
-        
-        Growth? Growth
+
+        // Growth strategy, Historical Data & Bootstrapping
+        Growth? Growth,
+        ROIHistory? ROIHistory,
+        FlatBootstrap? FlatBootstrap,
+        MovingBlockBootstrap? MovingBlockBootstrap,
+        ParametricBootstrap? ParametricBootstrap
     );
 
     public sealed record SimulationSeed(string? SeedHint)
@@ -79,18 +78,11 @@ namespace NinthBall.Core
 
     public sealed record Rebalance
     (
-        [property: Range(0.0, 0.5)]
-        double MaxDrift
-    );
-
-    public sealed record Reallocate
-    (
         [property: Range(0.0, 0.5)] 
         double MaxDrift,
 
-        [property: Required]
         [property: ValidateNested]
-        IReadOnlyList<Reallocate.AA> Steps
+        IReadOnlyList<Rebalance.AA> Reallocate
     )
     {
         public readonly record struct AA

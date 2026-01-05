@@ -17,25 +17,16 @@ InitialBalance:
   Cash:
     Amount: 0
 
-# Rebalancing and Reallocation strategies
+# ............................................................
+# Portfolio adjustment
+# ............................................................
 Rebalance:
   MaxDrift: 5%
-
-ZZZReallocate:
-  MaxDrift: 5%
-  Steps:
-    - AtAge: 60
-      Allocation: 50%
-    - AtAge: 65
-      Allocation: 55%
+  Reallocate:
     - AtAge: 70
-      Allocation: 60%
-    - AtAge: 75
-      Allocation: 65%
-    - AtAge: 80
       Allocation: 70%
-    - AtAge: 85
-      Allocation: 75%
+    - AtAge: 80
+      Allocation: 80%
 
 # Additional known incomes
 AdditionalIncomes:

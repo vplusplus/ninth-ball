@@ -1,6 +1,6 @@
 ﻿
-* 
+
 * Consider adding Input file name to the SimResult.
-* Consolidate Rebalance and Reallocate, seems redundant. Reallocate with first year allocation only and maxDrift is same as rebalance.
-* PrecalculatedLivingExpenses may not be required. All complexities addressed by existing strategies. Also PrecalculatedLivingExpenses is not easily observable
+
+
 
