@@ -1,9 +1,22 @@
 ﻿
 
+* Consider pushing the bootstrapper options under Growth
+
+  Example: 
+
+  Growth:
+	FlatBootstrap:
+      Stocks: 5%
+      Bonds: 5%
+    MovingBlockBootstrap:
+	  BlockSizes: [3,4,5]
+      NoConsecutiveBlocks: true
+	ParametricBootstrap:
+	  Parameters: 123454
+
 * Consider adding Input file name to the SimResult.
-* Add --help option - Print commandline options and info about Input.yaml
-* Add --sampleInput option - Save SampleInput.yaml to current dir
 
 
+IMP: Update the .md files
 
 

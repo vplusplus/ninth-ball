@@ -10,7 +10,7 @@ namespace NinthBall
 
         public static readonly IReadOnlyList<PCT> Items = 
         [
-            new(0.00, "0th",  "Disaster"),
+            new(0.00, "0th",  "Worstcase"),
             new(0.05, "5th",  "Unlucky"),
             new(0.10, "10th", "Unfortunate"),
             new(0.20, "20th", "Target"),
