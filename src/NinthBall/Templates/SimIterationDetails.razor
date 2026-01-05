@@ -115,6 +115,12 @@
         @foreach (var y in Iteration.ByYear.Span)
         {
             static string RG(double value) => value < 0.0 ? "text-danger" : "text-success";
+            static string K0(double value) => Math.Abs(value) >= 999.0 ? $"{value / 1000:C0}" : string.Empty;
+            static string P1(double pct) => Math.Abs(pct) > 0.001 ? $"{pct:P1}" : string.Empty;
+            static string Y4(int year) => year > 0 ? $"{year:0000}" : string.Empty;
+
+            var pyExp = y.Year > 1 ? Iteration.ByYear.Span[y.Year - 1].Expenses.CYExp : double.MinValue;
+            var expReduction = y.Expenses.CYExp < pyExp;
 
             double janPreTax  = y.Jan.PreTax.Amount;
             double janPostTax = y.Jan.PostTax.Amount;
@@ -133,13 +139,10 @@
             double decPostTax = y.Dec.PostTax.Amount;
             double decAssets  = (y.Dec.PreTax.Amount * 0.75) + y.Dec.PostTax.Amount;
 
-            var cssPreTax  = RG(xPreTax);
-            var cssPostTax = RG(xPostTax);
-            var cssROI     = RG(change);
-
-            static string K0(double value) => Math.Abs(value) >= 999.0 ? $"{value/1000:C0}" : string.Empty;
-            static string P1(double pct) => Math.Abs(pct) > 0.001 ? $"{pct:P1}" : string.Empty;
-            static string Y4(int year) => year > 0 ? $"{year:0000}" : string.Empty;
+            var cssPreTax     = RG(xPreTax);
+            var cssPostTax    = RG(xPostTax);
+            var cssROI        = RG(change);
+            var cssExp        = expReduction ? "text-info" : string.Empty;
 
             <tr class="text-end">
 
@@ -152,7 +155,7 @@
 
                 <td>@K0(fees)</td>
                 <td>@K0(pyTax)</td>
-                <td>@K0(cyExp)</td>
+                <td class="@cssExp">@K0(cyExp)</td>
 
                 <td>@K0(ss)</td>
                 <td>@K0(ann)</td>

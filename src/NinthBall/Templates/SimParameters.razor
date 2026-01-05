@@ -48,6 +48,6 @@
 
 @code
 {
-    [Parameter] public string InputFileName { get; set; }
-    [Parameter] public SimResult Model { get; set; }
+    [Parameter] public string InputFileName { get; set; } = string.Empty;
+    [Parameter] public SimResult Model { get; set; } = null!;
 }
