@@ -17,6 +17,19 @@ namespace NinthBall
             Console.WriteLine(DASHES);
         }
 
+        public static void Help()
+        {
+            var me = typeof(Program).Assembly.GetName().Name;
+
+            var resourceName = typeof(App).Assembly.GetManifestResourceNames().Where(x => x.EndsWith("help.txt", StringComparison.OrdinalIgnoreCase)).Single();
+            using var resStream = typeof(App).Assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Unexpected | Resource stream was null.");
+            using var reader = new StreamReader(resStream);
+            var helpText = reader.ReadToEnd();
+
+            helpText = helpText.Replace("{me}", me, StringComparison.OrdinalIgnoreCase);
+            Console.WriteLine(helpText);
+        }
+
         public static void ErrorSummary(Exception err)
         {
             if (null == err) return;

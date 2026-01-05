@@ -14,15 +14,28 @@ namespace NinthBall
         string InputFileName  => Path.GetFullPath(CmdLine.Required("In"));
         string OutputFileName => Path.GetFullPath(CmdLine.Optional("Out", Path.ChangeExtension(InputFileName, ".html") ));
         bool WatchMode => CmdLine.Switch("watch");
+        bool PrintHelp => CmdLine.Switch("help");
+        bool SampleInput => CmdLine.Switch("sampleinput");
 
         public async Task RunAsync()
         {
-            // Ensure output directory.
-            var outputDir = Path.GetDirectoryName(OutputFileName) ?? "./";
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
+            if (PrintHelp)
+            {
+                Print.Help();
+            }
+            else if (SampleInput)
+            {
+                ExportSampleInputYaml();
+            }
+            else
+            {
+                // Ensure output directory.
+                var outputDir = Path.GetDirectoryName(OutputFileName) ?? "./";
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
 
-            // Process
-            if (WatchMode) await ProcessForever(); else await ProcessOnce();
+                // Process
+                if (WatchMode) await ProcessForever(); else await ProcessOnce();
+            }
         }
 
         async Task ProcessForever()
@@ -108,6 +121,19 @@ namespace NinthBall
                 // Capture details to output file.
                 await HtmlOutput.GenerateErrorHtmlAsync(Services, err, OutputFileName).ConfigureAwait(false);
             }
+        }
+    
+        void ExportSampleInputYaml()
+        {
+            const string SampleInputFilePath = "./SampleInput.yaml";
+
+            var resourceName = typeof(App).Assembly.GetManifestResourceNames().Where( x => x.EndsWith("input.yaml", StringComparison.OrdinalIgnoreCase)).Single();
+            using var resStream = typeof(App).Assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Unexpected | Resource stream was null.");
+            using var reader = new StreamReader(resStream);
+            var sampleYaml = reader.ReadToEnd();
+
+            File.WriteAllText(SampleInputFilePath, sampleYaml);
+            Console.WriteLine($" Sample input is available at: {Environment.NewLine} {Path.GetFullPath(SampleInputFilePath)}");
         }
     }
 }

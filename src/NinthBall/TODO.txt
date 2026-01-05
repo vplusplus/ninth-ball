@@ -1,6 +1,9 @@
 ﻿
 
 * Consider adding Input file name to the SimResult.
+* Add --help option - Print commandline options and info about Input.yaml
+* Add --sampleInput option - Save SampleInput.yaml to current dir
+
 
 
 

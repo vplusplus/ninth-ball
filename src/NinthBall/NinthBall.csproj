@@ -24,6 +24,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Help.txt" />
+    <None Remove="Input\Input.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Help.txt" />
+    <EmbeddedResource Include="Input\Input.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="UnitTests" />
   </ItemGroup>
 

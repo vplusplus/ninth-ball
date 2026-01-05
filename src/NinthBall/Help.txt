@@ -1,0 +1,13 @@
+﻿
+Usage:
+ {me} --help
+ {me} --sampleinput
+ {me} --in Input.yaml --out Output.html --watch
+
+Parameters:
+ --help         Print this help
+ --sampleInput  Export Sample yaml input to ./SampleInput.yaml
+ --in           Input file name
+ --out          Output (html) file name. Defaults to InputFileName.html 
+ --watch        Watch for changes to input filename, reprocess on change
+
