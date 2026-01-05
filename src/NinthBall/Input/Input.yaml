@@ -73,10 +73,6 @@ LivingExpenses:
     - AtAge: 70           # Reduction in Med Ins.
       Reduction: 12000
 
-zzzPrecalculatedLivingExpenses:
-  FileName: $(MyPath)/Withdrawals.xlsx
-  SheetName: Withdrawals
-
 # ............................................................
 # PreTax (401K) depletion velocity; Pick one.
 # All choices below are applicable ONLY to the PreTax assets

@@ -29,7 +29,6 @@ namespace NinthBall.Core
         FeesPCT? FeesPCT,
         Taxes? Taxes,
         LivingExpenses? LivingExpenses,
-        PrecalculatedLivingExpenses? PrecalculatedLivingExpenses,
         
         FixedWithdrawal? FixedWithdrawal,
         PercentageWithdrawal? PercentageWithdrawal,
@@ -159,16 +158,6 @@ namespace NinthBall.Core
             [property: Min(00)] double  Reduction
         );
     }
-
-    public sealed record PrecalculatedLivingExpenses
-    (
-        [property: Required()]
-        [property: FileExists()]
-        string FileName,
-
-        [property: Required()]
-        string SheetName
-    );
 
     public sealed record FixedWithdrawal
     (

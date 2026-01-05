@@ -58,14 +58,15 @@ namespace NinthBall.Core
             double deficit = Math.Max(0, Expenses.Total() - Incomes.Total() - withdrawals.Total());
             if (deficit.IsMoreThanZero(Precision.Amount))
             {
-                // Model is not withdrawing enough; we need more.
-                // Priority:
-                // 1. PostTax - Minimize tax, try to honor PreTax withdrawal velocity
-                // 2. PreTax  - Cash reserve is for emergency, give max control to the model
-                // 3. Cash    - Survival is better than keeping the cash for future emergency
+                // Model is not withdrawing enough.
+                // If we need more, try take more from POST-Tax assets (Minimize tax, try to honor PreTax withdrawal velocity)
                 TryTransferFunds(ref deficit, ref available.PostTax, ref withdrawals.PostTax);
+
+                // If we need more, try take more from Pre-Tax assets (cash reserve is for emergency)
                 TryTransferFunds(ref deficit, ref available.PreTax,  ref withdrawals.PreTax);
-                TryTransferFunds(ref deficit, ref available.Cash,    ref withdrawals.Cash);
+
+                // If we need more, try cash-reserve (survival is imprtant than future emergency)
+                TryTransferFunds(ref deficit, ref available.Cash, ref withdrawals.Cash);
 
                 if (deficit.IsMoreThanZero(Precision.Amount))
                 {
@@ -76,7 +77,8 @@ namespace NinthBall.Core
                 }
             }
 
-            // We survived. We may even have some surplus.
+            // We survived.
+            // We may even have some surplus.
             // All remaining surplus (if any) gets re-invested in post-tax assets
             var surplus = Math.Max(0, Incomes.Total() + withdrawals.Total() - Expenses.Total());
             if (surplus.IsMoreThanZero(Precision.Amount))
