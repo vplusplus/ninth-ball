@@ -186,12 +186,6 @@ namespace NinthBall.Core
         [property: Range(0, 1)] double CashROI
     );
 
-    //public sealed record ROIHistory
-    //(
-    //    [property: Required] string XLFileName, 
-    //    [property: Required] string XLSheetName
-    //);
-
     public sealed record FlatBootstrap
     (
         [property: Range(0, 1)] double Stocks,

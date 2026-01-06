@@ -121,8 +121,3 @@ ParametricBootstrap:
     Kurtosis: 3             # Normal distribution for bonds.
     AutoCorrelation: 0
 
-# Historical returns - external data
-ROIHistory:
-  XLFileName:  $(MyPath)/ROI-History.xlsx
-  XLSheetName: DATA
-
