@@ -18,12 +18,11 @@ NinthBall runs thousands of simulated scenarios to help you understand how your 
 - Ordinary income and capital gains tax rates
 - Year-zero tax liability for prior year taxes
 - Tax-efficient withdrawal sequencing across account types
-- Required Minimum Distributions (RMD) starting at configurable age
+- Required Minimum Distributions (RMD) starting at age 73 (IRS rules)
 
 ### Income and Expense Modeling
 - **Additional income sources**: Social Security and annuities with age triggers and inflation adjustments
 - **Living expenses**: Annual expenses with inflation and age-based step-downs (e.g., life insurance, Medicare transitions)
-- Precalculated expense schedules from Excel for complex scenarios
 
 ### Advanced Bootstrap Methods
 - **Flat**: Constant returns for baseline testing
@@ -31,10 +30,10 @@ NinthBall runs thousands of simulated scenarios to help you understand how your 
 - **Moving Block**: Random blocks of historical data preserving temporal patterns and market correlations
 - **Parametric**: Statistical distribution-based (LogNormal) with configurable skewness, kurtosis, and autocorrelation for stress-testing
 
-### Flexible Withdrawal Strategies
+### Flexible distribution of tax-deferred assets
 - **Fixed**: Dollar amount with annual increments
 - **Percentage**: Percentage-based with increments and age-based resets
-- **Variable Percentage**: Dynamic withdrawals based on portfolio performance with floor/ceiling constraints
+- **Variable Percentage**: Dynamic withdrawals with tax-optimized amortization towards zero balance, featuring floor/ceiling constraints
 - **RMD**: Required Minimum Distributions from PreTax accounts
 
 ### Portfolio Management
@@ -58,12 +57,15 @@ NinthBall runs thousands of simulated scenarios to help you understand how your 
    - Tax rates and additional income sources
    - Living expenses with step-downs
    - Bootstrap method and number of iterations
-   
-   See [Inputs.md](Inputs.md) for complete configuration reference.
 
 2. **Run** the simulation:
    ```
    NinthBall --in Input.yaml
+   ```
+   
+   Specify a custom output path:
+   ```
+   NinthBall --in Input.yaml --out MyResults.html
    ```
    
    Or use **watch mode** for continuous regeneration:
@@ -71,29 +73,29 @@ NinthBall runs thousands of simulated scenarios to help you understand how your 
    NinthBall --in Input.yaml --watch
    ```
 
+   To generate a **sample input** file:
+   ```
+   NinthBall --sampleinput
+   ```
+
 3. **Review** the generated reports showing:
    - Probability of portfolio survival
-   - Expected ending balances at different percentiles (10th, 25th, 50th, 75th, 90th)
+   - Expected ending balances at different percentiles (10th, 25th, 50th, 90th)
    - Year-by-year performance across scenarios
    - Tax liabilities and withdrawal patterns
    - Account-specific balances and allocations
 
 ## What Makes It Different
 
-- **Tax-Aware**: Models PreTax, PostTax, and Cash accounts with appropriate tax treatment
 - **Mathematically Sound**: Multiple bootstrap methods including parametric distributions with fat tails and autocorrelation
-- **Comprehensive**: Handles RMDs, Social Security, annuities, age-based expense changes, and reallocation strategies
 - **Configurable**: All parameters defined in readable YAML files
 - **Fast**: Runs thousands of iterations in seconds
 - **Transparent**: Open methodology based on established statistical principles
-- **Practical**: Supports real-world scenarios like variable withdrawals, glide paths, and multi-account optimization
 
 ## Use Cases
 
-- Financial planning and "safe withdrawal rate" analysis
-- Tax-efficient withdrawal strategy optimization across account types
-- RMD impact assessment and planning
 - Stress-testing portfolio strategies against historical market conditions
+- Tax-efficient withdrawal strategy optimization across account types
 - Comparing different asset allocations, withdrawal approaches, and reallocation strategies
 - Understanding the impact of fees, Social Security timing, and expense changes
 
