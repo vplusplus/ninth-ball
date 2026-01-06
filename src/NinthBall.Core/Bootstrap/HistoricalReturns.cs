@@ -14,15 +14,19 @@ namespace NinthBall.Core
     /// </summary>
     internal sealed class HistoricalReturns
     {
-        public IReadOnlyList<HROI> History => field ??= ReadHistoryOnce();
+        private static readonly Lazy<IReadOnlyList<HROI>> LazyHistory = new(ReadHistoryOnce);
 
-        IReadOnlyList<HROI> ReadHistoryOnce()
+        public IReadOnlyList<HROI> History => LazyHistory.Value;
+
+        private static IReadOnlyList<HROI> ReadHistoryOnce()
         {
             const string ROIHistoryResEndsWith = "ROI-History.xlsx";
             const string ROIHistorySheetName   = "DATA";
 
+            var resAssembly = typeof(HistoricalReturns).Assembly;
+
             // Look for exactly one ROI-History.xlsx embedded resource.
-            var roiHistoryResourceName = this.GetType().Assembly
+            var roiHistoryResourceName = resAssembly
                 .GetManifestResourceNames()
                 .Where(x => x.EndsWith(ROIHistoryResEndsWith, StringComparison.OrdinalIgnoreCase))
                 .Single();
@@ -30,7 +34,7 @@ namespace NinthBall.Core
             Console.WriteLine($" Reading resource | '{roiHistoryResourceName}'");
 
             // Open resource stream
-            using var roiHistoryResourceStream = this.GetType().Assembly
+            using var roiHistoryResourceStream = resAssembly
                 .GetManifestResourceStream(roiHistoryResourceName)
                 ?? throw new Exception("Unexpected: GetManifestResourceStream() returned null.");
 
