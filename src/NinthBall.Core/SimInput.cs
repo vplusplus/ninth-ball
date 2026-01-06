@@ -30,7 +30,6 @@ namespace NinthBall.Core
 
         // Growth strategy, Historical Data & Bootstrapping
         Growth? Growth,
-        ROIHistory? ROIHistory,
         FlatBootstrap? FlatBootstrap,
         MovingBlockBootstrap? MovingBlockBootstrap,
         ParametricBootstrap? ParametricBootstrap
@@ -187,11 +186,11 @@ namespace NinthBall.Core
         [property: Range(0, 1)] double CashROI
     );
 
-    public sealed record ROIHistory
-    (
-        [property: Required] string XLFileName, 
-        [property: Required] string XLSheetName
-    );
+    //public sealed record ROIHistory
+    //(
+    //    [property: Required] string XLFileName, 
+    //    [property: Required] string XLSheetName
+    //);
 
     public sealed record FlatBootstrap
     (

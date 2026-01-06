@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Data\ROI-History.xlsx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>

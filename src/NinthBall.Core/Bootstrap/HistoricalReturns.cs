@@ -12,26 +12,37 @@ namespace NinthBall.Core
     /// <summary>
     /// Represents historical stocks and bonds ROI imported from Excel file.
     /// </summary>
-    internal sealed class HistoricalReturns(ROIHistory options)
+    internal sealed class HistoricalReturns
     {
         public IReadOnlyList<HROI> History => field ??= ReadHistoryOnce();
 
         IReadOnlyList<HROI> ReadHistoryOnce()
         {
-            var xlFileName = options.XLFileName  ?? throw new ArgumentNullException("ROIHistory.XLFileName");
-            var sheetName  = options.XLSheetName ?? throw new ArgumentNullException("ROIHistory.XLSheetName");
+            const string ROIHistoryResEndsWith = "ROI-History.xlsx";
+            const string ROIHistorySheetName   = "DATA";
 
-            Console.WriteLine($" Reading ROI-history from {Path.GetFileName(xlFileName)}[{sheetName}]");
+            // Look for exactly one ROI-History.xlsx embedded resource.
+            var roiHistoryResourceName = this.GetType().Assembly
+                .GetManifestResourceNames()
+                .Where(x => x.EndsWith(ROIHistoryResEndsWith, StringComparison.OrdinalIgnoreCase))
+                .Single();
+
+            Console.WriteLine($" Reading resource | '{roiHistoryResourceName}'");
+
+            // Open resource stream
+            using var roiHistoryResourceStream = this.GetType().Assembly
+                .GetManifestResourceStream(roiHistoryResourceName)
+                ?? throw new Exception("Unexpected: GetManifestResourceStream() returned null.");
 
             List<HROI> history = [];
 
-            using (var xlReader = new ExcelReader(xlFileName))
+            using (var xlReader = new ExcelReader(roiHistoryResourceStream))
             {
                 var sheet = xlReader
                     .GetSheets()
-                    .Where(s => sheetName.Equals(s.SheetName, StringComparison.OrdinalIgnoreCase))
+                    .Where(s => ROIHistorySheetName.Equals(s.SheetName, StringComparison.OrdinalIgnoreCase))
                     .SingleOrDefault()
-                    ?? throw new Exception($"Sheet not found | File: {Path.GetFileName(xlFileName)} | Sheet: '{sheetName}'");
+                    ?? throw new Exception($"Sheet not found | Resource: {roiHistoryResourceName} | Sheet: '{ROIHistorySheetName}'");
 
                 foreach (var row in sheet.GetRows())
                 {
