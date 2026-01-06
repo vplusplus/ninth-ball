@@ -15,7 +15,7 @@
             @foreach (var p in Percentiles.Items)
             {
                 <td class="text-primary">
-                    @p.Caption
+                    @p.PctlName
                 </td>
             }
         </tr>
@@ -26,7 +26,7 @@
 
             @foreach (var p in Percentiles.Items)
             {
-                <td class="text-secondary">@p.Tag</td>
+                <td class="text-secondary">@p.FriendlyName</td>
             }
         </tr>
 

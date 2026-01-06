@@ -11,7 +11,7 @@
         @foreach (var p in Percentiles.Items)
         {
             var pctlId = PercentileId(p.Pctl);
-            var pctlCaption = p.Caption;
+            var pctlCaption = p.PctlName;
 
             var isActive = p.Pctl == Percentiles.Target ? "active" : "";
 
@@ -26,7 +26,7 @@
         {
             var iter = Model.Percentile(p.Pctl);
             var pctlId = PercentileId(p.Pctl);
-            var caption = $"{p.Caption} Percentile";
+            var caption = $"{p.PctlName} Percentile";
             var isActive = p.Pctl == Percentiles.Target ? "active" : "";
             <div class="tab-pane @isActive" id="@(pctlId)">
                 <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter />

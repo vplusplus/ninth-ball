@@ -6,9 +6,9 @@ namespace NinthBall
     /// </summary>
     internal sealed class Percentiles
     {
-        public readonly record struct PCT(double Pctl, string Caption, string Tag);
+        public readonly record struct PCTL(double Pctl, string PctlName, string FriendlyName);
 
-        public static readonly IReadOnlyList<PCT> Items = 
+        public static readonly IReadOnlyList<PCTL> Items = 
         [
             new(0.00, "0th",  "Worst-case"),
             new(0.05, "5th",  "Unlucky"),

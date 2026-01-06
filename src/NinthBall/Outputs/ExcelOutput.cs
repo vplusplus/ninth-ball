@@ -178,14 +178,14 @@ namespace NinthBall
                     using (var row = rows.BeginRow())
                     {
                         row.Append("");
-                        foreach(var pctl in Percentiles.Items) row.Append(pctl.Tag, styles.SumTxt);
+                        foreach(var pctl in Percentiles.Items) row.Append(pctl.FriendlyName, styles.SumTxt);
                         row.Append("");
                     }
 
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Percentiles");
-                        foreach (var pctl in Percentiles.Items) row.Append(pctl.Caption, styles.SumTxt);
+                        foreach (var pctl in Percentiles.Items) row.Append(pctl.PctlName, styles.SumTxt);
                         row.Append(" percentile");
                     }
 
@@ -242,7 +242,7 @@ namespace NinthBall
             }
         }
 
-        static void RenderPercentile(ExcelWriter xl, MyStyles styles, SimResult simResult, Percentiles.PCT pctl)
+        static void RenderPercentile(ExcelWriter xl, MyStyles styles, SimResult simResult, Percentiles.PCTL pctl)
         {
             const double Blank = 2;
             const double W4 = 4;
@@ -250,7 +250,7 @@ namespace NinthBall
             const double W8 = 8;
             const double W12 = 12;
 
-            var sheetName = $"{pctl.Caption}-{pctl.Tag}";
+            var sheetName = $"{pctl.PctlName}-{pctl.FriendlyName}";
             var p = simResult.Percentile(pctl.Pctl);
 
             using (var sheet = xl.BeginSheet(sheetName))
