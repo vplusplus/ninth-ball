@@ -6,6 +6,7 @@ SimParams:
   StartAge: 60
   NoOfYears: 35
   Iterations: 10000
+  InflationRate: 2%
 
 InitialBalance:
   PreTax:
@@ -51,6 +52,7 @@ FeesPCT:
 
 Taxes:
   YearZeroTaxAmount: 25,000
+  StandardDeduction: 31,500
   TaxRates:
     OrdinaryIncome: 22%
     CapitalGains: 15%

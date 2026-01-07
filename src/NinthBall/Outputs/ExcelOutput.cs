@@ -334,7 +334,7 @@ namespace NinthBall
                                 .Append("")
 
                                 // Expenses
-                                .Append(y.Expenses.PYTax, styles.C0)
+                                .Append(y.Expenses.PYTax.Total(), styles.C0)
                                 .Append(y.Expenses.CYExp, styles.C0)
                                 .Append("")
 

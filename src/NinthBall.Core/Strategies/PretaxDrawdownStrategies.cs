@@ -73,6 +73,9 @@ namespace NinthBall.Core
     {
         int ISimObjective.Order => 20;
 
+        // This strategy depends on inflation rate.
+        double InflationRate = 0 == Params.InflationRate ? throw new Exception("Did you forget to set the inflation rate?") : Params.InflationRate;
+
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options, Params);
 
         sealed class Strategy(VariablePercentageWithdrawal VPW, SimParams P) : ISimStrategy
@@ -85,22 +88,22 @@ namespace NinthBall.Core
                 double amount = Stats.EquatedWithdrawal(
                     currentBalance:     ctx.PreTaxBalance.Amount, 
                     estimatedROI:       VPW.ROI, 
-                    estimatedInflation: VPW.Inflation, 
+                    estimatedInflation: P.InflationRate, 
                     remainingYears:     remainingYears
                 );
 
                 // Apply guardrails (adjusted for inflation)
-                double inflationFactor = Math.Pow(1 + VPW.Inflation, ctx.YearIndex);
+                double inflationMultiplier = Math.Pow(1 + P.InflationRate, ctx.YearIndex);
 
                 if (VPW.Floor.HasValue)
                 {
-                    double currentFloor = VPW.Floor.Value * inflationFactor;
+                    double currentFloor = VPW.Floor.Value * inflationMultiplier;
                     amount = Math.Max(amount, currentFloor);
                 }
 
                 if (VPW.Ceiling.HasValue)
                 {
-                    double currentCeiling = VPW.Ceiling.Value * inflationFactor;
+                    double currentCeiling = VPW.Ceiling.Value * inflationMultiplier;
                     amount = Math.Min(amount, currentCeiling);
                 }
 
@@ -112,7 +115,7 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {Options.ROI:P1} ROI, {Options.Inflation:P1} Inflation{GuardrailsToString}";
+        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {Options.ROI:P1} ROI, {Params.InflationRate:P1} Inflation{GuardrailsToString}";
 
         string GuardrailsToString => (Options.Floor.HasValue || Options.Ceiling.HasValue) 
             ? $" | Guardrails: [{Options.Floor?.ToString("C0") ?? "None"} - {Options.Ceiling?.ToString("C0") ?? "None"}] adjusted for inflation" 

@@ -20,7 +20,7 @@ namespace NinthBall.Core
 
         // Inccome and expenses
         AdditionalIncomes? AdditionalIncomes,
-        Taxes? Taxes,
+        TaxConfig? Taxes,
         LivingExpenses? LivingExpenses,
 
         // Pretax distribution (RMD is given, always added, not configurable)
@@ -49,7 +49,10 @@ namespace NinthBall.Core
         int NoOfYears,
 
         [property: Range(1, 50000)]
-        int Iterations = 10000
+        int Iterations = 10000,
+
+        [property: Range(0.02, 0.50)]
+        double InflationRate = 0.02
     );
 
     public sealed record InitialBalance
@@ -100,13 +103,16 @@ namespace NinthBall.Core
         [property: Range(0, 1)] double Cash
     );
 
-    public sealed record Taxes
+    public sealed record TaxConfig
     ( 
-        [property: Min(0)] 
-        double YearZeroTaxAmount, 
+        [property: Min(1000)] 
+        double YearZeroTaxAmount,
+
+        [property: Min(1000)]
+        double StandardDeduction,
 
         [property: ValidateNested]
-        Taxes.Rates TaxRates
+        TaxConfig.Rates TaxRates
     )
     {
         public readonly record struct Rates
@@ -170,7 +176,6 @@ namespace NinthBall.Core
     public sealed record VariablePercentageWithdrawal
     (
         [property: Range(0, 1)] double ROI,
-        [property: Range(0, 1)] double Inflation,
         [property: Min(0)] double? Floor = null,
         [property: Min(0)] double? Ceiling = null
     );

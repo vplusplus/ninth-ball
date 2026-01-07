@@ -45,7 +45,7 @@
         <!-- Summary row (totals, ann-returns, etc.) on top -->
         @{
             var totalFees = Iteration.ByYear.SumX(x => x.Fees.Total());
-            var totalTaxes = Iteration.ByYear.SumX(x => x.Expenses.PYTax);
+            var totalTaxes = Iteration.ByYear.SumX(x => x.Expenses.PYTax.Total());
             var totalExp = Iteration.ByYear.SumX(x => x.Expenses.CYExp);
             var totalSS = Iteration.ByYear.SumX(x => x.Incomes.SS);
             var totalAnn = Iteration.ByYear.SumX(x => x.Incomes.Ann);
@@ -128,7 +128,7 @@
             double janAssets  = (y.Jan.PreTax.Amount * 0.75) + y.Jan.PostTax.Amount - y.Fees.Total();
 
             double fees       = y.Fees.Total();
-            double pyTax      = y.Expenses.PYTax;
+            double pyTax      = y.Expenses.PYTax.Total();
             double cyExp      = y.Expenses.CYExp;
             double ss         = y.Incomes.SS;
             double ann        = y.Incomes.Ann;
