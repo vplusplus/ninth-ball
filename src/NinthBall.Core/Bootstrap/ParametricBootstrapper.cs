@@ -12,11 +12,11 @@ namespace NinthBall.Core
         /// <summary>
         /// Generates repeatable synthetic sequence of returns using statistical parameters.
         /// </summary>
-        public IReadOnlyList<HROI> GetROISequence(int iterationIndex, int numYears)
+        IROISequence IBootstrapper.GetROISequence(int iterationIndex, int numYears)
         {
             // Use a deterministic seed based on iterationIndex and the global seed hint
             var random = new Random(PredictableHashCode.Combine(SimSeed.Value, iterationIndex));
-            var sequence = new List<HROI>(numYears);
+            var sequence = new HROI[numYears];
 
             // State for autocorrelation
             double prevZStocks = 0;
@@ -42,7 +42,7 @@ namespace NinthBall.Core
                 // Introduces momentum or persistence over time.
                 // Current year depends partly on previous year
                 double arStocks = ApplyAR1(c1, prevZStocks, Options.Stocks.AutoCorrelation);
-                double arBonds  = ApplyAR1(c2, prevZBonds, Options.Bonds.AutoCorrelation);
+                double arBonds = ApplyAR1(c2, prevZBonds, Options.Bonds.AutoCorrelation);
 
                 prevZStocks = arStocks;
                 prevZBonds = arBonds;
@@ -58,12 +58,12 @@ namespace NinthBall.Core
                 // Converts abstract scaling factor into percentage returns
                 // Cap returns between -60% and +60%
                 double rStocks = Math.Min(+0.6, Math.Max(-0.6, Options.Stocks.MeanReturn + cfStocks * Options.Stocks.Volatility));
-                double rBonds =  Math.Min(+0.6, Math.Max(-0.6, Options.Bonds.MeanReturn + cfBonds * Options.Bonds.Volatility));
+                double rBonds = Math.Min(+0.6, Math.Max(-0.6, Options.Bonds.MeanReturn + cfBonds * Options.Bonds.Volatility));
 
-                sequence.Add(new HROI(0, rStocks, rBonds));
+                sequence[i] = new HROI(0, rStocks, rBonds);
             }
 
-            return sequence.AsReadOnly();
+            return new ROISequence(sequence.AsMemory());
         }
 
         public override string ToString() => $"Parametric Bootstrap | Stocks - Mean: {Options.Stocks.MeanReturn:P1} Volatility: {Options.Stocks.Volatility:P1} | Bonds - Mean: {Options.Bonds.MeanReturn:P1} Volatility: {Options.Bonds.Volatility:P1} | Cap: +/- 60%";
@@ -80,6 +80,11 @@ namespace NinthBall.Core
         {
             if (Math.Abs(rho) < 1e-9) return epsilon;
             return rho * prevZ + Math.Sqrt(1 - rho * rho) * epsilon;
+        }
+
+        private readonly record struct ROISequence(ReadOnlyMemory<HROI> MemoryBlock) : IROISequence
+        {
+            readonly HROI IROISequence.this[int index] => MemoryBlock.Span[index];
         }
     }
 }

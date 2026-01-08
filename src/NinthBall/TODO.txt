@@ -1,5 +1,7 @@
 ﻿
 
+* Revise output generation, compute numeric values, text values and styles into a dictionary. Let the output columns be defined optionally by the user.
+
 * Consider pushing the bootstrapper options under Growth
 * Consider adding Input file name to the SimResult.
 

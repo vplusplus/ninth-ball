@@ -16,6 +16,13 @@ namespace NinthBall.Core
         /// Returns the ROI sequence for a specific iteration
         /// over the requested simulation horizon.
         /// </summary>
-        IReadOnlyList<HROI> GetROISequence(int iterationIndex, int numYears);
+        IROISequence GetROISequence(int iterationIndex, int numYears);
+    }
+    /// <summary>
+    /// Provides ROI for a specific year.
+    /// </summary>
+    internal interface IROISequence
+    {
+        HROI this[int index] { get; }
     }
 }

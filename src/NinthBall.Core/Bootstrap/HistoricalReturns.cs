@@ -1,4 +1,6 @@
 ﻿
+using System.Globalization;
+
 namespace NinthBall.Core
 {
     // Historical returns:
@@ -14,39 +16,34 @@ namespace NinthBall.Core
     /// </summary>
     internal sealed class HistoricalReturns
     {
-        private static readonly Lazy<IReadOnlyList<HROI>> LazyHistory = new(ReadHistoryOnce);
+        private static readonly Lazy<(ReadOnlyMemory<HROI> Data, int MinYear, int MaxYear)> LazyHistory = new(ReadHistoryOnce);
 
-        public IReadOnlyList<HROI> History => LazyHistory.Value;
+        public ReadOnlyMemory<HROI> History => LazyHistory.Value.Data;
+        public int MinYear => LazyHistory.Value.MinYear;
+        public int MaxYear => LazyHistory.Value.MaxYear;
 
-        private static IReadOnlyList<HROI> ReadHistoryOnce()
+        static (ReadOnlyMemory<HROI> history, int minYear, int maxYear) ReadHistoryOnce()
         {
-            const string ROIHistoryResEndsWith = "ROI-History.xlsx";
-            const string ROIHistorySheetName   = "DATA";
-
-            var resAssembly = typeof(HistoricalReturns).Assembly;
+            const string ResNameEndsWith = "ROI-History.xlsx";
+            const string SheetName = "DATA";
 
             // Look for exactly one ROI-History.xlsx embedded resource.
-            var roiHistoryResourceName = resAssembly
-                .GetManifestResourceNames()
-                .Where(x => x.EndsWith(ROIHistoryResEndsWith, StringComparison.OrdinalIgnoreCase))
-                .Single();
-
-            Console.WriteLine($" Reading resource | '{roiHistoryResourceName}'");
-
             // Open resource stream
-            using var roiHistoryResourceStream = resAssembly
-                .GetManifestResourceStream(roiHistoryResourceName)
-                ?? throw new Exception("Unexpected: GetManifestResourceStream() returned null.");
+            var resAssembly = typeof(HistoricalReturns).Assembly;
+            var resName = resAssembly.GetManifestResourceNames().Single(x => x.EndsWith(ResNameEndsWith, StringComparison.OrdinalIgnoreCase));
+            using var resStream = resAssembly.GetManifestResourceStream(resName) ?? throw new Exception("Unexpected: ManifestResourceStream was null.");
 
-            List<HROI> history = [];
+            var history = new List<HROI>(200);
+            var minYear = int.MaxValue;
+            var maxYear = int.MinValue;
 
-            using (var xlReader = new ExcelReader(roiHistoryResourceStream))
+            using (var xlReader = new ExcelReader(resStream))
             {
                 var sheet = xlReader
                     .GetSheets()
-                    .Where(s => ROIHistorySheetName.Equals(s.SheetName, StringComparison.OrdinalIgnoreCase))
+                    .Where(s => SheetName.Equals(s.SheetName, StringComparison.OrdinalIgnoreCase))
                     .SingleOrDefault()
-                    ?? throw new Exception($"Sheet not found | Resource: {roiHistoryResourceName} | Sheet: '{ROIHistorySheetName}'");
+                    ?? throw new Exception($"Sheet not found | Resource: {resName} | Sheet: '{SheetName}'");
 
                 foreach (var row in sheet.GetRows())
                 {
@@ -62,16 +59,24 @@ namespace NinthBall.Core
                         null != cells
                         && cells.Length >= 3
                         && int.TryParse(cells[0], out var year)
-                        && double.TryParse(cells[1], out var stocksROI)
-                        && double.TryParse(cells[2], out var bondROI)
+                        && double.TryParse(cells[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var stocksROI)
+                        && double.TryParse(cells[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var bondROI)
                     )
                     {
                         history.Add(new(year, stocksROI, bondROI));
+                        if (year < minYear) minYear = year;
+                        if (year > maxYear) maxYear = year;
                     }
                 }
             }
 
-            return history.AsReadOnly();
+            // Just in case...
+            if (0 == history.Count) throw new Exception($"ROI data was EMPTY | Resource: {resName}#{SheetName}");
+
+            // Repeatable (sort by year) and read-only (to memory)
+            var sortedReadonlyHistory = history.OrderBy(x => x.Year).ToArray().AsMemory();
+
+            return (sortedReadonlyHistory, minYear, maxYear);
         }
     }
 }
