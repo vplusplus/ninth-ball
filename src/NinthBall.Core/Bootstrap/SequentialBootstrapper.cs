@@ -8,7 +8,7 @@ namespace NinthBall.Core
     internal sealed class SequentialBootstrapper(HistoricalReturns History) : IBootstrapper
     {
         // We have limited data. We can support only limited number of iterations.
-        public int GetMaxIterations(int numYears) => History.History.Length - numYears + 1;
+        int IBootstrapper.GetMaxIterations(int numYears) => History.History.Length - numYears + 1;
 
         // Replays the history using iterationIndex as the sliding-window offset.
         IROISequence IBootstrapper.GetROISequence(int iterationIndex, int numYears)

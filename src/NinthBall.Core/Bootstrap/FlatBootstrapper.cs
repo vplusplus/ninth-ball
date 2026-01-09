@@ -9,7 +9,7 @@ namespace NinthBall.Core
         );
 
         // Growth is flat, meaningless to perform more than one iteration.
-        public int GetMaxIterations(int numYears) => 1;
+        int IBootstrapper.GetMaxIterations(int numYears) => 1;
 
         // Returns same sequence for all iterations
         IROISequence IBootstrapper.GetROISequence(int iterationIndex, int numYears) => FlatSequence;

@@ -7,7 +7,7 @@ namespace NinthBall.Core
     internal sealed class ParametricBootstrapper(SimulationSeed SimSeed, ParametricBootstrap Options) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
-        public int GetMaxIterations(int numYears) => int.MaxValue;
+        int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
 
         /// <summary>
         /// Generates repeatable synthetic sequence of returns using statistical parameters.

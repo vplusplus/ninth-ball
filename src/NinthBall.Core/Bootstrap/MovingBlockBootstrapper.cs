@@ -9,7 +9,7 @@ namespace NinthBall.Core
     internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, MovingBlockBootstrap Options) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
-        public int GetMaxIterations(int numYears) => int.MaxValue;
+        int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
 
         // Random blocks of history (with replacement)
         IROISequence IBootstrapper.GetROISequence(int iterationIndex, int numYears)
