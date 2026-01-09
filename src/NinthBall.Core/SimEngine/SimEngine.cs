@@ -1,5 +1,4 @@
 
-
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -8,7 +7,8 @@ using System.Reflection;
 namespace NinthBall.Core
 {
     /// <summary>
-    /// The Monte Carlo simulation engine. Orchestrates the entire simulation process.
+    /// The Monte Carlo simulation engine.
+    /// Orchestrates the simulation process, runs one simulation.
     /// </summary>
     public static class SimEngine
     {
@@ -18,7 +18,7 @@ namespace NinthBall.Core
             var validInputs = input.DeconstructAndValidateSimulationInputs();
 
             // Register components for the simulation.
-            // NOTE: Dispose ServiceCollection on return. We will prepare fresh one for each run.
+            // NOTE: Dispose te DI container on return; we will prepare a fresh container for each run.
             using var services = new ServiceCollection()
                 .AddSingleton(new SimulationSeed(input.RandomSeedHint))
                 .RegisterSimulationInputs(validInputs)
@@ -33,17 +33,8 @@ namespace NinthBall.Core
                 .RunSimulation();
         }
 
-        private static IServiceCollection RegisterHistoricalReturnsAndBootstrappers(this IServiceCollection services)
-        {
-            return services
-                .AddSingleton<HistoricalReturns>()
-                .AddSingleton<FlatBootstrapper>()
-                .AddSingleton<SequentialBootstrapper>()
-                .AddSingleton<MovingBlockBootstrapper>()
-                .AddSingleton<ParametricBootstrapper>()
-                ;
-        }
-
+        // Discover SimInput properties that are not NULL.
+        // Validate each active-input using DataAnnotations attributes.
         private static Dictionary<PropertyInfo, object> DeconstructAndValidateSimulationInputs(this SimInput simInput)
         {
             ArgumentNullException.ThrowIfNull(simInput);
@@ -62,25 +53,21 @@ namespace NinthBall.Core
             return pairs;
         }
 
+        // Strategies look for simulation inputs from DI container.
+        // Register all available inputs.
         private static IServiceCollection RegisterSimulationInputs(this IServiceCollection services, Dictionary<PropertyInfo, object> availableInputs)
         {
-            ArgumentNullException.ThrowIfNull(services);
-            ArgumentNullException.ThrowIfNull(availableInputs);
-
-            // Strategies look for simulation inputs from DI container.
-            // Register all available inputs.
             foreach (var pair in availableInputs) services.AddSingleton(pair.Value.GetType(), pair.Value);
             return services;
         }
 
+        // Register only active strategies to the DI system.
+        // Strategies are active if: 
+        // - They had not declared required input.
+        // - They have declared required input and the required input is available in the SimInput.
         private static IServiceCollection RegisterActiveStrategies(this IServiceCollection services, Dictionary<PropertyInfo, object> availableInputs)
         {
-            ArgumentNullException.ThrowIfNull(services);
-            ArgumentNullException.ThrowIfNull(availableInputs);
-
-            // Strategies are active if:
-            // - They had not declared required input.
-            // - They have declared required input and the required input is available in the SimInput.
+            // Keep only active strategies.
             var activeStrategies = SimObjectivesCache.StrategyMetaData
                 .Where(x => null == x.SimInputProperty || availableInputs.ContainsKey(x.SimInputProperty))
                 .ToList();
@@ -89,9 +76,45 @@ namespace NinthBall.Core
             EnforceStrategyExclusivity(activeStrategies);
 
             // Register active strategies to the DI system
-            foreach(var strategy in activeStrategies) services.AddSingleton(typeof(ISimObjective), strategy.StrategyType);
+            foreach (var strategy in activeStrategies) services.AddSingleton(typeof(ISimObjective), strategy.StrategyType);
 
             return services;
+        }
+
+        // Register historical ROI data provider and the chosen IBootstrapper.
+        private static IServiceCollection RegisterHistoricalReturnsAndBootstrappers(this IServiceCollection services)
+        {
+            return services
+
+                // Shared dependency that serves historical data to bootstrappers.
+                .AddSingleton<HistoricalReturns>()
+
+                // Available bootstrappers
+                .AddSingleton<FlatBootstrapper>()
+                .AddSingleton<SequentialBootstrapper>()
+                .AddSingleton<MovingBlockBootstrapper>()
+                .AddSingleton<ParametricBootstrapper>()
+
+                // Chosen bootstrapper based on Growth option.
+                .AddSingleton<IBootstrapper>(sp =>
+                {
+                    // Look for Growth options to determine which bootstrapper to use.
+                    var growthOptions = sp.GetRequiredService<Growth>();
+
+                    // If growth not specified, the Growth strategy should have been muted.
+                    if (null == growthOptions) throw new InvalidOperationException("Growth option not specified. Request for Bootstrapper is invalid.");
+
+                    // Choose the bootstrapper based on Growth options.
+                    return growthOptions.Bootstrapper switch
+                    {
+                        BootstrapKind.Flat        => sp.GetRequiredService<FlatBootstrapper>(),
+                        BootstrapKind.Sequential  => sp.GetRequiredService<SequentialBootstrapper>(),
+                        BootstrapKind.MovingBlock => sp.GetRequiredService<MovingBlockBootstrapper>(),
+                        BootstrapKind.Parametric  => sp.GetRequiredService<ParametricBootstrapper>(),
+                        _ => throw new NotSupportedException($"Unknown bootstrapper kind: {growthOptions.Bootstrapper}"),
+                    };
+                })
+                ;
         }
 
         // For some strategy families, only one of its kind is allowed.

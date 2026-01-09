@@ -7,11 +7,6 @@ namespace NinthBall.Core
     // REF: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com
 
     /// <summary>
-    /// Represents stocks and bonds ROI on a specific year.
-    /// </summary>
-    internal readonly record struct HROI(int Year, double StocksROI, double BondROI);
-
-    /// <summary>
     /// Represents historical stocks and bonds ROI imported from Excel file.
     /// </summary>
     internal sealed class HistoricalReturns

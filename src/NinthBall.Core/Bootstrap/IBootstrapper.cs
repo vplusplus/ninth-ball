@@ -2,6 +2,11 @@
 namespace NinthBall.Core
 {
     /// <summary>
+    /// Represents stocks and bonds ROI on a specific year.
+    /// </summary>
+    internal readonly record struct HROI(int Year, double StocksROI, double BondROI);
+
+    /// <summary>
     /// Provides reproducible sequences of ROI.
     /// </summary>
     internal interface IBootstrapper
