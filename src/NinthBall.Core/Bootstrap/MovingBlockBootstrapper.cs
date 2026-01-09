@@ -55,7 +55,7 @@ namespace NinthBall.Core
         #region HBlock and AllBlocks
         //......................................................................
         // Represents a small window into the historical returns.
-        // HBlock(s) are nothing more than an yearIndex (and length) into a block-of-memory.
+        // HBlock(s) are nothing more than an index (and length) into a block-of-memory.
         //......................................................................
         readonly record struct HBlock(int StartIndex, int Length)
         {
