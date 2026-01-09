@@ -48,14 +48,14 @@ namespace NinthBall.Core
 
         private readonly record struct ROISequence(ReadOnlyMemory<HROI> MemoryBlock, int[] Indices) : IROISequence
         {
-            readonly HROI IROISequence.this[int index] => MemoryBlock.Span[Indices[index]];
+            readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[Indices[yearIndex]];
         }
 
         //......................................................................
         #region HBlock and AllBlocks
         //......................................................................
         // Represents a small window into the historical returns.
-        // HBlock(s) are nothing more than an index (and length) into a block-of-memory.
+        // HBlock(s) are nothing more than an yearIndex (and length) into a block-of-memory.
         //......................................................................
         readonly record struct HBlock(int StartIndex, int Length)
         {
@@ -70,7 +70,7 @@ namespace NinthBall.Core
             var availableYears = History.History.Length;
             var blkSizes = Options.BlockSizes;
 
-            // The nested for-loops below ensures blocks are ordered by block-size and start-index. 
+            // The nested for-loops below ensures blocks are ordered by block-size and start-yearIndex. 
             // Simulation uses uniform sampling, hence order is irrelevant (no shuffle needed).
             List<HBlock> availableBlocks = [];
             

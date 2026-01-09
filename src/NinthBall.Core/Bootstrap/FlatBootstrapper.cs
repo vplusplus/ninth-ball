@@ -18,7 +18,7 @@ namespace NinthBall.Core
 
         private readonly record struct ROISequence(HROI SameROI) : IROISequence
         {
-            readonly HROI IROISequence.this[int index] => SameROI;
+            readonly HROI IROISequence.this[int yearIndex] => SameROI;
         }
     }
 }

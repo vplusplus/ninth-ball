@@ -23,7 +23,7 @@ namespace NinthBall.Core
 
         private readonly record struct ROISequence(ReadOnlyMemory<HROI> MemoryBlock, int Offset) : IROISequence
         {
-            readonly HROI IROISequence.this[int index] => MemoryBlock.Span[Offset + index];
+            readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[Offset + yearIndex];
         }
     }
 }

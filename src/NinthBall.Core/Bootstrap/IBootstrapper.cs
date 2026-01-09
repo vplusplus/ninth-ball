@@ -23,6 +23,6 @@ namespace NinthBall.Core
     /// </summary>
     internal interface IROISequence
     {
-        HROI this[int index] { get; }
+        HROI this[int yearIndex] { get; }
     }
 }
