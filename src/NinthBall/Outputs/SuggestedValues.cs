@@ -76,6 +76,18 @@ namespace NinthBall.Outputs
 
             [CID.JanTotal] = iter => iter.Sum(y => y.Jan.Total()),
             [CID.JanValue] = iter => iter.Sum(y => y.Jan.ApproxValue),
+            
+            [CID.Fees]     = iter => iter.Sum(y => y.Fees.Total()),
+            [CID.PYTaxes]  = iter => iter.Sum(y => y.Expenses.PYTax.Total()),
+            [CID.CYExp]    = iter => iter.Sum(y => y.Expenses.CYExp),
+
+            [CID.SS]       = iter => iter.Sum(y => y.Incomes.SS),
+            [CID.Ann]      = iter => iter.Sum(y => y.Incomes.Ann),
+            [CID.XPreTax]  = iter => iter.Sum(y => y.XPreTax),
+            [CID.XPostTax] = iter => iter.Sum(y => y.XPostTax),
+            [CID.XCash]    = iter => iter.Sum(y => y.XCash),
+            [CID.Change]   = iter => iter.Sum(y => y.Change.Total()),
+
             [CID.DecTotal] = iter => iter.Sum(y => y.Dec.Total()),
             [CID.DecValue] = iter => iter.Sum(y => y.Dec.ApproxValue),
 
