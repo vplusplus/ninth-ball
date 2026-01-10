@@ -5,7 +5,7 @@ namespace NinthBall.Outputs
 {
     internal static partial class ColumnDefinitions
     {
-        private delegate double ValueSelector(SimIteration iteration, SimYear simYear);
+        private delegate double ValueSelector(SimIteration iteration, in SimYear simYear);
 
         private delegate double SumValueSelector(SimIteration simIeration);
 
@@ -15,7 +15,7 @@ namespace NinthBall.Outputs
         /// </summary>
         internal static double? GetCellValue(this SimYear simYear, CID cid, SimIteration iter) => 
             FxValues.TryGetValue(cid, out var fxValue) && null != fxValue 
-                ? fxValue(iter, simYear) 
+                ? fxValue(iter, in simYear) 
                 : null;
 
         /// <summary>
@@ -30,47 +30,47 @@ namespace NinthBall.Outputs
 
         static readonly IReadOnlyDictionary<CID, ValueSelector> FxValues = new Dictionary<CID, ValueSelector>()
         {
-            [CID.Year]            = (it, y) => y.Year + 1,
-            [CID.Age]             = (it, y) => y.Age,
+            [CID.Year]            = (SimIteration it, in SimYear y) => y.Year + 1,
+            [CID.Age]             = (SimIteration it, in SimYear y) => y.Age,
 
             // Asset values at start
-            [CID.JanTotal]        = (it, y) => y.Jan.Total(),
-            [CID.JanValue]        = (it, y) => y.Jan.ApproxValue,
-            [CID.JanPreTax]       = (it, y) => y.Jan.PreTax.Amount,
-            [CID.JanPostTax]      = (it, y) => y.Jan.PostTax.Amount,
-            [CID.JanCash]         = (it, y) => y.Jan.Cash.Amount,
-            [CID.JanPreTaxAlloc]  = (it, y) => y.Jan.PreTax.Allocation,
-            [CID.JanPostTaxAlloc] = (it, y) => y.Jan.PostTax.Allocation,
+            [CID.JanTotal]        = (SimIteration it, in SimYear y) => y.Jan.Total(),
+            [CID.JanValue]        = (SimIteration it, in SimYear y) => y.Jan.ApproxValue,
+            [CID.JanPreTax]       = (SimIteration it, in SimYear y) => y.Jan.PreTax.Amount,
+            [CID.JanPostTax]      = (SimIteration it, in SimYear y) => y.Jan.PostTax.Amount,
+            [CID.JanCash]         = (SimIteration it, in SimYear y) => y.Jan.Cash.Amount,
+            [CID.JanPreTaxAlloc]  = (SimIteration it, in SimYear y) => y.Jan.PreTax.Allocation,
+            [CID.JanPostTaxAlloc] = (SimIteration it, in SimYear y) => y.Jan.PostTax.Allocation,
 
-            [CID.Fees]            = (it, y) => y.Fees.Total(),
-            [CID.TaxOrdIncome]    = (it, y) => y.Expenses.PYTax.OrdIncomeTax,
-            [CID.TaxDiv]          = (it, y) => y.Expenses.PYTax.DividendsTax,
-            [CID.TaxInt]          = (it, y) => y.Expenses.PYTax.InterestsTax,
-            [CID.TaxCapGains]     = (it, y) => y.Expenses.PYTax.CapGainTax,
-            [CID.PYTaxes]         = (it, y) => y.Expenses.PYTax.Total(),
-            [CID.CYExp]           = (it, y) => y.Expenses.CYExp,
+            [CID.Fees]            = (SimIteration it, in SimYear y) => y.Fees.Total(),
+            [CID.TaxOrdIncome]    = (SimIteration it, in SimYear y) => y.Expenses.PYTax.OrdIncomeTax,
+            [CID.TaxDiv]          = (SimIteration it, in SimYear y) => y.Expenses.PYTax.DividendsTax,
+            [CID.TaxInt]          = (SimIteration it, in SimYear y) => y.Expenses.PYTax.InterestsTax,
+            [CID.TaxCapGains]     = (SimIteration it, in SimYear y) => y.Expenses.PYTax.CapGainTax,
+            [CID.PYTaxes]         = (SimIteration it, in SimYear y) => y.Expenses.PYTax.Total(),
+            [CID.CYExp]           = (SimIteration it, in SimYear y) => y.Expenses.CYExp,
 
-            [CID.Incomes]         = (it, y) => y.Incomes.Total(),
-            [CID.SS]              = (it, y) => y.Incomes.SS,
-            [CID.Ann]             = (it, y) => y.Incomes.Ann,
-            [CID.XPreTax]         = (it, y) => y.XPreTax,
-            [CID.XPostTax]        = (it, y) => y.XPostTax,
-            [CID.XCash]           = (it, y) => y.XCash,
-            [CID.Change]          = (it, y) => y.Change.Total(),
+            [CID.Incomes]         = (SimIteration it, in SimYear y) => y.Incomes.Total(),
+            [CID.SS]              = (SimIteration it, in SimYear y) => y.Incomes.SS,
+            [CID.Ann]             = (SimIteration it, in SimYear y) => y.Incomes.Ann,
+            [CID.XPreTax]         = (SimIteration it, in SimYear y) => y.XPreTax,
+            [CID.XPostTax]        = (SimIteration it, in SimYear y) => y.XPostTax,
+            [CID.XCash]           = (SimIteration it, in SimYear y) => y.XCash,
+            [CID.Change]          = (SimIteration it, in SimYear y) => y.Change.Total(),
 
-            [CID.DecTotal]        = (it, y) => y.Dec.Total(),
-            [CID.DecValue]        = (it, y) => y.Dec.ApproxValue,
-            [CID.DecPreTax]       = (it, y) => y.Dec.PreTax.Amount,
-            [CID.DecPostTax]      = (it, y) => y.Dec.PostTax.Amount,
-            [CID.DecCash]         = (it, y) => y.Dec.Cash.Amount,
-            [CID.DecPreTaxAlloc]  = (it, y) => y.Dec.PreTax.Allocation,
-            [CID.DecPostTaxAlloc] = (it, y) => y.Dec.PostTax.Allocation,
+            [CID.DecTotal]        = (SimIteration it, in SimYear y) => y.Dec.Total(),
+            [CID.DecValue]        = (SimIteration it, in SimYear y) => y.Dec.ApproxValue,
+            [CID.DecPreTax]       = (SimIteration it, in SimYear y) => y.Dec.PreTax.Amount,
+            [CID.DecPostTax]      = (SimIteration it, in SimYear y) => y.Dec.PostTax.Amount,
+            [CID.DecCash]         = (SimIteration it, in SimYear y) => y.Dec.Cash.Amount,
+            [CID.DecPreTaxAlloc]  = (SimIteration it, in SimYear y) => y.Dec.PreTax.Allocation,
+            [CID.DecPostTaxAlloc] = (SimIteration it, in SimYear y) => y.Dec.PostTax.Allocation,
 
-            [CID.LikeYear]        = (it, y) => y.ROI.LikeYear,
-            [CID.ROIStocks]       = (it, y) => y.ROI.StocksROI,
-            [CID.ROIBonds]        = (it, y) => y.ROI.BondsROI,
-            [CID.ROICash]         = (it, y) => y.ROI.CashROI,
-            [CID.ROI]             = (it, y) => y.EffectiveROI,
+            [CID.LikeYear]        = (SimIteration it, in SimYear y) => y.ROI.LikeYear,
+            [CID.ROIStocks]       = (SimIteration it, in SimYear y) => y.ROI.StocksROI,
+            [CID.ROIBonds]        = (SimIteration it, in SimYear y) => y.ROI.BondsROI,
+            [CID.ROICash]         = (SimIteration it, in SimYear y) => y.ROI.CashROI,
+            [CID.ROI]             = (SimIteration it, in SimYear y) => y.EffectiveROI,
 
         }.AsReadOnly();
 
