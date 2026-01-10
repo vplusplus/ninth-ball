@@ -91,6 +91,7 @@ namespace NinthBall.Core
             public double SumCashWDraw    => iteration.Sum(x => x.Withdrawals.Cash);
             public double SumChange       => iteration.Sum(x => x.Change.Total());
 
+            public SimYear LastGoodYear   => iteration.Success ? iteration.ByYear.Span[^1] : iteration.ByYear.Span.Length > 1 ? iteration.ByYear.Span[^2] : new();
 
             /// <summary>
             /// Zero-copy extension to calculate the maximum maxValue of a selected field across all years in the iteration
