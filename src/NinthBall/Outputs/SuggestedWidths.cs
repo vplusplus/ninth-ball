@@ -7,6 +7,10 @@ namespace NinthBall.Outputs
 
     internal static partial class ColumnDefinitions
     {
+        /// <summary>
+        /// Provides suggested cell width hint for given column.
+        /// Returns default width hint if none defined.
+        /// </summary>
         internal static WidthHint GetWidthHint(this CID cid) => Widths.TryGetValue(cid, out var widthHint) ? widthHint : W2x;
 
         static readonly IReadOnlyDictionary<CID, WidthHint> Widths = new Dictionary<CID, WidthHint>()

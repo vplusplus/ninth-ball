@@ -58,7 +58,7 @@
 
                 @foreach (var cid in Cols)
                 {
-                    var cellValue  = y.GetCellValue(cid);
+                    var cellValue  = y.GetCellValue(cid, Iteration);
                     var formatHint = cid.GetFormatHint();
                     var alignHint  = cid.GetAlignmentHint();
                     var colorHint  = y.GetCellColorHint(cid, Iteration);

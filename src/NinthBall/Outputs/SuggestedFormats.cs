@@ -7,6 +7,10 @@ namespace NinthBall.Outputs
 
     internal static partial class ColumnDefinitions
     {
+        /// <summary>
+        /// Provides suggested cell format hint for given column.
+        /// Returns default formatting choice if none defined.
+        /// </summary>
         internal static FormatHint GetFormatHint(this CID cid) => Formats.TryGetValue(cid, out var hint) ? hint : FormatHint.C0;
 
 

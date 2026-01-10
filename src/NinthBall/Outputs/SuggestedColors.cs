@@ -1,7 +1,5 @@
 ﻿
-using Microsoft.VisualBasic;
 using NinthBall.Core;
-
 
 namespace NinthBall.Outputs
 {
@@ -9,18 +7,24 @@ namespace NinthBall.Outputs
 
     internal static partial class ColumnDefinitions
     {
-        internal static ColorHint GetCellColorHint(this SimYear y, CID cid, SimIteration iter) => FxColors.TryGetValue(cid, out var fxColor) && null != fxColor ? fxColor(iter, y) : ColorHint.None;
+        private delegate ColorHint ColorSelector(SimIteration iteration, SimYear year);
 
-
-        delegate ColorHint ColorSelector(SimIteration iteration, SimYear year);
+        /// <summary>
+        /// Retrieves the color hint for a specific cell for a given year and column.
+        /// Returns ColorHint for the cell, or None if not defined.
+        /// </summary>
+        internal static ColorHint GetCellColorHint(this SimYear y, CID cid, SimIteration iter) => 
+            FxColors.TryGetValue(cid, out var fxColor) && null != fxColor 
+                ? fxColor(iter, y) 
+                : ColorHint.None;
 
         static readonly IReadOnlyDictionary<CID, ColorSelector> FxColors = new Dictionary<CID, ColorSelector>()
         {
-            [CID.JanValue] = (it, y) => ColorHint.Primary,
-            [CID.DecValue] = (it, y) => ColorHint.Primary,
+            [CID.JanValue]  = (it, y) => ColorHint.Primary,
+            [CID.DecValue]  = (it, y) => ColorHint.Primary,
 
-            [CID.LikeYear]  = ROIRedGreyGreen,
-            [CID.ROI]       = ROIRedGreyGreen,
+            [CID.LikeYear]  = (it, y) => ROIRedGreyGreen(it, y),
+            [CID.ROI]       = (it, y) => ROIRedGreyGreen(it, y),
             [CID.ROIStocks] = (it, y) => ROIRedGreyGreen(y.ROI.StocksROI),
             [CID.ROIBonds]  = (it, y) => ROIRedGreyGreen(y.ROI.BondsROI),
             [CID.ROICash]   = (it, y) => ROIRedGreyGreen(y.ROI.CashROI),
@@ -33,6 +37,7 @@ namespace NinthBall.Outputs
         static ColorHint RedGreen(double value) => value < 0 ? ColorHint.Danger : ColorHint.Success;
 
         static ColorHint ROIRedGreyGreen(SimIteration simIteration, SimYear simYear) => ROIRedGreyGreen(simYear.EffectiveROI);
+
         static ColorHint ROIRedGreyGreen(double pctValue) => pctValue >= -0.04 && pctValue <= +0.04 ? ColorHint.Muted : pctValue <= 0 ? ColorHint.Danger : ColorHint.Success;
 
         static ColorHint WarnOnStepDown(SimIteration simIteration, SimYear simYear)
@@ -43,6 +48,5 @@ namespace NinthBall.Outputs
 
             return expReduction ? ColorHint.Warning : ColorHint.None;
         }
-
     }
 }
