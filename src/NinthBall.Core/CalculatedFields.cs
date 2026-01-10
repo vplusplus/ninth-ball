@@ -151,5 +151,47 @@ namespace NinthBall.Core
 
         #endregion
 
+        //......................................................................
+        #region Calculated fields on SimResult
+        //......................................................................
+        public readonly record struct FailureBucket(int FromYear, int ToYear, int NumFailed);
+
+        extension(SimResult simResult)
+        {
+            public int NoOfYears => simResult.Iterations.Count == 0 ? 0 : simResult.Iterations.Max(x => x.ByYear.Length);
+
+            public double SurvivalRate => simResult.Iterations.Count == 0 ? 0.0 : (double)simResult.Iterations.Count(x => x.Success) / (double)simResult.Iterations.Count;
+
+            public SimIteration Percentile(double percentile) =>
+                percentile < 0.0 || percentile > 1.0 ? throw new ArgumentOutOfRangeException(nameof(percentile), "Percentile must be between 0.0 and 1.0") :
+                simResult.Iterations.Count == 0 ? throw new InvalidOperationException("No results available") :
+                0.0 == percentile ? simResult.Iterations.First() :
+                1.0 == percentile ? simResult.Iterations.Last() :
+                simResult.Iterations[(int)(percentile * (simResult.Iterations.Count - 1))];
+
+
+            public IList<FailureBucket> GetFailureBuckets()
+            {
+                var numYears = simResult.NoOfYears;
+
+                // Prepare five-year-buckets with start and end years.
+                // You can't directly use GroupBy() on Model.Iterations, which will miss buckets with no failures.
+                var fiveYearBuckets = Enumerable.Range(0, numYears).Select(y => y / 5).Distinct().Select(y => new { Start = 1 + (y * 5), End = 5 + (y * 5) });
+
+                // Count no of failures in each bucket.
+                // Note: Failed year = One Plus SurvivedYears
+                return fiveYearBuckets
+                    .Select(y => new FailureBucket
+                    (
+                        FromYear: y.Start,
+                        ToYear: y.End,
+                        NumFailed: simResult.Iterations.Count(x => !x.Success && x.SurvivedYears + 1 >= y.Start && x.SurvivedYears + 1 <= y.End)
+                    ))
+                    .ToList();
+            }
+        }
+
+        #endregion
+
     }
 }

@@ -1,22 +1,9 @@
 ﻿
 namespace NinthBall.Core
 {
-    public sealed record SimResult(IReadOnlyList<string> Strategies, IReadOnlyList<SimIteration> Iterations)
-    {
-        public int NoOfYears { get; init; } = Iterations.Count == 0 ? 0 : Iterations.Max(x => x.ByYear.Length);
-        public double SurvivalRate { get; init; } = Iterations.Count == 0 ? 0.0 : (double)Iterations.Count(x => x.Success) / (double)Iterations.Count;
+    public sealed record SimResult(IReadOnlyList<string> Strategies, IReadOnlyList<SimIteration> Iterations);
 
-        public SimIteration Percentile(double percentile) =>
-            percentile < 0.0 || percentile > 1.0 ? throw new ArgumentOutOfRangeException(nameof(percentile), "Percentile must be between 0.0 and 1.0") :
-            Iterations.Count == 0 ? throw new InvalidOperationException("No results available") :
-            0.0 == percentile ? Iterations.First() :
-            1.0 == percentile ? Iterations.Last() :
-            Iterations[(int)(percentile * (Iterations.Count - 1))];
-    }
-
-    public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear)
-    {
-    }
+    public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear);
 
     public readonly record struct SimYear
     (

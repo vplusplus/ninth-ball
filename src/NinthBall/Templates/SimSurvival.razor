@@ -8,7 +8,7 @@
         var txtSurvivalRate = survivalRate >= 0.98 && survivalRate != 1.0 ? $"{survivalRate:P1}" : $"{survivalRate:P0}";
         var cssSurvivalRate = survivalRate < 0.9 ? "text-danger" : survivalRate >= 0.95 ? "text-success" : "";
 
-        var failureBuckets = GetFailureBuckets();
+        var failureBuckets = Model.GetFailureBuckets();
         var totalFailures = Model.Iterations.Count(x => !x.Success);
     }
     <caption>
@@ -53,24 +53,4 @@
 @code
 {
     [Parameter] public SimResult Model { get; set; } = null!;
-
-    readonly record struct FailureBucket(int FromYear, int ToYear, int NumFailed);
-
-    IList<FailureBucket> GetFailureBuckets()
-    {
-        // Prepare five-year-buckets with start and end years.
-        // You can't directly use GroupBy() on Model.Iterations, which will miss buckets with no failures.
-        var fiveYearBuckets = Enumerable.Range(0, Model.NoOfYears).Select(y => y / 5).Distinct().Select(y => new { Start = 1 + (y * 5), End = 5 + (y * 5) });
-
-        // Count no of failures in each bucket.
-        // Note: Failed year = One Plus SurvivedYears
-        return fiveYearBuckets
-            .Select(y => new FailureBucket
-            (
-                FromYear:  y.Start, 
-                ToYear:    y.End,
-                NumFailed: Model.Iterations.Count(x => !x.Success && x.SurvivedYears + 1 >= y.Start && x.SurvivedYears + 1 <= y.End)
-            ))
-            .ToList();
-    }
 }
