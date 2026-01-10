@@ -36,7 +36,8 @@ namespace NinthBall.Outputs
                 hint == ColorHint.None    ? string.Empty :
                 hint == ColorHint.Danger  ? "text-danger" :
                 hint == ColorHint.Success ? "text-success" :
-                hint == ColorHint.Warning ? "text-warning" :
+                hint == ColorHint.Warning ? "text-warning fw-bold" :
+                hint == ColorHint.Primary ? "text-primary" :
                 hint == ColorHint.Muted   ? "text-secondary" :
                 string.Empty;
         }
