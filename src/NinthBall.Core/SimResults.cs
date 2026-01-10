@@ -16,9 +16,6 @@ namespace NinthBall.Core
 
     public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear)
     {
-        public double StartingBalance => ByYear.Span[0].Jan.Total();
-        public double EndingBalance => ByYear.Span[^1].Dec.Total();
-        public int    SurvivedYears => Success ? ByYear.Length : ByYear.Length - 1;
     }
 
     public readonly record struct SimYear
@@ -34,10 +31,7 @@ namespace NinthBall.Core
         ROI         ROI,
         Change      Change,
         Assets      Dec
-    )
-    {
-        public readonly double ChangePCT => Change.Total() / ( Jan.Total() - Fees.Total() - Withdrawals.Total() );
-    }
+    );
 
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI);
 

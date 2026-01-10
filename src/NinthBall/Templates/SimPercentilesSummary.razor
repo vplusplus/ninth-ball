@@ -80,7 +80,8 @@
             @foreach (var p in Percentiles.Items)
             {
                 var iter = Model.Percentile(p.Pctl);
-                var pctChange = iter.ByYear.AnnualizeChangePCT();
+                // var pctChange = iter.ByYear.AnnualizeChangePCT();
+                var pctChange = -1.0; // Stubbed
 
                 <td class="text-secondary">
                     @($"{pctChange:P1}")

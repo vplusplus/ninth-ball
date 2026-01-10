@@ -6,33 +6,28 @@ namespace NinthBall.Outputs
     {
         internal static string ToTextFormat(this FormatHint hint)
         {
-            return hint switch
-            {
-                FormatHint.F0 => "F0",
-                FormatHint.C0 => "C0",
-                FormatHint.C1 => "C1",
-                FormatHint.C2 => "C2",
-                FormatHint.P0 => "P0",
-                FormatHint.P1 => "P1",
-                FormatHint.P2 => "P2",
-                _ => string.Empty,
-            };
+            // Since our Format enum maps 1:1 to .NET number formats...
+            return hint.ToString();
         }
 
-        internal static double ToHtmlWidthPCT(this WidthHint hint)
+        internal static double[] ToRelativeWidths(this WidthHint[] widthHints)
         {
-            // WDefault=4%, WSmall=2%, WMedium=4%, W3=6%, WXLarge=8%
-            return hint switch
-            {
-                WidthHint.WSmall => 0.02,
-                WidthHint.WDefault => 0.04,
-                WidthHint.WMedium => 0.04,
-                WidthHint.WLarge => 0.06,
-                WidthHint.WXLarge => 0.08,
-                _ => 0.04
-            };
+            ArgumentNullException.ThrowIfNull(widthHints);
+            if (0 == widthHints.Length) throw new ArgumentNullException(nameof(widthHints));
 
+            var totalUnits = widthHints.Sum(x => ToWidthUnit(x));
+            return widthHints.Select(x => ToWidthUnit(x) / totalUnits).ToArray();
+
+            static double ToWidthUnit(WidthHint hint) => hint switch
+            {
+                WidthHint.W1x => 1.0,
+                WidthHint.W2x => 2.0,
+                WidthHint.W3x => 3.0,
+                WidthHint.W4x => 4.0,
+                _ => 2.0
+            };
         }
+
 
         internal static string ToCSSColor(this ColorHint hint)
         {

@@ -18,13 +18,20 @@
     </caption>
 
     <colgroup>
-    @foreach(var cid in Cols)
-    {
-            var widthPct = cid.GetWidthHint().ToHtmlWidthPCT();
-        var colStyle  = $"width:{widthPct:P0}";
 
-        <col style="@colStyle">
-    }
+        @{
+            // Compute relative with in percentage.
+            //var relativeWidths = Cols.Select(x => x.GetWidthHint()).ToArray().ToRelativeWidths().Select(p => Math.Round(p, 0)).ToArray();
+            var relativeWidths = Cols.Select(x => x.GetWidthHint()).ToArray().ToRelativeWidths().ToArray();
+            for(int i=0; i<Cols.Count; i++)
+            {
+                var colStyle = $"width:{relativeWidths[i]:P2}";
+
+                // Render <col> element
+                <col style="@colStyle">
+            }
+        }
+
     </colgroup>
 
     <tbody>

@@ -10,7 +10,7 @@ using static NinthBall.Outputs.ColorHint;
 namespace NinthBall.Outputs
 {
     internal enum FormatHint { F0, C0, C1, C2, P0, P1, P2 }
-    internal enum WidthHint  { WDefault = 0, WSmall, WMedium, WLarge, WXLarge }
+    internal enum WidthHint  { W1x, W2x, W3x, W4x }
     internal enum AlignHint  { Left, Center, Right }
     internal enum ColorHint  { None, Success, Warning, Danger, Muted }
     internal enum CID
@@ -37,7 +37,7 @@ namespace NinthBall.Outputs
             CID.LikeYear, CID.ROI, CID.ROIStocks, CID.ROIBonds
         ];
 
-        internal static WidthHint GetWidthHint(this CID cid) => Widths.TryGetValue(cid, out var widthHint) ? widthHint : WDefault;
+        internal static WidthHint GetWidthHint(this CID cid) => Widths.TryGetValue(cid, out var widthHint) ? widthHint : W2x;
         internal static AlignHint GetAlignmentHint(this CID cid) => Alignments.TryGetValue(cid, out var alignHint) ? alignHint : AlignHint.Right;
         internal static FormatHint GetFormatHint(this CID cid) => Formats.TryGetValue(cid, out var hint) ? hint : FormatHint.C0;
         internal static string GetColName(this CID cid) => ColumnNames.TryGetValue(cid, out var colName) && null != colName ? colName : cid.ToString();
@@ -118,20 +118,20 @@ namespace NinthBall.Outputs
         {
             [CID.Year] = Center,
             [CID.Age] = Center,
-            [CID.LikeYear] = Center,
+            //[CID.LikeYear] = Center,
 
         }.AsReadOnly();
 
         static readonly IReadOnlyDictionary<CID, WidthHint> Widths = new Dictionary<CID, WidthHint>()
         {
-            [CID.Year] = WSmall,
-            [CID.Age] = WSmall,
+            [CID.Year]      = W1x,
+            [CID.Age]       = W1x,
 
-            [CID.LikeYear] = WSmall,
-            [CID.ROI] = WSmall,
-            [CID.ROIStocks] = WSmall,
-            [CID.ROIBonds] = WSmall,
-            [CID.ROICash] = WSmall,
+            [CID.LikeYear]  = W1x,
+            [CID.ROI]       = W1x,
+            [CID.ROIStocks] = W1x,
+            [CID.ROIBonds]  = W1x,
+            [CID.ROICash]   = W1x,
 
         }.AsReadOnly();
 
@@ -177,45 +177,7 @@ namespace NinthBall.Outputs
         static ColorHint ROIRedGreyGreen(double pctValue) => pctValue >= -0.04 && pctValue <= +0.04 ? ColorHint.Muted : pctValue <= 0 ? ColorHint.Danger : ColorHint.Success;
 
 
-        extension (Assets assets)
-        {
-            private double ApproxValue => (assets.PreTax.Amount * 0.75) + (assets.PostTax.Amount * 0.85) + assets.Cash.Amount;
-        }
+       
 
-        extension (Asset asset)
-        {
-            private double StockAlloc => asset.Allocation;
-            private double BondAlloc => 1.0 - asset.Allocation;
-        }
-
-        extension (SimYear simYear)
-        {
-            private double EffectiveROI =>
-                (0.0
-                    + simYear.ROI.StocksROI * simYear.Jan.PreTax.StockAlloc
-                    + simYear.ROI.BondsROI * simYear.Jan.PreTax.BondAlloc
-                    + simYear.ROI.StocksROI * simYear.Jan.PostTax.StockAlloc
-                    + simYear.ROI.BondsROI * simYear.Jan.PostTax.BondAlloc
-                ) / 2.0;
-        }        
-
-        extension (SimIteration iteration)
-        {
-            private double Max(Func<SimYear, double> fxValueSelector)
-            {
-                var span = iteration.ByYear.Span;
-                double value = 0.0;
-                for (int i = 0; i < iteration.ByYear.Length; i++) value = Math.Max(value, fxValueSelector(span[i]));
-                return value;
-            }
-
-            private double Sum(Func<SimYear, double> fxValueSelector)
-            {
-                var span = iteration.ByYear.Span;
-                double sumAmount = 0.0;
-                for (int i = 0; i < iteration.ByYear.Length; i++) sumAmount += fxValueSelector(span[i]);
-                return sumAmount;
-            }
-        }
     }
 }

@@ -44,15 +44,15 @@
 
         <!-- Summary row (totals, ann-returns, etc.) on top -->
         @{
-            var totalFees = Iteration.ByYear.SumX(x => x.Fees.Total());
-            var totalTaxes = Iteration.ByYear.SumX(x => x.Expenses.PYTax.Total());
-            var totalExp = Iteration.ByYear.SumX(x => x.Expenses.CYExp);
-            var totalSS = Iteration.ByYear.SumX(x => x.Incomes.SS);
-            var totalAnn = Iteration.ByYear.SumX(x => x.Incomes.Ann);
-            var totalXPreTax = Iteration.ByYear.SumX(x => x.Withdrawals.PreTax);
-            var totalXPostTax = Iteration.ByYear.SumX(x => x.Withdrawals.PostTax);
-            var totalXCash = Iteration.ByYear.SumX(x => x.Withdrawals.Cash);
-            var totalChange = Iteration.ByYear.SumX(x => x.Change.Total());
+            var totalFees = Iteration.Sum(x => x.Fees.Total());
+            var totalTaxes = Iteration.Sum(x => x.Expenses.PYTax.Total());
+            var totalExp = Iteration.Sum(x => x.Expenses.CYExp);
+            var totalSS = Iteration.Sum(x => x.Incomes.SS);
+            var totalAnn = Iteration.Sum(x => x.Incomes.Ann);
+            var totalXPreTax = Iteration.Sum(x => x.Withdrawals.PreTax);
+            var totalXPostTax = Iteration.Sum(x => x.Withdrawals.PostTax);
+            var totalXCash = Iteration.Sum(x => x.Withdrawals.Cash);
+            var totalChange = Iteration.Sum(x => x.Change.Total());
         }
 
         <tr class="text-end">
@@ -125,7 +125,7 @@
 
             double janPreTax  = y.Jan.PreTax.Amount;
             double janPostTax = y.Jan.PostTax.Amount;
-            double janAssets  = (y.Jan.PreTax.Amount * 0.75) + y.Jan.PostTax.Amount - y.Fees.Total();
+            double janAssets  = y.Jan.ApproxValue;
 
             double fees       = y.Fees.Total();
             double pyTax      = y.Expenses.PYTax.Total();
@@ -138,7 +138,7 @@
             double change     = y.Change.Total();
             double decPreTax  = y.Dec.PreTax.Amount;
             double decPostTax = y.Dec.PostTax.Amount;
-            double decAssets  = (y.Dec.PreTax.Amount * 0.75) + y.Dec.PostTax.Amount;
+            double decAssets  = y.Dec.ApproxValue;
 
             var cssPreTax     = RG(xPreTax);
             var cssPostTax    = RG(xPostTax);

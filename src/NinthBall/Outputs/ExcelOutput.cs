@@ -232,8 +232,8 @@ namespace NinthBall
                         foreach (var pctl in Percentiles.Items)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
-                            //var chng = AnnualizeChangePCT(p.ByYear);
-                            var chng = p.ByYear.AnnualizeChangePCT();
+                            //var chng = p.ByYear.AnnualizeChangePCT();
+                            var chng = -1.0; // Stubbed
                             row.Append(chng, styles.SumP);
                         }
                         row.Append("");
