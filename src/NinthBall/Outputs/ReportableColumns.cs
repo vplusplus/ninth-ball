@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace NinthBall.Outputs
 {
-    internal enum FormatHint { F0, C0, C1, C2, P0, P1, P2 }
-    internal enum WidthHint { W1x, W2x, W3x, W4x }
-    internal enum AlignHint { Left, Center, Right }
-    internal enum ColorHint { None, Success, Warning, Danger, Muted }
-
     /// <summary>
     /// Column identifiers for reportable-columns
     /// </summary>
@@ -29,11 +21,11 @@ namespace NinthBall.Outputs
         JanCash,                // Cash balance in January
 
         Fees,                   // Total investment/advisory fees for the year
-        TaxOrdIncome,           // Taxes paid on ordinary income
-        TaxDiv,                 // Taxes paid on dividends
-        TaxInt,                 // Taxes paid on interest
-        TaxCapGains,            // Taxes paid on capital gains
-        Tax,                    // Total taxes paid (Sum of Ord, Div, Int, CapGains)
+        TaxOrdIncome,           // PYTaxes paid on ordinary income
+        TaxDiv,                 // PYTaxes paid on dividends
+        TaxInt,                 // PYTaxes paid on interest
+        TaxCapGains,            // PYTaxes paid on capital gains
+        PYTaxes,                    // Total taxes paid (Sum of Ord, Div, Int, CapGains)
 
         CYExp,                  // Current Year Expenses (Inflation adjusted)
 
@@ -54,6 +46,7 @@ namespace NinthBall.Outputs
         DecCash,                // Cash balance in December
 
         LikeYear,               // Representative year used for historical ROI data
+        Change,                 // Total changes contributed for ROI gorwth or losss
         ROI,                    // Effective Portfolio ROI (Blended Stock/Bond/Cash)
         ROIStocks,              // Return on Stocks for the year
         ROIBonds,               // Return on Bonds for the year
