@@ -1,0 +1,78 @@
+﻿@using System;
+@using NinthBall.Core;
+@using NinthBall.Outputs;
+
+@{
+    var Cols = ColumnDefinitions.DefaultColumns;
+}
+
+<!-- Presents year-by-year details of single iteration -->
+<table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%;">
+
+    <caption>
+        <div>
+            <h3 class="mb-0">
+                @Caption
+            </h3>
+        </div>
+    </caption>
+
+    <colgroup>
+    @foreach(var cid in Cols)
+    {
+            var widthPct = cid.GetWidthHint().ToHtmlWidthPCT();
+        var colStyle  = $"width:{widthPct:P0}";
+
+        <col style="@colStyle">
+    }
+    </colgroup>
+
+    <tbody>
+
+
+        <!-- Labels are printed summary row on top -->
+        <tr class="text-end">
+
+            @foreach(var cid in Cols)
+            {
+                var colName = cid.GetColName();
+                var title = cid.GetColTitle();
+                var cssAlign = cid.GetAlignmentHint().ToCSSTextAlignment();
+
+                <th class="@cssAlign" title="@title">@colName</th>
+            }
+
+        </tr>
+
+        <!-- Details -->
+        @foreach (var y in Iteration.ByYear.Span)
+        {
+            <tr class="text-end">
+
+                @foreach (var cid in Cols)
+                {
+                    var cellValue  = y.GetCellValue(cid);
+                    var formatHint = cid.GetFormatHint();
+                    var alignHint  = cid.GetAlignmentHint();
+                    var colorHint  = y.GetCellColorHint(cid, Iteration);
+
+                    var fmtSpec = formatHint.ToTextFormat();
+                    var txtCellValue = cellValue.HasValue ? cellValue.Value.ToString(fmtSpec) : string.Empty;
+
+                    <td class="@colorHint.ToCSSColor() @alignHint.ToCSSTextAlignment()">@txtCellValue</td>
+                }
+
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+@code
+{
+    const double TheInflationRate = 0.03;
+
+    [Parameter] public string Id { get; set; } = null!;
+    [Parameter] public string Caption { get; set; } = "";
+    [Parameter] public SimIteration Iteration { get; set; } = null!;
+}
