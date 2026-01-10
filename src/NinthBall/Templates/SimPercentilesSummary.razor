@@ -1,5 +1,6 @@
 ﻿@using System;
 @using NinthBall.Core;
+@using NinthBall.Outputs;
 
 <!-- Summary view of chosen percentiles -->
 <table id="percentiles" class="table table-sm caption-top" style="table-layout: fixed; width: 100%;">
@@ -80,11 +81,10 @@
             @foreach (var p in Percentiles.Items)
             {
                 var iter = Model.Percentile(p.Pctl);
-                // var pctChange = iter.ByYear.AnnualizeChangePCT();
-                var pctChange = -1.0; // Stubbed
+                var annualizedEffectiveROI = iter.GetAggregateValue(CID.ROI);
 
                 <td class="text-secondary">
-                    @($"{pctChange:P1}")
+                    @($"{annualizedEffectiveROI:P1}")
                 </td>
             }
         </tr>

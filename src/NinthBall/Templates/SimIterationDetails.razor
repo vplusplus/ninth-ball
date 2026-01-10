@@ -1,176 +1,110 @@
 ﻿@using System;
 @using NinthBall.Core;
+@using NinthBall.Outputs;
+
+@{
+    var Cols = ColumnDefinitions.DefaultHtmlColumns;
+}
 
 <!-- Presents year-by-year details of single iteration -->
 <table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%;">
 
     <caption>
         <div>
-            <h3 class="mb-0">
-                @Caption
-            </h3>
+            <h3 class="mb-0">@Caption</h3>
+            <small class="text-muted">All values are nominal. Monetary amounts are in thousands</small>
         </div>
     </caption>
 
     <colgroup>
-        <col style="width:2%">
-        <col style="width:2%">
 
-        <col style="width:6%">
-        <col style="width:6%">
-        <col style="width:6%">
+        @{
+            // Compute relative with in percentage.
+            var relativeWidths = Cols.Select(x => x.GetWidthHint()).ToArray().ToRelativeWidths().ToArray();
 
-        <col style="width:4%">
-        <col style="width:4%">
-        <col style="width:4%">
-        <col style="width:4%">
-        <col style="width:4%">
+            for(int i=0; i<Cols.Count; i++)
+            {
+                var colStyle = $"width:{relativeWidths[i]:P2}";
 
-        <col style="width:6%">
-        <col style="width:6%">
-        <col style="width:6%">
-
-        <col style="width:6%">
-        <col style="width:6%">
-        <col style="width:6%">
-
-        <col style="width:3%">
-        <col style="width:3%">
-        <col style="width:3%">
+                // Render <col> element
+                <col style="@colStyle">
+            }
+        }
 
     </colgroup>
 
     <tbody>
 
+
         <!-- Summary row (totals, ann-returns, etc.) on top -->
-        @{
-            var totalFees = Iteration.SumFees;
-            var totalTaxes = Iteration.SumTaxes;
-            var totalExp = Iteration.SumExpenses;
-            var totalSS = Iteration.SumSS;
-            var totalAnn = Iteration.SumAnn;
-            var totalXPreTax = Iteration.SumPreTaxWDraw;
-            var totalXPostTax = Iteration.SumPostTaxWDraw;
-            var totalXCash = Iteration.SumCashWDraw;
-            var totalChange = Iteration.SumChange;
-        }
+
 
         <tr class="text-end">
-            <td colspan="5" class="text-start">
-                <small class="text-muted">
-                    All numbers are dispayed in thousands.
-                </small>
-            </td>
+            @foreach(var cid in Cols)
+            {
+                var aggValue   = Iteration.GetAggregateValue(cid);
+                var formatHint = cid.GetFormatHint();
+                var alignHint  = cid.GetAlignmentHint();
+                var colorHint  = "text-secondary"; // Always muted for summary
 
-            <td class="text-secondary">@totalFees.Millions()</td>
-            <td class="text-secondary">@totalTaxes.Millions()</td>
-            <td class="text-secondary">@totalExp.Millions()</td>
+                // Formatting logic for summary
+                var isCurrencyValue = formatHint is FormatHint.C0 or FormatHint.C1 or FormatHint.C2;
+                var txtCellValue = string.Empty;
 
-            <td class="text-secondary">@totalSS.Millions()</td>
-            <td class="text-secondary">@totalAnn.Millions()</td>
-            <td class="text-secondary">@totalXPreTax.Millions()</td>
-            <td class="text-secondary">@totalXPostTax.Millions()</td>
-            <td class="text-secondary">@totalChange.Millions()</td>
+                if (aggValue.HasValue)
+                {
+                    if (isCurrencyValue)
+                    {
+                        // Millions logic
+                        txtCellValue = aggValue.Value.Millions();
+                    }
+                    else
+                    {
+                        // Standard policy logic
+                        var fmtSpec = formatHint.ToTextFormat();
+                        txtCellValue = aggValue.Value.ToString(fmtSpec);
+                    }
+                }
+                
+                <td class="@colorHint @alignHint.ToCSSTextAlignment()">@txtCellValue</td>
+            }
+        </tr>
 
-            <!--
-            <td></td>
-            <td></td>
-            <td></td>
+        <!-- Labels are printed after summary row -->
+        <tr class="text-end">
 
-            <td></td>
-            <td></td>
-            <td></td>
-            -->
+            @foreach (var cid in Cols)
+            {
+                var colName = cid.GetColName();
+                var title = cid.GetColTitle();
+                var cssAlign = cid.GetAlignmentHint().ToCSSTextAlignment();
+
+                <th class="@cssAlign" title="@title">@colName</th>
+            }
+
         </tr>
 
         <!-- Labels are printed summary row on top -->
-        <tr class="text-end">
-            <th class="text-center">Yr</th>
-            <th class="text-center">Age</th>
-
-            <th>Jan 401K</th>
-            <th>Jan Inv</th>
-            <th title="Approx asset value (401K less 25% + Inv - Fees)" class="text-primary">~Total</th>
-           
-            <th>Fees</th>
-            <th>Taxes</th>
-            <th>Exp</th>
-
-            <th>SS</th>
-            <th>ANN</th>
-            <th>X401K</th>
-            <th>XInv</th>
-            <th>Change</th>
-
-            <th>Dec 401K</th>
-            <th>Dec Inv</th>
-            <th title="Approx asset value (401K less 25% + Inv)" class="text-primary">~Total</th>
-
-            <th>Like</th>
-            <th>Stocks</th>
-            <th>Bonds</th>
-        </tr>
-
-        <!-- Details -->
         @foreach (var y in Iteration.ByYear.Span)
         {
-            static string RG(double value) => value < 0.0 ? "text-danger" : "text-success";
-            static string RBGPct(double pctValue) => pctValue >= -0.04 && pctValue <= +0.04 ? "text-secondary" : pctValue <= 0 ? "text-danger" : "text-success";
-            static string K0(double value) => Math.Abs(value) >= 999.0 ? $"{value / 1000:C0}" : string.Empty;
-            static string P1(double pct) => Math.Abs(pct) > 0.001 ? $"{pct:P1}" : string.Empty;
-            static string Y4(int year) => year > 0 ? $"{year:0000}" : string.Empty;
-
-            var pyExp = y.Year > 1 ? Iteration.ByYear.Span[y.Year - 1].Expenses.CYExp : double.MinValue;
-            var expReduction = y.Expenses.CYExp < pyExp;
-
-            double janPreTax  = y.Jan.PreTax.Amount;
-            double janPostTax = y.Jan.PostTax.Amount;
-            double janAssets  = y.Jan.ApproxValue;
-
-            double fees       = y.Fees.Total();
-            double pyTax      = y.Expenses.PYTax.Total();
-            double cyExp      = y.Expenses.CYExp;
-            double ss         = y.Incomes.SS;
-            double ann        = y.Incomes.Ann;
-            double xPreTax    = y.XPreTax;
-            double xPostTax   = y.XPostTax;
-            double xCash      = y.XCash;
-            double change     = y.Change.Total();
-            double decPreTax  = y.Dec.PreTax.Amount;
-            double decPostTax = y.Dec.PostTax.Amount;
-            double decAssets  = y.Dec.ApproxValue;
-
-            var cssPreTax     = RG(xPreTax);
-            var cssPostTax    = RG(xPostTax);
-            var cssROI        = RG(change);
-            var cssExp        = expReduction ? "text-warning fw-bold" : string.Empty;
-
             <tr class="text-end">
+            @foreach (var cid in Cols)
+            {
+                var cellValue  = y.GetCellValue(cid, Iteration);
+                var formatHint = cid.GetFormatHint();
+                var alignHint  = cid.GetAlignmentHint();
+                var colorHint  = y.GetCellColorHint(cid, Iteration);
 
-                <td class="text-center">@(y.Year + 1)</td>
-                <td class="text-center">@y.Age</td>
+                // We are displaying all amounts in thousands.
+                // We infer currency values based on suggested format
+                var isCurrencyValue = formatHint is FormatHint.C0 or FormatHint.C1 or FormatHint.C2;
+                cellValue /= isCurrencyValue ? 1000.0 : 1.0;
 
-                <td>@K0(janPreTax)</td>
-                <td>@K0(janPostTax)</td>
-                <td class="text-primary">@K0(janAssets)</td>
+                var fmtSpec = formatHint.ToTextFormat();
+                var txtCellValue = cellValue.HasValue ? cellValue.Value.ToString(fmtSpec) : string.Empty;
 
-                <td>@K0(fees)</td>
-                <td>@K0(pyTax)</td>
-                <td class="@cssExp">@K0(cyExp)</td>
-
-                <td>@K0(ss)</td>
-                <td>@K0(ann)</td>
-                <td class="@cssPreTax">@K0(xPreTax)</td>
-                <td class="@cssPostTax">@K0(xPostTax)</td>
-                <td class="@cssROI">@K0(change)</td>
-
-                <td>@K0(decPreTax)</td>
-                <td>@K0(decPostTax)</td>
-                <td class="text-primary">@K0(decAssets)</td>
-
-                <td class="@cssROI">@Y4(y.ROI.LikeYear)</td>
-                <td class="@RBGPct(y.ROI.StocksROI)">@P1(y.ROI.StocksROI)</td>
-                <td class="@RBGPct(y.ROI.BondsROI)">@P1(y.ROI.BondsROI)</td>
+                <td class="@colorHint.ToCSSColor() @alignHint.ToCSSTextAlignment()">@txtCellValue</td>
+            }
             </tr>
         }
 
@@ -184,5 +118,4 @@
     [Parameter] public string Id { get; set; } = null!;
     [Parameter] public string Caption { get; set; } = "";
     [Parameter] public SimIteration Iteration { get; set; } = null!;
-
 }

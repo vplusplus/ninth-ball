@@ -29,7 +29,7 @@
             var caption = $"{p.PctlName} Percentile";
             var isActive = p.Pctl == Percentiles.Target ? "active" : "";
             <div class="tab-pane @isActive" id="@(pctlId)">
-                <SimIterationDetailsV2 Id="@pctlId" Caption="@caption" Iteration=iter />
+                <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter />
             </div>
         }
     </div>

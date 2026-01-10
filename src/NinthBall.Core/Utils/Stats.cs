@@ -58,27 +58,6 @@ namespace NinthBall.Core
         }
 
         /// <summary>
-        /// Computes the annualized nominal return from a sequence of periodic returns.
-        /// </summary>
-        public static double Annualize(this IEnumerable<double> returns)
-        {
-            ArgumentNullException.ThrowIfNull(returns);
-
-            double compoundReturn = 1;
-            int count = 0;
-
-            foreach (var r in returns)
-            {
-                checked { compoundReturn *= (1 + r); }
-                count++;
-            }
-
-            return (count == 0)
-                ? throw new ArgumentException("Input sequence must contain at least one value.", nameof(returns))
-                : Math.Pow(compoundReturn, 1.0 / count) - 1;
-        }
-
-        /// <summary>
         /// Given a future value, inflation rate and no of years, returns inflation adjusted value in current present value.
         /// </summary>
         public static double InflationAdjustedValue(this double futureBalance, double inflationRate, int numberOfYears)
