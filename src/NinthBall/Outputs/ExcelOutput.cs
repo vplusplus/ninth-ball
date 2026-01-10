@@ -273,7 +273,7 @@ namespace NinthBall
                             .Append("Year", styles.ColHeader)
                             .Append("Age", styles.ColHeader)
 
-                            .Append("Jan-401K", styles.ColHeader)     // Jan, alloc and less fees
+                            .Append("Jan-401K", styles.ColHeader)     // JanTotal, alloc and less fees
                             .Append("Alloc", styles.ColHeader)
                             .Append("Jan-Inv", styles.ColHeader)
                             .Append("Alloc", styles.ColHeader)
@@ -317,7 +317,7 @@ namespace NinthBall
                                 .Append(y.Year + 1)
                                 .Append(y.Age)
 
-                                // Jan, Alloc and Fees
+                                // JanTotal, Alloc and Fees
                                 .Append(y.Jan.PreTax.Amount, styles.C0)
                                 .Append(y.Jan.PreTax.Allocation, styles.Alloc)
                                 .Append(y.Jan.PostTax.Amount, styles.C0)

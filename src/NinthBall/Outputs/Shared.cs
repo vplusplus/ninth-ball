@@ -9,24 +9,6 @@ using static NinthBall.Outputs.ColorHint;
 
 namespace NinthBall.Outputs
 {
-    internal enum FormatHint { F0, C0, C1, C2, P0, P1, P2 }
-    internal enum WidthHint  { W1x, W2x, W3x, W4x }
-    internal enum AlignHint  { Left, Center, Right }
-    internal enum ColorHint  { None, Success, Warning, Danger, Muted }
-    internal enum CID
-    {
-        NA, Empty,
-        Year, Age,
-        Jan, JanValue, JanPreTax, JanPreTaxAlloc, JanPostTax, JanPostTaxAlloc, JanCash, 
-        Fees,
-        TaxOrdIncome, TaxDiv, TaxInt, TaxCapGains, Tax,
-        CYExp,
-        SS, Ann, Incomes,
-        XPreTax, XPostTax, XCash, XTotal,
-        Dec, DecValue, DecPreTax, DecPreTaxAlloc, DecPostTax, DecPostTaxAlloc, DecCash, DecTotal, DecApprox,
-        LikeYear, ROI, ROIStocks, ROIBonds, ROICash,
-    }
-
     internal static class ColumnDefinitions
     {
         public static readonly IReadOnlyList<CID> DefaultColumns =
@@ -58,13 +40,13 @@ namespace NinthBall.Outputs
             [CID.Year] = y => y.Year + 1,
             [CID.Age] = y => y.Age,
 
-            [CID.Jan] = y => y.Jan.Total(),
+            [CID.JanTotal] = y => y.Jan.Total(),
             [CID.JanValue] = y => y.Jan.ApproxValue,
             [CID.JanPreTax] = y => y.Jan.PreTax.Amount,
             [CID.JanPostTax] = y => y.Jan.PostTax.Amount,
             [CID.JanCash] = y => y.Jan.Cash.Amount,
 
-            [CID.Dec] = y => y.Dec.Total(),
+            [CID.DecTotal] = y => y.Dec.Total(),
             [CID.DecValue] = y => y.Dec.ApproxValue,
             [CID.DecPreTax] = y => y.Dec.PreTax.Amount,
             [CID.DecPostTax] = y => y.Dec.PostTax.Amount,
@@ -89,9 +71,9 @@ namespace NinthBall.Outputs
             [CID.Year]      = iter => iter.Max(y => y.Year + 1),
             [CID.Age]       = iter => iter.Max(y => y.Age),
 
-            [CID.Jan]       = iter => iter.Sum(y => y.Jan.Total()),
+            [CID.JanTotal]  = iter => iter.Sum(y => y.Jan.Total()),
             [CID.JanValue]  = iter => iter.Sum(y => y.Jan.ApproxValue),
-            [CID.Dec]       = iter => iter.Sum(y => y.Dec.Total()),
+            [CID.DecTotal]  = iter => iter.Sum(y => y.Dec.Total()),
             [CID.DecValue]  = iter => iter.Sum(y => y.Dec.ApproxValue),
 
         }.AsReadOnly();
