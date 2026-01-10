@@ -121,6 +121,32 @@ namespace NinthBall.Core
                 for (int i = 0; i < span.Length; i++) sumValue += fxValueSelector(span[i]);
                 return sumValue;
             }
+
+            /// <summary>
+            /// Computes the annualized nominal return from a sequence of periodic returns.
+            /// </summary>
+            public double Annualize(Func<SimYear, double> fxPercentageValueSelector)
+            {
+                ArgumentNullException.ThrowIfNull(fxPercentageValueSelector);
+
+                double compoundReturn = 1;
+                int count = 0;
+
+                var span = iteration.ByYear.Span;
+                var last = iteration.Success ? span.Length : span.Length - 1;
+
+                for (int i = 0; i < last; i++)
+                {
+                    //sumValue += fxValueSelector(span[i]);
+                    var r = fxPercentageValueSelector(span[i]); 
+                    checked { compoundReturn *= (1 + r); }
+                    count++;
+                }
+
+                return (count == 0)
+                    ? throw new ArgumentException("Input sequence must contain at least one value.")
+                    : Math.Pow(compoundReturn, 1.0 / count) - 1;
+            }
         }
 
         #endregion

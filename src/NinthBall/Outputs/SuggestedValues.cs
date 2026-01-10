@@ -98,6 +98,11 @@ namespace NinthBall.Outputs
             [CID.DecPostTax] = iter => iter.LastGoodYear.Dec.PostTax.Amount,
             [CID.DecCash]    = iter => iter.LastGoodYear.Dec.Cash.Amount,
 
+            [CID.ROIStocks]  = iter => iter.Annualize(y => y.ROI.StocksROI),
+            [CID.ROIBonds]   = iter => iter.Annualize(y => y.ROI.BondsROI),
+            [CID.ROICash]    = iter => iter.Annualize(y => y.ROI.CashROI),
+            [CID.ROI]        = iter => iter.Annualize(y => y.EffectiveROI),
+
         }.AsReadOnly();
     }
 }
