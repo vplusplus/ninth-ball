@@ -8,9 +8,11 @@ namespace NinthBall.Core
         //......................................................................
         extension(in Assets assets)
         {
-            // Approximate value less taxes (an indicative value, not exact)
-            // PreTax 100% taxable at 25%
-            // PostTax assuming all gains are long term gains, ignoring cash basis, and loss-harvesting
+            // Approximate value, less taxes (Indicative value, not exact)
+            // This is not cash in hand, if you try to withdraw all amount, will push to higher tax bracket.
+            // Ignoring cash basis, and loss-harvesting - Taxes are overstated.
+            // PreTax  - 100% taxable at 25%
+            // PostTax - Assuming all gains are long term gains, 
             public double ApproxValue => (assets.PreTax.Amount * 0.75) + (assets.PostTax.Amount * 0.85) + assets.Cash.Amount;
         }
 
