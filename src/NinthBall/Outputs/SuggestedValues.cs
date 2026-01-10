@@ -71,25 +71,32 @@ namespace NinthBall.Outputs
 
         static readonly IReadOnlyDictionary<CID, SumValueSelector> FxAggregates = new Dictionary<CID, SumValueSelector>()
         {
-            [CID.Year]     = iter => iter.Max(y => y.Year + 1),
-            [CID.Age]      = iter => iter.Max(y => y.Age),
+            [CID.Year]   = iter => iter.SurvivedYears,
+            [CID.Age]    = iter => iter.SurvivedAge,
 
-            [CID.JanTotal] = iter => iter.Sum(y => y.Jan.Total()),
-            [CID.JanValue] = iter => iter.Sum(y => y.Jan.ApproxValue),
-            
-            [CID.Fees]     = iter => iter.Sum(y => y.Fees.Total()),
-            [CID.PYTaxes]  = iter => iter.Sum(y => y.Expenses.PYTax.Total()),
-            [CID.CYExp]    = iter => iter.Sum(y => y.Expenses.CYExp),
+            // Asset values at last good sim year
+            [CID.JanTotal]   = iter => iter.LastGoodYear.Jan.Total(),
+            [CID.JanValue]   = iter => iter.LastGoodYear.Jan.ApproxValue,
+            [CID.JanPreTax]  = iter => iter.LastGoodYear.Jan.PreTax.Amount,
+            [CID.JanPostTax] = iter => iter.LastGoodYear.Jan.PostTax.Amount,
+            [CID.JanCash]    = iter => iter.LastGoodYear.Jan.Cash.Amount,
 
-            [CID.SS]       = iter => iter.Sum(y => y.Incomes.SS),
-            [CID.Ann]      = iter => iter.Sum(y => y.Incomes.Ann),
-            [CID.XPreTax]  = iter => iter.Sum(y => y.XPreTax),
-            [CID.XPostTax] = iter => iter.Sum(y => y.XPostTax),
-            [CID.XCash]    = iter => iter.Sum(y => y.XCash),
-            [CID.Change]   = iter => iter.Sum(y => y.Change.Total()),
+            [CID.Fees]       = iter => iter.Sum(y => y.Fees.Total()),
+            [CID.PYTaxes]    = iter => iter.Sum(y => y.Expenses.PYTax.Total()),
+            [CID.CYExp]      = iter => iter.Sum(y => y.Expenses.CYExp),
 
-            [CID.DecTotal] = iter => iter.Sum(y => y.Dec.Total()),
-            [CID.DecValue] = iter => iter.Sum(y => y.Dec.ApproxValue),
+            [CID.SS]         = iter => iter.Sum(y => y.Incomes.SS),
+            [CID.Ann]        = iter => iter.Sum(y => y.Incomes.Ann),
+            [CID.XPreTax]    = iter => iter.Sum(y => y.XPreTax),
+            [CID.XPostTax]   = iter => iter.Sum(y => y.XPostTax),
+            [CID.XCash]      = iter => iter.Sum(y => y.XCash),
+            [CID.Change]     = iter => iter.Sum(y => y.Change.Total()),
+
+            [CID.DecTotal]   = iter => iter.LastGoodYear.Dec.Total(),
+            [CID.DecValue]   = iter => iter.LastGoodYear.Dec.ApproxValue,
+            [CID.DecPreTax]  = iter => iter.LastGoodYear.Dec.PreTax.Amount,
+            [CID.DecPostTax] = iter => iter.LastGoodYear.Dec.PostTax.Amount,
+            [CID.DecCash]    = iter => iter.LastGoodYear.Dec.Cash.Amount,
 
         }.AsReadOnly();
     }
