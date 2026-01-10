@@ -43,9 +43,14 @@ namespace NinthBall.Outputs
             [CID.JanPostTaxAlloc] = (it, y) => y.Jan.PostTax.Allocation,
 
             [CID.Fees]            = (it, y) => y.Fees.Total(),
+            [CID.TaxOrdIncome]    = (it, y) => y.Expenses.PYTax.OrdIncomeTax,
+            [CID.TaxDiv]          = (it, y) => y.Expenses.PYTax.DividendsTax,
+            [CID.TaxInt]          = (it, y) => y.Expenses.PYTax.InterestsTax,
+            [CID.TaxCapGains]     = (it, y) => y.Expenses.PYTax.CapGainTax,
             [CID.PYTaxes]         = (it, y) => y.Expenses.PYTax.Total(),
             [CID.CYExp]           = (it, y) => y.Expenses.CYExp,
 
+            [CID.Incomes]         = (it, y) => y.Incomes.Total(),
             [CID.SS]              = (it, y) => y.Incomes.SS,
             [CID.Ann]             = (it, y) => y.Incomes.Ann,
             [CID.XPreTax]         = (it, y) => y.XPreTax,
@@ -82,9 +87,14 @@ namespace NinthBall.Outputs
             [CID.JanCash]    = iter => iter.LastGoodYear.Jan.Cash.Amount,
 
             [CID.Fees]       = iter => iter.Sum(y => y.Fees.Total()),
+            [CID.TaxOrdIncome] = iter => iter.Sum(y => y.Expenses.PYTax.OrdIncomeTax),
+            [CID.TaxDiv]       = iter => iter.Sum(y => y.Expenses.PYTax.DividendsTax),
+            [CID.TaxInt]       = iter => iter.Sum(y => y.Expenses.PYTax.InterestsTax),
+            [CID.TaxCapGains]  = iter => iter.Sum(y => y.Expenses.PYTax.CapGainTax),
             [CID.PYTaxes]    = iter => iter.Sum(y => y.Expenses.PYTax.Total()),
             [CID.CYExp]      = iter => iter.Sum(y => y.Expenses.CYExp),
 
+            [CID.Incomes]    = iter => iter.Sum(y => y.Incomes.Total()),
             [CID.SS]         = iter => iter.Sum(y => y.Incomes.SS),
             [CID.Ann]        = iter => iter.Sum(y => y.Incomes.Ann),
             [CID.XPreTax]    = iter => iter.Sum(y => y.XPreTax),
