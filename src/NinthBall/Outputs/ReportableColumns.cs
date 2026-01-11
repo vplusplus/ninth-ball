@@ -25,7 +25,7 @@ namespace NinthBall.Outputs
         TaxDiv,                 // PYTaxes paid on dividends
         TaxInt,                 // PYTaxes paid on interest
         TaxCapGains,            // PYTaxes paid on capital gains
-        PYTaxes,                    // Total taxes paid (Sum of Ord, Div, Int, CapGains)
+        PYTaxes,                // Total taxes paid (Sum of Ord, Div, Int, CapGains)
 
         CYExp,                  // Current Year Expenses (Inflation adjusted)
 

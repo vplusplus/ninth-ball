@@ -2,13 +2,16 @@
 namespace NinthBall.Core
 {
     [SimInput(typeof(LivingExpensesStrategy), typeof(LivingExpenses), Family = StrategyFamily.LifestyleExpenses)]
-    sealed class LivingExpensesStrategy(LivingExpenses Options) : ISimObjective
+    sealed class LivingExpensesStrategy(SimParams P, LivingExpenses LExp) : ISimObjective
     {
         int ISimObjective.Order => 32;
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
+        // Living expenses increase by the configured inflation rate.
+        readonly double YearlyIncrement = P.InflationRate;
+
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(LExp, YearlyIncrement);
         
-        sealed record Strategy(LivingExpenses LExp) : ISimStrategy
+        sealed record Strategy(LivingExpenses LExp, double yearlyIncrement) : ISimStrategy
         {
             double livingExpense = 0;
 
@@ -40,7 +43,7 @@ namespace NinthBall.Core
                     }
 
                     // Increment prior year livingExpense by suggested increment
-                    livingExpense *= 1 + LExp.Increment;
+                    livingExpense *= 1 + yearlyIncrement;
 
                     context.Expenses = context.Expenses with
                     {
@@ -52,10 +55,10 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Living expenses | {Options.FirstYearAmount:C0} first year (+{Options.Increment:P1}/yr){CSVStepDown}";
+        public override string ToString() => $"Living expenses | {LExp.FirstYearAmount:C0} first year (+{YearlyIncrement:P1}/yr){CSVStepDown}";
 
-        string CSVStepDown => null != Options.StepDown && Options.StepDown.Count > 0
-            ? $" | Stepdown: {string.Join(", ", Options.StepDown.Select(x => $"[-{x.Reduction:C0} @ {x.AtAge}]"))}"
+        string CSVStepDown => null != LExp.StepDown && LExp.StepDown.Count > 0
+            ? $" | Stepdown: {string.Join(", ", LExp.StepDown.Select(x => $"[-{x.Reduction:C0} @ {x.AtAge}]"))}"
             : string.Empty;
     }
 }

@@ -4,6 +4,17 @@ namespace NinthBall.Core
     public static class CalculatedFields
     {
         //......................................................................
+        #region Calculated fields on SimInput
+        //......................................................................
+        extension(SimInput input)
+        {
+            public double InflationRate => input.SimParams.InflationRate;
+
+        }
+
+        #endregion
+
+        //......................................................................
         #region Calculated fields on Assets
         //......................................................................
         extension(in Assets assets)

@@ -6,7 +6,7 @@ SimParams:
   StartAge: 60
   NoOfYears: 35
   Iterations: 10000
-  InflationRate: 2%
+  InflationRate: 2.1%
 
 InitialBalance:
   PreTax:
@@ -62,7 +62,6 @@ Taxes:
 # ............................................................
 LivingExpenses:
   FirstYearAmount: 100,000
-  Increment: 2%
   StepDown:
     - AtAge: 65           # Example: Stop paying Life Ins
       Reduction: 10000
@@ -83,8 +82,7 @@ ZZZPercentageWithdrawal:
   ResetAtAge:   [65, 70]
 
 VariablePercentageWithdrawal:
-  ROI: 4%
-  Inflation: 2%
+  FutureROI: 4%
   Floor: 0
   Ceiling: 150,000
 

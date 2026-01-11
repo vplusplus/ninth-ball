@@ -104,7 +104,7 @@ namespace NinthBall.Core
             // We do not have historical data on dividends.
             // Using a reasonable assumption of 2% of the stock balance.
             // This is a standard assumption used by: Vanguard, Fidelity and Schwab
-            // For simplicity, we assume all dividends are qualified dividends.
+            // BY-DESIGN: For simplicity, we assume all dividends are qualified dividends.
             const double TypicalStocksDividendYield = 0.02;
             var qualifiedDividendAmount = janStockBalance * TypicalStocksDividendYield;
 
@@ -115,7 +115,7 @@ namespace NinthBall.Core
             var interestAmount = Math.Max(0, janBondBalance * TypicalBondCouponYield);
 
             // We do not track cash basis, too complex.
-            // 100% of the Withdrawal is treated as long-term capital gain.
+            // BY-DESIGN: 100% of the Withdrawal is treated as long-term capital gain.
             // This is a reasonable simplification for Monte Carlo simulation.
             // However, avoid frequent rebalancing or reallocations that may trigger short-term capital gains.
             var longTermCapitalGain = priorYear.Withdrawals.PostTax;

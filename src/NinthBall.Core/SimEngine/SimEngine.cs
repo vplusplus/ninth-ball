@@ -21,6 +21,7 @@ namespace NinthBall.Core
             // NOTE: Dispose te DI container on return; we will prepare a fresh container for each run.
             using var services = new ServiceCollection()
                 .AddSingleton(new SimulationSeed(input.RandomSeedHint))
+                .AddSingleton(input)
                 .RegisterSimulationInputs(validInputs)
                 .RegisterActiveStrategies(validInputs)
                 .RegisterHistoricalReturnsAndBootstrappers()

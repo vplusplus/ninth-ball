@@ -1,5 +1,6 @@
 ﻿
 
+using DocumentFormat.OpenXml.EMMA;
 using NinthBall.Core;
 using NF = NinthBall.Core.ExcelStylesheetBuilder.NumberFormats; 
 
@@ -30,7 +31,7 @@ namespace NinthBall
 
 
         // For annualization
-        const double InflationRate = 0.03;
+        // const double InflationRate = 0.03;
 
         public static async Task Generate(SimResult simResult, string excelFileName)
         {
@@ -208,7 +209,7 @@ namespace NinthBall
                         foreach (var pctl in Percentiles.Items)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
-                            var m = p.EndingBalance.InflationAdjustedValue(InflationRate, p.SurvivedYears).Mil();
+                            var m = p.EndingBalance.InflationAdjustedValue(simResult.Input.InflationRate, p.SurvivedYears).Mil();
                             row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");

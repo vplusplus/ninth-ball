@@ -69,16 +69,13 @@ namespace NinthBall.Core
     }
 
     [SimInput(typeof(PreTaxVariablePercentageWithdrawalStrategy), typeof(VariablePercentageWithdrawal), Family = StrategyFamily.PreTaxWithdrawalVelocity)]
-    sealed class PreTaxVariablePercentageWithdrawalStrategy(VariablePercentageWithdrawal Options, SimParams Params) : ISimObjective
+    sealed class PreTaxVariablePercentageWithdrawalStrategy(SimParams Params, VariablePercentageWithdrawal VPW) : ISimObjective
     {
         int ISimObjective.Order => 20;
 
-        // This strategy depends on inflation rate.
-        double InflationRate = 0 == Params.InflationRate ? throw new Exception("Did you forget to set the inflation rate?") : Params.InflationRate;
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Params, VPW);
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options, Params);
-
-        sealed class Strategy(VariablePercentageWithdrawal VPW, SimParams P) : ISimStrategy
+        sealed class Strategy(SimParams P, VariablePercentageWithdrawal VPW) : ISimStrategy
         {
             void ISimStrategy.Apply(ISimContext ctx)
             {
@@ -87,7 +84,7 @@ namespace NinthBall.Core
                 // Calculate the "ideal" withdrawal to hit zero at the end of the horizon.
                 double amount = Stats.EquatedWithdrawal(
                     currentBalance:     ctx.PreTaxBalance.Amount, 
-                    estimatedROI:       VPW.ROI, 
+                    estimatedROI:       VPW.FutureROI, 
                     estimatedInflation: P.InflationRate, 
                     remainingYears:     remainingYears
                 );
@@ -115,10 +112,10 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {Options.ROI:P1} ROI, {Params.InflationRate:P1} Inflation{GuardrailsToString}";
+        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {VPW.FutureROI:P1} future ROI, {Params.InflationRate:P1} future inflation{GuardrailsToString}";
 
-        string GuardrailsToString => (Options.Floor.HasValue || Options.Ceiling.HasValue) 
-            ? $" | Guardrails: [{Options.Floor?.ToString("C0") ?? "None"} - {Options.Ceiling?.ToString("C0") ?? "None"}] adjusted for inflation" 
+        string GuardrailsToString => (VPW.Floor.HasValue || VPW.Ceiling.HasValue) 
+            ? $" | Guardrails: [{VPW.Floor?.ToString("C0") ?? "None"} - {VPW.Ceiling?.ToString("C0") ?? "None"}] adjusted for inflation" 
             : string.Empty;
     }
 }

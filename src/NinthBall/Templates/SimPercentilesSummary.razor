@@ -42,9 +42,9 @@
                 if (iter.Success)
                 {
                     // Assuming 3% inflation to calculate inflation adjusted real purchasing power.
-                    const double TheInflationRate = 0.03;   
+                    // const double TheInflationRate = 0.03;   
 
-                    var endBalance = iter.EndingBalance.InflationAdjustedValue(TheInflationRate, iter.SurvivedYears).Millions();
+                    var endBalance = iter.EndingBalance.InflationAdjustedValue(Model.Input.InflationRate, iter.SurvivedYears).Millions();
                     <th>@endBalance</th>
                 }
                 else

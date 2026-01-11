@@ -51,7 +51,7 @@ namespace NinthBall.Core
         [property: Range(1, 50000)]
         int Iterations = 10000,
 
-        [property: Range(0.02, 0.50)]
+        [property: Range(0.001, 0.50)]  // Use very small value to test for zero inflation
         double InflationRate = 0.02
     );
 
@@ -124,27 +124,36 @@ namespace NinthBall.Core
 
     public sealed record AdditionalIncomes
     (
-        [property: ValidateNested] AdditionalIncomes.AAI SS,
-        [property: ValidateNested] AdditionalIncomes.AAI Ann
+        [property: ValidateNested] AdditionalIncomes.SSIncome SS,
+        [property: ValidateNested] AdditionalIncomes.ANNIncome Ann
     )
     {
-        public readonly record struct AAI
+        public readonly record struct SSIncome
         (
             [property: Range(1, 100)] 
             int FromAge,
 
             [property: Min(0)] 
+            double Amount
+        );
+
+        public readonly record struct ANNIncome
+        (
+            [property: Range(1, 100)]
+            int FromAge,
+
+            [property: Min(0)]
             double Amount,
 
-            [property:Range(0,1)]
+            [property: Range(0.0, 0.1)]
             double Increment
         );
+
     }
 
     public sealed record LivingExpenses
     (
         [property:Min(0)]           double FirstYearAmount,
-        [property:Range(0,1)]       double Increment,
         [property: ValidateNested]  IReadOnlyList<LivingExpenses.ARD> StepDown
     )
     {
@@ -175,9 +184,14 @@ namespace NinthBall.Core
 
     public sealed record VariablePercentageWithdrawal
     (
-        [property: Range(0, 1)] double ROI,
-        [property: Min(0)] double? Floor = null,
-        [property: Min(0)] double? Ceiling = null
+        [property: Range(0, 1)] 
+        double FutureROI,
+
+        [property: Min(0)] 
+        double? Floor = null,
+
+        [property: Min(0)] 
+        double? Ceiling = null
     );
 
     public enum BootstrapKind
@@ -187,8 +201,11 @@ namespace NinthBall.Core
 
     public sealed record Growth
     (
-        [property: Required]    BootstrapKind Bootstrapper, 
-        [property: Range(0, 1)] double CashROI
+        [property: Required]
+        BootstrapKind Bootstrapper, 
+
+        [property: Range(0, 1)] 
+        double CashROI
     );
 
     public sealed record FlatBootstrap
