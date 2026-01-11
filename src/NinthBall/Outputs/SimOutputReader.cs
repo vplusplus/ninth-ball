@@ -94,7 +94,7 @@ namespace NinthBall.Outputs
             new(0.20, "Target"),
             new(0.50, "Coin-flip"),
             new(0.80, "Fortunate"),
-            new(0.90, "Lucky"),
+            // new(0.90, "Lucky"),
             // new(0.95, "Dream"),
         ];
 

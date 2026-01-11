@@ -25,6 +25,12 @@ namespace NinthBall.Outputs
             [CID.ROIBonds] = W1x,
             [CID.ROICash] = W1x,
 
+            [CID.JanPreTaxAlloc] = W1x,
+            [CID.JanPostTaxAlloc] = W1x,
+            [CID.DecPreTaxAlloc] = W1x,
+            [CID.DecPostTaxAlloc] = W1x,
+
+
         }.AsReadOnly();
 
     }

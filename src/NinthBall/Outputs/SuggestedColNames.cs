@@ -27,6 +27,12 @@ namespace NinthBall.Outputs
             [CID.ROIBonds]      = "Bonds",
             [CID.AnnROI]        = "AnnROI",
 
+            [CID.JanPreTaxAlloc]   = "",
+            [CID.JanPostTaxAlloc]  = "",
+            [CID.DecPreTaxAlloc]   = "",
+            [CID.DecPostTaxAlloc]  = "",
+
+
         }.AsReadOnly();
 
         static readonly IReadOnlyDictionary<CID, string> ColumnTitles = new Dictionary<CID, string>()

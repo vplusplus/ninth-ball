@@ -111,6 +111,10 @@
             .nb-tooltip::after, .nb-tooltip::before {
                 display: none !important;
             }
+
+            /* Repeating headers and row stability */
+            thead { display: table-header-group; }
+            tr { break-inside: avoid; }
         }
     </style>
 </head>

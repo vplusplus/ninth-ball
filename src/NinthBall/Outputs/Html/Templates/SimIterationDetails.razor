@@ -5,7 +5,7 @@
 
 
 <!-- Presents year-by-year details of single iteration -->
-<table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%;">
+<table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%; table-layout: fixed;">
 
     <caption>
         <div>
@@ -31,19 +31,38 @@
 
     </colgroup>
 
+    <thead>
+
+        <!-- Labels are printed at the top of thead -->
+        <tr class="text-end">
+
+            @foreach (var cid in Cols)
+            {
+                var colName = cid.GetColName();
+                var title = cid.GetColTitle();
+                var cssAlign = cid.GetAlignmentHint().ToCSSTextAlignment();
+                var hasTitle = !string.IsNullOrEmpty(title);
+                var tooltipClass = hasTitle ? "nb-tooltip" : string.Empty;
+
+                <th class="@cssAlign @tooltipClass" data-nb-title="@title">@colName</th>
+            }
+
+        </tr>
+
+    </thead>
+
     <tbody>
 
-
-        <!-- Summary row (totals, ann-returns, etc.) on top -->
-
-
+        <!-- Summary row (totals, ann-returns, etc.) moves to top of tbody (so it doesn't repeat in print) -->
         <tr class="text-end">
-            @foreach(var cid in Cols)
+            
+            <td colspan="2" class="text-start text-warning">Bottom Line</td>
+
+            @foreach(var cid in Cols.Skip(2))
             {
                 var aggValue   = Iteration.GetAggregateValue(cid);
                 var formatHint = cid.GetFormatHint();
                 var alignHint  = cid.GetAlignmentHint();
-                var colorHint  = "text-secondary"; // Always muted for summary
 
                 // Formatting logic for summary
                 var isCurrencyValue = formatHint is FormatHint.C0 or FormatHint.C1 or FormatHint.C2;
@@ -64,27 +83,10 @@
                     }
                 }
                 
-                <td class="@colorHint @alignHint.ToCSSTextAlignment()">@txtCellValue</td>
+                <td class="@alignHint.ToCSSTextAlignment() text-warning">@txtCellValue</td>
             }
         </tr>
 
-        <!-- Labels are printed after summary row -->
-        <tr class="text-end">
-
-            @foreach (var cid in Cols)
-            {
-                var colName = cid.GetColName();
-                var title = cid.GetColTitle();
-                var cssAlign = cid.GetAlignmentHint().ToCSSTextAlignment();
-                var hasTitle = !string.IsNullOrEmpty(title);
-                var tooltipClass = hasTitle ? "nb-tooltip" : string.Empty;
-
-                <th class="@cssAlign @tooltipClass" data-nb-title="@title">@colName</th>
-            }
-
-        </tr>
-
-        <!-- Labels are printed summary row on top -->
         @foreach (var y in Iteration.ByYear.Span)
         {
             <tr class="text-end">
