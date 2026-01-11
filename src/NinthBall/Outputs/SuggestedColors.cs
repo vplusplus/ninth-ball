@@ -31,6 +31,7 @@ namespace NinthBall.Outputs
             [CID.CYExp]     = (SimIteration it, in SimYear y) => WarnOnStepDown(it, in y),
             [CID.XPreTax]   = (SimIteration it, in SimYear y) => RedGreen(y.XPreTax),
             [CID.XPostTax]  = (SimIteration it, in SimYear y) => RedGreen(y.XPostTax),
+            [CID.Change]    = (SimIteration it, in SimYear y) => RedGreen(y.Change.Total()),
 
         }.AsReadOnly();
 

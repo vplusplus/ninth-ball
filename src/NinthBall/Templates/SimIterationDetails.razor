@@ -90,7 +90,7 @@
             <tr class="text-end">
             @foreach (var cid in Cols)
             {
-                var cellValue  = y.GetCellValue(cid, Iteration);
+                var cellValue  = y.GetCellValue(cid, Iteration).GetValueOrDefault(0.0);
                 var formatHint = cid.GetFormatHint();
                 var alignHint  = cid.GetAlignmentHint();
                 var colorHint  = y.GetCellColorHint(cid, Iteration);
@@ -98,10 +98,12 @@
                 // We are displaying all amounts in thousands.
                 // We infer currency values based on suggested format
                 var isCurrencyValue = formatHint is FormatHint.C0 or FormatHint.C1 or FormatHint.C2;
-                cellValue /= isCurrencyValue ? 1000.0 : 1.0;
+                cellValue = isCurrencyValue ? Math.Round(cellValue / 1000.0) : cellValue;
 
+                // To reduce cognitive overload, we do not display near zero values.
                 var fmtSpec = formatHint.ToTextFormat();
-                var txtCellValue = cellValue.HasValue ? cellValue.Value.ToString(fmtSpec) : string.Empty;
+                var showNumber = Math.Abs(cellValue) > 0.0001;
+                var txtCellValue = showNumber ? cellValue.ToString(fmtSpec) : string.Empty;
 
                 <td class="@colorHint.ToCSSColor() @alignHint.ToCSSTextAlignment()">@txtCellValue</td>
             }
