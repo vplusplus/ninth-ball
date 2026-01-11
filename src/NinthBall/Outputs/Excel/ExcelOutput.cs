@@ -3,7 +3,7 @@
 using NinthBall.Core;
 using NF = NinthBall.Core.ExcelStylesheetBuilder.NumberFormats; 
 
-namespace NinthBall.Outputs
+namespace NinthBall.Outputs.Excel
 {
     internal static class ExcelOutput
     {

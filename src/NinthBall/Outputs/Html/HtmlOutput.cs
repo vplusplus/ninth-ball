@@ -1,8 +1,7 @@
 ﻿using NinthBall.Core;
-using NinthBall.Outputs;
 using NinthBall.Outputs.Html.Templates;
 
-namespace NinthBall
+namespace NinthBall.Outputs.Html
 {
     internal static class HtmlOutput
     {

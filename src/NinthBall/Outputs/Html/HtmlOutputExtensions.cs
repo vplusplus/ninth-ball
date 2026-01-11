@@ -1,6 +1,6 @@
 ﻿
 
-namespace NinthBall.Outputs.Html.Templates
+namespace NinthBall.Outputs.Html
 {
     internal static class HtmlOutputExtensions
     {

@@ -1,6 +1,8 @@
 ﻿
 using NinthBall.Core;
 using NinthBall.Outputs;
+using NinthBall.Outputs.Html;
+using NinthBall.Outputs.Excel;
 using System.Diagnostics;
 
 namespace NinthBall
