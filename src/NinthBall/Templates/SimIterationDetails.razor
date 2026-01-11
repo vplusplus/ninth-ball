@@ -78,8 +78,10 @@
                 var colName = cid.GetColName();
                 var title = cid.GetColTitle();
                 var cssAlign = cid.GetAlignmentHint().ToCSSTextAlignment();
+                var hasTitle = !string.IsNullOrEmpty(title);
+                var tooltipClass = hasTitle ? "nb-tooltip" : string.Empty;
 
-                <th class="@cssAlign" title="@title">@colName</th>
+                <th class="@cssAlign @tooltipClass" data-nb-title="@title">@colName</th>
             }
 
         </tr>
