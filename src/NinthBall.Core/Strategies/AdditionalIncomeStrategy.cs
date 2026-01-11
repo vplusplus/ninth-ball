@@ -15,11 +15,27 @@ namespace NinthBall.Core
 
             void ISimStrategy.Apply(ISimContext context)
             {
+                // Income is active if current age >= FromAge
+                bool ssActive = context.Age >= AInc.SS.FromAge;
+                bool annActive = context.Age >= AInc.Ann.FromAge;
+
+                if (context.YearIndex == 0)
+                {
+                    // First year initialization (accounts for elapsed years if StartAge > FromAge)
+                    if (ssActive) ssAmount = AInc.SS.Amount * Math.Pow(1 + P.InflationRate, context.Age - AInc.SS.FromAge);
+                    if (annActive) annAmount = AInc.Ann.Amount * Math.Pow(1 + AInc.Ann.Increment, context.Age - AInc.Ann.FromAge);
+                }
+                else
+                {
+                    // Subsequent years: Grow if active; Initialize if starting this year.
+                    if (ssActive)  ssAmount  = (context.Age == AInc.SS.FromAge)  ? AInc.SS.Amount  : ssAmount * (1 + P.InflationRate);
+                    if (annActive) annAmount = (context.Age == AInc.Ann.FromAge) ? AInc.Ann.Amount : annAmount * (1 + AInc.Ann.Increment);
+                }
+
                 context.Incomes = context.Incomes with
                 {
-                    // BY-DESIGN: SS uses InflationRate as increment. Ann uses configured increment.
-                    SS  = Math.Round(context.Age == AInc.SS.FromAge  ? ssAmount  = AInc.SS.Amount  : ssAmount  *= 1 + P.InflationRate),
-                    Ann = Math.Round(context.Age == AInc.Ann.FromAge ? annAmount = AInc.Ann.Amount : annAmount *= 1 + AInc.Ann.Increment),
+                    SS  = Math.Round(ssActive ? ssAmount : 0),
+                    Ann = Math.Round(annActive ? annAmount : 0),
                 };
             }
         }

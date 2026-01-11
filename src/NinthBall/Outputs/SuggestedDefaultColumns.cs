@@ -15,6 +15,9 @@ namespace NinthBall.Outputs
             CID.PYTaxes,
             CID.CYExp,
 
+            CID.SS,
+            CID.Ann,
+
             CID.XPreTax, CID.XPostTax,
             CID.Change,
             CID.DecValue,
