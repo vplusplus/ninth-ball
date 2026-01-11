@@ -107,7 +107,7 @@ namespace NinthBall.Core
                 ArgumentNullException.ThrowIfNull(fxValueSelector);
 
                 var span = iteration.ByYear.Span;
-                var last = iteration.Success ? span.Length : ignoreFailedYear ? span.Length - 1 : span.Length;
+                var last = ignoreFailedYear ? iteration.SurvivedYears : span.Length;
 
                 double sumValue = 0.0;
                 for (int i = 0; i < last; i++) sumValue += fxValueSelector(span[i]);
@@ -122,7 +122,7 @@ namespace NinthBall.Core
                 ArgumentNullException.ThrowIfNull(fxPercentageValueSelector);
 
                 var span = iteration.ByYear.Span;
-                var last = iteration.Success ? span.Length : ignoreFailedYear ? span.Length - 1 : span.Length;
+                var last = ignoreFailedYear ? iteration.SurvivedYears : span.Length;
 
                 double compoundReturn = 1;
                 int count = 0;

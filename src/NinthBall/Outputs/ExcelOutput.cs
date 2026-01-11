@@ -99,7 +99,7 @@ namespace NinthBall
             {
                 sheet.WriteColumns(20, 120);
 
-                var firstYear = simResult.Iterations[0].ByYear.Span[0];
+                var firstYear = simResult.Iterations[0].FirstYear;
 
                 using (var rows = sheet.BeginSheetData())
                 {

@@ -4,7 +4,7 @@
 <div>
 
     @{
-        SimYear Y0 = Model.Iterations[0].ByYear.Span[0];
+        SimYear Y0 = Model.Iterations[0].FirstYear;
 
         var startPreTax   = $"{Y0.Jan.PreTax.Amount:C0}";
         var startPostTax  = $"{Y0.Jan.PostTax.Amount:C0}";
