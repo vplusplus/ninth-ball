@@ -130,7 +130,7 @@ namespace NinthBall.Core
                 {
                     //sumValue += fxValueSelector(span[i]);
                     var r = fxPercentageValueSelector(span[i]); 
-                    checked { compoundReturn *= (1 + r); }
+                    compoundReturn *= (1 + r);
                     count++;
                 }
 
