@@ -7,7 +7,7 @@ namespace NinthBall.Core
     /// Supports Json serializer.
     /// Can convert PCT values (example: 60%) to double
     /// </summary>
-    internal sealed class PercentageToDoubleConverter : System.Text.Json.Serialization.JsonConverter<double>
+    public sealed class PercentageToDoubleConverter : System.Text.Json.Serialization.JsonConverter<double>
     {
         public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
             reader.TokenType == JsonTokenType.Number ? reader.GetDouble() :

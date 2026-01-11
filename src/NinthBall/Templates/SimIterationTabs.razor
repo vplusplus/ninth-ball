@@ -1,5 +1,6 @@
 ﻿@using System;
 @using NinthBall.Core;
+@using NinthBall.Outputs;
 
 <!-- TabSet - Details on chosen percentiles -->
 <div>
@@ -8,12 +9,12 @@
         <li class="nav-item">
             <a class="nav-link disabled" aria-disabled="true">Details: </a>
         </li>
-        @foreach (var p in Percentiles.Items)
+        @foreach (var p in Percentiles)
         {
             var pctlId = PercentileId(p.Pctl);
             var pctlCaption = p.PctlName;
 
-            var isActive = p.Pctl == Percentiles.Target ? "active" : "";
+            var isActive = p.Pctl == Percentile.Target ? "active" : "";
 
             <li class="nav-item">
                 <a class="nav-link @isActive" data-bs-toggle="tab" href="#@(pctlId)">@pctlCaption</a>
@@ -22,14 +23,14 @@
     </ul>
 
     <div class="tab-content">
-        @foreach (var p in Percentiles.Items)
+        @foreach (var p in Percentiles)
         {
             var iter = Model.Percentile(p.Pctl);
             var pctlId = PercentileId(p.Pctl);
             var caption = $"{p.PctlName} Percentile";
-            var isActive = p.Pctl == Percentiles.Target ? "active" : "";
+            var isActive = p.Pctl == Percentile.Target ? "active" : "";
             <div class="tab-pane @isActive" id="@(pctlId)">
-                <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter />
+                <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter OutputConfig=OutputConfig />
             </div>
         }
     </div>
@@ -38,7 +39,10 @@
 @code
 {
     [Parameter] public SimResult Model { get; set; } = null!;
+    [Parameter] public SimOutput OutputConfig { get; set; } = null!;
 
+    private IReadOnlyList<Percentile> Percentiles => OutputConfig.GetPercentilesOrDefault();
+
+    // Computes an unique html-id for the chosen percentile.
     static string PercentileId(double pctl) => $"{pctl * 100:00}";
-
 }

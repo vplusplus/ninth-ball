@@ -4,7 +4,7 @@ namespace NinthBall.Outputs
     /// <summary>
     /// Column identifiers for reportable-columns
     /// </summary>
-    internal enum CID
+    public enum CID
     {
         NA = 0,                 // Pseudo column. Information not available
         Empty,                  // Pseudo column. Suggesting to include a divider or visual separation

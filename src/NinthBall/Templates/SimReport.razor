@@ -1,5 +1,6 @@
 ﻿@using System;
 @using NinthBall.Core;
+@using NinthBall.Outputs;
 
 <!doctype html>
 <html lang="en">
@@ -84,10 +85,10 @@
     <div class="container-fluid">
 
         <div>
-            <SimParameters Model=Model InputFileName="@InputFileName" />
-            <SimSurvival Model=Model />
-            <SimPercentilesSummary Model=Model />
-            <SimIterationTabs Model=Model />
+            <SimParameters SimResult=SimResult InputFileName="@InputFileName" />
+            <SimSurvival SimResult=SimResult />
+            <SimPercentilesSummary SimResult=SimResult OutputConfig=OutputConfig />
+            <SimIterationTabs Model=SimResult OutputConfig=OutputConfig />
         </div>
 
         <span class="mt-4 p-2" >
@@ -105,5 +106,6 @@
 @code
 {
     [Parameter] public string InputFileName { get; set; } = null!;
-    [Parameter] public SimResult Model { get; set; } = null!;
+    [Parameter] public SimResult SimResult { get; set; } = null!;
+    [Parameter] public SimOutput? OutputConfig { get; set; } = null!;
 }

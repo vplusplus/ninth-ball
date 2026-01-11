@@ -2,9 +2,6 @@
 @using NinthBall.Core;
 @using NinthBall.Outputs;
 
-@{
-    var Cols = ColumnDefinitions.DefaultHtmlColumns;
-}
 
 <!-- Presents year-by-year details of single iteration -->
 <table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%;">
@@ -117,9 +114,10 @@
 
 @code
 {
-    // const double TheInflationRate = 0.03;
-
     [Parameter] public string Id { get; set; } = null!;
     [Parameter] public string Caption { get; set; } = "";
     [Parameter] public SimIteration Iteration { get; set; } = null!;
+    [Parameter] public SimOutput OutputConfig { get; set; } = null!;
+
+    private IReadOnlyList<CID> Cols => OutputConfig.GetHtmlColumnsOrDefaults();
 }

@@ -1,10 +1,9 @@
 ﻿
 
-using DocumentFormat.OpenXml.EMMA;
 using NinthBall.Core;
 using NF = NinthBall.Core.ExcelStylesheetBuilder.NumberFormats; 
 
-namespace NinthBall
+namespace NinthBall.Outputs
 {
     internal static class ExcelOutput
     {
@@ -86,7 +85,7 @@ namespace NinthBall
                 RenderSummary(xl, myStyles, simResult);
 
                 // Render one sheet per percentile
-                foreach(var pctl in Percentiles.Items) RenderPercentile(xl, myStyles, simResult, pctl);
+                foreach(var pctl in SimOutputExtensions.DefaultPercentiles) RenderPercentile(xl, myStyles, simResult, pctl);
 
                 // NOTE: Dispose will not save. We have to save.
                 xl.Save();
@@ -159,6 +158,8 @@ namespace NinthBall
             const double W10 = 10;
             const double W20 = 20;
 
+            var percentiles = SimOutputExtensions.DefaultPercentiles;
+
             using (var sheet = xl.BeginSheet("Summary"))
             {
                 sheet.WriteColumns(W20, W10, W10, W10, W10, W10, W10, W10, W20);
@@ -179,21 +180,21 @@ namespace NinthBall
                     using (var row = rows.BeginRow())
                     {
                         row.Append("");
-                        foreach(var pctl in Percentiles.Items) row.Append(pctl.FriendlyName, styles.SumTxt);
+                        foreach(var pctl in percentiles) row.Append(pctl.FriendlyName, styles.SumTxt);
                         row.Append("");
                     }
 
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Percentiles");
-                        foreach (var pctl in Percentiles.Items) row.Append(pctl.PctlName, styles.SumTxt);
+                        foreach (var pctl in percentiles) row.Append(pctl.PctlName, styles.SumTxt);
                         row.Append(" percentile");
                     }
 
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Start (Real)");
-                        foreach (var pctl in Percentiles.Items)
+                        foreach (var pctl in percentiles)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             var m = p.StartingBalance.Mil();
@@ -206,7 +207,7 @@ namespace NinthBall
                     using (var row = rows.BeginRow())
                     {
                         row.Append("End (Real)");
-                        foreach (var pctl in Percentiles.Items)
+                        foreach (var pctl in percentiles)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             var m = p.EndingBalance.InflationAdjustedValue(simResult.Input.InflationRate, p.SurvivedYears).Mil();
@@ -218,7 +219,7 @@ namespace NinthBall
                     using (var row = rows.BeginRow())
                     {
                         row.Append("End (Nominal)");
-                        foreach (var pctl in Percentiles.Items)
+                        foreach (var pctl in percentiles)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             var m = p.EndingBalance.Mil();
@@ -230,7 +231,7 @@ namespace NinthBall
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Change (Annualized)");
-                        foreach (var pctl in Percentiles.Items)
+                        foreach (var pctl in percentiles)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
                             //var chng = p.ByYear.AnnualizeChangePCT();
@@ -243,7 +244,7 @@ namespace NinthBall
             }
         }
 
-        static void RenderPercentile(ExcelWriter xl, MyStyles styles, SimResult simResult, Percentiles.PCTL pctl)
+        static void RenderPercentile(ExcelWriter xl, MyStyles styles, SimResult simResult, Percentile pctl)
         {
             const double Blank = 2;
             const double W4 = 4;

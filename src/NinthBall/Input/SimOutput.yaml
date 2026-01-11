@@ -1,0 +1,24 @@
+
+HtmlView:  Simple
+ExcelView: Simple
+
+zzPercentiles:
+  - { Pctl: 0.10, PctlName: "10th", FriendlyName: "Safe Bound" }
+  - { Pctl: 0.50, PctlName: "50th", FriendlyName: "Median" }
+
+Views:
+  Simple: [ Year, Age, JanValue, SS, Ann, Fees, PYTaxes, LivExp, XPreTax, XPostTax, DecValue ]
+
+  CashFlow: [
+      Year, Age,
+      JanPreTax, JanPostTax, JanValue,
+      Fees, PYTaxes, LivExp,
+      SS, Ann,
+      XPreTax, XPostTax,
+      ROIAmount,
+      DecValue,
+      LikeYear, ROI, AnnROI, ROIStocks, ROIBonds
+    ]
+
+  
+

@@ -1,5 +1,6 @@
 ﻿
 using NinthBall.Core;
+using NinthBall.Outputs;
 using NinthBall.Templates;
 using System.Diagnostics;
 
@@ -87,6 +88,7 @@ namespace NinthBall
             {
                 // Load Config
                 var simConfig = SimInputReader.ReadFromYamlFile(InputFileName);
+                var outputConfig = SimOutputReader.TryLoad(InputFileName);
 
                 // Run simulation
                 var timer = Stopwatch.StartNew();
@@ -94,7 +96,7 @@ namespace NinthBall
                 timer.Stop();
 
                 var htmlFileName = OutputFileName;
-                await HtmlOutput.GenerateAsync(Services, simResult, InputFileName, htmlFileName);
+                await HtmlOutput.GenerateAsync(Services, simResult, InputFileName, htmlFileName, outputConfig);
                 Console.WriteLine($" Html report  | See {htmlFileName}");
 
                 try

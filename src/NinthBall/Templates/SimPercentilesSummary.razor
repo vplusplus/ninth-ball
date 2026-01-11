@@ -13,7 +13,7 @@
         <tr>
             <td>Percentile</td>
 
-            @foreach (var p in Percentiles.Items)
+            @foreach (var p in Percentiles)
             {
                 <td class="text-primary">
                     @p.PctlName
@@ -25,7 +25,7 @@
         <tr>
             <th></th>
 
-            @foreach (var p in Percentiles.Items)
+            @foreach (var p in Percentiles)
             {
                 <td class="text-secondary">@p.FriendlyName</td>
             }
@@ -35,16 +35,16 @@
         <tr>
             <th>End (Real)</th>
 
-            @foreach (var p in Percentiles.Items)
+            @foreach (var p in Percentiles)
             {
-                var iter = Model.Percentile(p.Pctl);
+                var iter = SimResult.Percentile(p.Pctl);
 
                 if (iter.Success)
                 {
                     // Assuming 3% inflation to calculate inflation adjusted real purchasing power.
                     // const double TheInflationRate = 0.03;   
 
-                    var endBalance = iter.EndingBalance.InflationAdjustedValue(Model.Input.InflationRate, iter.SurvivedYears).Millions();
+                    var endBalance = iter.EndingBalance.InflationAdjustedValue(SimResult.Input.InflationRate, iter.SurvivedYears).Millions();
                     <th>@endBalance</th>
                 }
                 else
@@ -58,9 +58,9 @@
         <tr>
             <td>End (Nominal)</td>
 
-            @foreach (var p in Percentiles.Items)
+            @foreach (var p in Percentiles)
             {
-                var iter = Model.Percentile(p.Pctl);
+                var iter = SimResult.Percentile(p.Pctl);
 
                 if (iter.Success)
                 {
@@ -78,9 +78,9 @@
         <tr>
             <td>Change (Annualized)</td>
 
-            @foreach (var p in Percentiles.Items)
+            @foreach (var p in Percentiles)
             {
-                var iter = Model.Percentile(p.Pctl);
+                var iter = SimResult.Percentile(p.Pctl);
                 var annualizedEffectiveROI = iter.GetAggregateValue(CID.ROI);
 
                 <td class="text-secondary">
@@ -95,6 +95,8 @@
 
 @code
 {
-    [Parameter] public SimResult Model { get; set; } = null!;
+    [Parameter] public SimResult SimResult { get; set; } = null!;
+    [Parameter] public SimOutput OutputConfig { get; set; } = null!;
 
+    private IReadOnlyList<Percentile> Percentiles => OutputConfig.GetPercentilesOrDefault();
 }

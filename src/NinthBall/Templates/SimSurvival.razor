@@ -4,12 +4,12 @@
 <!-- Survival rate and failures by year -->
 <table class="table table-sm caption-top" style="table-layout: fixed; width: 100%;">
     @{
-        var survivalRate = Model.SurvivalRate;
+        var survivalRate = SimResult.SurvivalRate;
         var txtSurvivalRate = survivalRate >= 0.98 && survivalRate != 1.0 ? $"{survivalRate:P1}" : $"{survivalRate:P0}";
         var cssSurvivalRate = survivalRate < 0.9 ? "text-danger" : survivalRate >= 0.95 ? "text-success" : "";
 
-        var failureBuckets = Model.GetFailureBuckets();
-        var totalFailures = Model.Iterations.Count(x => !x.Success);
+        var failureBuckets = SimResult.GetFailureBuckets();
+        var totalFailures = SimResult.Iterations.Count(x => !x.Success);
     }
     <caption>
         <h3>Survival rate: <span class="@cssSurvivalRate">@txtSurvivalRate</span></h3>
@@ -52,5 +52,5 @@
 
 @code
 {
-    [Parameter] public SimResult Model { get; set; } = null!;
+    [Parameter] public SimResult SimResult { get; set; } = null!;
 }

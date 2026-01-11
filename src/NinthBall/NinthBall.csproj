@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Help.txt" />
+    <EmbeddedResource Include="Input\SimOutput.yaml" />
     <EmbeddedResource Include="Input\SampleInput.yaml" />
   </ItemGroup>
 
