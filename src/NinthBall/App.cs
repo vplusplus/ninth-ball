@@ -16,7 +16,7 @@ namespace NinthBall
         string OutputFileName => Path.GetFullPath(CmdLine.Optional("Out", Path.ChangeExtension(InputFileName, ".html") ));
         bool WatchMode => CmdLine.Switch("watch");
         bool PrintHelp => CmdLine.Switch("help");
-        bool SampleInput => CmdLine.Switch("sampleinput");
+        bool SampleYamls => CmdLine.Switch("sampleyamls");
 
         public async Task RunAsync()
         {
@@ -24,9 +24,9 @@ namespace NinthBall
             {
                 Print.Help();
             }
-            else if (SampleInput)
+            else if (SampleYamls)
             {
-                ExportSampleInputYaml();
+                ExportSampleYamlConfigFiles();
             }
             else
             {
@@ -125,17 +125,23 @@ namespace NinthBall
             }
         }
     
-        void ExportSampleInputYaml()
+        void ExportSampleYamlConfigFiles()
         {
-            const string SampleInputFilePath = "./SampleInput.yaml";
+            ExportSampleYaml("SampleInput.yaml", "./SampleInput.yaml");
+            ExportSampleYaml("SimOutput.yaml",   "./SimOutput.yaml");
 
-            var resourceName = typeof(App).Assembly.GetManifestResourceNames().Where( x => x.EndsWith("SampleInput.yaml", StringComparison.OrdinalIgnoreCase)).Single();
-            using var resStream = typeof(App).Assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Unexpected | Resource stream was null.");
-            using var reader = new StreamReader(resStream);
-            var sampleYaml = reader.ReadToEnd();
+            static void ExportSampleYaml(string resNameEndsWith, string outputFileName)
+            {
+                var resourceName = typeof(App).Assembly.GetManifestResourceNames().Where(x => x.EndsWith(resNameEndsWith, StringComparison.OrdinalIgnoreCase)).Single();
+                using var resStream = typeof(App).Assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Unexpected | Resource stream was null.");
+                using var reader = new StreamReader(resStream);
+                
+                var sampleYaml = reader.ReadToEnd();
+                File.WriteAllText(outputFileName, sampleYaml);
 
-            File.WriteAllText(SampleInputFilePath, sampleYaml);
-            Console.WriteLine($" Sample input is available at: {Environment.NewLine} {Path.GetFullPath(SampleInputFilePath)}");
+                Console.WriteLine($" See: {Path.GetFullPath(outputFileName)}");
+            }
         }
     }
 }
+ 

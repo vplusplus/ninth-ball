@@ -7,18 +7,28 @@ zzPercentiles:
   - { Pctl: 0.50, PctlName: "50th", FriendlyName: "Median" }
 
 Views:
+
+  # High-level summary of the most critical plan metrics
   Simple: [ Year, Age, JanValue, SS, Ann, Fees, PYTaxes, LivExp, XPreTax, XPostTax, DecValue ]
-
-  CashFlow: [
-      Year, Age,
-      JanPreTax, JanPostTax, JanValue,
-      Fees, PYTaxes, LivExp,
-      SS, Ann,
-      XPreTax, XPostTax,
-      ROIAmount,
-      DecValue,
-      LikeYear, ROI, AnnROI, ROIStocks, ROIBonds
-    ]
-
   
+  # Detailed view of money coming in, going out, and net changes to assets
+  CashFlow: [ Year, Age, Incomes, LivExp, Fees, PYTaxes, XPreTax, XPostTax, XCash, DecValue ]
+
+  # Deep dive into the tax components of the plan
+  TaxAnalysis: [ Year, Age, JanPreTax, JanPostTax, TaxOrdInc, TaxDiv, TaxInt, TaxCapGain, PYTaxes ]
+
+  # Understanding the market sequence and portfolio performance
+  MarketContext: [ Year, Age, JanPreTaxAlloc, JanPostTaxAlloc, LikeYear, ROIStocks, ROIBonds, ROI, AnnROI, DecValue ]
+
+  # List of all available columns.
+  ALL: [
+      Year, Age,
+      JanTotal, JanValue, JanPreTax, JanPreTaxAlloc, JanPostTax, JanPostTaxAlloc, JanCash,
+      Fees, TaxOrdInc, TaxDiv, TaxInt, TaxCapGain, PYTaxes, LivExp,
+      SS, Ann, Incomes,
+      XPreTax, XPostTax, XCash,
+      DecTotal, DecValue, DecPreTax, DecPreTaxAlloc, DecPostTax, DecPostTaxAlloc, DecCash,
+      LikeYear, ROI, AnnROI, ROIAmount, ROIStocks, ROIBonds, ROICash,
+      Empty
+    ]
 

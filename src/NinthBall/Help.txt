@@ -1,12 +1,12 @@
 ﻿
 Usage:
  {me} --in Input.yaml --out Output.html --watch
- {me} --sampleinput
+ {me} --sampleyamls
  {me} --help
 
 Switches:
  --help         Display this help text.
- --sampleInput  Write a sample input file to ./SampleInput.yaml
+ --sampleyamls  Write sample configuration files (Input & Output) to the current directory.
  --watch        Watch the input file for changes and automatically reprocess it.
 
 Parameters:
