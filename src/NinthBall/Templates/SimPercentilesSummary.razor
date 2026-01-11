@@ -96,7 +96,7 @@
 @code
 {
     [Parameter] public SimResult SimResult { get; set; } = null!;
-    [Parameter] public SimOutput OutputConfig { get; set; } = null!;
+    [Parameter] public SimOutput OutputConfig { get; set; }
 
-    private IReadOnlyList<Percentile> Percentiles => OutputConfig.GetPercentilesOrDefault();
+    private IReadOnlyList<Percentile> Percentiles => OutputConfig.Percentiles;
 }

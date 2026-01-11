@@ -39,9 +39,9 @@
 @code
 {
     [Parameter] public SimResult Model { get; set; } = null!;
-    [Parameter] public SimOutput OutputConfig { get; set; } = null!;
+    [Parameter] public SimOutput OutputConfig { get; set; }
 
-    private IReadOnlyList<Percentile> Percentiles => OutputConfig.GetPercentilesOrDefault();
+    private IReadOnlyList<Percentile> Percentiles => OutputConfig.Percentiles;
 
     // Computes an unique html-id for the chosen percentile.
     static string PercentileId(double pctl) => $"{pctl * 100:00}";

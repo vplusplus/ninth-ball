@@ -85,7 +85,7 @@ namespace NinthBall.Outputs
                 RenderSummary(xl, myStyles, simResult);
 
                 // Render one sheet per percentile
-                foreach(var pctl in SimOutputExtensions.DefaultPercentiles) RenderPercentile(xl, myStyles, simResult, pctl);
+                foreach(var pctl in SimOutputReader.DefaultPercentiles) RenderPercentile(xl, myStyles, simResult, pctl);
 
                 // NOTE: Dispose will not save. We have to save.
                 xl.Save();
@@ -158,7 +158,7 @@ namespace NinthBall.Outputs
             const double W10 = 10;
             const double W20 = 20;
 
-            var percentiles = SimOutputExtensions.DefaultPercentiles;
+            var percentiles = SimOutputReader.DefaultPercentiles;
 
             using (var sheet = xl.BeginSheet("Summary"))
             {

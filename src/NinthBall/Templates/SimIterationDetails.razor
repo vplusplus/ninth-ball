@@ -117,7 +117,7 @@
     [Parameter] public string Id { get; set; } = null!;
     [Parameter] public string Caption { get; set; } = "";
     [Parameter] public SimIteration Iteration { get; set; } = null!;
-    [Parameter] public SimOutput OutputConfig { get; set; } = null!;
+    [Parameter] public SimOutput OutputConfig { get; set; }
 
-    private IReadOnlyList<CID> Cols => OutputConfig.GetHtmlColumnsOrDefaults();
+    private IReadOnlyList<CID> Cols => OutputConfig.HtmlColumns;
 }
