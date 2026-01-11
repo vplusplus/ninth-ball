@@ -43,12 +43,12 @@ namespace NinthBall.Outputs
             [CID.JanPostTaxAlloc] = (it, in y) => y.Jan.PostTax.Allocation,
 
             [CID.Fees]            = (it, in y) => y.Fees.Total(),
-            [CID.TaxOrdInc]    = (it, in y) => y.Expenses.PYTax.TaxOnOrdInc,
+            [CID.TaxOrdInc]       = (it, in y) => y.Expenses.PYTax.TaxOnOrdInc,
             [CID.TaxDiv]          = (it, in y) => y.Expenses.PYTax.TaxOnDiv,
             [CID.TaxInt]          = (it, in y) => y.Expenses.PYTax.TaxOnInt,
-            [CID.TaxCapGain]     = (it, in y) => y.Expenses.PYTax.TaxOnCapGain,
+            [CID.TaxCapGain]      = (it, in y) => y.Expenses.PYTax.TaxOnCapGain,
             [CID.PYTaxes]         = (it, in y) => y.Expenses.PYTax.Total(),
-            [CID.LivExp]           = (it, in y) => y.Expenses.LivExp,
+            [CID.LivExp]          = (it, in y) => y.Expenses.LivExp,
 
             [CID.Incomes]         = (it, in y) => y.Incomes.Total(),
             [CID.SS]              = (it, in y) => y.Incomes.SS,
