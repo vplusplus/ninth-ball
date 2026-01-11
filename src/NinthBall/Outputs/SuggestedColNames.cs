@@ -25,6 +25,7 @@ namespace NinthBall.Outputs
             [CID.ROI] = "ROI",
             [CID.ROIStocks] = "Stocks",
             [CID.ROIBonds] = "Bonds",
+            [CID.ROIAnn] = "AnnROI",
 
         }.AsReadOnly();
 
@@ -32,7 +33,8 @@ namespace NinthBall.Outputs
         {
             [CID.ROI] = "Effective ROI (StocAlloc x StockROI + BondAlloc x BondROI)",
             [CID.JanValue] = "Approx value (401K x 75% + Inv x 85%)",
-            [CID.DecValue] = "Approx value (401K x 75% + Inv x 85%)"
+            [CID.DecValue] = "Approx value (401K x 75% + Inv x 85%)",
+            [CID.ROIAnn] = "Cumulative Annualized (Geometric Mean) ROI from year 0"
 
         }.AsReadOnly();
 

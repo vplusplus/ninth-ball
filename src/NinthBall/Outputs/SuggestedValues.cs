@@ -71,6 +71,7 @@ namespace NinthBall.Outputs
             [CID.ROIBonds]        = (SimIteration it, in SimYear y) => y.ROI.BondsROI,
             [CID.ROICash]         = (SimIteration it, in SimYear y) => y.ROI.CashROI,
             [CID.ROI]             = (SimIteration it, in SimYear y) => y.EffectiveROI,
+            [CID.ROIAnn]          = (SimIteration it, in SimYear y) => it.GetAnnualizedROIUntilTheYear(y.Year),
 
         }.AsReadOnly();
 

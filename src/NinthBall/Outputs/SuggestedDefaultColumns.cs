@@ -22,7 +22,7 @@ namespace NinthBall.Outputs
             CID.Change,
             CID.DecValue,
 
-            CID.LikeYear, CID.ROI, CID.ROIStocks, CID.ROIBonds
+            CID.LikeYear, CID.ROI, CID.ROIAnn, CID.ROIStocks, CID.ROIBonds
         ];
 
 

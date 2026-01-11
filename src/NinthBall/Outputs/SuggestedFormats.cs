@@ -16,19 +16,20 @@ namespace NinthBall.Outputs
 
         static readonly IReadOnlyDictionary<CID, FormatHint> Formats = new Dictionary<CID, FormatHint>()
         {
-            [CID.Year] = F0,
-            [CID.Age] = F0,
+            [CID.Year]  = F0,
+            [CID.Age]   = F0,
 
-            [CID.JanPreTaxAlloc] = P0,
-            [CID.JanPostTaxAlloc] = P0,
-            [CID.DecPreTaxAlloc] = P0,
-            [CID.DecPostTaxAlloc] = P0,
+            [CID.JanPreTaxAlloc]    = P0,
+            [CID.JanPostTaxAlloc]   = P0,
+            [CID.DecPreTaxAlloc]    = P0,
+            [CID.DecPostTaxAlloc]   = P0,
 
-            [CID.LikeYear] = F0,
+            [CID.LikeYear]  = F0,
             [CID.ROIStocks] = P1,
-            [CID.ROIBonds] = P1,
-            [CID.ROICash] = P1,
-            [CID.ROI] = P1,
+            [CID.ROIBonds]  = P1,
+            [CID.ROICash]   = P1,
+            [CID.ROI]       = P1,
+            [CID.ROIAnn]    = P1,
 
         }.AsReadOnly();
 

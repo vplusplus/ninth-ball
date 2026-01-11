@@ -79,6 +79,8 @@ namespace NinthBall.Core
                     return pctChange;
                 }
             }
+
+
         }
 
         #endregion
@@ -162,6 +164,25 @@ namespace NinthBall.Core
                 return (count == 0)
                     ? throw new ArgumentException("Input sequence must contain at least one value.")
                     : Math.Pow(compoundReturn, 1.0 / count) - 1;
+            }
+
+            /// <summary>
+            /// Computes the annualized nominal return from beginning up to (and including) the specified year index.
+            /// </summary>
+            public double GetAnnualizedROIUntilTheYear(int yearIndex)
+            {
+                var span = iteration.ByYear.Span;
+                if (yearIndex < 0 || yearIndex >= span.Length) throw new ArgumentOutOfRangeException(nameof(yearIndex));
+
+                double compoundReturn = 1;
+                int count = 0;
+                for (int i = 0; i <= yearIndex; i++)
+                {
+                    compoundReturn *= (1 + span[i].EffectiveROI);
+                    count++;
+                }
+
+                return (count == 0) ? 0 : Math.Pow(compoundReturn, 1.0 / count) - 1;
             }
         }
 

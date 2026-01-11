@@ -25,6 +25,7 @@ namespace NinthBall.Outputs
 
             [CID.LikeYear]  = (SimIteration it, in SimYear y) => ROIRedGreyGreen(it, in y),
             [CID.ROI]       = (SimIteration it, in SimYear y) => ROIRedGreyGreen(it, in y),
+            [CID.ROIAnn]    = (SimIteration it, in SimYear y) => ROIRedGreyGreen(it.GetAnnualizedROIUntilTheYear(y.Year)),
             [CID.ROIStocks] = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.StocksROI),
             [CID.ROIBonds]  = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.BondsROI),
             [CID.ROICash]   = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.CashROI),

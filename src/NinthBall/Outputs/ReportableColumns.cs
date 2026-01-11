@@ -48,6 +48,7 @@ namespace NinthBall.Outputs
         LikeYear,               // Representative year used for historical ROI data
         Change,                 // Total changes contributed for ROI gorwth or losss
         ROI,                    // Effective Portfolio ROI (Blended Stock/Bond/Cash)
+        ROIAnn,                 // Annualized effective Portfolio ROI (Blended Stock/Bond/Cash)
         ROIStocks,              // Return on Stocks for the year
         ROIBonds,               // Return on Bonds for the year
         ROICash,                // Return on Cash for the year
