@@ -124,7 +124,7 @@ namespace NinthBall.Core
 
     public sealed record AdditionalIncomes
     (
-        [property: ValidateNested] AdditionalIncomes.SSIncome SS,
+        [property: ValidateNested] AdditionalIncomes.SSIncome  SS,
         [property: ValidateNested] AdditionalIncomes.ANNIncome Ann
     )
     {
@@ -166,7 +166,7 @@ namespace NinthBall.Core
 
     public sealed record FixedWithdrawal
     (
-        [property: Min(0)] double FirstYearAmount, 
+        [property: Min(0)]     double FirstYearAmount, 
         [property: Range(0,1)] double Increment
     );
 
@@ -234,9 +234,10 @@ namespace NinthBall.Core
         [property: ValidateNested]
         ParametricBootstrap.Dist Bonds)
     {
-        public readonly record struct Dist(
-            [property: Range(-1.0, 1.0)] double MeanReturn, 
-            [property: Range(0.0, 1.0)]  double Volatility, 
+        public readonly record struct Dist
+        (
+            [property: Range(-1.0, 1.0)]   double MeanReturn, 
+            [property: Range(0.0, 1.0)]    double Volatility, 
             [property: Range(-10.0, 10.0)] double Skewness, 
             [property: Range(0.0, 100.0)]  double Kurtosis, 
             [property: Range(-1.0, 1.0)]   double AutoCorrelation
