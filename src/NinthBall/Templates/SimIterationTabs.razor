@@ -14,7 +14,7 @@
             var pctlId = PercentileId(p.Pctl);
             var pctlCaption = p.PctlName;
 
-            var isActive = p.Pctl == Percentile.Target ? "active" : "";
+            var isActive = p.Pctl == ActivePctl ? "active" : "";
 
             <li class="nav-item">
                 <a class="nav-link @isActive" data-bs-toggle="tab" href="#@(pctlId)">@pctlCaption</a>
@@ -28,7 +28,7 @@
             var iter = Model.Percentile(p.Pctl);
             var pctlId = PercentileId(p.Pctl);
             var caption = $"{p.PctlName} Percentile";
-            var isActive = p.Pctl == Percentile.Target ? "active" : "";
+            var isActive = p.Pctl == ActivePctl ? "active" : "";
             <div class="tab-pane @isActive" id="@(pctlId)">
                 <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter OutputConfig=OutputConfig />
             </div>
@@ -42,6 +42,10 @@
     [Parameter] public SimOutput OutputConfig { get; set; }
 
     private IReadOnlyList<Percentile> Percentiles => OutputConfig.Percentiles;
+
+    // Percentile.Target (20th) is the suggested initially-active tab.
+    // If 20th is not configured to be displayed, find the closest one.
+    private double? ActivePctl => Percentiles.Count == 0 ? null : Percentiles.OrderBy(p => Math.Abs(p.Pctl - Percentile.Target)).First().Pctl;
 
     // Computes an unique html-id for the chosen percentile.
     static string PercentileId(double pctl) => $"{pctl * 100:00}";

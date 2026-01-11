@@ -102,11 +102,18 @@ namespace NinthBall.Outputs
         private static readonly IReadOnlyList<CID> DefaultColumns =
         [
             CID.Year, CID.Age,
+            // Jan balance (ignore cash)
             CID.JanPreTax, CID.JanPostTax,
+            // Additional incomes
+            CID.SS, CID.Ann,
+            // Expenses
             CID.Fees, CID.PYTaxes, CID.LivExp,
+            // Net exchange from assets
             CID.XPreTax, CID.XPostTax,
-            CID.LikeYear, CID.ROI, CID.ROIStocks, CID.ROIBonds,
-            CID.DecValue,
+            // Key market performance indicators 
+            CID.LikeYear, CID.ROIStocks, CID.ROIBonds,
+            // Bottom line - Approx asset value on year end.
+            CID.AnnROI, CID.DecValue,
         ];
 
     }
