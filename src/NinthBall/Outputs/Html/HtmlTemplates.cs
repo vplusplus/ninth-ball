@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace NinthBall.Templates
+namespace NinthBall.Outputs.Html.Templates
 {
     internal static class HtmlTemplates
     {

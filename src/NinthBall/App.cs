@@ -1,7 +1,6 @@
 ﻿
 using NinthBall.Core;
 using NinthBall.Outputs;
-using NinthBall.Templates;
 using System.Diagnostics;
 
 namespace NinthBall
