@@ -90,41 +90,14 @@ namespace NinthBall.Core
         //......................................................................
         extension(SimIteration iteration)
         {
-            public double StartingBalance => iteration.ByYear.Span[0].Jan.Total();
-            public double EndingBalance   => iteration.ByYear.Span[^1].Dec.Total();
+            public SimYear FirstYear    => iteration.ByYear.Span.Length > 0 ? iteration.ByYear.Span[0]  : new();
+            public SimYear LastYear     => iteration.ByYear.Span.Length > 0 ? iteration.ByYear.Span[^1] : new();
+            public SimYear LastGoodYear => iteration.Success ? iteration.ByYear.Span[^1] : iteration.ByYear.Span.Length > 1 ? iteration.ByYear.Span[^2] : new();
 
-            public SimYear LastGoodYear   => iteration.Success ? iteration.ByYear.Span[^1] : iteration.ByYear.Span.Length > 1 ? iteration.ByYear.Span[^2] : new();
+            public double StartingBalance => iteration.FirstYear.Jan.Total();
+            public double EndingBalance   => iteration.LastYear.Dec.Total();
             public int    SurvivedYears   => iteration.LastGoodYear.Year + 1;
             public int    SurvivedAge     => iteration.LastGoodYear.Age  + 1;
-
-            // Aggregate totals
-            public double SumFees         => iteration.Sum(x => x.Fees.Total());
-            public double SumTaxes        => iteration.Sum(x => x.Expenses.PYTax.Total());
-            public double SumExpenses     => iteration.Sum(x => x.Expenses.LivExp);
-            public double SumSS           => iteration.Sum(x => x.Incomes.SS);
-            public double SumAnn          => iteration.Sum(x => x.Incomes.Ann);
-            public double SumPreTaxWDraw  => iteration.Sum(x => x.Withdrawals.PreTax);
-            public double SumPostTaxWDraw => iteration.Sum(x => x.Withdrawals.PostTax);
-            public double SumCashWDraw    => iteration.Sum(x => x.Withdrawals.Cash);
-            public double SumChange       => iteration.Sum(x => x.Change.Total());
-
-            /// <summary>
-            /// Zero-copy extension to calculate the maximum maxValue of a selected field across all years in the iteration
-            /// </summary>
-            //public double Max(Func<SimYear, double> fxValueSelector, bool ignoreFailedYear = true)
-            //{
-            //    // TODO: Research use of function pointers for performance improvement
-            //    // public unsafe double Max(delegate*<in SimYear, double> selector) { ... }
-
-            //    ArgumentNullException.ThrowIfNull(fxValueSelector);
-
-            //    var span = iteration.ByYear.Span;
-            //    var last = iteration.Success ? span.Length : ignoreFailedYear ? span.Length - 1 : span.Length;
-
-            //    double maxValue = double.NegativeInfinity;
-            //    for (int i = 0; i < last; i++) maxValue = Math.Max(maxValue, fxValueSelector(span[i]));
-            //    return maxValue;
-            //}
 
             /// <summary>
             /// Zero-copy extension to calculate the sum of a selected field across all years in the iteration 
@@ -167,7 +140,7 @@ namespace NinthBall.Core
             }
 
             /// <summary>
-            /// Computes the annualized nominal return from beginning up to (and including) the specified year index.
+            /// Computes the annualized nominal Effective return from beginning up to (and including) the specified year index.
             /// </summary>
             public double GetAnnualizedROIUntilTheYear(int yearIndex)
             {
