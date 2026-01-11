@@ -88,7 +88,7 @@ namespace NinthBall.Outputs
         // NOTE: Make it private once Excel generation is refactored.
         public static IReadOnlyList<Percentile> DefaultPercentiles =>
         [
-            new(0.00, "Worst-case"),
+            new(0.01, "Worst-case"),
             new(0.05, "Unlucky"),
             new(0.10, "Unfortunate"),
             new(0.20, "Target"),
