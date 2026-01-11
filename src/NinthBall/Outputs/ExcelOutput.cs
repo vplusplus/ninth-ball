@@ -292,7 +292,7 @@ namespace NinthBall
                             .Append("CYExp", styles.ColHeader)
                             .Append("", styles.ColHeader)
 
-                            .Append("ROI-401K", styles.ColHeader)     // ROI-Change and excess deposits
+                            .Append("ROI-401K", styles.ColHeader)     // ROI-ROIAmount and excess deposits
                             .Append("ROI-Inv", styles.ColHeader)
                             .Append("Deposits-Inv", styles.ColHeader)
                             .Append("", styles.ColHeader)
@@ -336,10 +336,10 @@ namespace NinthBall
 
                                 // Expenses
                                 .Append(y.Expenses.PYTax.Total(), styles.C0)
-                                .Append(y.Expenses.CYExp, styles.C0)
+                                .Append(y.Expenses.LivExp, styles.C0)
                                 .Append("")
 
-                                // Change in value and excess deposits
+                                // ROIAmount in value and excess deposits
                                 .Append(y.Change.PreTax, y.Change.PreTax < 0 ? styles.C0Red : styles.C0Green)
                                 .Append(y.Change.PostTax, y.Change.PostTax < 0 ? styles.C0Red : styles.C0Green)
                                 .Append(y.Deposits.PostTax, styles.C0)

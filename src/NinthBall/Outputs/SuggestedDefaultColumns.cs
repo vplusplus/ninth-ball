@@ -13,16 +13,16 @@ namespace NinthBall.Outputs
 
             CID.Fees, 
             CID.PYTaxes,
-            CID.CYExp,
+            CID.LivExp,
 
             CID.SS,
             CID.Ann,
 
             CID.XPreTax, CID.XPostTax,
-            CID.Change,
+            CID.ROIAmount,
             CID.DecValue,
 
-            CID.LikeYear, CID.ROI, CID.ROIAnn, CID.ROIStocks, CID.ROIBonds
+            CID.LikeYear, CID.ROI, CID.AnnROI, CID.ROIStocks, CID.ROIBonds
         ];
 
 

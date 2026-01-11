@@ -11,30 +11,30 @@ namespace NinthBall.Outputs
 
         static readonly IReadOnlyDictionary<CID, string> ColumnNames = new Dictionary<CID, string>()
         {
-            [CID.Year] = "Yr",
+            [CID.Year]          = "Yr",
 
-            [CID.JanValue] = "~Value",
-            [CID.DecValue] = "~Value",
+            [CID.JanValue]      = "~Value",
+            [CID.DecValue]      = "~Value",
 
-            [CID.JanPreTax] = "Jan 401K",
-            [CID.JanPostTax] = "Jan Inv",
-            [CID.DecPreTax] = "Dec 401K",
-            [CID.DecPostTax] = "Dec Inv",
+            [CID.JanPreTax]     = "Jan 401K",
+            [CID.JanPostTax]    = "Jan Inv",
+            [CID.DecPreTax]     = "Dec 401K",
+            [CID.DecPostTax]    = "Dec Inv",
 
-            [CID.LikeYear] = "Like",
-            [CID.ROI] = "ROI",
-            [CID.ROIStocks] = "Stocks",
-            [CID.ROIBonds] = "Bonds",
-            [CID.ROIAnn] = "AnnROI",
+            [CID.LikeYear]      = "Like",
+            [CID.ROI]           = "ROI",
+            [CID.ROIStocks]     = "Stocks",
+            [CID.ROIBonds]      = "Bonds",
+            [CID.AnnROI]        = "AnnROI",
 
         }.AsReadOnly();
 
         static readonly IReadOnlyDictionary<CID, string> ColumnTitles = new Dictionary<CID, string>()
         {
-            [CID.ROI] = "Effective ROI (StocAlloc x StockROI + BondAlloc x BondROI)",
-            [CID.JanValue] = "Approx value (401K x 75% + Inv x 85%)",
-            [CID.DecValue] = "Approx value (401K x 75% + Inv x 85%)",
-            [CID.ROIAnn] = "Cumulative Annualized (Geometric Mean) ROI from year 0"
+            [CID.ROI]           = "Effective ROI (StocAlloc x StockROI + BondAlloc x BondROI)",
+            [CID.JanValue]      = "Approx value (401K x 75% + Inv x 85%)",
+            [CID.DecValue]      = "Approx value (401K x 75% + Inv x 85%)",
+            [CID.AnnROI]        = "Cumulative Annualized (Geometric Mean) ROI from year 0"
 
         }.AsReadOnly();
 

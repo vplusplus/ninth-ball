@@ -6,11 +6,11 @@ namespace NinthBall.Outputs
     /// </summary>
     internal enum CID
     {
-        NA,                     // Pseudo column. Information not available
+        NA = 0,                 // Pseudo column. Information not available
         Empty,                  // Pseudo column. Suggesting to include a divider or visual separation
 
         Year,                   // Year index (0-based)
-        Age,                    // Primary person's age at year end
+        Age,                    // Completed age at the start of the year.
 
         JanTotal,               // Total asset value in January (start of year)
         JanValue,               // Approximate indicative value (JanTotal), less taxes and fees
@@ -21,13 +21,13 @@ namespace NinthBall.Outputs
         JanCash,                // Cash balance in January
 
         Fees,                   // Total investment/advisory fees for the year
-        TaxOrdIncome,           // PYTaxes paid on ordinary income
+        TaxOrdInc,              // PYTaxes paid on ordinary income
         TaxDiv,                 // PYTaxes paid on dividends
         TaxInt,                 // PYTaxes paid on interest
-        TaxCapGains,            // PYTaxes paid on capital gains
+        TaxCapGain,             // PYTaxes paid on capital gains
         PYTaxes,                // Total taxes paid (Sum of Ord, Div, Int, CapGains)
 
-        CYExp,                  // Current Year Expenses (Inflation adjusted)
+        LivExp,                 // Current Year Expenses (Inflation adjusted)
 
         SS,                     // Social Security income received
         Ann,                    // Annuity income received
@@ -46,11 +46,11 @@ namespace NinthBall.Outputs
         DecCash,                // Cash balance in December
 
         LikeYear,               // Representative year used for historical ROI data
-        Change,                 // Total changes contributed for ROI gorwth or losss
         ROI,                    // Effective Portfolio ROI (Blended Stock/Bond/Cash)
-        ROIAnn,                 // Annualized effective Portfolio ROI (Blended Stock/Bond/Cash)
-        ROIStocks,              // Return on Stocks for the year
-        ROIBonds,               // Return on Bonds for the year
-        ROICash,                // Return on Cash for the year
+        AnnROI,                 // Annualized effective Portfolio ROI (Blended Stock/Bond/Cash)
+        ROIAmount,              // Total changes contributed by ROI gorwth or losss
+        ROIStocks,              // Return on Stocks for the year (PCT)
+        ROIBonds,               // Return on Bonds for the year (PCT)
+        ROICash,                // Return on Cash for the year (PCT)
     }
 }

@@ -25,14 +25,14 @@ namespace NinthBall.Outputs
 
             [CID.LikeYear]  = (SimIteration it, in SimYear y) => ROIRedGreyGreen(it, in y),
             [CID.ROI]       = (SimIteration it, in SimYear y) => ROIRedGreyGreen(it, in y),
-            [CID.ROIAnn]    = (SimIteration it, in SimYear y) => ROIRedGreyGreen(it.GetAnnualizedROIUntilTheYear(y.Year)),
+            [CID.AnnROI]    = (SimIteration it, in SimYear y) => ROIRedGreyGreen(it.GetAnnualizedROIUntilTheYear(y.Year)),
             [CID.ROIStocks] = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.StocksROI),
             [CID.ROIBonds]  = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.BondsROI),
             [CID.ROICash]   = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.CashROI),
-            [CID.CYExp]     = (SimIteration it, in SimYear y) => WarnOnStepDown(it, in y),
+            [CID.LivExp]     = (SimIteration it, in SimYear y) => WarnOnStepDown(it, in y),
             [CID.XPreTax]   = (SimIteration it, in SimYear y) => RedGreen(y.XPreTax),
             [CID.XPostTax]  = (SimIteration it, in SimYear y) => RedGreen(y.XPostTax),
-            [CID.Change]    = (SimIteration it, in SimYear y) => RedGreen(y.Change.Total()),
+            [CID.ROIAmount]    = (SimIteration it, in SimYear y) => RedGreen(y.Change.Total()),
 
         }.AsReadOnly();
 
@@ -44,8 +44,8 @@ namespace NinthBall.Outputs
 
         static ColorHint WarnOnStepDown(SimIteration simIteration, in SimYear simYear)
         {
-            var cyExp = simYear.Expenses.CYExp;
-            var pyExp = simYear.Year > 1 ? simIteration.ByYear.Span[simYear.Year - 1].Expenses.CYExp : double.MinValue;
+            var cyExp = simYear.Expenses.LivExp;
+            var pyExp = simYear.Year > 1 ? simIteration.ByYear.Span[simYear.Year - 1].Expenses.LivExp : double.MinValue;
             var expReduction = cyExp < pyExp;
 
             return expReduction ? ColorHint.Warning : ColorHint.None;

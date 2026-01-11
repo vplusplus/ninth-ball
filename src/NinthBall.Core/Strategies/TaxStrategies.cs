@@ -22,7 +22,7 @@ namespace NinthBall.Core
                 context.Expenses = context.Expenses with
                 {
                     PYTax = 0 == context.YearIndex
-                        ? new() { OrdIncomeTax = TaxOptions.YearZeroTaxAmount }
+                        ? new() { TaxOnOrdInc = TaxOptions.YearZeroTaxAmount }
                         : TaxMath.ComputePriorYearTaxes(TaxOptions, context.YearIndex, P.InflationRate, context.PriorYears.Span[^1])
                 };
             }
@@ -68,16 +68,16 @@ namespace NinthBall.Core
             var taxes = new Tax()
             {
                 // Ordinary income and interest income are taxed at ordinary income tax rates.
-                OrdIncomeTax = Math.Round(Math.Max(0, incomes.OrdIncome * TaxConfig.TaxRates.OrdinaryIncome)),
-                InterestsTax = Math.Round(Math.Max(0, incomes.Interest * TaxConfig.TaxRates.OrdinaryIncome)),
+                TaxOnOrdInc = Math.Round(Math.Max(0, incomes.OrdIncome * TaxConfig.TaxRates.OrdinaryIncome)),
+                TaxOnInt = Math.Round(Math.Max(0, incomes.Interest * TaxConfig.TaxRates.OrdinaryIncome)),
 
                 // All dividends are assumed to be qualified.
                 // All capital gains are assumed to be long-term gains.
                 // Both are taxed at preferential tax rates.
                 // For simplicity, state taxes are not factored-in here.
                 // Net Investment Income Tax (NIIT) is not considered here.
-                DividendsTax = Math.Round(Math.Max(0, incomes.Dividends * TaxConfig.TaxRates.CapitalGains)),
-                CapGainTax   = Math.Round(Math.Max(0, incomes.CapGain * TaxConfig.TaxRates.CapitalGains))
+                TaxOnDiv = Math.Round(Math.Max(0, incomes.Dividends * TaxConfig.TaxRates.CapitalGains)),
+                TaxOnCapGain   = Math.Round(Math.Max(0, incomes.CapGain * TaxConfig.TaxRates.CapitalGains))
             };
 
             return taxes;

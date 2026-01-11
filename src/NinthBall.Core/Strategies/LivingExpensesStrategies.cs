@@ -26,7 +26,7 @@ namespace NinthBall.Core
                     {
                         // Do not round to multiples of $120. Doing so may be confusing for the reviewer.
                         // Just drop the fractions (if any)
-                        CYExp = Math.Round(livingExpense)
+                        LivExp = Math.Round(livingExpense)
                     };
                 }
                 else
@@ -49,7 +49,7 @@ namespace NinthBall.Core
                     {
                         // We do not spend in fractions.
                         // Round to multiples of $120 i.e $10/month
-                        CYExp = livingExpense.RoundToMultiples(120.0)
+                        LivExp = livingExpense.RoundToMultiples(120.0)
                     };
                 }
             }

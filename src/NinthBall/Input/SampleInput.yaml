@@ -36,7 +36,6 @@ AdditionalIncomes:
   SS: 
     FromAge: 70
     Amount: 15,000
-    Increment: 2%
   Ann:
     FromAge: 70
     Amount: 10,000

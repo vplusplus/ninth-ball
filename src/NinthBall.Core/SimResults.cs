@@ -49,9 +49,9 @@ namespace NinthBall.Core
         public readonly double Total() => SS + Ann;
     }
 
-    public readonly record struct Expenses(Tax PYTax, double CYExp)
+    public readonly record struct Expenses(Tax PYTax, double LivExp)
     {
-        public readonly double Total() => PYTax.Total() + CYExp;
+        public readonly double Total() => PYTax.Total() + LivExp;
     }
 
     public readonly record struct Change(double PreTax, double PostTax, double Cash)
@@ -59,8 +59,8 @@ namespace NinthBall.Core
         public readonly double Total() => PreTax + PostTax + Cash;
     }
 
-    public readonly record struct Tax(double OrdIncomeTax, double DividendsTax, double InterestsTax, double CapGainTax) 
+    public readonly record struct Tax(double TaxOnOrdInc, double TaxOnDiv, double TaxOnInt, double TaxOnCapGain) 
     {
-        public readonly double Total() => OrdIncomeTax + DividendsTax + InterestsTax + CapGainTax;
+        public readonly double Total() => TaxOnOrdInc + TaxOnDiv + TaxOnInt + TaxOnCapGain;
     }
 }

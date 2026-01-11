@@ -29,7 +29,7 @@ namespace NinthBall.Outputs
             [CID.ROIBonds]  = P1,
             [CID.ROICash]   = P1,
             [CID.ROI]       = P1,
-            [CID.ROIAnn]    = P1,
+            [CID.AnnROI]    = P1,
 
         }.AsReadOnly();
 
