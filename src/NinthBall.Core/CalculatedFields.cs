@@ -53,16 +53,18 @@ namespace NinthBall.Core
                 get 
                 {
                     // Balance less fees and withdrawals
+                    // BY-DESIGN: Cash-balance and cash-increase are ignored by design.
                     var jan = simYear.Jan;
-                    var s1 = jan.PreTax.Amount + simYear.Fees.PreTax - simYear.Withdrawals.PreTax;
-                    var s2 = jan.PostTax.Amount + simYear.Fees.PostTax- simYear.Withdrawals.PostTax;
+                    var preTaxLessFeesAndWithdrawals  = jan.PreTax.Amount  - simYear.Fees.PreTax  - simYear.Withdrawals.PreTax;
+                    var postTaxLessFeesAndWithdrawals = jan.PostTax.Amount - simYear.Fees.PostTax - simYear.Withdrawals.PostTax;
 
                     // Stock and bond balances less fees and withdrawals
-                    var S1 = s1 * jan.PreTax.StockAlloc;
-                    var B1 = s1 * jan.PreTax.BondAlloc;
-                    var S2 = s2 * jan.PostTax.StockAlloc;
-                    var B2 = s2 * jan.PostTax.BondAlloc;
+                    var S1 = preTaxLessFeesAndWithdrawals  * jan.PreTax.StockAlloc;
+                    var B1 = preTaxLessFeesAndWithdrawals  * jan.PreTax.BondAlloc;
+                    var S2 = postTaxLessFeesAndWithdrawals * jan.PostTax.StockAlloc;
+                    var B2 = postTaxLessFeesAndWithdrawals * jan.PostTax.BondAlloc;
 
+                    // BY-DESIGN: Deposits are made at the end of the year.
                     // Deposits are withheld from ROI calculation
                     // Simulation updates deposits after calculating ROI for the year
 
@@ -72,7 +74,7 @@ namespace NinthBall.Core
 
                     // Change and PCT change.
                     var change = (S1 * rS) + (B1 * rB) + (S2 * rS) + (B2 * rB);
-                    var pctChange = change / (s1 + s2);
+                    var pctChange = change / (preTaxLessFeesAndWithdrawals + postTaxLessFeesAndWithdrawals);
 
                     return pctChange;
                 }
@@ -107,7 +109,7 @@ namespace NinthBall.Core
             /// <summary>
             /// Zero-copy extension to calculate the maximum maxValue of a selected field across all years in the iteration
             /// </summary>
-            public double Max(Func<SimYear, double> fxValueSelector)
+            public double Max(Func<SimYear, double> fxValueSelector, bool ignoreFailedYear = true)
             {
                 // TODO: Research use of function pointers for performance improvement
                 // public unsafe double Max(delegate*<in SimYear, double> selector) { ... }
@@ -115,37 +117,40 @@ namespace NinthBall.Core
                 ArgumentNullException.ThrowIfNull(fxValueSelector);
 
                 var span = iteration.ByYear.Span;
+                var last = iteration.Success ? span.Length : ignoreFailedYear ? span.Length - 1 : span.Length;
+
                 double maxValue = double.NegativeInfinity;
-                for (int i = 0; i < span.Length; i++) maxValue = Math.Max(maxValue, fxValueSelector(span[i]));
+                for (int i = 0; i < last; i++) maxValue = Math.Max(maxValue, fxValueSelector(span[i]));
                 return maxValue;
             }
 
             /// <summary>
             /// Zero-copy extension to calculate the sum of a selected field across all years in the iteration 
             /// </summary>
-            public double Sum(Func<SimYear, double> fxValueSelector)
+            public double Sum(Func<SimYear, double> fxValueSelector, bool ignoreFailedYear = true)
             {
                 ArgumentNullException.ThrowIfNull(fxValueSelector);
 
                 var span = iteration.ByYear.Span;
+                var last = iteration.Success ? span.Length : ignoreFailedYear ? span.Length - 1 : span.Length;
+
                 double sumValue = 0.0;
-                for (int i = 0; i < span.Length; i++) sumValue += fxValueSelector(span[i]);
+                for (int i = 0; i < last; i++) sumValue += fxValueSelector(span[i]);
                 return sumValue;
             }
 
             /// <summary>
             /// Computes the annualized nominal return from a sequence of periodic returns.
             /// </summary>
-            public double Annualize(Func<SimYear, double> fxPercentageValueSelector)
+            public double Annualize(Func<SimYear, double> fxPercentageValueSelector, bool ignoreFailedYear = true)
             {
                 ArgumentNullException.ThrowIfNull(fxPercentageValueSelector);
 
+                var span = iteration.ByYear.Span;
+                var last = iteration.Success ? span.Length : ignoreFailedYear ? span.Length - 1 : span.Length;
+
                 double compoundReturn = 1;
                 int count = 0;
-
-                var span = iteration.ByYear.Span;
-                var last = iteration.Success ? span.Length : span.Length - 1;
-
                 for (int i = 0; i < last; i++)
                 {
                     //sumValue += fxValueSelector(span[i]);

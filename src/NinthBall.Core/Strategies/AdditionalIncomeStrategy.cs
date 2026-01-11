@@ -17,6 +17,7 @@ namespace NinthBall.Core
             {
                 context.Incomes = context.Incomes with
                 {
+                    // BY-DESIGN: SS uses InflationRate as increment. Ann uses configured increment.
                     SS  = Math.Round(context.Age == AInc.SS.FromAge  ? ssAmount  = AInc.SS.Amount  : ssAmount  *= 1 + P.InflationRate),
                     Ann = Math.Round(context.Age == AInc.Ann.FromAge ? annAmount = AInc.Ann.Amount : annAmount *= 1 + AInc.Ann.Increment),
                 };

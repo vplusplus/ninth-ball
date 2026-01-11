@@ -51,7 +51,7 @@ namespace NinthBall.Core
         [property: Range(1, 50000)]
         int Iterations = 10000,
 
-        [property: Range(0.001, 0.50)]  // Use very small value to test for zero inflation
+        [property: Range(0.00001, 0.50)]  // Use very small value to test for zero inflation
         double InflationRate = 0.02
     );
 
