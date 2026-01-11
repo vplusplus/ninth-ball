@@ -78,6 +78,40 @@
             opacity: 1;
             visibility: visible;
         }
+
+        @@media print {
+            @@page {
+                size: landscape;
+                margin: 1cm;
+            }
+
+            /* Force accordions/collapse open */
+            .collapse:not(.show), .accordion-collapse:not(.show) {
+                display: block !important;
+                height: auto !important;
+            }
+
+            /* Stack tabs vertically for print */
+            .nav {
+                display: none !important; /* Hide the tab navigation */
+            }
+
+            .tab-content > .tab-pane {
+                display: block !important;
+                opacity: 1 !important;
+                break-before: page;
+            }
+
+            /* Ensure the first one doesn't have a leading blank page */
+            .tab-content > .tab-pane:first-child {
+                break-before: auto;
+            }
+
+            /* Hide tooltips in print */
+            .nb-tooltip::after, .nb-tooltip::before {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 

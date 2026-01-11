@@ -2,7 +2,7 @@
 @using NinthBall.Core;
 
 <!-- Survival rate and failures by year -->
-<table class="table table-sm caption-top" style="table-layout: fixed; width: 100%;">
+<table class="table table-sm caption-top section" style="table-layout: fixed; width: 100%;">
     @{
         var survivalRate = SimResult.SurvivalRate;
         var txtSurvivalRate = survivalRate >= 0.98 && survivalRate != 1.0 ? $"{survivalRate:P1}" : $"{survivalRate:P0}";
