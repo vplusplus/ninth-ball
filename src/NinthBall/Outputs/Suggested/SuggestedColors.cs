@@ -5,7 +5,7 @@ namespace NinthBall.Outputs
 {
     internal enum ColorHint { None, Success, Warning, Danger, Primary, Muted }
 
-    internal static partial class ColumnDefinitions
+    internal static partial class Suggested
     {
         private delegate ColorHint ColorSelector(SimIteration iteration, in SimYear year);
 

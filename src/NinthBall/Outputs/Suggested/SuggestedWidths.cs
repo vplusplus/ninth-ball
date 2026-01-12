@@ -5,7 +5,7 @@ namespace NinthBall.Outputs
 {
     internal enum WidthHint { W1x, W2x, W3x, W4x }
 
-    internal static partial class ColumnDefinitions
+    internal static partial class Suggested
     {
         /// <summary>
         /// Provides suggested cell width hint for given column.

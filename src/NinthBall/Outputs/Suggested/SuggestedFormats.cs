@@ -5,7 +5,7 @@ namespace NinthBall.Outputs
 {
     internal enum FormatHint { F0, C0, C1, C2, P0, P1, P2 }
 
-    internal static partial class ColumnDefinitions
+    internal static partial class Suggested
     {
         /// <summary>
         /// Provides suggested cell format hint for given column.

@@ -4,6 +4,7 @@ namespace NinthBall.Outputs
     public readonly record struct Percentile(double Pctl, string FriendlyName)
     {
         public const double Target = 0.20;
+
         public string PctlName
         {
             get
@@ -15,6 +16,9 @@ namespace NinthBall.Outputs
         }
     }
 
+    /// <summary>
+    /// Immutable structure that describes output configurations.
+    /// </summary>
     public readonly record struct SimOutput
     (
         IReadOnlyList<Percentile> Percentiles,

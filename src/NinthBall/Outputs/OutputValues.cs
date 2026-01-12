@@ -3,7 +3,7 @@ using NinthBall.Core;
 
 namespace NinthBall.Outputs
 {
-    internal static partial class ColumnDefinitions
+    internal static class OutputValues
     {
         private delegate double ValueSelector(SimIteration iteration, in SimYear simYear);
 

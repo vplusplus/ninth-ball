@@ -5,7 +5,7 @@ namespace NinthBall.Outputs
 {
     internal enum AlignHint { Left, Center, Right }
 
-    internal static partial class ColumnDefinitions
+    internal static partial class Suggested
     {
         internal static AlignHint GetAlignmentHint(this CID cid) => Alignments.TryGetValue(cid, out var alignHint) ? alignHint : AlignHint.Right;
 
