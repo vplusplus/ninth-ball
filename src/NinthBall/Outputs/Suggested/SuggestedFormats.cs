@@ -31,6 +31,7 @@ namespace NinthBall.Outputs
             [CID.InflationRate] = P1,
             [CID.ROI]           = P1,
             [CID.AnnROI]        = P1,
+            [CID.RealCAGR]      = P1,
 
         }.AsReadOnly();
 

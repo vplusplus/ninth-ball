@@ -23,6 +23,7 @@ namespace NinthBall.Outputs
             [CID.ROIBonds]      = "Bonds",
             [CID.InflationRate] = "Inf",
             [CID.AnnROI]        = "AnnROI",
+            [CID.RealCAGR]      = "RealCAGR",
 
             [CID.JanPreTaxAlloc]   = "",
             [CID.JanPostTaxAlloc]  = "",

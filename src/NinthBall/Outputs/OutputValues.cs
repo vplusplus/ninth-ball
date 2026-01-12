@@ -73,7 +73,11 @@ namespace NinthBall.Outputs
             [CID.InflationRate]   = (it, in y) => y.ROI.InflationRate,
             [CID.ROI]             = (it, in y) => y.EffectiveROI,
             [CID.AnnROI]          = (it, in y) => y.RunningAnnualizedROI,
-            
+            [CID.RealCAGR]        = (it, in y) => 
+            {
+                var avgInflation = Math.Pow(y.RunningInflationMultiplier, 1.0 / (y.Year + 1)) - 1.0;
+                return ((1 + y.RunningAnnualizedROI) / (1 + avgInflation)) - 1;
+            },
 
         }.AsReadOnly();
 
@@ -121,6 +125,12 @@ namespace NinthBall.Outputs
             // Bottom-line: Show annualized-effective-roi at last good year for both ROI and AnnROI
             [CID.ROI]          = (it) => it.LastGoodYear.RunningAnnualizedROI,
             [CID.AnnROI]       = (it) => it.LastGoodYear.RunningAnnualizedROI,
+            [CID.RealCAGR]     = (it) => 
+            {
+                var y = it.LastGoodYear;
+                var avgInflation = Math.Pow(y.RunningInflationMultiplier, 1.0 / (y.Year + 1)) - 1.0;
+                return ((1 + y.RunningAnnualizedROI) / (1 + avgInflation)) - 1;
+            },
 
 
         }.AsReadOnly();

@@ -19,7 +19,7 @@ Views:
       Fees, PYTaxes, LivExp,
       XPreTax, XPostTax, 
       LikeYear, ROI, ROIStocks, ROIBonds, InflationRate,
-      DecValue, AnnROI, 
+      DecValue, RealCAGR, 
     ]
   
   # Detailed view of money coming in, going out, and net changes to assets

@@ -11,8 +11,9 @@ namespace NinthBall.Outputs
             [CID.JanValue]      = "Approx value (401K x 75% + Inv x 85%)",
             [CID.DecValue]      = "Approx value (401K x 75% + Inv x 85%)",
 
-            [CID.ROI]           = "Effective ROI (StocAlloc x StockROI + BondAlloc x BondROI). Bottom line: Annualized effective ROI at the last good year.",
-            [CID.AnnROI]        = "Running annaulized effective ROI from year #0. Bottom line: Annualized effective ROI at the last good year.",
+            [CID.ROI]           = "Effective ROI (StockAlloc x StockROI + BondAlloc x BondROI). Bottom line: Annualized effective ROI at the last good year.",
+            [CID.AnnROI]        = "Running annualized effective ROI from year #0. Bottom line: Annualized effective ROI at the last good year.",
+            [CID.RealCAGR]      = "Annualized Real Effective ROI (Purchasing Power). Benchmarked against the '4% Rule' survival threshold (1.9%).",
 
 
 
