@@ -2,48 +2,61 @@
 namespace NinthBall.Core
 {
     [SimInput(typeof(LivingExpensesStrategy), typeof(LivingExpenses), Family = StrategyFamily.LifestyleExpenses)]
-    sealed class LivingExpensesStrategy(LivingExpenses LExp) : ISimObjective
+    sealed class LivingExpensesStrategy(SimParams P, LivingExpenses LExp) : ISimObjective
     {
         int ISimObjective.Order => 32;
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(LExp);
-        
-        sealed record Strategy(LivingExpenses LExp) : ISimStrategy
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex)
         {
+            // Fail fast: Year #0 can't use step-down. Adjust Initial amount instead.
+            if (null != LExp.StepDown && LExp.StepDown.Any(x => x.AtAge == P.StartAge)) throw new FatalWarning("Avoid step-down at start age. Adjust FirstYearAmount if required and retry.");
+
+            return new Strategy(P, LExp);
+        }
+        
+        sealed record Strategy(SimParams P, LivingExpenses LExp) : ISimStrategy
+        {
+            private double runningLivingExpenseNominal = double.NaN;
 
             void ISimStrategy.Apply(ISimContext context)
             {
-                // Calculate nominal expense based on baseline (Year 0) amount and cumulative inflation
-                // This correctly uses a "Look-Back" since context.RunningInflationMultiplier 
-                // only reflects inflation up to Jan 1st of the current year.
-                double nominalExpense = LExp.FirstYearAmount * context.RunningInflationMultiplier;
-
-                // Apply StepDown reductions if any
-                if (context.YearIndex > 0 && null != LExp.StepDown)
+                if (0 == context.YearIndex)
                 {
-                    // Sum all step-downs that have occurred up to the current age
-                    // Note: This logic assumes step-downs are in "Year 0" dollars and should also be inflated,
-                    // OR they are absolute nominal reductions. 
-                    // To keep it simple and consistent with the previous implementation:
-                    // We will subtract the StepDown reduction from the baseline first-year amount 
-                    // (if the reduction is intended to be in real terms)
-                    // ACTUALLY, the previous implementation tracked a running 'livingExpense' variable.
-                    // If we want to support multiple step-downs over time, we need to sum them up.
-
-                    var totalReduction = LExp.StepDown
-                        .Where(x => context.Age >= x.AtAge)
-                        .Sum(x => x.Reduction);
-
-                    nominalExpense = Math.Max(0, (LExp.FirstYearAmount - totalReduction) * context.RunningInflationMultiplier);
+                    // Year #0: Use configured first-year-amount as-is.
+                    runningLivingExpenseNominal = LExp.FirstYearAmount;
                 }
+                else
+                {
+                    // Subsequent years: Inflate prior year amount.
+                    // On Jan 1st, we do not know current year CPI. Use prior year CPI.
+                    var priorYear = context.PriorYears.Span[^1];
+                    var priorYearInflationRate = priorYear.ROI.InflationRate;
+                    runningLivingExpenseNominal *= (1 +  priorYearInflationRate);
+                }
+
+                // On step-down years (if defined)
+                if (null != LExp.StepDown && LExp.StepDown.Count > 0)
+                {
+                    // Though not intended, nothing stops user from specifying multiple step-downs on same year.
+                    var reductionNominal = LExp.StepDown.Where(x => x.AtAge == context.Age).Sum(x => x.Reduction);
+
+                    // BY-DESIGN: Step-down amount is treated as nominal amount on that year/age.
+                    // Step down amount is not infation-adjusted
+                    // Reduce living expenses by specified amount.
+                    if (reductionNominal > 0) runningLivingExpenseNominal -= reductionNominal;
+                }
+
+                // Guard: Living expenses can't become ghost income.
+                runningLivingExpenseNominal = Math.Max(0, runningLivingExpenseNominal);
 
                 context.Expenses = context.Expenses with
                 {
+                    // When we plan expenses, we do not plan in fractions.
                     // Round to multiples of $120 i.e $10/month
-                    // Year 0 uses raw Rounding (as per previous logic), others use RoundToMultiples
-                    LivExp = context.YearIndex == 0 
-                        ? Math.Round(nominalExpense) 
-                        : nominalExpense.RoundToMultiples(120.0)
+                    // Do not touch first year amount; user sees what they said.
+                    LivExp = 0 == context.YearIndex
+                        ? Math.Round(runningLivingExpenseNominal)
+                        : runningLivingExpenseNominal.RoundToMultiples(120.0)
                 };
             }
         }

@@ -21,8 +21,8 @@ namespace NinthBall.Core
         ROI         ROI,
         Change      Change,
         Assets      Dec,
-        double      RunningInflationMultiplier,
-        double      RunningAnnualizedROI
+        double      RunningInflationMultiplier,     // WARNING: Temporal coupling. Intended, but please be aware.
+        double      RunningAnnualizedROI            // WARNING: Temporal coupling. Intended, but please be aware.
     );
 
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI, double InflationRate);
