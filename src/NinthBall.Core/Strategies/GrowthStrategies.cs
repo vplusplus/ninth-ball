@@ -25,7 +25,7 @@ namespace NinthBall.Core
                 var roi = ROISequence[context.YearIndex];
 
                 // Apply ROI suggested by bootstrapper, add CashROI from Growth options.
-                context.ROI = new ROI(roi.Year, roi.StocksROI, roi.BondROI, CashGrowth);
+                context.ROI = new ROI(roi.Year, roi.StocksROI, roi.BondsROI, CashGrowth);
             }
         }
 
