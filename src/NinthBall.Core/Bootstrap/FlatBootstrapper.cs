@@ -19,13 +19,14 @@ namespace NinthBall.Core
         // Returns same sequence for all iterations
         IROISequence IBootstrapper.GetROISequence(int iterationIndex, int numYears) => FlatSequence;
 
-        public override string ToString() => $"Flat growth and inflation | Stocks: {Options.Stocks:P1} Bonds: {Options.Bonds:P1} Inflation: {Options.InflationRate:P1}";
-
         private readonly record struct ROISequence(HROI SameROI) : IROISequence
         {
             // Returns same ROI for all years
             readonly HROI IROISequence.this[int yearIndex] => SameROI;
         }
+
+        // Describe...
+        public override string ToString() => $"Flat growth and inflation | Stocks: {Options.Stocks:P1} Bonds: {Options.Bonds:P1} Inflation: {Options.InflationRate:P1}";
     }
 }
 

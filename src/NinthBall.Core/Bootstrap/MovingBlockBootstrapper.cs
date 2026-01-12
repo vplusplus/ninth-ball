@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 namespace NinthBall.Core
 {
     /// <summary>
-    /// Replays random blocks (with replacement) of historical returns.
+    /// Replays random blocks (with replacement) of historical returns and inflation.
     /// </summary>
     internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, MovingBlockBootstrap Options) : IBootstrapper
     {
@@ -20,6 +20,7 @@ namespace NinthBall.Core
 
             HBlock? prevBlock = null!;
 
+            // We are collecting random indexes on available blocks.
             while (idx < numYears)
             {
                 // Sample next random block with uniform distribution (with replacement).
@@ -37,13 +38,10 @@ namespace NinthBall.Core
             // Logic check...
             if (idx != numYears) throw new Exception("Internal error | Mismatch in expected number of years collected.");
 
-            // Return an indexed-view into historical ROI data.
+            // We prepared random indices into blocks of historical data. 
+            // Return an indexed-view into historical data.
             return new ROISequence(History.History, indices);
         }
-
-        public override string ToString() => $"Moving Block Bootstrap (MBB) using random blocks [{CSVBlockSizes}] from {History.MinYear} to {History.MaxYear} data.{TxtNoConsecutiveBlocks}";
-        string CSVBlockSizes => string.Join(",", Options.BlockSizes);
-        string TxtNoConsecutiveBlocks => Options.NoConsecutiveBlocks ? " (No back to back repetition)" : string.Empty;
 
         private readonly record struct ROISequence(ReadOnlyMemory<HROI> MemoryBlock, int[] Indices) : IROISequence
         {
@@ -53,9 +51,9 @@ namespace NinthBall.Core
         //......................................................................
         #region HBlock and AllBlocks
         //......................................................................
+        
         // Represents a small window into the historical returns.
         // HBlock(s) are nothing more than an index (and length) into a block-of-memory.
-        //......................................................................
         readonly record struct HBlock(int StartIndex, int Length)
         {
             private readonly int EndIndex => StartIndex + Length - 1;
@@ -70,8 +68,7 @@ namespace NinthBall.Core
             var availableYears = History.History.Length;
             var blkSizes = Options.BlockSizes;
 
-            // The nested for-loops below ensures blocks are ordered by block-size and start-yearIndex. 
-            // Simulation uses uniform sampling, hence order is irrelevant (no shuffle needed).
+            // Prepare overlapping blocks of suggested sequence lengths.
             List<HBlock> availableBlocks = [];
             
             foreach (var blockLength in blkSizes)
@@ -83,7 +80,10 @@ namespace NinthBall.Core
                 }
             }
 
-            // For repeatability, blocks are arranged by start-index and then the sequence length.
+            // The growth strategy uses uniform sampling; therefore, ordering does not affect the outcome.
+            // Sorting is performed solely to ensure repeatability across runs.
+            // Historical data is already sorted by year.
+            // Blocks are arranged chronologically, then by sequence length.
             availableBlocks = availableBlocks.OrderBy(x => x.StartIndex).ThenBy(x => x.Length).ToList();
 
             // Immutable...
@@ -91,5 +91,11 @@ namespace NinthBall.Core
         });
 
         #endregion
+
+        // Describe...
+        public override string ToString() => $"Moving Block Bootstrap (MBB) using random blocks [{CSVBlockSizes}] from {History.MinYear} to {History.MaxYear} data.{TxtNoConsecutiveBlocks}";
+        string CSVBlockSizes => string.Join(",", Options.BlockSizes);
+        string TxtNoConsecutiveBlocks => Options.NoConsecutiveBlocks ? " (No back to back repetition)" : string.Empty;
+
     }
 }

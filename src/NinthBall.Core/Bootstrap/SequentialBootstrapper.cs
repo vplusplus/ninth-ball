@@ -19,11 +19,13 @@ namespace NinthBall.Core
             return new ROISequence(History.History, iterationIndex);
         }
 
-        public override string ToString() => $"Sequence of historical returns from {History.MinYear} to {History.MaxYear} data.";
-
         private readonly record struct ROISequence(ReadOnlyMemory<HROI> MemoryBlock, int Offset) : IROISequence
         {
             readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[Offset + yearIndex];
         }
+
+        // Describe...
+        public override string ToString() => $"Sequence of historical returns and inflation from {History.MinYear} to {History.MaxYear} data.";
+
     }
 }

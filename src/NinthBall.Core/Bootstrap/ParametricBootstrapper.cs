@@ -78,8 +78,6 @@ namespace NinthBall.Core
             return new ROISequence(sequence.AsMemory());
         }
 
-        public override string ToString() => $"Parametric Bootstrap | Stocks - Mean: {Options.Stocks.MeanReturn:P1} Volatility: {Options.Stocks.Volatility:P1} | Bonds - Mean: {Options.Bonds.MeanReturn:P1} Volatility: {Options.Bonds.Volatility:P1} | Cap: +/- 60%";
-
         private static double NextSafeDouble(Random random)
         {
             double u = random.NextDouble();
@@ -98,5 +96,9 @@ namespace NinthBall.Core
         {
             readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[yearIndex];
         }
+
+        // Describe...
+        public override string ToString() => $"Parametric Bootstrap | Stocks - Mean: {Options.Stocks.MeanReturn:P1} Volatility: {Options.Stocks.Volatility:P1} | Bonds - Mean: {Options.Bonds.MeanReturn:P1} Volatility: {Options.Bonds.Volatility:P1} | Cap: +/- 60%";
+
     }
 }
