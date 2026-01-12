@@ -4,7 +4,6 @@ namespace NinthBall.Outputs
     internal static partial class Suggested
     {
         internal static string GetColName(this CID cid) => ColumnNames.TryGetValue(cid, out var colName) && null != colName ? colName : cid.ToString();
-        internal static string GetColTitle(this CID cid) => ColumnTitles.TryGetValue(cid, out var colTitle) && null != colTitle ? colTitle : string.Empty;
 
         static readonly IReadOnlyDictionary<CID, string> ColumnNames = new Dictionary<CID, string>()
         {
@@ -32,15 +31,5 @@ namespace NinthBall.Outputs
 
 
         }.AsReadOnly();
-
-        static readonly IReadOnlyDictionary<CID, string> ColumnTitles = new Dictionary<CID, string>()
-        {
-            [CID.ROI]           = "Effective ROI (StocAlloc x StockROI + BondAlloc x BondROI)",
-            [CID.JanValue]      = "Approx value (401K x 75% + Inv x 85%)",
-            [CID.DecValue]      = "Approx value (401K x 75% + Inv x 85%)",
-            [CID.AnnROI]        = "Cumulative Annualized (Geometric Mean) ROI from year 0"
-
-        }.AsReadOnly();
-
     }
 }

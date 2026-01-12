@@ -11,9 +11,9 @@ namespace NinthBall.Outputs
 
         static readonly IReadOnlyDictionary<CID, AlignHint> Alignments = new Dictionary<CID, AlignHint>()
         {
-            [CID.Year] = Center,
-            [CID.Age] = Center,
-            //[CID.LikeYear] = Center,
+            [CID.Year]      = Center,
+            [CID.Age]       = Center,
+            [CID.LikeYear]  = Center,
 
         }.AsReadOnly();
 
