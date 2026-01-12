@@ -29,6 +29,8 @@ namespace NinthBall.Outputs
             [CID.ROIStocks] = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.StocksROI),
             [CID.ROIBonds]  = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.BondsROI),
             [CID.ROICash]   = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.CashROI),
+            [CID.InflationRate] = (SimIteration it, in SimYear y) => InflationLessIsGreen(y.ROI.InflationRate),
+
             [CID.LivExp]     = (SimIteration it, in SimYear y) => WarnOnStepDown(it, in y),
             [CID.XPreTax]   = (SimIteration it, in SimYear y) => RedGreen(y.XPreTax),
             [CID.XPostTax]  = (SimIteration it, in SimYear y) => RedGreen(y.XPostTax),
@@ -41,6 +43,8 @@ namespace NinthBall.Outputs
         static ColorHint ROIRedGreyGreen(SimIteration simIteration, in SimYear simYear) => ROIRedGreyGreen(simYear.EffectiveROI);
 
         static ColorHint ROIRedGreyGreen(double pctValue) => pctValue >= -0.04 && pctValue <= +0.04 ? ColorHint.Muted : pctValue <= 0 ? ColorHint.Danger : ColorHint.Success;
+
+        static ColorHint InflationLessIsGreen(double pctValue) => pctValue <= 0.02 ? ColorHint.Success : pctValue <= 0.03 ? ColorHint.Muted : ColorHint.Danger;
 
         static ColorHint WarnOnStepDown(SimIteration simIteration, in SimYear simYear)
         {

@@ -70,8 +70,10 @@ namespace NinthBall.Outputs
             [CID.ROIStocks]       = (it, in y) => y.ROI.StocksROI,
             [CID.ROIBonds]        = (it, in y) => y.ROI.BondsROI,
             [CID.ROICash]         = (it, in y) => y.ROI.CashROI,
+            [CID.InflationRate]   = (it, in y) => y.ROI.InflationRate,
             [CID.ROI]             = (it, in y) => y.EffectiveROI,
             [CID.AnnROI]          = (it, in y) => it.GetAnnualizedROIUntilTheYear(y.Year),
+            
 
         }.AsReadOnly();
 

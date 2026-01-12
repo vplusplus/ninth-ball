@@ -111,7 +111,7 @@ namespace NinthBall.Outputs
             // Net exchange from assets
             CID.XPreTax, CID.XPostTax,
             // Key market performance indicators 
-            CID.LikeYear, CID.ROIStocks, CID.ROIBonds,
+            CID.LikeYear, CID.ROIStocks, CID.ROIBonds, CID.InflationRate,
             // Bottom line - Approx asset value on year end.
             CID.AnnROI, CID.DecValue,
         ];

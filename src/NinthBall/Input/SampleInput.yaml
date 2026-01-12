@@ -97,6 +97,7 @@ Growth:
 FlatBootstrap:
   Stocks: 5%
   Bonds: 5%
+  InflationRate: 3%
 
 # Repeats random slices of history
 MovingBlockBootstrap:

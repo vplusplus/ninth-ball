@@ -50,15 +50,17 @@ namespace NinthBall.Core
 
                     var cells = row.GetCellValues().ToArray();
 
+                    int cellIndex = 0;
                     if (
                         null != cells
-                        && cells.Length >= 3
-                        && int.TryParse(cells[0], out var year)
-                        && double.TryParse(cells[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var stocksROI)
-                        && double.TryParse(cells[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var bondROI)
+                        && cells.Length >= 4
+                        && int.TryParse(cells[cellIndex++], out var year)
+                        && double.TryParse(cells[cellIndex++], NumberStyles.Float, CultureInfo.InvariantCulture, out var stocksROI)
+                        && double.TryParse(cells[cellIndex++], NumberStyles.Float, CultureInfo.InvariantCulture, out var bondsROI)
+                        && double.TryParse(cells[cellIndex++], NumberStyles.Float, CultureInfo.InvariantCulture, out var inflationRate)
                     )
                     {
-                        history.Add(new(year, stocksROI, bondROI));
+                        history.Add(new(year, stocksROI, bondsROI, inflationRate));
                         if (year < minYear) minYear = year;
                         if (year > maxYear) maxYear = year;
                     }

@@ -24,12 +24,13 @@ namespace NinthBall.Outputs
             [CID.DecPreTaxAlloc]    = P0,
             [CID.DecPostTaxAlloc]   = P0,
 
-            [CID.LikeYear]  = F0,
-            [CID.ROIStocks] = P1,
-            [CID.ROIBonds]  = P1,
-            [CID.ROICash]   = P1,
-            [CID.ROI]       = P1,
-            [CID.AnnROI]    = P1,
+            [CID.LikeYear]      = F0,
+            [CID.ROIStocks]     = P1,
+            [CID.ROIBonds]      = P1,
+            [CID.ROICash]       = P1,
+            [CID.InflationRate] = P1,
+            [CID.ROI]           = P1,
+            [CID.AnnROI]        = P1,
 
         }.AsReadOnly();
 

@@ -20,7 +20,7 @@ namespace NinthBall.Core
         Assets      Dec
     );
 
-    public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI);
+    public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI, double InflationRate);
 
     public readonly record struct Asset(double Amount, double Allocation);
 

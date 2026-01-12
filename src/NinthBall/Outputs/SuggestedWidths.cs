@@ -24,6 +24,7 @@ namespace NinthBall.Outputs
             [CID.ROIStocks] = W1x,
             [CID.ROIBonds] = W1x,
             [CID.ROICash] = W1x,
+            [CID.InflationRate] = W1x,
 
             [CID.JanPreTaxAlloc] = W1x,
             [CID.JanPostTaxAlloc] = W1x,

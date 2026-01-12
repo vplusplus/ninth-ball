@@ -17,7 +17,7 @@ namespace NinthBall.Core
             );
         }
 
-        sealed class Strategy(IROISequence ROISequence, double CashGrowth) : ISimStrategy
+        sealed class Strategy(IROISequence ROISequence, double cashROI) : ISimStrategy
         {
             void ISimStrategy.Apply(ISimContext context)
             {
@@ -25,7 +25,13 @@ namespace NinthBall.Core
                 var roi = ROISequence[context.YearIndex];
 
                 // Apply ROI suggested by bootstrapper, add CashROI from Growth options.
-                context.ROI = new ROI(roi.Year, roi.StocksROI, roi.BondsROI, CashGrowth);
+                context.ROI = new ROI(
+                    LikeYear: roi.Year, 
+                    StocksROI: roi.StocksROI, 
+                    BondsROI: roi.BondsROI, 
+                    CashROI: cashROI, 
+                    InflationRate: roi.InflationRate
+                );
             }
         }
 

@@ -5,7 +5,7 @@ namespace NinthBall.Core
     {
         // We need only one sequence since it's flat growth.
         readonly IROISequence FlatSequence = new ROISequence(
-            new(Year: 0, Options.Stocks, Options.Bonds)
+            new(Year: 0, Options.Stocks, Options.Bonds, Options.InflationRate)
         );
 
         // Growth is flat, meaningless to perform more than one iteration.

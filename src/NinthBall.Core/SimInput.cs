@@ -211,7 +211,8 @@ namespace NinthBall.Core
     public sealed record FlatBootstrap
     (
         [property: Range(0, 1)] double Stocks,
-        [property: Range(0, 1)] double Bonds
+        [property: Range(0, 1)] double Bonds,
+        [property: Range(0, 1)] double InflationRate
     );
 
     public sealed record MovingBlockBootstrap

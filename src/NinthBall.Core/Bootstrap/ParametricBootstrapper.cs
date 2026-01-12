@@ -60,7 +60,9 @@ namespace NinthBall.Core
                 double rStocks = Math.Min(+0.6, Math.Max(-0.6, Options.Stocks.MeanReturn + cfStocks * Options.Stocks.Volatility));
                 double rBonds = Math.Min(+0.6, Math.Max(-0.6, Options.Bonds.MeanReturn + cfBonds * Options.Bonds.Volatility));
 
-                sequence[i] = new HROI(0, rStocks, rBonds);
+                // IMPORTANT: TODO: Inflation rate is stubbed below.
+                // IMPORTANT: TODO: Update boorstrapper logic and remove stubbed value.
+                sequence[i] = new HROI(0, rStocks, rBonds, InflationRate: 0.03);
             }
 
             return new ROISequence(sequence.AsMemory());

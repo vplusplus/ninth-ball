@@ -52,5 +52,6 @@ namespace NinthBall.Outputs
         ROIStocks,              // Return on Stocks for the year (PCT)
         ROIBonds,               // Return on Bonds for the year (PCT)
         ROICash,                // Return on Cash for the year (PCT)
+        InflationRate           // Consumer Price Index (CPI-U)
     }
 }

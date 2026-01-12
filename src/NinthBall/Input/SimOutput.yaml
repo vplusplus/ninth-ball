@@ -18,7 +18,7 @@ Views:
       SS, Ann, 
       Fees, PYTaxes, LivExp,
       XPreTax, XPostTax, 
-      LikeYear, ROI, ROIStocks, ROIBonds, 
+      LikeYear, ROI, ROIStocks, ROIBonds, InflationRate,
       DecValue, AnnROI, 
     ]
   
