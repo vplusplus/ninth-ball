@@ -26,7 +26,8 @@ namespace NinthBall.Core
                 var nextBlock = AllBlocks.Value[iterRand.Next(0, AllBlocks.Value.Count)];
 
                 // Optional check to avoid consecutive overlapping blocks.
-                if (Options.NoConsecutiveBlocks && null != prevBlock && Overlaps(prevBlock.Value, nextBlock)) continue;
+                // Remember previous block.
+                if (Options.NoConsecutiveBlocks && null != prevBlock && HBlock.Overlaps(prevBlock.Value, nextBlock)) continue;
                 prevBlock = nextBlock;
 
                 // Collect indices from the sampled block.
@@ -38,8 +39,6 @@ namespace NinthBall.Core
 
             // Return an indexed-view into historical ROI data.
             return new ROISequence(History.History, indices);
-
-            static bool Overlaps(HBlock prevBlock, HBlock nextBlock) => nextBlock.StartIndex <= prevBlock.EndIndex && nextBlock.EndIndex >= prevBlock.StartIndex;
         }
 
         public override string ToString() => $"Moving Block Bootstrap (MBB) using random blocks [{CSVBlockSizes}] from {History.MinYear} to {History.MaxYear} data.{TxtNoConsecutiveBlocks}";
@@ -59,7 +58,8 @@ namespace NinthBall.Core
         //......................................................................
         readonly record struct HBlock(int StartIndex, int Length)
         {
-            public readonly int EndIndex => StartIndex + Length - 1;
+            private readonly int EndIndex => StartIndex + Length - 1;
+            public static bool Overlaps(HBlock prevBlock, HBlock nextBlock) => nextBlock.StartIndex <= prevBlock.EndIndex && nextBlock.EndIndex >= prevBlock.StartIndex;
         }
 
         // Prepare all available blocks once.
@@ -83,7 +83,10 @@ namespace NinthBall.Core
                 }
             }
 
-            // As a block of read-only-memory
+            // For repeatability, blocks are arranged by start-index and then the sequence length.
+            availableBlocks = availableBlocks.OrderBy(x => x.StartIndex).ThenBy(x => x.Length).ToList();
+
+            // Immutable...
             return availableBlocks.AsReadOnly();
         });
 

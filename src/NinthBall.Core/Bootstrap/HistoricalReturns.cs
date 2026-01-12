@@ -60,15 +60,16 @@ namespace NinthBall.Core
                         && double.TryParse(cells[cellIndex++], NumberStyles.Float, CultureInfo.InvariantCulture, out var inflationRate)
                     )
                     {
-                        history.Add(new(year, stocksROI, bondsROI, inflationRate));
+                        history.Add(new(year, StocksROI: stocksROI, BondsROI: bondsROI, InflationRate: inflationRate));
                         if (year < minYear) minYear = year;
                         if (year > maxYear) maxYear = year;
                     }
                 }
             }
 
-            // Just in case...
-            if (0 == history.Count) throw new Exception($"ROI data was EMPTY | Resource: {resName}#{SheetName}");
+            // Check and inform...
+            if (0 == history.Count || history.Count != maxYear - minYear + 1) throw new FatalWarning($"Invalid historical ROI data. Check for data integrity.");
+            Console.WriteLine($" Read {history.Count} years of historical ROI data from {minYear} to {maxYear}.");
 
             // Repeatable (sort by year) and read-only (to memory)
             var sortedReadonlyHistory = history.OrderBy(x => x.Year).ToArray().AsMemory();
