@@ -229,11 +229,20 @@ namespace NinthBall.Core
         [property: Range(-1.0, 1.0)] 
         double StocksBondCorrelation,
 
+        [property: Range(-1.0, 1.0)]
+        double StocksInflationCorrelation,
+
+        [property: Range(-1.0, 1.0)]
+        double BondsInflationCorrelation,
+
         [property: ValidateNested]
         ParametricBootstrap.Dist Stocks,
 
         [property: ValidateNested]
-        ParametricBootstrap.Dist Bonds)
+        ParametricBootstrap.Dist Bonds,
+
+        [property: ValidateNested]
+        ParametricBootstrap.Dist Inflation)
     {
         public readonly record struct Dist
         (

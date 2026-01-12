@@ -196,6 +196,7 @@ namespace NinthBall.Core
         private readonly SplitBalance MyPostTaxBalance = new();
         private readonly CashBalance  MyCashBalance    = new();
         private Memory<SimYear>       MyPriorYears;
+        private double                MyInflationMultiplier = 1.0;
 
         // ..........................................
         // View of the running balances and prior year results
@@ -204,6 +205,7 @@ namespace NinthBall.Core
         public IBalance PostTaxBalance => MyPostTaxBalance;
         public IBalance CashBalance    => MyCashBalance;
         public ReadOnlyMemory<SimYear> PriorYears => MyPriorYears.Slice(0, YearsCompleted);
+        public double RunningInflationMultiplier => MyInflationMultiplier;
 
         // ..........................................
         // About current iteration
@@ -247,6 +249,8 @@ namespace NinthBall.Core
             Expenses = default;
             Withdrawals = default;
             ROI = default;
+
+            MyInflationMultiplier = 1.0;
         }
 
         /// <summary>
@@ -321,10 +325,13 @@ namespace NinthBall.Core
                     YearIndex, Age, 
                     jan, 
                     Fees, Incomes, Expenses, 
-                    adjustedWithdrawal, adjustedDeposits, 
+                    adjustedWithdrawal, adjustedDeposits,
                     ROI, growth, 
                     dec
                 );
+
+                // Update inflation multiplier for the NEW year we are about to enter (next Jan 1st)
+                MyInflationMultiplier *= (1 + ROI.InflationRate);
             }
             else
             {

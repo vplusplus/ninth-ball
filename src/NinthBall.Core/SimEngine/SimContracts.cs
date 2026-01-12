@@ -50,5 +50,14 @@ namespace NinthBall.Core
         Expenses Expenses { get; set; }
         Withdrawals Withdrawals { get; set; }
         ROI ROI { get; set; }
+
+        //....................................................
+        // Inflation tracking
+        //....................................................
+        /// <summary>
+        /// Cumulative inflation factor from the start of the simulation up to the BEGINNING of the current year.
+        /// Used by strategies to calculate nominal costs based on baseline real values.
+        /// </summary>
+        double RunningInflationMultiplier { get; }
     }
 }

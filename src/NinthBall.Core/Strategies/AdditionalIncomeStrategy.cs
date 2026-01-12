@@ -2,16 +2,14 @@
 namespace NinthBall.Core
 {
     [SimInput(typeof(AdditionalIncomeStrategy), typeof(AdditionalIncomes))]
-    sealed class AdditionalIncomeStrategy(SimParams P, AdditionalIncomes AInc) : ISimObjective
+    sealed class AdditionalIncomeStrategy(AdditionalIncomes AInc) : ISimObjective
     {
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(P, AInc);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(AInc);
 
         int ISimObjective.Order => 10;
 
-        sealed record Strategy(SimParams P, AdditionalIncomes AInc) : ISimStrategy
+        sealed record Strategy(AdditionalIncomes AInc) : ISimStrategy
         {
-            double ssAmount  = 0;
-            double annAmount = 0;
 
             void ISimStrategy.Apply(ISimContext context)
             {
@@ -19,27 +17,30 @@ namespace NinthBall.Core
                 bool ssActive = context.Age >= AInc.SS.FromAge;
                 bool annActive = context.Age >= AInc.Ann.FromAge;
 
-                if (context.YearIndex == 0)
+                double ssAmount = 0;
+                double annAmount = 0;
+
+                if (ssActive)
                 {
-                    // First year initialization (accounts for elapsed years if StartAge > FromAge)
-                    if (ssActive) ssAmount = AInc.SS.Amount * Math.Pow(1 + P.InflationRate, context.Age - AInc.SS.FromAge);
-                    if (annActive) annAmount = AInc.Ann.Amount * Math.Pow(1 + AInc.Ann.Increment, context.Age - AInc.Ann.FromAge);
+                    // Social Security is baseline Amount inflated up to today
+                    ssAmount = AInc.SS.Amount * context.RunningInflationMultiplier;
                 }
-                else
+
+                if (annActive)
                 {
-                    // Subsequent years: Grow if active; Initialize if starting this year.
-                    if (ssActive)  ssAmount  = (context.Age == AInc.SS.FromAge)  ? AInc.SS.Amount  : ssAmount * (1 + P.InflationRate);
-                    if (annActive) annAmount = (context.Age == AInc.Ann.FromAge) ? AInc.Ann.Amount : annAmount * (1 + AInc.Ann.Increment);
+                    // Annuity has its own fixed compound increment, independent of CPI.
+                    // StartAge is our reference point (Year 0).
+                    annAmount = AInc.Ann.Amount * Math.Pow(1 + AInc.Ann.Increment, context.Age - AInc.Ann.FromAge);
                 }
 
                 context.Incomes = context.Incomes with
                 {
-                    SS  = Math.Round(ssActive ? ssAmount : 0),
-                    Ann = Math.Round(annActive ? annAmount : 0),
+                    SS  = Math.Round(ssAmount),
+                    Ann = Math.Round(annAmount),
                 };
             }
         }
 
-        public override string ToString() => $"Additional income | SS: {AInc.SS.Amount:C0} @ age {AInc.SS.FromAge} (+{P.InflationRate:P1}/yr) | Ann: {AInc.Ann.Amount:C0} @ age {AInc.Ann.FromAge} (+{AInc.Ann.Increment:P1}/yr)";
+        public override string ToString() => $"Additional income | SS: {AInc.SS.Amount:C0} @ age {AInc.SS.FromAge} (COLA/inflation adjusted) | Ann: {AInc.Ann.Amount:C0} @ age {AInc.Ann.FromAge} (+{AInc.Ann.Increment:P1}/yr)";
     }
 }

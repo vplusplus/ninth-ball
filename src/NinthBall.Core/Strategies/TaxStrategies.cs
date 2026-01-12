@@ -23,7 +23,7 @@ namespace NinthBall.Core
                 {
                     PYTax = 0 == context.YearIndex
                         ? new() { TaxOnOrdInc = TaxOptions.YearZeroTaxAmount }
-                        : TaxMath.ComputePriorYearTaxes(TaxOptions, context.YearIndex, P.InflationRate, context.PriorYears.Span[^1])
+                        : TaxMath.ComputePriorYearTaxes(TaxOptions, context.RunningInflationMultiplier, context.PriorYears.Span[^1])
                 };
             }
         }
@@ -48,7 +48,7 @@ namespace NinthBall.Core
             public double CapGain   = 0.0;
         };
 
-        public static Tax ComputePriorYearTaxes(TaxConfig TaxConfig, int yearIndex, double inflationRate, SimYear priorYear)
+        public static Tax ComputePriorYearTaxes(TaxConfig TaxConfig, double inflationMultiplier, SimYear priorYear)
         {
             // Collect taxable income from various sources.
             var incomes = new DDDD()
@@ -60,7 +60,7 @@ namespace NinthBall.Core
 
             // Standard deduction adjusted for inflation.
             var stdDeduction = TaxConfig.StandardDeduction > 0 ? TaxConfig.StandardDeduction : 31500.0;
-            var inflationAdjustedStdDeduction = stdDeduction * Math.Pow(1 + inflationRate, yearIndex);
+            var inflationAdjustedStdDeduction = stdDeduction * inflationMultiplier;
 
             // Adjust the taxable ordinary income and taxable interest income to reflect std deduction.
             incomes.ApplyStandardDeduction(inflationAdjustedStdDeduction);

@@ -79,6 +79,36 @@ namespace NinthBall.Core
         }
 
         /// <summary>
+        /// Performs a 3x3 Cholesky correlation to link three independent normal variables.
+        /// Given independent Z1, Z2, Z3 and correlations (rho12, rho13, rho23), 
+        /// returns (X1, X2, X3) where the correlations match the inputs.
+        /// </summary>
+        public static (double X1, double X2, double X3) Correlate3(double z1, double z2, double z3, double r12, double r13, double r23)
+        {
+            // L = [ L11  0    0   ]   where L*L^T = CorrelationMatrix
+            //     [ L21  L22  0   ]
+            //     [ L31  L32  L33 ]
+            
+            // Row 1
+            double l11 = 1.0;
+
+            // Row 2
+            double l21 = r12;
+            double l22 = Math.Sqrt(Math.Max(0, 1.0 - l21 * l21));
+
+            // Row 3
+            double l31 = r13;
+            double l32 = (r23 - l31 * l21) / (l22 > 1e-9 ? l22 : 1.0);
+            double l33 = Math.Sqrt(Math.Max(0, 1.0 - l31 * l31 - l32 * l32));
+
+            double x1 = l11 * z1;
+            double x2 = l21 * z1 + l22 * z2;
+            double x3 = l31 * z1 + l32 * z2 + l33 * z3;
+
+            return (x1, x2, x3);
+        }
+
+        /// <summary>
         /// Cornish-Fisher expansion to adjust a standard normal deviate for skewness and kurtosis.
         /// </summary>
         public static double CornishFisher(double z, double skew, double kurtosis)

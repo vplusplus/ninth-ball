@@ -31,7 +31,7 @@ namespace NinthBall.Outputs
             [CID.ROICash]   = (SimIteration it, in SimYear y) => ROIRedGreyGreen(y.ROI.CashROI),
             [CID.InflationRate] = (SimIteration it, in SimYear y) => InflationLessIsGreen(y.ROI.InflationRate),
 
-            [CID.LivExp]     = (SimIteration it, in SimYear y) => WarnOnStepDown(it, in y),
+            [CID.LivExp]     = (SimIteration it, in SimYear y) => ColorHint.None,
             [CID.XPreTax]   = (SimIteration it, in SimYear y) => RedGreen(y.XPreTax),
             [CID.XPostTax]  = (SimIteration it, in SimYear y) => RedGreen(y.XPostTax),
             [CID.ROIAmount]    = (SimIteration it, in SimYear y) => RedGreen(y.Change.Total()),
@@ -45,14 +45,5 @@ namespace NinthBall.Outputs
         static ColorHint ROIRedGreyGreen(double pctValue) => pctValue >= -0.04 && pctValue <= +0.04 ? ColorHint.Muted : pctValue <= 0 ? ColorHint.Danger : ColorHint.Success;
 
         static ColorHint InflationLessIsGreen(double pctValue) => pctValue <= 0.02 ? ColorHint.Success : pctValue <= 0.03 ? ColorHint.Muted : ColorHint.Danger;
-
-        static ColorHint WarnOnStepDown(SimIteration simIteration, in SimYear simYear)
-        {
-            var cyExp = simYear.Expenses.LivExp;
-            var pyExp = simYear.Year > 1 ? simIteration.ByYear.Span[simYear.Year - 1].Expenses.LivExp : double.MinValue;
-            var expReduction = cyExp < pyExp;
-
-            return expReduction ? ColorHint.Warning : ColorHint.None;
-        }
     }
 }

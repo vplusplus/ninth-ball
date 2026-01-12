@@ -90,7 +90,7 @@ namespace NinthBall.Core
                 );
 
                 // Apply guardrails (adjusted for inflation)
-                double inflationMultiplier = Math.Pow(1 + P.InflationRate, ctx.YearIndex);
+                double inflationMultiplier = ctx.RunningInflationMultiplier;
 
                 if (VPW.Floor.HasValue)
                 {
