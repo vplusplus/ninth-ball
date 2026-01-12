@@ -54,10 +54,9 @@ namespace NinthBall.Core
         //....................................................
         // Inflation tracking
         //....................................................
-        /// <summary>
-        /// Cumulative inflation factor from the start of the simulation up to the BEGINNING of the current year.
-        /// Used by strategies to calculate nominal costs based on baseline real values.
-        /// </summary>
+        // Cumulative inflation factor from the start of the simulation up to current year.
+        // Strategies see BEGENNING-OF-YEAR multiplier (On Jan 1st, we do not know current year inflation yet).
+        // SimResult captures END-OF-YEAR multiplier (we know what happened that year).
         double RunningInflationMultiplier { get; }
     }
 }

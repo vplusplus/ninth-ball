@@ -104,19 +104,24 @@ namespace NinthBall.Outputs
             [CID.XPreTax]      = (it) => it. Sum(y => y.XPreTax),
             [CID.XPostTax]     = (it) => it. Sum(y => y.XPostTax),
             [CID.XCash]        = (it) => it. Sum(y => y.XCash),
-            [CID.ROIAmount]       = (it) => it. Sum(y => y.Change.Total()),
+            [CID.ROIAmount]    = (it) => it. Sum(y => y.Change.Total()),
 
-            // Aggregated version prsents the last good year info
+            // Bottom-line: Data is nominal. Show nominal value of last good year.
             [CID.DecTotal]     = (it) => it. LastGoodYear.Dec.Total(),
             [CID.DecValue]     = (it) => it. LastGoodYear.Dec.ApproxValue,
             [CID.DecPreTax]    = (it) => it. LastGoodYear.Dec.PreTax.Amount,
             [CID.DecPostTax]   = (it) => it. LastGoodYear.Dec.PostTax.Amount,
             [CID.DecCash]      = (it) => it. LastGoodYear.Dec.Cash.Amount,
 
-            [CID.ROI]          = (it) => it. LastGoodYear.RunningAnnualizedROI,
+            // Bottom-line: Aggregate to annualized values for all ROIs.
             [CID.ROIStocks]    = (it) => it. Annualize(y => y.ROI.StocksROI),
             [CID.ROIBonds]     = (it) => it. Annualize(y => y.ROI.BondsROI),
             [CID.ROICash]      = (it) => it. Annualize(y => y.ROI.CashROI),
+
+            // Bottom-line: Show annualized-effective-roi at last good year for both ROI and AnnROI
+            [CID.ROI]          = (it) => it.LastGoodYear.RunningAnnualizedROI,
+            [CID.AnnROI]       = (it) => it.LastGoodYear.RunningAnnualizedROI,
+
 
         }.AsReadOnly();
     }

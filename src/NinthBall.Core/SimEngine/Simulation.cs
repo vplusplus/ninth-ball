@@ -48,9 +48,11 @@ namespace NinthBall.Core
                 .ToList();
 
             // Sort the iteration results worst to best.
+            // InflationRate sequence can skew nominal value perception.
+            // Use real purchaing power to ensure percentiles are monotonic under variable inflation.
             var iterationResultsWorstToBest = iterationResults
                 .OrderBy(iter => iter.SurvivedYears)
-                .ThenBy(iter => iter.EndingBalance)
+                .ThenBy(iter => iter.EndingBalance / Math.Max(iter.FinalInflationMultiplier, 1e-12))
                 .ToList()
                 .AsReadOnly();
 
