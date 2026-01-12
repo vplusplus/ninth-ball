@@ -3,7 +3,10 @@ namespace NinthBall.Core
 {
     public sealed record SimResult(SimInput Input, IReadOnlyList<string> Strategies, IReadOnlyList<SimIteration> Iterations);
 
-    public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear);
+    public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear)
+    {
+        public double FinalInflationMultiplier => ByYear.Length > 0 ? ByYear.Span[ByYear.Span.Length - 1].EndInflationMultiplier : 1.0;
+    }
 
     public readonly record struct SimYear
     (
@@ -17,7 +20,8 @@ namespace NinthBall.Core
         Deposits    Deposits,
         ROI         ROI,
         Change      Change,
-        Assets      Dec
+        Assets      Dec,
+        double      EndInflationMultiplier
     );
 
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI, double InflationRate);

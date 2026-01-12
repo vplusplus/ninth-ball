@@ -210,7 +210,7 @@ namespace NinthBall.Outputs.Excel
                         foreach (var pctl in percentiles)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
-                            var m = p.EndingBalance.InflationAdjustedValue(simResult.Input.InflationRate, p.SurvivedYears).Mil();
+                            var m = (p.EndingBalance / p.FinalInflationMultiplier).Mil();
                             row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");

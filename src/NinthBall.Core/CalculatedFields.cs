@@ -8,8 +8,7 @@ namespace NinthBall.Core
         //......................................................................
         extension(SimInput input)
         {
-            public double InflationRate => input.SimParams.InflationRate;
-
+            // Nothing yet
         }
 
         #endregion

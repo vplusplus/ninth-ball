@@ -57,17 +57,6 @@ namespace NinthBall.Core
                 : maxDrawdown;
         }
 
-        /// <summary>
-        /// Given a future value, inflation rate and no of years, returns inflation adjusted value in current present value.
-        /// </summary>
-        public static double InflationAdjustedValue(this double futureBalance, double inflationRate, int numberOfYears)
-        {
-            if (inflationRate < 0 || inflationRate > 1.0) throw new ArgumentException("Inflation rate must be between 0.0 and 1.0");
-
-            double inflationFactor = Math.Pow(1 + inflationRate, numberOfYears);
-            double presentValue = futureBalance / inflationFactor;
-            return presentValue;
-        }
 
         /// <summary>
         /// Calculates the first year amount (growing annually at estimatedInflation) 

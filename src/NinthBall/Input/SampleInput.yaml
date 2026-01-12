@@ -6,7 +6,6 @@ SimParams:
   StartAge: 60
   NoOfYears: 35
   Iterations: 10000
-  InflationRate: 2.1%
 
 InitialBalance:
   PreTax:
@@ -82,6 +81,7 @@ ZZZPercentageWithdrawal:
 
 VariablePercentageWithdrawal:
   FutureROI: 4%
+  FutureInflation: 3%
   Floor: 0
   Ceiling: 150,000
 

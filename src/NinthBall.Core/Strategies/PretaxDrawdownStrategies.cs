@@ -85,7 +85,7 @@ namespace NinthBall.Core
                 double amount = Stats.EquatedWithdrawal(
                     currentBalance:     ctx.PreTaxBalance.Amount, 
                     estimatedROI:       VPW.FutureROI, 
-                    estimatedInflation: P.InflationRate, 
+                    estimatedInflation: VPW.FutureInflation, 
                     remainingYears:     remainingYears
                 );
 
@@ -112,7 +112,7 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {VPW.FutureROI:P1} future ROI, {Params.InflationRate:P1} future inflation{GuardrailsToString}";
+        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {VPW.FutureROI:P1} future ROI, {VPW.FutureInflation:P1} future inflation{GuardrailsToString}";
 
         string GuardrailsToString => (VPW.Floor.HasValue || VPW.Ceiling.HasValue) 
             ? $" | Guardrails: [{VPW.Floor?.ToString("C0") ?? "None"} - {VPW.Ceiling?.ToString("C0") ?? "None"}] adjusted for inflation" 

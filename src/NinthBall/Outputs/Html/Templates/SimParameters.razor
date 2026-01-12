@@ -11,11 +11,10 @@
         var startAlloc    = Y0.Jan.PreTax.Allocation;
         int numYears      = SimResult.NoOfYears;
         int numIterations = SimResult.Iterations.Count;
-        var inflationRate = $"{SimResult.Input.SimParams.InflationRate:P1}";
     }
 
     <h4 class="mt-3">
-        @startPreTax pre-tax + @startPostTax post-tax | @($"{startAlloc:P0}") stocks | @(inflationRate) inflation | @(numYears) years | @($"{numIterations:#,0}") iterations
+        @startPreTax pre-tax + @startPostTax post-tax | @($"{startAlloc:P0}") stocks | @(numYears) years | @($"{numIterations:#,0}") iterations
     </h4>
 
     <div class="accordion accordion-flush" id="accAssumptions">

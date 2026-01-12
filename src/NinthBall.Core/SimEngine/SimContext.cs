@@ -319,6 +319,10 @@ namespace NinthBall.Core
                     AsReadOnly(MyCashBalance)
                 );
 
+                // Update inflation multiplier for the year we just completed (Dec 31st)
+                // This makes it ready for the NEXT year's planning phase (Jan 1st)
+                MyInflationMultiplier *= (1 + ROI.InflationRate);
+
                 // Track year-by-year performance.
                 MyPriorYears.Span[YearIndex] = new SimYear
                 (
@@ -327,11 +331,9 @@ namespace NinthBall.Core
                     Fees, Incomes, Expenses, 
                     adjustedWithdrawal, adjustedDeposits,
                     ROI, growth, 
-                    dec
+                    dec,
+                    MyInflationMultiplier
                 );
-
-                // Update inflation multiplier for the NEW year we are about to enter (next Jan 1st)
-                MyInflationMultiplier *= (1 + ROI.InflationRate);
             }
             else
             {
@@ -346,7 +348,8 @@ namespace NinthBall.Core
                     Deposits: default,          // Since we can't even meet expenses.
                     ROI: default,               // Irrelevant
                     Change: default,            // Since ROI is irrelevant
-                    Dec: default                // Let go all assets, zero ending balance signals failed iteration
+                    Dec: default,               // Let go all assets, zero ending balance signals failed iteration
+                    EndInflationMultiplier: MyInflationMultiplier
                 );
             }
 

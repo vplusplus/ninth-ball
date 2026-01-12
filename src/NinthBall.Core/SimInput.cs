@@ -49,10 +49,7 @@ namespace NinthBall.Core
         int NoOfYears,
 
         [property: Range(1, 50000)]
-        int Iterations = 10000,
-
-        [property: Range(0.00001, 0.50)]  // Use very small value to test for zero inflation
-        double InflationRate = 0.02
+        int Iterations = 10000
     );
 
     public sealed record InitialBalance
@@ -186,6 +183,9 @@ namespace NinthBall.Core
     (
         [property: Range(0, 1)] 
         double FutureROI,
+
+        [property: Range(0, 0.3)]
+        double FutureInflation,
 
         [property: Min(0)] 
         double? Floor = null,
