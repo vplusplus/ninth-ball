@@ -5,7 +5,7 @@ namespace NinthBall.Core
 
     public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear)
     {
-        public double FinalInflationMultiplier => ByYear.Length > 0 ? ByYear.Span[ByYear.Span.Length - 1].EndInflationMultiplier : 1.0;
+        public double FinalInflationMultiplier => ByYear.Length > 0 ? ByYear.Span[ByYear.Span.Length - 1].RunningInflationMultiplier : 1.0;
     }
 
     public readonly record struct SimYear
@@ -21,7 +21,8 @@ namespace NinthBall.Core
         ROI         ROI,
         Change      Change,
         Assets      Dec,
-        double      EndInflationMultiplier
+        double      RunningInflationMultiplier,
+        double      RunningAnnualizedROI
     );
 
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI, double InflationRate);

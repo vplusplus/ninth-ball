@@ -197,6 +197,7 @@ namespace NinthBall.Core
         private readonly CashBalance  MyCashBalance    = new();
         private Memory<SimYear>       MyPriorYears;
         private double                MyInflationMultiplier = 1.0;
+        private double                MyCumulativeGrowth    = 1.0;
 
         // ..........................................
         // View of the running balances and prior year results
@@ -251,6 +252,7 @@ namespace NinthBall.Core
             ROI = default;
 
             MyInflationMultiplier = 1.0;
+            MyCumulativeGrowth = 1.0;
         }
 
         /// <summary>
@@ -319,9 +321,17 @@ namespace NinthBall.Core
                     AsReadOnly(MyCashBalance)
                 );
 
-                // Update inflation multiplier for the year we just completed (Dec 31st)
-                // This makes it ready for the NEXT year's planning phase (Jan 1st)
+                // Update temporal tracking metrics for the year we just completed
                 MyInflationMultiplier *= (1 + ROI.InflationRate);
+
+                // BY-DESIGN: Effective ROI reflects only the invested assets (PreTax and PostTax).
+                // It is calculated based on the balance after fees and withdrawals, but BEFORE year-end deposits.
+                double investedAssets = (jan.PreTax.Amount - Fees.PreTax - adjustedWithdrawal.PreTax) + (jan.PostTax.Amount - Fees.PostTax - adjustedWithdrawal.PostTax);
+                double effectiveROI  = investedAssets > 1e-9 ? (growth.PreTax + growth.PostTax) / investedAssets : 0;
+                
+                MyCumulativeGrowth *= (1 + effectiveROI);
+
+                double runningAnnROI = Math.Pow(MyCumulativeGrowth, 1.0 / (YearIndex + 1)) - 1.0;
 
                 // Track year-by-year performance.
                 MyPriorYears.Span[YearIndex] = new SimYear
@@ -332,7 +342,8 @@ namespace NinthBall.Core
                     adjustedWithdrawal, adjustedDeposits,
                     ROI, growth, 
                     dec,
-                    MyInflationMultiplier
+                    MyInflationMultiplier,
+                    runningAnnROI
                 );
             }
             else
@@ -349,7 +360,8 @@ namespace NinthBall.Core
                     ROI: default,               // Irrelevant
                     Change: default,            // Since ROI is irrelevant
                     Dec: default,               // Let go all assets, zero ending balance signals failed iteration
-                    EndInflationMultiplier: MyInflationMultiplier
+                    RunningInflationMultiplier: MyInflationMultiplier,
+                    RunningAnnualizedROI: -1.0 // Failed iterations don't have a meaningful ROI
                 );
             }
 

@@ -72,7 +72,7 @@ namespace NinthBall.Outputs
             [CID.ROICash]         = (it, in y) => y.ROI.CashROI,
             [CID.InflationRate]   = (it, in y) => y.ROI.InflationRate,
             [CID.ROI]             = (it, in y) => y.EffectiveROI,
-            [CID.AnnROI]          = (it, in y) => it.GetAnnualizedROIUntilTheYear(y.Year),
+            [CID.AnnROI]          = (it, in y) => y.RunningAnnualizedROI,
             
 
         }.AsReadOnly();
@@ -113,7 +113,7 @@ namespace NinthBall.Outputs
             [CID.DecPostTax]   = (it) => it. LastGoodYear.Dec.PostTax.Amount,
             [CID.DecCash]      = (it) => it. LastGoodYear.Dec.Cash.Amount,
 
-            [CID.ROI]          = (it) => it.Annualize(y => y.EffectiveROI),
+            [CID.ROI]          = (it) => it. LastGoodYear.RunningAnnualizedROI,
             [CID.ROIStocks]    = (it) => it. Annualize(y => y.ROI.StocksROI),
             [CID.ROIBonds]     = (it) => it. Annualize(y => y.ROI.BondsROI),
             [CID.ROICash]      = (it) => it. Annualize(y => y.ROI.CashROI),
