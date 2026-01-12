@@ -42,7 +42,7 @@ namespace NinthBall.Outputs
 
         static ColorHint ROIRedGreyGreen(SimIteration simIteration, in SimYear simYear) => ROIRedGreyGreen(simYear.EffectiveROI);
 
-        static ColorHint ROIRedGreyGreen(double pctValue) => pctValue >= -0.04 && pctValue <= +0.04 ? ColorHint.Muted : pctValue <= 0 ? ColorHint.Danger : ColorHint.Success;
+        static ColorHint ROIRedGreyGreen(double pctValue) => double.IsNaN(pctValue) ? ColorHint.None : pctValue >= -0.04 && pctValue <= +0.04 ? ColorHint.Muted : pctValue <= 0 ? ColorHint.Danger : ColorHint.Success;
 
         static ColorHint InflationLessIsGreen(double pctValue) => pctValue <= 0.02 ? ColorHint.Success : pctValue <= 0.03 ? ColorHint.Muted : ColorHint.Danger;
     }

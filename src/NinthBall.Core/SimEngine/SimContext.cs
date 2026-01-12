@@ -342,26 +342,42 @@ namespace NinthBall.Core
                     adjustedWithdrawal, adjustedDeposits,
                     ROI, growth, 
                     dec,
-                    MyInflationMultiplier,
-                    runningAnnROI
+                    RunningInflationMultiplier: MyInflationMultiplier,
+                    RunningAnnualizedROI: runningAnnROI
                 );
             }
             else
             {
                 MyPriorYears.Span[YearIndex] = new SimYear
                 (
-                    // Information retained
-                    YearIndex, Age,
-                    jan,
-                    Fees, Incomes, Expenses,
+                    //........................................
+                    // We failed while planning on Jan 1st.
+                    // Let's retain what we know till Jan 1st
+                    //........................................
+                    YearIndex,                  // We know this
+                    Age,                        // We know this
+                    jan,                        // We know the starting balances
+                    Fees,                       // We know the fees since we know the starting balances
+                    Incomes,                    // These are known incomes. 
+                    Expenses,                   // We know the taxes-due and estimated expenses
 
+                    //........................................
+                    // We should not keep any data related to post Jan 1st.
+                    // Even ROI and Inflation, we do not know on Jan 1st
+                    // Keeping the incomplete ending balance is mis-leading.
+                    //........................................
                     Withdrawals: default,       // Since we didn't withdraw any amount.
                     Deposits: default,          // Since we can't even meet expenses.
                     ROI: default,               // Irrelevant
                     Change: default,            // Since ROI is irrelevant
-                    Dec: default,               // Let go all assets, zero ending balance signals failed iteration
-                    RunningInflationMultiplier: MyInflationMultiplier,
-                    RunningAnnualizedROI: -1.0 // Failed iterations don't have a meaningful ROI
+                    Dec: default,               // User would have spend left-overs before Dec anyway
+
+                    //........................................
+                    // Following values should never be used from failed iterations.
+                    // If some parts of the solution (current or future) use this data, let them fail.
+                    //........................................
+                    RunningInflationMultiplier: double.NaN,
+                    RunningAnnualizedROI: double.NaN 
                 );
             }
 

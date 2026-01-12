@@ -5,7 +5,14 @@ namespace NinthBall.Core
 
     public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear)
     {
-        public double FinalInflationMultiplier => ByYear.Length > 0 ? ByYear.Span[ByYear.Span.Length - 1].RunningInflationMultiplier : 1.0;
+        // Failed year will have double.NaN for RunningInflationMultiplier
+        // Use last successful year. 
+        // If none inflation multiplier is 1.0
+        public double FinalInflationMultiplier => 
+            ByYear.Length == 0 ?  1.0 : 
+            Success ? ByYear.Span[^1].RunningInflationMultiplier : 
+            ByYear.Length > 1 ? ByYear.Span[^2].RunningInflationMultiplier : 
+            1.0;
     }
 
     public readonly record struct SimYear
