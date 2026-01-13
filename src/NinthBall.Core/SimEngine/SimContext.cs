@@ -322,7 +322,8 @@ namespace NinthBall.Core
                 );
 
                 // ...........................................
-                // Update temporal tracking metrics for the year we just completed
+                // Track inflation multiplier factor.
+                // A number that represents inflation impact from year #0 to current year.
                 // ...........................................
                 MyRunningInflationMultiplier *= (1 + ROI.InflationRate);
 
@@ -334,9 +335,12 @@ namespace NinthBall.Core
                 double investedAssets = (jan.PreTax.Amount - Fees.PreTax - adjustedWithdrawal.PreTax) + (jan.PostTax.Amount - Fees.PostTax - adjustedWithdrawal.PostTax);
                 double effectiveROI   = investedAssets > 1e-9 ? (growth.PreTax + growth.PostTax) / investedAssets : 0;
 
+                // ...........................................
+                // Track cumulative growth through this year.
+                // Calculate RunningAnnualizedROI through this year.
+                // ...........................................
                 MyCumulativeGrowth *= (1 + effectiveROI);
-
-                double runningAnnROI = Math.Pow(MyCumulativeGrowth, 1.0 / (YearIndex + 1)) - 1.0;
+                double runningAnnualizedROI = Math.Pow(MyCumulativeGrowth, 1.0 / (YearIndex + 1)) - 1.0;
 
                 // Track year-by-year performance.
                 MyPriorYears.Span[YearIndex] = new SimYear
@@ -350,7 +354,7 @@ namespace NinthBall.Core
 
                     EffectiveROI: effectiveROI,
                     RunningInflationMultiplier: MyRunningInflationMultiplier,
-                    RunningAnnualizedROI: runningAnnROI
+                    RunningAnnualizedROI: runningAnnualizedROI
                 );
             }
             else
