@@ -340,7 +340,9 @@ namespace NinthBall.Core
                 // Calculate RunningAnnualizedROI through this year.
                 // ...........................................
                 MyCumulativeGrowth *= (1 + effectiveROI);
-                double runningAnnualizedROI = Math.Pow(MyCumulativeGrowth, 1.0 / (YearIndex + 1)) - 1.0;
+                double runningAnnROI = Math.Pow(MyCumulativeGrowth, 1.0 / (YearIndex + 1)) - 1.0;
+                double avgInflation  = Math.Pow(MyRunningInflationMultiplier, 1.0 / (YearIndex + 1)) - 1.0;
+                double realAnnROI    = ((1 + runningAnnROI) / (1 + avgInflation)) - 1;
 
                 // Track year-by-year performance.
                 MyPriorYears.Span[YearIndex] = new SimYear
@@ -354,7 +356,8 @@ namespace NinthBall.Core
 
                     EffectiveROI: effectiveROI,
                     RunningInflationMultiplier: MyRunningInflationMultiplier,
-                    RunningAnnualizedROI: runningAnnualizedROI
+                    RunningAnnualizedROI: runningAnnROI,
+                    RealAnnualizedROI: realAnnROI
                 );
             }
             else
@@ -389,7 +392,8 @@ namespace NinthBall.Core
                     //........................................
                     EffectiveROI: double.NaN,  
                     RunningInflationMultiplier: double.NaN,
-                    RunningAnnualizedROI: double.NaN 
+                    RunningAnnualizedROI: double.NaN,
+                    RealAnnualizedROI: double.NaN 
                 );
             }
 

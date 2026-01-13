@@ -79,9 +79,7 @@ namespace NinthBall.Outputs
         {
             if (double.IsNaN(y.RunningAnnualizedROI)) return ColorHint.None;
 
-            // Accurate geometric real return: ((1 + Nominal) / (1 + Inflation)) - 1
-            var avgInflation = Math.Pow(y.RunningInflationMultiplier, 1.0 / (y.Year + 1)) - 1.0;
-            var realReturn = ((1 + y.RunningAnnualizedROI) / (1 + avgInflation)) - 1;
+            var realReturn = y.RealAnnualizedROI;
 
             // Survival Benchmarks (Domain Specific):
             // Red:   < 1.9% (Falling behind the "4% Rule" benchmark).

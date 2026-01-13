@@ -31,7 +31,8 @@ namespace NinthBall.Core
 
         double      EffectiveROI,                   // Effective ROI after fees and withdrawals, before deposits. 
         double      RunningInflationMultiplier,     // WARNING: Temporal coupling. Intended, but please be aware.
-        double      RunningAnnualizedROI            // WARNING: Temporal coupling. Intended, but please be aware.
+        double      RunningAnnualizedROI,           // WARNING: Temporal coupling. Intended, but please be aware.
+        double      RealAnnualizedROI               // Real annualized ROI (Purchasing Power)
     );
 
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI, double InflationRate);
