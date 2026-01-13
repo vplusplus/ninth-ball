@@ -324,11 +324,14 @@ namespace NinthBall.Core
                 // Update temporal tracking metrics for the year we just completed
                 MyInflationMultiplier *= (1 + ROI.InflationRate);
 
+                // ...........................................
+                // Effective ROI after fees and withdrawals, but BEFORE year-end deposits.
                 // BY-DESIGN: Effective ROI reflects only the invested assets (PreTax and PostTax).
-                // It is calculated based on the balance after fees and withdrawals, but BEFORE year-end deposits.
+                // Cash assets are excluded by design.
+                // ...........................................
                 double investedAssets = (jan.PreTax.Amount - Fees.PreTax - adjustedWithdrawal.PreTax) + (jan.PostTax.Amount - Fees.PostTax - adjustedWithdrawal.PostTax);
-                double effectiveROI  = investedAssets > 1e-9 ? (growth.PreTax + growth.PostTax) / investedAssets : 0;
-                
+                double effectiveROI   = investedAssets > 1e-9 ? (growth.PreTax + growth.PostTax) / investedAssets : 0;
+
                 MyCumulativeGrowth *= (1 + effectiveROI);
 
                 double runningAnnROI = Math.Pow(MyCumulativeGrowth, 1.0 / (YearIndex + 1)) - 1.0;
@@ -342,6 +345,8 @@ namespace NinthBall.Core
                     adjustedWithdrawal, adjustedDeposits,
                     ROI, growth, 
                     dec,
+
+                    EffectiveROI: effectiveROI,
                     RunningInflationMultiplier: MyInflationMultiplier,
                     RunningAnnualizedROI: runningAnnROI
                 );
@@ -376,6 +381,7 @@ namespace NinthBall.Core
                     // Following values should never be used from failed iterations.
                     // If some parts of the solution (current or future) use this data, let them fail.
                     //........................................
+                    EffectiveROI: double.NaN,  
                     RunningInflationMultiplier: double.NaN,
                     RunningAnnualizedROI: double.NaN 
                 );

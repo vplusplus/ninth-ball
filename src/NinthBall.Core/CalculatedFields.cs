@@ -43,43 +43,6 @@ namespace NinthBall.Core
             public double XPreTax   => 0 - simYear.Withdrawals.PreTax;
             public double XPostTax  => simYear.Deposits.PostTax - simYear.Withdrawals.PostTax;
             public double XCash     => simYear.Deposits.Cash - simYear.Withdrawals.Cash;
-
-            /// <summary>
-            /// Effective ROI after fees and withdrawals, before deposits.
-            /// </summary>
-            public double EffectiveROI
-            {
-                get 
-                {
-                    // Balance less fees and withdrawals
-                    // BY-DESIGN: Cash-balance and cash-increase are ignored by design.
-                    var jan = simYear.Jan;
-                    var preTaxLessFeesAndWithdrawals  = jan.PreTax.Amount  - simYear.Fees.PreTax  - simYear.Withdrawals.PreTax;
-                    var postTaxLessFeesAndWithdrawals = jan.PostTax.Amount - simYear.Fees.PostTax - simYear.Withdrawals.PostTax;
-
-                    // Stock and bond balances less fees and withdrawals
-                    var S1 = preTaxLessFeesAndWithdrawals  * jan.PreTax.StockAlloc;
-                    var B1 = preTaxLessFeesAndWithdrawals  * jan.PreTax.BondAlloc;
-                    var S2 = postTaxLessFeesAndWithdrawals * jan.PostTax.StockAlloc;
-                    var B2 = postTaxLessFeesAndWithdrawals * jan.PostTax.BondAlloc;
-
-                    // BY-DESIGN: Deposits are made at the end of the year.
-                    // Deposits are withheld from ROI calculation
-                    // Simulation updates deposits after calculating ROI for the year
-
-                    // Growth
-                    var rS = simYear.ROI.StocksROI;
-                    var rB = simYear.ROI.BondsROI;
-
-                    // Change and PCT change.
-                    var change = (S1 * rS) + (B1 * rB) + (S2 * rS) + (B2 * rB);
-                    var pctChange = change / (preTaxLessFeesAndWithdrawals + postTaxLessFeesAndWithdrawals);
-
-                    return pctChange;
-                }
-            }
-
-
         }
 
         #endregion

@@ -28,6 +28,8 @@ namespace NinthBall.Core
         ROI         ROI,
         Change      Change,
         Assets      Dec,
+
+        double      EffectiveROI,                   // Effective ROI after fees and withdrawals, before deposits. 
         double      RunningInflationMultiplier,     // WARNING: Temporal coupling. Intended, but please be aware.
         double      RunningAnnualizedROI            // WARNING: Temporal coupling. Intended, but please be aware.
     );
