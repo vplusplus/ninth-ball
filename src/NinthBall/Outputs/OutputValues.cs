@@ -117,12 +117,8 @@ namespace NinthBall.Outputs
             [CID.DecPostTax]   = (it) => it. LastGoodYear.Dec.PostTax.Amount,
             [CID.DecCash]      = (it) => it. LastGoodYear.Dec.Cash.Amount,
 
-            // Bottom-line: Aggregate to annualized values for all ROIs.
-            [CID.ROIStocks]    = (it) => it. Annualize(y => y.ROI.StocksROI),
-            [CID.ROIBonds]     = (it) => it. Annualize(y => y.ROI.BondsROI),
-            [CID.ROICash]      = (it) => it. Annualize(y => y.ROI.CashROI),
-
             // Bottom-line: Show annualized-effective-roi at last good year for both ROI and AnnROI
+            // Do not try to summarize the market nois: StocksROI, BondROI & CashROI - They are just bootstrapper data.
             [CID.ROI]          = (it) => it.LastGoodYear.RunningAnnualizedROI,
             [CID.AnnROI]       = (it) => it.LastGoodYear.RunningAnnualizedROI,
             [CID.RealCAGR]     = (it) => 
