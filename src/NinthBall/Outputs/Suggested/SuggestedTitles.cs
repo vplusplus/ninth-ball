@@ -1,4 +1,6 @@
 ﻿
+using NinthBall.Core;
+
 namespace NinthBall.Outputs
 {
     internal static partial class Suggested
@@ -8,8 +10,8 @@ namespace NinthBall.Outputs
         static readonly IReadOnlyDictionary<CID, string> ColumnTitles = new Dictionary<CID, string>()
         {
             
-            [CID.JanValue]      = "Approx value (401K x 75% + Inv x 85%)",
-            [CID.DecValue]      = "Approx value (401K x 75% + Inv x 85%)",
+            [CID.JanValue]      = Assets.ApproxValueDesc,
+            [CID.DecValue]      = Assets.ApproxValueDesc,
 
             [CID.ROI]           = "Effective ROI (StockAlloc x StockROI + BondAlloc x BondROI). Bottom line: Annualized effective ROI at the last good year.",
             [CID.AnnROI]        = "Running annualized effective ROI from year #0. Bottom line: Annualized effective ROI at the last good year.",

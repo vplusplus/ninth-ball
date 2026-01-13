@@ -24,6 +24,7 @@ namespace NinthBall.Core
             // PreTax  - 100% taxable at 25%
             // PostTax - Assuming all gains are long term gains, 
             public double ApproxValue => (assets.PreTax.Amount * 0.75) + (assets.PostTax.Amount * 0.85) + assets.Cash.Amount;
+            public static string ApproxValueDesc => "Approx value (401K x 75% + Inv x 85%)";
         }
 
         extension(in Asset asset)
