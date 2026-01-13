@@ -80,7 +80,6 @@ namespace NinthBall.Outputs
         static readonly IReadOnlyDictionary<CID, SumValueSelector> FxAggregates = new Dictionary<CID, SumValueSelector>()
         {
             [CID.Year]         = (it) => it. SurvivedYears,
-            [CID.Age]          = (it) => it. SurvivedAge,
 
             // Aggregated version prsents the last good year info
             [CID.JanTotal]     = (it) => it. LastGoodYear.Jan.Total(),
