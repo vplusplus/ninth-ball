@@ -13,14 +13,6 @@ namespace NinthBall.Core
         void Apply(ISimContext context);
     }
 
-    internal interface IBalance
-    {
-        double Amount { get; }
-        double Allocation { get; }
-        bool Rebalance(double maxDrift);
-        bool Reallocate(double newAllocation, double maxDrift);
-    }
-
     internal interface ISimContext
     {
         //....................................................
