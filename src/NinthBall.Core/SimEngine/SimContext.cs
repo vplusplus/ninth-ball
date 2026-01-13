@@ -196,7 +196,7 @@ namespace NinthBall.Core
         private readonly SplitBalance MyPostTaxBalance = new();
         private readonly CashBalance  MyCashBalance    = new();
         private Memory<SimYear>       MyPriorYears;
-        private double                MyInflationMultiplier = 1.0;
+        private double                MyRunningInflationMultiplier = 1.0;
         private double                MyCumulativeGrowth    = 1.0;
 
         // ..........................................
@@ -206,7 +206,7 @@ namespace NinthBall.Core
         public IBalance PostTaxBalance => MyPostTaxBalance;
         public IBalance CashBalance    => MyCashBalance;
         public ReadOnlyMemory<SimYear> PriorYears => MyPriorYears.Slice(0, YearsCompleted);
-        public double RunningInflationMultiplier => MyInflationMultiplier;
+        public double RunningInflationMultiplier => MyRunningInflationMultiplier;
 
         // ..........................................
         // About current iteration
@@ -251,7 +251,7 @@ namespace NinthBall.Core
             Withdrawals = default;
             ROI = default;
 
-            MyInflationMultiplier = 1.0;
+            MyRunningInflationMultiplier = 1.0;
             MyCumulativeGrowth = 1.0;
         }
 
@@ -321,8 +321,10 @@ namespace NinthBall.Core
                     AsReadOnly(MyCashBalance)
                 );
 
+                // ...........................................
                 // Update temporal tracking metrics for the year we just completed
-                MyInflationMultiplier *= (1 + ROI.InflationRate);
+                // ...........................................
+                MyRunningInflationMultiplier *= (1 + ROI.InflationRate);
 
                 // ...........................................
                 // Effective ROI after fees and withdrawals, but BEFORE year-end deposits.
@@ -347,7 +349,7 @@ namespace NinthBall.Core
                     dec,
 
                     EffectiveROI: effectiveROI,
-                    RunningInflationMultiplier: MyInflationMultiplier,
+                    RunningInflationMultiplier: MyRunningInflationMultiplier,
                     RunningAnnualizedROI: runningAnnROI
                 );
             }
