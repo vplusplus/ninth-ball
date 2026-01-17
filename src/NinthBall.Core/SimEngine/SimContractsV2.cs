@@ -2,20 +2,10 @@
 namespace NinthBall.Core
 {
     // Additional data structures
-    internal readonly record struct Alloc(double Allocation, double MaxDrift);
-
-
-    internal readonly record struct Running
-    (
-        // Multiplication factors
-        double InflationMultiplier = 1.0,       // Cumulative inflation factor since year #0
-        double GrowthMultiplier = 1.0,          // Nominal growth multiplier since year #0
-
-        // Percentage values
-        double PortfolioReturn = 0.0,           // Portfolio-weighted nominal return for the current year
-        double AnnualizedReturn = 0.0,          // Annualized nominal return (CAGR) since year #0
-        double RealAnnualizedReturn = 0.0       // Inflation-adjusted annualized return since year #0
-    );
+    public readonly record struct Allocation(Allocation.AD PreTax, Allocation.AD PostTax)
+    {
+        public readonly record struct AD(double Allocatin, double MaxDrift);
+    }
 
     //..........................................................................
     #region Updated interfaces and contracts
@@ -42,7 +32,7 @@ namespace NinthBall.Core
         int Age { get; }
 
         Assets Jan { get; }
-        Alloc TargetAllocation { get; set; }
+        Allocation TargetAllocation { get; set; }
         Fees Fees { get; set; }
         Incomes Incomes { get; set; }
         Expenses Expenses { get; set; }
@@ -61,13 +51,13 @@ namespace NinthBall.Core
         ReadOnlyMemory<SimYear> PriorYears { get; }
         SimYear PriorYear { get; }
         Assets Jan { get; }
-        Alloc TargetAllocation { get; }
+        Allocation TargetAllocation { get; }
         Fees Fees { get; }
         Incomes Incomes { get; }
         Expenses Expenses { get; }
         Withdrawals Withdrawals { get; }
         ROI ROI { get; }
-        Running Running { get; }
+        Metrics Running { get; }
     }
 
     internal interface ISimStrategy2
@@ -96,7 +86,7 @@ namespace NinthBall.Core
         public int YearIndex { get; private set; } = 0;
         public int Age => StartAge + YearIndex;
         public Assets Jan { get; private set; } = Initial;
-        public Alloc TargetAllocation { get; set; }
+        public Allocation TargetAllocation { get; set; }
         public Fees Fees { get; set; }
         public Incomes Incomes { get; set; }
         public Expenses Expenses { get; set; }
@@ -104,7 +94,7 @@ namespace NinthBall.Core
         public ROI ROI { get; set; }
 
         // Running metrics
-        public Running Running { get; private set; }
+        public Metrics Running { get; private set; }
         
         public void BeginYear(int yearIndex)
         {
@@ -113,7 +103,7 @@ namespace NinthBall.Core
             (TargetAllocation, Fees, Incomes, Expenses, Withdrawals, ROI) = (default, default, default, default, default, default);
         }
 
-        public void EndYear(SimYear aboutThisYear, Running running)
+        public void EndYear(SimYear aboutThisYear, Metrics running)
         {
             Running = running;
             Storage.Span[YearIndex] = aboutThisYear;
@@ -162,7 +152,7 @@ namespace NinthBall.Core
         }
 
 
-        private static (bool success, SimYear simYear, Running running) FinalizeYear(this IReadOnlySimState simState)
+        private static (bool success, SimYear simYear, Metrics running) FinalizeYear(this IReadOnlySimState simState)
         {
             var (success, adjustedWithdrawals, adjustedDeposits) = simState.FinalizeWithdrawals();
             if (success)
@@ -227,10 +217,10 @@ namespace NinthBall.Core
             }
         }
 
-        static Running UpdateRunningMetrics(int yearIndex, Assets jan, Fees fees, Withdrawals withdrawals, ROI roi, Change change, Running running)
+        static Metrics UpdateRunningMetrics(int yearIndex, Assets jan, Fees fees, Withdrawals withdrawals, ROI roi, Change change, Metrics running)
         {
             // Not trusting external year #0 initialization...
-            Running prior = yearIndex > 0 ? running : new
+            Metrics prior = yearIndex > 0 ? running : new
             (
                 InflationMultiplier: 1.0,
                 GrowthMultiplier: 1.0,

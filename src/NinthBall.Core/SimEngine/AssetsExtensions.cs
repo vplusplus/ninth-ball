@@ -76,10 +76,10 @@ namespace NinthBall.Core
                 Cash:    assets.Cash.Post(deposits.Cash)
             );
 
-            public Assets Rebalance(Alloc targetAllocation) => default == targetAllocation ? assets : new
+            public Assets Rebalance(Allocation targetAllocation) => default == targetAllocation ? assets : new
             (
-                assets.PreTax.Rebalance(targetAllocation.Allocation, targetAllocation.MaxDrift),
-                assets.PostTax.Rebalance(targetAllocation.Allocation, targetAllocation.MaxDrift),
+                assets.PreTax.Rebalance(targetAllocation.PreTax.Allocatin, targetAllocation.PreTax.MaxDrift),
+                assets.PostTax.Rebalance(targetAllocation.PostTax.Allocatin, targetAllocation.PostTax.MaxDrift),
                 assets.Cash
             );
 

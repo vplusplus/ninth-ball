@@ -35,6 +35,19 @@ namespace NinthBall.Core
         double      RealAnnualizedROI               // Real annualized ROI (Purchasing Power)
     );
 
+
+    internal readonly record struct Metrics
+    (
+        // Multiplication factors
+        double InflationMultiplier = 1.0,       // Cumulative inflation factor since year #0
+        double GrowthMultiplier = 1.0,          // Nominal growth multiplier since year #0
+
+        // Percentage values
+        double PortfolioReturn = 0.0,           // Portfolio-weighted nominal return for the current year
+        double AnnualizedReturn = 0.0,          // Annualized nominal return (CAGR) since year #0
+        double RealAnnualizedReturn = 0.0       // Inflation-adjusted annualized return since year #0
+    );
+
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI, double InflationRate);
 
     public readonly record struct Asset(double Amount, double Allocation);
