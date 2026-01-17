@@ -10,7 +10,7 @@ namespace NinthBall.Outputs
         //  Represents raw data from yaml configuration.
         private record SimOutputYaml
         (
-            IReadOnlyList<Percentile>? Percentiles = null,
+            IReadOnlyList<double>? Percentiles = null,
             IReadOnlyDictionary<string, IReadOnlyList<CID>>? Views = null,
             string? HtmlView = null,
             string? ExcelView = null
@@ -77,44 +77,10 @@ namespace NinthBall.Outputs
 
             return new
             (
-                Percentiles:  null != percentiles && percentiles.Count > 0 ? percentiles : DefaultPercentiles,
-                HtmlColumns:  null != htmlCols && htmlCols.Count > 0 ? htmlCols : DefaultColumns,
-                ExcelColumns: null != excelCols && excelCols.Count > 0 ? excelCols : DefaultColumns
+                Percentiles:  null != percentiles && percentiles.Count > 0 ? percentiles : SimOutputDefaults.DefaultPercentiles,
+                HtmlColumns:  null != htmlCols && htmlCols.Count > 0 ? htmlCols : SimOutputDefaults.DefaultColumns,
+                ExcelColumns: null != excelCols && excelCols.Count > 0 ? excelCols : SimOutputDefaults.DefaultColumns
             );
         }
-
-        // Default percentiles presented if user had not configured one.
-        // NOTE: Public for now since Excel output is not yet refactord to the generalized approach.
-        // NOTE: Make it private once Excel generation is refactored.
-        public static IReadOnlyList<Percentile> DefaultPercentiles =>
-        [
-            new(0.01, "Worst-case"),
-            new(0.05, "Unlucky"),
-            new(0.10, "Unfortunate"),
-            new(0.20, "Target"),
-            new(0.50, "Coin-flip"),
-            new(0.80, "Fortunate"),
-            // new(0.90, "Lucky"),
-            // new(0.95, "Dream"),
-        ];
-
-        // Default columns presented if user had not configured one.
-        private static readonly IReadOnlyList<CID> DefaultColumns =
-        [
-            CID.Year, CID.Age,
-            // Jan balance (ignore cash)
-            CID.JanPreTax, CID.JanPostTax,
-            // Additional incomes
-            CID.SS, CID.Ann,
-            // Expenses
-            CID.Fees, CID.PYTaxes, CID.LivExp,
-            // Net exchange from assets
-            CID.XPreTax, CID.XPostTax,
-            // Key market performance indicators 
-            CID.LikeYear, CID.ROIStocks, CID.ROIBonds, CID.InflationRate,
-            // Bottom line - Approx asset value on year end.
-            CID.AnnROI, CID.DecValue,
-        ];
-
     }
 }

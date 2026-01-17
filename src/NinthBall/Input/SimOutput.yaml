@@ -2,9 +2,7 @@
 HtmlView:  Essential
 ExcelView: Simple
 
-zzPercentiles:
-  - { Pctl: 0.10, PctlName: "10th", FriendlyName: "Safe Bound" }
-  - { Pctl: 0.50, PctlName: "50th", FriendlyName: "Median" }
+ZZZ-Percentiles: [ 0%, 1%, 5%, 10%, 20%, 50%, 80% ]
 
 Views:
 

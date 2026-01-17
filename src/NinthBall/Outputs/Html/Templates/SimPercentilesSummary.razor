@@ -21,23 +21,13 @@
             }
         </tr>
 
-        <!-- Percentile sentiments -->
-        <tr>
-            <th></th>
-
-            @foreach (var p in Percentiles)
-            {
-                <td class="text-secondary">@p.FriendlyName</td>
-            }
-        </tr>
-
         <!-- Ending balance (Real) -->
         <tr>
             <th>End (Real)</th>
 
             @foreach (var p in Percentiles)
             {
-                var iter = SimResult.Percentile(p.Pctl);
+                var iter = SimResult.Percentile(p);
 
                 if (iter.Success)
                 {
@@ -57,7 +47,7 @@
 
             @foreach (var p in Percentiles)
             {
-                var iter = SimResult.Percentile(p.Pctl);
+                var iter = SimResult.Percentile(p);
 
                 if (iter.Success)
                 {
@@ -77,7 +67,7 @@
 
             @foreach (var p in Percentiles)
             {
-                var iter = SimResult.Percentile(p.Pctl);
+                var iter = SimResult.Percentile(p);
                 var annualizedEffectiveROI = iter.GetAggregateValue(CID.ROI);
 
                 <td class="text-secondary">
@@ -95,5 +85,5 @@
     [Parameter] public SimResult SimResult { get; set; } = null!;
     [Parameter] public SimOutput OutputConfig { get; set; }
 
-    private IReadOnlyList<Percentile> Percentiles => OutputConfig.Percentiles;
+    private IReadOnlyList<double> Percentiles => OutputConfig.Percentiles;
 }

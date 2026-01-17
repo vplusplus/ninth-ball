@@ -85,7 +85,7 @@ namespace NinthBall.Outputs.Excel
                 RenderSummary(xl, myStyles, simResult);
 
                 // Render one sheet per percentile
-                foreach(var pctl in SimOutputReader.DefaultPercentiles) RenderPercentile(xl, myStyles, simResult, pctl);
+                foreach(var pctl in SimOutputDefaults.DefaultPercentiles) RenderPercentile(xl, myStyles, simResult, pctl);
 
                 // NOTE: Dispose will not save. We have to save.
                 xl.Save();
@@ -158,7 +158,7 @@ namespace NinthBall.Outputs.Excel
             const double W10 = 10;
             const double W20 = 20;
 
-            var percentiles = SimOutputReader.DefaultPercentiles;
+            var percentiles = SimOutputDefaults.DefaultPercentiles;
 
             using (var sheet = xl.BeginSheet("Summary"))
             {
@@ -179,13 +179,6 @@ namespace NinthBall.Outputs.Excel
 
                     using (var row = rows.BeginRow())
                     {
-                        row.Append("");
-                        foreach(var pctl in percentiles) row.Append(pctl.FriendlyName, styles.SumTxt);
-                        row.Append("");
-                    }
-
-                    using (var row = rows.BeginRow())
-                    {
                         row.Append("Percentiles");
                         foreach (var pctl in percentiles) row.Append(pctl.PctlName, styles.SumTxt);
                         row.Append(" percentile");
@@ -196,7 +189,7 @@ namespace NinthBall.Outputs.Excel
                         row.Append("Start (Real)");
                         foreach (var pctl in percentiles)
                         {
-                            var p = simResult.Percentile(pctl.Pctl);
+                            var p = simResult.Percentile(pctl);
                             var m = p.StartingBalance.Mil();
                             row.Append(m, styles.SumC);
                         }
@@ -209,7 +202,7 @@ namespace NinthBall.Outputs.Excel
                         row.Append("End (Real)");
                         foreach (var pctl in percentiles)
                         {
-                            var p = simResult.Percentile(pctl.Pctl);
+                            var p = simResult.Percentile(pctl);
                             var m = (p.LastGoodYear.Dec.Total() / p.LastGoodYear.Metrics.InflationMultiplier).Mil();
                             row.Append(m, styles.SumC);
                         }
@@ -221,7 +214,7 @@ namespace NinthBall.Outputs.Excel
                         row.Append("End (Nominal)");
                         foreach (var pctl in percentiles)
                         {
-                            var p = simResult.Percentile(pctl.Pctl);
+                            var p = simResult.Percentile(pctl);
                             var m = p.EndingBalance.Mil();
                             row.Append(m, styles.SumC);
                         }
@@ -233,7 +226,7 @@ namespace NinthBall.Outputs.Excel
                         row.Append("Change (Annualized)");
                         foreach (var pctl in percentiles)
                         {
-                            var p = simResult.Percentile(pctl.Pctl);
+                            var p = simResult.Percentile(pctl);
                             var chng = p.LastGoodYear.Metrics.AnnualizedReturn;  // Nominal CAGR
                             row.Append(chng, styles.SumP);
                         }
@@ -243,7 +236,7 @@ namespace NinthBall.Outputs.Excel
             }
         }
 
-        static void RenderPercentile(ExcelWriter xl, MyStyles styles, SimResult simResult, Percentile pctl)
+        static void RenderPercentile(ExcelWriter xl, MyStyles styles, SimResult simResult, double pctl)
         {
             const double Blank = 2;
             const double W4 = 4;
@@ -251,8 +244,8 @@ namespace NinthBall.Outputs.Excel
             const double W8 = 8;
             const double W12 = 12;
 
-            var sheetName = $"{pctl.PctlName}-{pctl.FriendlyName}";
-            var p = simResult.Percentile(pctl.Pctl);
+            var sheetName = $"{pctl.PctlName}";
+            var p = simResult.Percentile(pctl);
 
             using (var sheet = xl.BeginSheet(sheetName))
             {
