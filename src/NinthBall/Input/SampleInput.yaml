@@ -18,29 +18,53 @@ InitialBalance:
     Amount: 0
 
 # ............................................................
-# Portfolio adjustment
+# Expense modelling
 # ............................................................
-Rebalance:
-  MaxDrift: 5%
-  zzReallocate:
-    - AtAge: 70
-      PreTaxStocksAllocation:  70%
-      PostTaxStocksAllocation: 70%
-    - AtAge: 80
-      PreTaxStocksAllocation:  80%
-      PostTaxStocksAllocation: 80%
+LivingExpenses:
+  FirstYearAmount: 120,000
+  StepDown:
+    - AtAge: 65           # Example: Stop paying Life Ins
+      Reduction: 25000
+    - AtAge: 70           # Example: Reduction in Med Ins.
+      Reduction: 5000
 
 # ............................................................
 # Additional known incomes
 # ............................................................
-ZZZ-AdditionalIncomes:
+AdditionalIncomes:
   SS:
     FromAge: 70
-    Amount: 15,000
+    Amount: 70,000
   Ann:
     FromAge: 70
-    Amount: 10,000
+    Amount: 50,000
     Increment: 0%
+
+# ............................................................
+# Growth strategies 
+# Availble options: Flat | Sequential | MovingBlock | Parametric
+# ............................................................
+Growth:
+  Bootstrapper: Parametric     
+
+# ............................................................
+# PreTax (401K) depletion velocity; Pick one.
+# All choices below are applicable ONLY to the PreTax assets
+# ............................................................
+VariablePercentageWithdrawal:
+  FutureROI: 4%
+  FutureInflation: 3%
+  Floor: 0
+  Ceiling: 150,000
+
+ZZZPercentageWithdrawal:
+  FirstYearPct: 4%
+  Increment:    2%
+  ResetAtAge:   [65, 70]
+
+ZZZFixedWithdrawal:
+  FirstYearAmount: 80,000
+  Increment: 2%
 
 # ............................................................
 # Fees and Taxes
@@ -57,41 +81,21 @@ Taxes:
     CapitalGains: 15%
 
 # ............................................................
-# Expense modelling
+# Portfolio adjustment
 # ............................................................
-LivingExpenses:
-  FirstYearAmount: 80,000
-  ZZZ-StepDown:
-    - AtAge: 65           # Example: Stop paying Life Ins
-      Reduction: 10000
-    - AtAge: 70           # Example: Reduction in Med Ins.
-      Reduction: 5000
+Rebalance:
+  MaxDrift: 5%
+  ZZZ-Reallocate:
+    - AtAge: 70
+      PreTaxStocksAllocation:  70%
+      PostTaxStocksAllocation: 70%
+    - AtAge: 80
+      PreTaxStocksAllocation:  80%
+      PostTaxStocksAllocation: 80%
 
 # ............................................................
-# PreTax (401K) depletion velocity; Pick one.
-# All choices below are applicable ONLY to the PreTax assets
+# Bootstrapper configurations
 # ............................................................
-ZZZFixedWithdrawal:
-  FirstYearAmount: 80,000
-  Increment: 2%
-
-ZZZPercentageWithdrawal:
-  FirstYearPct: 4%
-  Increment:    2%
-  ResetAtAge:   [65, 70]
-
-VariablePercentageWithdrawal:
-  FutureROI: 4%
-  FutureInflation: 3%
-  Floor: 0
-  Ceiling: 150,000
-
-# ............................................................
-# Growth strategies 
-# Availble options: Flat | Sequential | MovingBlock | Parametric
-# ............................................................
-Growth:
-  Bootstrapper: Parametric     
 
 # Useful for baseliing and validting the calculations.
 FlatBootstrap:
@@ -106,7 +110,6 @@ MovingBlockBootstrap:
 
 # Stats driven
 ParametricBootstrap:
-
   # When Stocks crash (panic), investors often sell stocks and buy Bonds (safe haven). 
   # This drives Stock prices down and Bond prices up, creating a negative correlation.
   # While this varies by decade (it was positive in the 1980s/90s), 
