@@ -1,31 +1,36 @@
 ﻿
+
 namespace NinthBall.Core
 {
     [SimInput(typeof(RebalancingAndReallocationStrategy), typeof(Rebalance), Family = StrategyFamily.PortfolioManagement)]
-    sealed class RebalancingAndReallocationStrategy(Rebalance Options) : ISimObjective, ISimStrategy
+    sealed class RebalancingAndReallocationStrategy(InitialBalance Initial, Rebalance Options) : ISimObjective
     {
         int ISimObjective.Order => 1;
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => this;
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Initial, Options);
 
-        void ISimStrategy.Apply(ISimContext context)
+        private sealed class Strategy(InitialBalance Initial, Rebalance Options) : ISimStrategy
         {
-            var reallocateThisYear = null != Options.Reallocate && Options.Reallocate.Count > 0 && Options.Reallocate.Any(x => x.AtAge == context.Age);
+            void ISimStrategy.Apply(ISimState context)
+            {
+                var preTaxAllocation = Initial.PreTax.Allocation;
+                var postTaxAllocation = Initial.PostTax.Allocation;
+                var maxDrift = Options.MaxDrift;
 
-            if (reallocateThisYear)
-            {
-                // Reallocate assets on targetted years (will also trigger rebalance)
-                var newAllocation = Options.Reallocate!.Single(x => x.AtAge == context.Age).Allocation;
-                context.PreTaxBalance.Reallocate(newAllocation, Options.MaxDrift);
-                context.PostTaxBalance.Reallocate(newAllocation, Options.MaxDrift);
-            }
-            else
-            {
-                // Yearly rebalance
-                context.PreTaxBalance.Rebalance(Options.MaxDrift);
-                context.PostTaxBalance.Rebalance(Options.MaxDrift);
+                var reallocateThisYear = null != Options.Reallocate && Options.Reallocate.Count > 0 && Options.Reallocate.Any(x => x.AtAge == context.Age);
+
+                if (reallocateThisYear)
+                {
+                    preTaxAllocation = postTaxAllocation = Options.Reallocate!.Single(x => x.AtAge == context.Age).Allocation;
+                }
+
+                context.TargetAllocation = new(
+                    new(preTaxAllocation, maxDrift),
+                    new(postTaxAllocation, maxDrift)
+                );
             }
         }
+
 
         public override string ToString() => $"{TxtRB}{TxtRA}";
 

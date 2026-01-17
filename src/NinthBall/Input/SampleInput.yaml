@@ -91,7 +91,6 @@ VariablePercentageWithdrawal:
 # ............................................................
 Growth:
   Bootstrapper: MovingBlock     
-  CashROI: 0%
 
 # Useful for baseliing and validting the calculations.
 FlatBootstrap:

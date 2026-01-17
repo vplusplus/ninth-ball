@@ -78,8 +78,8 @@ namespace NinthBall.Core
 
             public Assets Rebalance(Allocation targetAllocation) => default == targetAllocation ? assets : new
             (
-                assets.PreTax.Rebalance(targetAllocation.PreTax.Allocatin, targetAllocation.PreTax.MaxDrift),
-                assets.PostTax.Rebalance(targetAllocation.PostTax.Allocatin, targetAllocation.PostTax.MaxDrift),
+                assets.PreTax.Rebalance(targetAllocation.PreTax.Allocation, targetAllocation.PreTax.MaxDrift),
+                assets.PostTax.Rebalance(targetAllocation.PostTax.Allocation, targetAllocation.PostTax.MaxDrift),
                 assets.Cash
             );
 
@@ -98,8 +98,7 @@ namespace NinthBall.Core
                 var changePreTax  = newPreTax.Amount  - assets.PreTax.Amount;
                 var changePostTax = newPostTax.Amount - assets.PostTax.Amount;
 
-                change = new(changePreTax, changePostTax, 0.0);
-                //effectiveROI = (changePreTax + changePostTax) / (assets.PreTax.Amount + assets.PostTax.Amount);
+                change = new(changePreTax, changePostTax);
 
                 return new(newPreTax, newPostTax, assets.Cash);
             }

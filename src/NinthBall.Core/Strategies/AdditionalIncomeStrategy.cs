@@ -11,7 +11,7 @@ namespace NinthBall.Core
         sealed record Strategy(AdditionalIncomes AInc) : ISimStrategy
         {
 
-            void ISimStrategy.Apply(ISimContext context)
+            void ISimStrategy.Apply(ISimState context)
             {
                 // Income is active if current age >= FromAge
                 bool ssActive = context.Age >= AInc.SS.FromAge;
@@ -23,7 +23,8 @@ namespace NinthBall.Core
                 if (ssActive)
                 {
                     // Social Security is baseline Amount inflated up to today
-                    ssAmount = AInc.SS.Amount * context.RunningInflationMultiplier;
+                    var inflationMultiplier = 0 == context.YearIndex ? 1.0 : context.PriorYear.Metrics.InflationMultiplier;
+                    ssAmount = AInc.SS.Amount * inflationMultiplier;
                 }
 
                 if (annActive)

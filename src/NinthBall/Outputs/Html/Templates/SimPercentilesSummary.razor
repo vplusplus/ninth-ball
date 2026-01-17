@@ -41,10 +41,7 @@
 
                 if (iter.Success)
                 {
-                    // Assuming 3% inflation to calculate inflation adjusted real purchasing power.
-                    // const double TheInflationRate = 0.03;   
-
-                    var endBalance = (iter.EndingBalance / iter.FinalInflationMultiplier).Millions();
+                    var endBalance = (iter.LastGoodYear.Dec.Total() / iter.LastGoodYear.Metrics.InflationMultiplier).Millions();
                     <th>@endBalance</th>
                 }
                 else

@@ -71,7 +71,7 @@ namespace NinthBall.Core
             if (currentBalance <= 0) return 0.0;
 
             // Special case: ROI matches Inflation
-            if (Math.Abs(estimatedROI - estimatedInflation) < 1e-9) return currentBalance / remainingYears;
+            if (Math.Abs(estimatedROI - estimatedInflation) < 1e-6) return currentBalance / remainingYears;
 
             //................................................
             // Growing Annuity Due Formula:

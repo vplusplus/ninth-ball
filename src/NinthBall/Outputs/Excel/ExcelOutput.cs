@@ -210,7 +210,7 @@ namespace NinthBall.Outputs.Excel
                         foreach (var pctl in percentiles)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
-                            var m = (p.EndingBalance / p.FinalInflationMultiplier).Mil();
+                            var m = (p.LastGoodYear.Dec.Total() / p.LastGoodYear.Metrics.InflationMultiplier).Mil();
                             row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");
@@ -234,8 +234,7 @@ namespace NinthBall.Outputs.Excel
                         foreach (var pctl in percentiles)
                         {
                             var p = simResult.Percentile(pctl.Pctl);
-                            //var chng = p.ByYear.AnnualizeChangePCT();
-                            var chng = -1.0; // Stubbed
+                            var chng = p.LastGoodYear.Metrics.AnnualizedReturn;  // Nominal CAGR
                             row.Append(chng, styles.SumP);
                         }
                         row.Append("");

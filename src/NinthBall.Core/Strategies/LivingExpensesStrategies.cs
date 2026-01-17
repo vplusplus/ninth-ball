@@ -18,7 +18,7 @@ namespace NinthBall.Core
         {
             private double runningLivingExpenseNominal = double.NaN;
 
-            void ISimStrategy.Apply(ISimContext context)
+            void ISimStrategy.Apply(ISimState context)
             {
                 if (0 == context.YearIndex)
                 {

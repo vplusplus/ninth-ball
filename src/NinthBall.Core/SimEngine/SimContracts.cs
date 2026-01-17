@@ -10,45 +10,8 @@ namespace NinthBall.Core
 
     internal interface ISimStrategy
     {
-        void Apply(ISimContext context);
+        void Apply(ISimState context);
     }
 
-    internal interface ISimContext
-    {
-        //....................................................
-        // Running balance (Jan)
-        //....................................................
-        IBalance PreTaxBalance { get; }
-        IBalance PostTaxBalance { get; }
-        IBalance CashBalance { get; }
-
-        //....................................................
-        // Prior year results
-        //....................................................
-        ReadOnlyMemory<SimYear> PriorYears { get; }
-
-        //....................................................
-        // Current year
-        //....................................................
-        public int IterationIndex { get; }
-        public int YearIndex { get; }
-        public int Age { get; }
-
-        //....................................................
-        // Current year strategy recommendations
-        //....................................................
-        Fees Fees { get; set; }
-        Incomes Incomes { get; set; }
-        Expenses Expenses { get; set; }
-        Withdrawals Withdrawals { get; set; }
-        ROI ROI { get; set; }
-
-        //....................................................
-        // Inflation tracking
-        //....................................................
-        // Cumulative inflation factor from the start of the simulation up to current year.
-        // Strategies see BEGENNING-OF-YEAR multiplier (On Jan 1st, we do not know current year inflation yet).
-        // SimResult captures END-OF-YEAR multiplier (we know what happened that year).
-        double RunningInflationMultiplier { get; }
-    }
 }
+

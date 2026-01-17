@@ -11,8 +11,6 @@ namespace NinthBall.Core
         // The last year that successfully completed (or Empty))
         public SimYear LastGoodYear => SurvivedYears > 0 ? ByYear.Span[SurvivedYears - 1] : new();
 
-        // Use last successful year for final inflation multiplier. 
-        public double FinalInflationMultiplier => SurvivedYears == 0 ? 1.0 : LastGoodYear.RunningInflationMultiplier;
     }
 
     public readonly record struct SimYear
@@ -28,15 +26,11 @@ namespace NinthBall.Core
         ROI         ROI,
         Change      Change,
         Assets      Dec,
-
-        double      EffectiveROI,                   // Effective ROI after fees and withdrawals, before deposits. 
-        double      RunningInflationMultiplier,     // WARNING: Temporal coupling. Intended, but please be aware.
-        double      RunningAnnualizedROI,           // WARNING: Temporal coupling. Intended, but please be aware.
-        double      RealAnnualizedROI               // Real annualized ROI (Purchasing Power)
+        Metrics     Metrics
     );
 
 
-    internal readonly record struct Metrics
+    public readonly record struct Metrics
     (
         // Multiplication factors
         double InflationMultiplier = 1.0,       // Cumulative inflation factor since year #0
@@ -48,7 +42,7 @@ namespace NinthBall.Core
         double RealAnnualizedReturn = 0.0       // Inflation-adjusted annualized return since year #0
     );
 
-    public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double CashROI, double InflationRate);
+    public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double InflationRate);
 
     public readonly record struct Asset(double Amount, double Allocation);
 
@@ -82,9 +76,9 @@ namespace NinthBall.Core
         public readonly double Total() => PYTax.Total() + LivExp;
     }
 
-    public readonly record struct Change(double PreTax, double PostTax, double Cash)
+    public readonly record struct Change(double PreTax, double PostTax)
     {
-        public readonly double Total() => PreTax + PostTax + Cash;
+        public readonly double Total() => PreTax + PostTax;
     }
 
     public readonly record struct Tax(double TaxOnOrdInc, double TaxOnDiv, double TaxOnInt, double TaxOnCapGain) 

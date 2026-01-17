@@ -40,7 +40,7 @@ Views:
       SS, Ann, Incomes,
       XPreTax, XPostTax, XCash,
       DecTotal, DecValue, DecPreTax, DecPreTaxAlloc, DecPostTax, DecPostTaxAlloc, DecCash,
-      LikeYear, ROI, AnnROI, ROIAmount, ROIStocks, ROIBonds, ROICash,
+      LikeYear, ROI, AnnROI, ROIAmount, ROIStocks, ROIBonds, 
       Empty
     ]
 

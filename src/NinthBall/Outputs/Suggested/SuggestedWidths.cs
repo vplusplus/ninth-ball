@@ -23,7 +23,6 @@ namespace NinthBall.Outputs
             [CID.AnnROI] = W1x,
             [CID.ROIStocks] = W1x,
             [CID.ROIBonds] = W1x,
-            [CID.ROICash] = W1x,
             [CID.InflationRate] = W1x,
             [CID.RealCAGR]      = W1x,
 

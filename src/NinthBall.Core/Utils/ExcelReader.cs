@@ -21,16 +21,6 @@ namespace NinthBall.Core
             MyCellReader = new(this);
         }
 
-        //public ExcelReader(string excelFileName)
-        //{
-        //    // Open readonly. Allow other processes (Excel) to read or write.
-        //    MyFileStream = File.Open(excelFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        //    MyDocument = SpreadsheetDocument.Open(MyFileStream, isEditable: false);
-
-        //    // We need one and only one instance of CellReader.
-        //    MyCellReader = new(this);
-        //}
-
         // Returns a sequence of SheetReader, one per worksheet.
         public IEnumerable<SheetReader> GetSheets() => MySheets.Select(sheet => new SheetReader(this, sheet));
 

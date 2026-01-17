@@ -13,7 +13,7 @@ namespace NinthBall.Core
         {
             double from401K = 0;
 
-            void ISimStrategy.Apply(ISimContext context)
+            void ISimStrategy.Apply(ISimState context)
             {
                 var take = 0 == context.YearIndex
                     ? from401K = FW.FirstYearAmount
@@ -41,15 +41,15 @@ namespace NinthBall.Core
         {
             double from401K = 0;
 
-            void ISimStrategy.Apply(ISimContext ctx)
+            void ISimStrategy.Apply(ISimState ctx)
             {
                 if (0 == ctx.YearIndex)
                 {
-                    from401K = ctx.PreTaxBalance.Amount * PW.FirstYearPct;
+                    from401K = ctx.Jan.PreTax.Amount * PW.FirstYearPct;
                 }
                 else if (null != PW.ResetAtAge && PW.ResetAtAge.Contains(ctx.Age))
                 {
-                    from401K = ctx.PreTaxBalance.Amount * PW.FirstYearPct;
+                    from401K = ctx.Jan.PreTax.Amount * PW.FirstYearPct;
                 }
                 else
                 {
@@ -77,20 +77,20 @@ namespace NinthBall.Core
 
         sealed class Strategy(SimParams P, VariablePercentageWithdrawal VPW) : ISimStrategy
         {
-            void ISimStrategy.Apply(ISimContext ctx)
+            void ISimStrategy.Apply(ISimState ctx)
             {
                 int remainingYears = P.NoOfYears - ctx.YearIndex;
                 
                 // Calculate the "ideal" withdrawal to hit zero at the end of the horizon.
                 double amount = Stats.EquatedWithdrawal(
-                    currentBalance:     ctx.PreTaxBalance.Amount, 
+                    currentBalance:     ctx.Jan.PreTax.Amount, 
                     estimatedROI:       VPW.FutureROI, 
                     estimatedInflation: VPW.FutureInflation, 
                     remainingYears:     remainingYears
                 );
 
                 // Apply guardrails (adjusted for inflation)
-                double inflationMultiplier = ctx.RunningInflationMultiplier;
+                double inflationMultiplier = 0 == ctx.YearIndex ? 1.0 : ctx.PriorYear.Metrics.InflationMultiplier;
 
                 if (VPW.Floor.HasValue)
                 {

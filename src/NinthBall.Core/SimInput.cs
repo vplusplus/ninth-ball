@@ -202,10 +202,7 @@ namespace NinthBall.Core
     public sealed record Growth
     (
         [property: Required]
-        BootstrapKind Bootstrapper, 
-
-        [property: Range(0, 1)] 
-        double CashROI
+        BootstrapKind Bootstrapper
     );
 
     public sealed record FlatBootstrap

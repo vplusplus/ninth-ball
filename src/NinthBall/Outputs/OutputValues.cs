@@ -69,11 +69,10 @@ namespace NinthBall.Outputs
             [CID.LikeYear]        = (it, in y) => y.ROI.LikeYear,
             [CID.ROIStocks]       = (it, in y) => y.ROI.StocksROI,
             [CID.ROIBonds]        = (it, in y) => y.ROI.BondsROI,
-            [CID.ROICash]         = (it, in y) => y.ROI.CashROI,
             [CID.InflationRate]   = (it, in y) => y.ROI.InflationRate,
-            [CID.ROI]             = (it, in y) => y.EffectiveROI,
-            [CID.AnnROI]          = (it, in y) => y.RunningAnnualizedROI,
-            [CID.RealCAGR]        = (it, in y) => y.RealAnnualizedROI,
+            [CID.ROI]             = (it, in y) => y.Metrics.PortfolioReturn,
+            [CID.AnnROI]          = (it, in y) => y.Metrics.AnnualizedReturn,
+            [CID.RealCAGR]        = (it, in y) => y.Metrics.RealAnnualizedReturn,
 
         }.AsReadOnly();
 
@@ -113,10 +112,10 @@ namespace NinthBall.Outputs
             [CID.DecCash]      = (it) => it. LastGoodYear.Dec.Cash.Amount,
 
             // Bottom-line: Show annualized-effective-roi at last good year for both ROI and AnnROI
-            // Do not try to summarize the market nois: StocksROI, BondROI & CashROI - They are just bootstrapper data.
-            [CID.ROI]          = (it) => it.LastGoodYear.RunningAnnualizedROI,
-            [CID.AnnROI]       = (it) => it.LastGoodYear.RunningAnnualizedROI,
-            [CID.RealCAGR]     = (it) => it.LastGoodYear.RealAnnualizedROI,
+            // Do not try to summarize the market nois: StocksROI & BondROI - They are just bootstrapper data.
+            [CID.ROI]          = (it) => it.LastGoodYear.Metrics.PortfolioReturn,
+            [CID.AnnROI]       = (it) => it.LastGoodYear.Metrics.AnnualizedReturn,
+            [CID.RealCAGR]     = (it) => it.LastGoodYear.Metrics.RealAnnualizedReturn,
 
 
         }.AsReadOnly();

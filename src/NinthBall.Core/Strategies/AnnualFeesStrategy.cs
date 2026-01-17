@@ -8,13 +8,13 @@ namespace NinthBall.Core
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => this;
 
-        void ISimStrategy.Apply(ISimContext context)
+        void ISimStrategy.Apply(ISimState context)
         {
             // Calculate fees
             context.Fees = new(
-                Math.Ceiling(context.PreTaxBalance.Amount * Options.PreTax),
-                Math.Ceiling(context.PostTaxBalance.Amount * Options.PostTax),
-                Math.Ceiling(context.CashBalance.Amount * Options.Cash)
+                Math.Ceiling(context.Jan.PreTax.Amount * Options.PreTax),
+                Math.Ceiling(context.Jan.PostTax.Amount * Options.PostTax),
+                Math.Ceiling(context.Jan.Cash.Amount * Options.Cash)
             );
         }
 

@@ -1,122 +1,12 @@
 ﻿
 namespace NinthBall.Core
 {
-    // Additional data structures
-    public readonly record struct Allocation(Allocation.AD PreTax, Allocation.AD PostTax)
-    {
-        public readonly record struct AD(double Allocatin, double MaxDrift);
-    }
-
-    //..........................................................................
-    #region Updated interfaces and contracts
-    //..........................................................................
-    internal interface ISimState
-    {
-        //....................................................
-        // Current iteration
-        //....................................................
-        int IterationIndex { get; }
-        int StartAge { get; }
-        Assets Initial { get; }
-
-        //....................................................
-        // History
-        //....................................................
-        ReadOnlyMemory<SimYear> PriorYears { get; }
-        SimYear PriorYear { get; }
-
-        //....................................................
-        // Current year
-        //....................................................
-        int YearIndex { get; }
-        int Age { get; }
-
-        Assets Jan { get; }
-        Allocation TargetAllocation { get; set; }
-        Fees Fees { get; set; }
-        Incomes Incomes { get; set; }
-        Expenses Expenses { get; set; }
-        Withdrawals Withdrawals { get; set; }
-        ROI ROI { get; set; }
-    }
-
-    internal interface IReadOnlySimState
-    {
-        int IterationIndex { get; }
-        int StartAge { get; }
-        int YearIndex { get; }
-        int Age { get; }
-
-        Assets Initial { get; }
-        ReadOnlyMemory<SimYear> PriorYears { get; }
-        SimYear PriorYear { get; }
-        Assets Jan { get; }
-        Allocation TargetAllocation { get; }
-        Fees Fees { get; }
-        Incomes Incomes { get; }
-        Expenses Expenses { get; }
-        Withdrawals Withdrawals { get; }
-        ROI ROI { get; }
-        Metrics Running { get; }
-    }
-
-    internal interface ISimStrategy2
-    {
-        void Apply(ISimState context) { }
-    }
-
-    internal interface ISimObjective2
-    {
-        int Order { get => 50; }
-        int MaxIterations { get => int.MaxValue; }
-        ISimStrategy2 CreateStrategy(int iterationIndex);
-    }
-
-
-    #endregion
-
-    internal sealed record class SimState(int IterationIndex, int StartAge, Assets Initial, Memory<SimYear> Storage) : ISimState, IReadOnlySimState
-    {
-        // History - PriorYears and PriorYear
-        public ReadOnlyMemory<SimYear> PriorYears => Storage.Slice(0, YearIndex);
-        public SimYear PriorYear => YearIndex > 0 ? PriorYears.Span[^1] : new();
-
-
-        // Current year
-        public int YearIndex { get; private set; } = 0;
-        public int Age => StartAge + YearIndex;
-        public Assets Jan { get; private set; } = Initial;
-        public Allocation TargetAllocation { get; set; }
-        public Fees Fees { get; set; }
-        public Incomes Incomes { get; set; }
-        public Expenses Expenses { get; set; }
-        public Withdrawals Withdrawals { get; set; }
-        public ROI ROI { get; set; }
-
-        // Running metrics
-        public Metrics Running { get; private set; }
-        
-        public void BeginYear(int yearIndex)
-        {
-            YearIndex = yearIndex;
-            Jan = (yearIndex == 0) ? Initial : PriorYear.Dec;
-            (TargetAllocation, Fees, Incomes, Expenses, Withdrawals, ROI) = (default, default, default, default, default, default);
-        }
-
-        public void EndYear(SimYear aboutThisYear, Metrics running)
-        {
-            Running = running;
-            Storage.Span[YearIndex] = aboutThisYear;
-        }
-
-    }
-
     /// <summary>
     /// Represents single iteration of a simulation
     /// </summary>
     internal static class SimIterationLoop
     {
-        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, Assets initialBalance, IReadOnlyList<ISimObjective2> simObjectives, Memory<SimYear> iterationStore)
+        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, Assets initialBalance, IReadOnlyList<ISimObjective> simObjectives, Memory<SimYear> iterationStore)
         {
             ArgumentNullException.ThrowIfNull(simParams);
             ArgumentNullException.ThrowIfNull(simObjectives);
@@ -142,8 +32,8 @@ namespace NinthBall.Core
                 simState.Expenses    = simState.Expenses.ThrowIfNegative().RoundToCents();
                 simState.Withdrawals = simState.Withdrawals.ThrowIfNegative().RoundToCents();
 
-                (success, var simYear, var running) = simState.FinalizeYear();
-                simState.EndYear(simYear, running);
+                (success, var simYear) = simState.FinalizeYear();
+                simState.EndYear(simYear);
 
                 if (!success) break;
             }
@@ -152,7 +42,7 @@ namespace NinthBall.Core
         }
 
 
-        private static (bool success, SimYear simYear, Metrics running) FinalizeYear(this IReadOnlySimState simState)
+        private static (bool success, SimYear simYear) FinalizeYear(this IReadOnlySimState simState)
         {
             var (success, adjustedWithdrawals, adjustedDeposits) = simState.FinalizeWithdrawals();
             if (success)
@@ -167,7 +57,7 @@ namespace NinthBall.Core
 
                 var metrics = UpdateRunningMetrics(simState.YearIndex, simState.Jan, simState.Fees, adjustedWithdrawals, simState.ROI, changes, simState.Running);
 
-                SimYear successYear = new
+                SimYear successYear = new 
                 (
                     simState.YearIndex,          // We know this
                     simState.Age,                // We know this
@@ -181,14 +71,10 @@ namespace NinthBall.Core
                     ROI: simState.ROI,
                     Change: changes,
                     Dec: dec,
-
-                    EffectiveROI: metrics.PortfolioReturn,
-                    RunningInflationMultiplier: metrics.InflationMultiplier,
-                    RunningAnnualizedROI: metrics.AnnualizedReturn,
-                    RealAnnualizedROI: metrics.RealAnnualizedReturn
+                    Metrics: metrics
                 );
 
-                return (success, successYear, metrics);
+                return (success, successYear.ValidateMath());
             }
             else
             {
@@ -207,13 +93,10 @@ namespace NinthBall.Core
                     Change: default,            // Since ROI is irrelevant
                     Dec: default,               // User would have spend left-overs before Dec anyway
 
-                    EffectiveROI: double.NaN,
-                    RunningInflationMultiplier: double.NaN,
-                    RunningAnnualizedROI: double.NaN,
-                    RealAnnualizedROI: double.NaN
+                    Metrics: new(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)
                 );
 
-                return (success, failedYear, default);
+                return (success, failedYear);
             }
         }
 
@@ -440,8 +323,6 @@ namespace NinthBall.Core
 
         #endregion
 
- 
-
         static SimYear ValidateMath(this SimYear y)
         {
             y.Jan.ThrowIfNegative();
@@ -459,10 +340,10 @@ namespace NinthBall.Core
             if (!good) throw new Exception($"Incomes {y.Incomes.Total():C0} + Withdrawals {y.Withdrawals.Total():C0} is less than expenses {y.Expenses.Total():C0}");
 
             // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
-            good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
-            good &= (y.Jan.PostTax.Amount - y.Fees.PostTax - y.Withdrawals.PostTax).AlmostSame(y.Dec.PostTax.Amount, Precision.Amount);
-            good &= (y.Jan.Cash.Amount - y.Fees.Cash - y.Withdrawals.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
-            if (!good) throw new Exception("Starting - Fees - Withdrawals != Available");
+            good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
+            good &= (y.Jan.PostTax.Amount - y.Fees.PostTax - y.Withdrawals.PostTax + y.Change.PostTax + y.Deposits.PostTax).AlmostSame(y.Dec.PostTax.Amount, Precision.Amount);
+            good &= (y.Jan.Cash.Amount - y.Fees.Cash - y.Withdrawals.Cash + y.Deposits.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
+            if (!good) throw new Exception("Balance reconciliation failed: Jan - Fees - Withdrawals + Change + Deposits != Dec");
 
             // Either withdrawals or Deposits should be zero.
             good &= y.Withdrawals.PostTax.AlmostZero(Precision.Amount) || y.Deposits.PostTax.AlmostZero(Precision.Amount);

@@ -17,13 +17,15 @@ namespace NinthBall.Core
         
         sealed record Strategy(SimParams P, TaxConfig TaxOptions) : ISimStrategy
         {
-            void ISimStrategy.Apply(ISimContext context)
+            void ISimStrategy.Apply(ISimState context)
             {
+                double inflationMultiplier = 0 == context.YearIndex ? 1.0 : context.PriorYear.Metrics.InflationMultiplier;
+
                 context.Expenses = context.Expenses with
                 {
                     PYTax = 0 == context.YearIndex
                         ? new() { TaxOnOrdInc = TaxOptions.YearZeroTaxAmount }
-                        : TaxMath.ComputePriorYearTaxes(TaxOptions, context.RunningInflationMultiplier, context.PriorYears.Span[^1])
+                        : TaxMath.ComputePriorYearTaxes(TaxOptions, inflationMultiplier, context.PriorYears.Span[^1])
                 };
             }
         }
@@ -54,7 +56,6 @@ namespace NinthBall.Core
             var incomes = new DDDD()
                 .AddIncomeFromPreTaxAsset(priorYear)
                 .AddIncomeFromPostTaxAsset(priorYear)
-                .AddIncomeFromCashAsset(priorYear)
                 .AddIncomeFromAdditionalIncomeSources(priorYear)
                 ;
 
@@ -123,17 +124,6 @@ namespace NinthBall.Core
             incomes.Dividends   += qualifiedDividendAmount;
             incomes.Interest    += interestAmount;
             incomes.CapGain     += longTermCapitalGain;
-            return incomes;
-        }
-
-        static DDDD AddIncomeFromCashAsset(this DDDD incomes, SimYear priorYear)
-        {
-            // We are looking at cash asset such as high-yield savings.
-            // Only interest income is applicable.
-            var janCashBalance = priorYear.Jan.Cash.Amount;
-            var interestAmount = Math.Max(0, janCashBalance * priorYear.ROI.CashROI);
-
-            incomes.Interest += interestAmount;
             return incomes;
         }
 

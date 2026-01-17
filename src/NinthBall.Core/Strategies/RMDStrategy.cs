@@ -10,7 +10,7 @@
 
         sealed class Strategy : ISimStrategy
         {
-            void ISimStrategy.Apply(ISimContext context)
+            void ISimStrategy.Apply(ISimState context)
             {
                 if (context.Age < RMDStartAge) return;
 
@@ -20,7 +20,7 @@
                 if (factor <= 0) throw new InvalidOperationException($"RMD table data missing for age {context.Age}. Please update the IRS Uniform Lifetime Table in {nameof(RMDStrategy)}.");
 
                 // Calculate required minimum distribution. Drop fraction (if any). Use Ceiling.
-                double requiredMinimumDistributionAmount = Math.Ceiling(context.PreTaxBalance.Amount / factor);
+                double requiredMinimumDistributionAmount = Math.Ceiling(context.Jan.PreTax.Amount / factor);
 
                 // Use higher withdrawal if current withdrawal is less than RMD
                 if (context.Withdrawals.PreTax < requiredMinimumDistributionAmount)

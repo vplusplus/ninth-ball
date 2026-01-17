@@ -4,8 +4,9 @@ namespace NinthBall.Core
 {
     internal sealed class Simulation(SimInput Input, InitialBalance InitPortfolio, SimParams SimParams, IEnumerable<ISimObjective> Objectives)
     {
+        // TODO: Re-integrate object pooling.
         // A pool of SimContext instances, reset & reused for each iteration.
-        private readonly ObjectPool<SimContext> SimContextPool = new(() => new SimContext());
+        // private readonly ObjectPool<SimContext> SimContextPool = new(() => new SimContext());
  
         public SimResult RunSimulation()
         {
@@ -33,6 +34,13 @@ namespace NinthBall.Core
                 };
             }
 
+            Assets initialBalance = new
+            (
+                new(InitPortfolio.PreTax.Amount, InitPortfolio.PreTax.Allocation),
+                new(InitPortfolio.PostTax.Amount, InitPortfolio.PostTax.Allocation),
+                new(InitPortfolio.Cash.Amount, 1.0)
+            );
+
             // Pre-allocate ONE giant contiguous block of memory for ALL results (total simYears = maxIterations * noOfYears)
             var dataStore = new SimYear[maxIterations * noOfYears];
 
@@ -40,11 +48,7 @@ namespace NinthBall.Core
             var iterationResults = Enumerable.Range(0, maxIterations)
                 .AsParallel()
                 .WithDegreeOfParallelism(Environment.ProcessorCount)
-                .Select(iterationIndex => RunOneIteration(
-                    iterationIndex, 
-                    orderedObjectives,
-                    dataStore.AsMemory(iterationIndex * noOfYears, noOfYears))
-                )
+                .Select(iterationIndex => SimIterationLoop.RunOneIteration(iterationIndex, SimParams, initialBalance, orderedObjectives, dataStore.AsMemory(iterationIndex * noOfYears, noOfYears)))
                 .ToList();
 
             // Sort the iteration results worst to best.
@@ -52,7 +56,7 @@ namespace NinthBall.Core
             // Use real purchaing power to ensure percentiles are monotonic under variable inflation.
             var iterationResultsWorstToBest = iterationResults
                 .OrderBy(iter => iter.SurvivedYears)
-                .ThenBy(iter => iter.EndingBalance / Math.Max(iter.FinalInflationMultiplier, 1e-12))
+                .ThenBy(iter => iter.LastGoodYear.Dec.Total() / Math.Max(iter.LastGoodYear.Metrics.InflationMultiplier, 1e-12))
                 .ToList()
                 .AsReadOnly();
 
@@ -68,32 +72,6 @@ namespace NinthBall.Core
                 iterationResultsWorstToBest
             );
         }
-
-        private SimIteration RunOneIteration(int iterationIndex, ReadOnlyCollection<ISimObjective> orderedObjectives, Memory<SimYear> myPrivateSliceOfMemory)
-        {
-            // Rent a context from the pool.
-            using var lease = SimContextPool.Rent();
-            var ctx = lease.Instance;
-
-            // Reset the context for this iteration.
-            ctx.Reset(InitPortfolio, iterationIndex, SimParams.StartAge, myPrivateSliceOfMemory);
-
-            // Strategies can be stateful; Create new set of strategies for each iteration.
-            var strategies = orderedObjectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();
-
-            // Assess each year.
-            var success = false;
-            for (int yearIndex = 0; yearIndex < SimParams.NoOfYears; yearIndex++)
-            {
-                // Process next year.
-                ctx.BeginNewYear(yearIndex);
-                foreach (var strategy in strategies) strategy.Apply(ctx);
-                success = ctx.ImplementStrategies();
-
-                if (!success) break;
-            }
-
-            return new(iterationIndex, success, ctx.PriorYears);
-        }
     }
 }
+
