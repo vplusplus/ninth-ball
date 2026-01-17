@@ -57,7 +57,7 @@ namespace NinthBall.Outputs
             [CID.LivExp]    = (it, in y) => ColorHint.None,
             [CID.XPreTax]   = (it, in y) => PolarityRedGreen(y.XPreTax),
             [CID.XPostTax]  = (it, in y) => PolarityRedGreen(y.XPostTax),
-            [CID.ROIAmount] = (it, in y) => PolarityRedGreen(y.Change.Total()),
+            [CID.ROIAmount] = (it, in y) => PolarityRedGreen(y.Change.Total),
 
         }.AsReadOnly();
 

@@ -34,7 +34,7 @@ namespace NinthBall.Outputs
             [CID.Age]             = (SimIteration it, in SimYear y) => y.Age,
 
             // Asset values at start
-            [CID.JanTotal]        = (it, in y) => y.Jan.Total(),
+            [CID.JanTotal]        = (it, in y) => y.Jan.Total,
             [CID.JanValue]        = (it, in y) => y.Jan.ApproxValue,
             [CID.JanPreTax]       = (it, in y) => y.Jan.PreTax.Amount,
             [CID.JanPostTax]      = (it, in y) => y.Jan.PostTax.Amount,
@@ -42,23 +42,23 @@ namespace NinthBall.Outputs
             [CID.JanPreTaxAlloc]  = (it, in y) => y.Jan.PreTax.Allocation,
             [CID.JanPostTaxAlloc] = (it, in y) => y.Jan.PostTax.Allocation,
 
-            [CID.Fees]            = (it, in y) => y.Fees.Total(),
+            [CID.Fees]            = (it, in y) => y.Fees.Total,
             [CID.TaxOrdInc]       = (it, in y) => y.Expenses.PYTax.TaxOnOrdInc,
             [CID.TaxDiv]          = (it, in y) => y.Expenses.PYTax.TaxOnDiv,
             [CID.TaxInt]          = (it, in y) => y.Expenses.PYTax.TaxOnInt,
             [CID.TaxCapGain]      = (it, in y) => y.Expenses.PYTax.TaxOnCapGain,
-            [CID.PYTaxes]         = (it, in y) => y.Expenses.PYTax.Total(),
+            [CID.PYTaxes]         = (it, in y) => y.Expenses.PYTax.Total,
             [CID.LivExp]          = (it, in y) => y.Expenses.LivExp,
 
-            [CID.Incomes]         = (it, in y) => y.Incomes.Total(),
+            [CID.Incomes]         = (it, in y) => y.Incomes.Total,
             [CID.SS]              = (it, in y) => y.Incomes.SS,
             [CID.Ann]             = (it, in y) => y.Incomes.Ann,
             [CID.XPreTax]         = (it, in y) => y.XPreTax,
             [CID.XPostTax]        = (it, in y) => y.XPostTax,
             [CID.XCash]           = (it, in y) => y.XCash,
-            [CID.ROIAmount]          = (it, in y) => y.Change.Total(),
+            [CID.ROIAmount]          = (it, in y) => y.Change.Total,
 
-            [CID.DecTotal]        = (it, in y) => y.Dec.Total(),
+            [CID.DecTotal]        = (it, in y) => y.Dec.Total,
             [CID.DecValue]        = (it, in y) => y.Dec.ApproxValue,
             [CID.DecPreTax]       = (it, in y) => y.Dec.PreTax.Amount,
             [CID.DecPostTax]      = (it, in y) => y.Dec.PostTax.Amount,
@@ -81,31 +81,31 @@ namespace NinthBall.Outputs
             [CID.Year]         = (it) => it. SurvivedYears,
 
             // Aggregated version prsents the last good year info
-            [CID.JanTotal]     = (it) => it. LastGoodYear.Jan.Total(),
+            [CID.JanTotal]     = (it) => it. LastGoodYear.Jan.Total,
             [CID.JanValue]     = (it) => it. LastGoodYear.Jan.ApproxValue,
             [CID.JanPreTax]    = (it) => it. LastGoodYear.Jan.PreTax.Amount,
             [CID.JanPostTax]   = (it) => it. LastGoodYear.Jan.PostTax.Amount,
             [CID.JanCash]      = (it) => it. LastGoodYear.Jan.Cash.Amount,
 
-            [CID.Fees]         = (it) => it. Sum(y => y.Fees.Total()),
+            [CID.Fees]         = (it) => it. Sum(y => y.Fees.Total),
             [CID.TaxOrdInc]    = (it) => it. Sum(y => y.Expenses.PYTax.TaxOnOrdInc),
             [CID.TaxDiv]       = (it) => it. Sum(y => y.Expenses.PYTax.TaxOnDiv),
             [CID.TaxInt]       = (it) => it. Sum(y => y.Expenses.PYTax.TaxOnInt),
             [CID.TaxCapGain]   = (it) => it. Sum(y => y.Expenses.PYTax.TaxOnCapGain),
-            [CID.PYTaxes]      = (it) => it. Sum(y => y.Expenses.PYTax.Total()),
+            [CID.PYTaxes]      = (it) => it. Sum(y => y.Expenses.PYTax.Total),
 
             [CID.LivExp]       = (it) => it. Sum(y => y.Expenses.LivExp),
 
-            [CID.Incomes]      = (it) => it. Sum(y => y.Incomes.Total()),
+            [CID.Incomes]      = (it) => it. Sum(y => y.Incomes.Total),
             [CID.SS]           = (it) => it. Sum(y => y.Incomes.SS),
             [CID.Ann]          = (it) => it. Sum(y => y.Incomes.Ann),
             [CID.XPreTax]      = (it) => it. Sum(y => y.XPreTax),
             [CID.XPostTax]     = (it) => it. Sum(y => y.XPostTax),
             [CID.XCash]        = (it) => it. Sum(y => y.XCash),
-            [CID.ROIAmount]    = (it) => it. Sum(y => y.Change.Total()),
+            [CID.ROIAmount]    = (it) => it. Sum(y => y.Change.Total),
 
             // Bottom-line: Data is nominal. Show nominal value of last good year.
-            [CID.DecTotal]     = (it) => it. LastGoodYear.Dec.Total(),
+            [CID.DecTotal]     = (it) => it. LastGoodYear.Dec.Total,
             [CID.DecValue]     = (it) => it. LastGoodYear.Dec.ApproxValue,
             [CID.DecPreTax]    = (it) => it. LastGoodYear.Dec.PreTax.Amount,
             [CID.DecPostTax]   = (it) => it. LastGoodYear.Dec.PostTax.Amount,

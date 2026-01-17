@@ -212,7 +212,7 @@ namespace NinthBall.Outputs.Excel
                         foreach (var pctl in percentiles)
                         {
                             var p = simResult.Percentile(pctl);
-                            var m = (p.LastGoodYear.Dec.Total() / p.LastGoodYear.Metrics.InflationMultiplier).Mil();
+                            var m = (p.LastGoodYear.Dec.Total / p.LastGoodYear.Metrics.InflationMultiplier).Mil();
                             row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");

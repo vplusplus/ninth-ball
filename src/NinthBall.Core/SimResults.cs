@@ -47,41 +47,41 @@ namespace NinthBall.Core
 
     public readonly record struct Assets(Asset PreTax, Asset PostTax, Asset Cash)
     {
-        public readonly double Total() => PreTax.Amount + PostTax.Amount + Cash.Amount;
+        public readonly double Total => PreTax.Amount + PostTax.Amount + Cash.Amount;
     }
 
     public readonly record struct Fees(double PreTax, double PostTax)
     {
-        public readonly double Total() => PreTax + PostTax;
+        public readonly double Total => PreTax + PostTax;
     }
 
     public readonly record struct Withdrawals(double PreTax, double PostTax, double Cash)
     {
-        public readonly double Total() => PreTax + PostTax + Cash;
+        public readonly double Total => PreTax + PostTax + Cash;
     }
 
     public readonly record struct Deposits(double PostTax, double Cash)
     {
-        public readonly double Total() => PostTax + Cash;
+        public readonly double Total => PostTax + Cash;
     }
 
     public readonly record struct Incomes(double SS, double Ann)
     {
-        public readonly double Total() => SS + Ann;
+        public readonly double Total => SS + Ann;
     }
 
     public readonly record struct Expenses(Tax PYTax, double LivExp)
     {
-        public readonly double Total() => PYTax.Total() + LivExp;
+        public readonly double Total => PYTax.Total + LivExp;
     }
 
     public readonly record struct Change(double PreTax, double PostTax)
     {
-        public readonly double Total() => PreTax + PostTax;
+        public readonly double Total => PreTax + PostTax;
     }
 
     public readonly record struct Tax(double TaxOnOrdInc, double TaxOnDiv, double TaxOnInt, double TaxOnCapGain) 
     {
-        public readonly double Total() => TaxOnOrdInc + TaxOnDiv + TaxOnInt + TaxOnCapGain;
+        public readonly double Total => TaxOnOrdInc + TaxOnDiv + TaxOnInt + TaxOnCapGain;
     }
 }

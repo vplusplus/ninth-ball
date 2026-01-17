@@ -178,7 +178,7 @@ namespace NinthBall.Core
             available.Cash -= withdrawals.Cash;
 
             // Do we have enough? 
-            double deficit = Math.Max(0, Expenses.Total() - Incomes.Total() - withdrawals.Total());
+            double deficit = Math.Max(0, Expenses.Total - Incomes.Total - withdrawals.Total);
             if (deficit.IsMoreThanZero(Precision.Amount))
             {
                 // Model is not withdrawing enough.
@@ -197,7 +197,7 @@ namespace NinthBall.Core
             // We survived.
             // We may even have some surplus.
             // All remaining surplus (if any) gets re-invested in post-tax assets
-            var surplus = Math.Max(0, Incomes.Total() + withdrawals.Total() - Expenses.Total());
+            var surplus = Math.Max(0, Incomes.Total + withdrawals.Total - Expenses.Total);
             if (surplus.IsMoreThanZero(Precision.Amount))
             {
                 deposits.PostTax += surplus;
@@ -232,7 +232,7 @@ namespace NinthBall.Core
             public double PreTax = PreTax;
             public double PostTax = PostTax;
             public double Cash = Cash;
-            public double Total() => PreTax + PostTax + Cash;
+            public double Total => PreTax + PostTax + Cash;
         }
 
         private struct TwoD(double PostTax, double Cash)
@@ -240,7 +240,7 @@ namespace NinthBall.Core
             // Temp data structure to track assets except PreTax
             public double PostTax = PostTax;
             public double Cash = Cash;
-            public double Total() => PostTax + Cash;
+            public double Total => PostTax + Cash;
         }
 
         #endregion
@@ -324,12 +324,12 @@ namespace NinthBall.Core
             var good = true;
 
             // Cashflow: (Incomes + Withdrawals) = (Expenses + Deposits)
-            good = (y.Incomes.Total() + y.Withdrawals.Total()).AlmostSame(y.Expenses.Total() + y.Deposits.Total(), Precision.Amount);
-            if (!good) throw new Exception($"Incomes {y.Incomes.Total():C0} + Withdrawals {y.Withdrawals.Total():C0} != Expenses {y.Expenses.Total():C0} + Deposits {y.Deposits.Total():C0}");
+            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Expenses.Total + y.Deposits.Total, Precision.Amount);
+            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} != Expenses {y.Expenses.Total:C0} + Deposits {y.Deposits.Total:C0}");
 
             // Expenses are met.
-            good = (y.Incomes.Total() + y.Withdrawals.Total() + Precision.Amount) >= y.Expenses.Total();
-            if (!good) throw new Exception($"Incomes {y.Incomes.Total():C0} + Withdrawals {y.Withdrawals.Total():C0} is less than expenses {y.Expenses.Total():C0}");
+            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= y.Expenses.Total;
+            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} is less than expenses {y.Expenses.Total:C0}");
 
             // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
             good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);

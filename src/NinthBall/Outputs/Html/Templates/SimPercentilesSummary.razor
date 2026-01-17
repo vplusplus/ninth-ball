@@ -31,7 +31,7 @@
 
                 if (iter.Success)
                 {
-                    var endBalance = (iter.LastGoodYear.Dec.Total() / iter.LastGoodYear.Metrics.InflationMultiplier).Millions();
+                    var endBalance = (iter.LastGoodYear.Dec.Total / iter.LastGoodYear.Metrics.InflationMultiplier).Millions();
                     <th>@endBalance</th>
                 }
                 else
