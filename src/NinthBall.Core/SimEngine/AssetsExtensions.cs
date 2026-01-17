@@ -76,10 +76,10 @@ namespace NinthBall.Core
                 Cash:    assets.Cash.Post(deposits.Cash)
             );
 
-            public Assets Rebalance(Allocation targetAllocation) => default == targetAllocation ? assets : new
+            public Assets Rebalance(double preTaxAllocation, double postTaxAllocation, double maxDrift) => new
             (
-                assets.PreTax.Rebalance(targetAllocation.PreTax.Allocation, targetAllocation.PreTax.MaxDrift),
-                assets.PostTax.Rebalance(targetAllocation.PostTax.Allocation, targetAllocation.PostTax.MaxDrift),
+                assets.PreTax.Rebalance(preTaxAllocation, maxDrift),
+                assets.PostTax.Rebalance(postTaxAllocation, maxDrift),
                 assets.Cash
             );
 
@@ -90,7 +90,7 @@ namespace NinthBall.Core
                 Cash:    assets.Cash
             );
 
-            public Assets Grow(ROI roi, out Change change)
+            public Assets Grow(ROI roi, out Change change, out double portfolioReturn)
             {
                 var newPreTax  = assets.PreTax.Grow(stocksROI: roi.StocksROI, bondsROI: roi.BondsROI);
                 var newPostTax = assets.PostTax.Grow(stocksROI: roi.StocksROI, bondsROI: roi.BondsROI);
@@ -98,7 +98,14 @@ namespace NinthBall.Core
                 var changePreTax  = newPreTax.Amount  - assets.PreTax.Amount;
                 var changePostTax = newPostTax.Amount - assets.PostTax.Amount;
 
+                // Change in value of individual assets.
                 change = new(changePreTax, changePostTax);
+
+                // Single consolidated metric that indicates portfolio weighted returns
+                // Combines stock/bonds returns from pre/post-tax investments.
+                var totalInvested = assets.PreTax.Amount + assets.PostTax.Amount;
+                var totalChange   = changePreTax + changePostTax;
+                portfolioReturn   = totalInvested < Precision.Amount ? 0.0 : totalChange / totalInvested;
 
                 return new(newPreTax, newPostTax, assets.Cash);
             }

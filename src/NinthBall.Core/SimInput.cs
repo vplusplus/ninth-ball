@@ -61,7 +61,7 @@ namespace NinthBall.Core
         InitialBalance.AA PostTax,
 
         [property: ValidateNested]
-        InitialBalance.AA Cash          // Allocation is ignored for Cash assets
+        InitialBalance.AA Cash                  // Allocation is ignored for Cash assets
     )
     {
         public readonly record struct AA
@@ -80,16 +80,19 @@ namespace NinthBall.Core
         double MaxDrift,
 
         [property: ValidateNested]
-        IReadOnlyList<Rebalance.AA> Reallocate
+        IReadOnlyList<Rebalance.AAA> Reallocate
     )
     {
-        public readonly record struct AA
+        public readonly record struct AAA
         (
-            [property: Range(1, 100)]
+            [property: Range(25, 125)]
             int AtAge,
 
-            [property: Range(0.0, 1.0)]
-            double Allocation
+            [property: Range(0.001, 1.0)]       // Minimum 0.1% to prevent misconfiguration
+            double PreTaxStocksAllocation,
+
+            [property: Range(0.001, 1.0)]       // Minimum 0.1% to prevent misconfiguration
+            double PostTaxStocksAllocation
         );
     }
 

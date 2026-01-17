@@ -24,9 +24,11 @@ Rebalance:
   MaxDrift: 5%
   Reallocate:
     - AtAge: 70
-      Allocation: 70%
+      PreTaxStocksAllocation:  70%
+      PostTaxStocksAllocation: 70%
     - AtAge: 80
-      Allocation: 80%
+      PreTaxStocksAllocation:  80%
+      PostTaxStocksAllocation: 80%
 
 # ............................................................
 # Additional known incomes

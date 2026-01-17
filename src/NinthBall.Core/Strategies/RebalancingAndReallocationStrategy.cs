@@ -11,7 +11,7 @@ namespace NinthBall.Core
 
         private sealed class Strategy(InitialBalance Initial, Rebalance RBL) : ISimStrategy
         {
-            // Strart with initial allocation.
+            // Start with initial allocation.
             double preTaxAllocation = Initial.PreTax.Allocation;
             double postTaxAllocation = Initial.PostTax.Allocation;
             double maxDrift = RBL.MaxDrift;
@@ -23,16 +23,18 @@ namespace NinthBall.Core
 
                 if (reallocateThisYear)
                 {
-                    // From this year on, use the new allocation.
-                    preTaxAllocation = postTaxAllocation = RBL.Reallocate!.Single(x => x.AtAge == context.Age).Allocation;
+                    // Ensure its not an empty-configuration with all default values.
+                    var alloc = RBL.Reallocate!.Single(x => x.AtAge == context.Age);
+                    if (alloc != default)
+                    {
+                        // From this year on, use the new allocation.
+                        preTaxAllocation  = alloc.PreTaxStocksAllocation;
+                        postTaxAllocation = alloc.PostTaxStocksAllocation;
+                    }
                 }
 
-                // Yearly rebalancing or reallocation.
-                context.TargetAllocation = new
-                (
-                    new(preTaxAllocation, maxDrift),
-                    new(postTaxAllocation, maxDrift)
-                );
+                // Yearly rebalancing (or reallocation).
+                context.Rebalance(preTaxAllocation, postTaxAllocation, maxDrift);
             }
         }
 
@@ -40,6 +42,6 @@ namespace NinthBall.Core
 
         string TxtRB => $"Rebalance yearly if drift > {RBL.MaxDrift:P0}";
         string TxtRA => null != RBL.Reallocate && RBL.Reallocate.Count > 0 ? $" | Reallocate to {CSVSteps}" : string.Empty;
-        string CSVSteps => string.Join(", ", RBL.Reallocate.Select(x => $"[{x.Allocation:P0} @ {x.AtAge}]"));
+        string CSVSteps => string.Join(", ", RBL.Reallocate.Select(x => $"[Pre:{x.PreTaxStocksAllocation:P0}, Post:{x.PostTaxStocksAllocation:P0} @ {x.AtAge}]"));
     }
 }

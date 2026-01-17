@@ -1,4 +1,6 @@
 ﻿
+using DocumentFormat.OpenXml.Office2010.Drawing;
+
 namespace NinthBall.Core
 {
     /// <summary>
@@ -48,23 +50,22 @@ namespace NinthBall.Core
             if (success)
             {
                 Assets dec = simState.Jan
-                    .Rebalance(simState.TargetAllocation)
                     .ApplyFees(simState.Fees)
                     .Withdraw(adjustedWithdrawals)
-                    .Grow(simState.ROI, out var changes)
+                    .Grow(simState.ROI, out var changes, out var portfolioReturn)
                     .Deposit(adjustedDeposits)
                     ;
 
-                var metrics = UpdateRunningMetrics(simState.YearIndex, simState.Jan, simState.Fees, adjustedWithdrawals, simState.ROI, changes, simState.Running);
+                Metrics metrics = simState.PriorYearMetrics.UpdateRunningMetrics(simState.YearIndex, portfolioReturn: portfolioReturn, inflationRate: simState.ROI.InflationRate);
 
                 SimYear successYear = new 
                 (
-                    simState.YearIndex,          // We know this
-                    simState.Age,                // We know this
-                    simState.Jan,                // We know the starting balances
-                    simState.Fees,               // We know the fees since we know the starting balances
-                    simState.Incomes,            // These are known incomes. 
-                    simState.Expenses,           // We know the taxes-due and estimated expenses
+                    simState.YearIndex,
+                    simState.Age,
+                    simState.Jan,
+                    simState.Fees,
+                    simState.Incomes,
+                    simState.Expenses,
 
                     Withdrawals: adjustedWithdrawals,
                     Deposits: adjustedDeposits,
@@ -100,10 +101,10 @@ namespace NinthBall.Core
             }
         }
 
-        static Metrics UpdateRunningMetrics(int yearIndex, Assets jan, Fees fees, Withdrawals withdrawals, ROI roi, Change change, Metrics running)
+        public static Metrics UpdateRunningMetrics(this Metrics pyMetrics, int yearIndex, double portfolioReturn, double inflationRate)
         {
             // Not trusting external year #0 initialization...
-            Metrics prior = yearIndex > 0 ? running : new
+            Metrics prior = yearIndex > 0 ? pyMetrics : new
             (
                 InflationMultiplier: 1.0,
                 GrowthMultiplier: 1.0,
@@ -112,18 +113,11 @@ namespace NinthBall.Core
                 RealAnnualizedReturn: 0.0
             );
 
-            // Current year numbers
-            double investedAssets = (jan.PreTax.Amount - fees.PreTax - withdrawals.PreTax) + (jan.PostTax.Amount - fees.PostTax - withdrawals.PostTax);
-            double growthAmount = change.PreTax + change.PostTax;
-
             // Running multiplier that represents cumulative inflation impact since year #0
-            var inflationMultiplier = prior.InflationMultiplier * (1 + roi.InflationRate);
-
-            // Current year portfolio-weighted nominal return 
-            double periodReturn = investedAssets > 1e-9 ? growthAmount / investedAssets : 0.0;
+            var inflationMultiplier = prior.InflationMultiplier * (1 + inflationRate);
 
             // Running multipler that represents cumulative growth since year #0
-            double cumulativeGrowthMultiplier = prior.GrowthMultiplier * (1 + periodReturn);
+            double cumulativeGrowthMultiplier = prior.GrowthMultiplier * (1 + portfolioReturn);
 
             // Annualized nominal return since year #0
             double annualizedReturn = Math.Pow(cumulativeGrowthMultiplier, 1.0 / (yearIndex + 1)) - 1.0;
@@ -137,7 +131,7 @@ namespace NinthBall.Core
                 InflationMultiplier: inflationMultiplier,
                 GrowthMultiplier: cumulativeGrowthMultiplier,
 
-                PortfolioReturn: periodReturn,
+                PortfolioReturn: portfolioReturn,
                 AnnualizedReturn: annualizedReturn,
                 RealAnnualizedReturn: realAnnualizedReturn
             );
