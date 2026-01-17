@@ -222,9 +222,6 @@ namespace NinthBall.Core
     
     public sealed record ParametricBootstrap
     (
-        [property: Required]
-        string DistributionType, 
-
         [property: Range(-1.0, 1.0)] 
         double StocksBondCorrelation,
 
