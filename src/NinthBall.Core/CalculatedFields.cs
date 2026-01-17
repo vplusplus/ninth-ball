@@ -27,12 +27,6 @@ namespace NinthBall.Core
             public static string ApproxValueDesc => "Approx value (401K x 75% + Inv x 85%)";
         }
 
-        extension(in Asset asset)
-        {
-            public double StockAlloc => asset.Allocation;
-            public double BondAlloc => 1.0 - asset.Allocation;
-        }
-
         #endregion
 
         //......................................................................
@@ -84,7 +78,8 @@ namespace NinthBall.Core
 
         extension(SimResult simResult)
         {
-            public int NoOfYears => simResult.Iterations.Count == 0 ? 0 : simResult.Iterations.Max(x => x.ByYear.Length);
+            //public int NoOfYears => simResult.Iterations.Count == 0 ? 0 : simResult.Iterations.Max(x => x.ByYear.Length);
+            public int NoOfYears => simResult.Input.SimParams.NoOfYears;
 
             public double SurvivalRate => simResult.Iterations.Count == 0 ? 0.0 : (double)simResult.Iterations.Count(x => x.Success) / (double)simResult.Iterations.Count;
 

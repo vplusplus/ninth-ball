@@ -2,7 +2,7 @@
 namespace NinthBall.Core
 {
     [SimInput(typeof(AnnualFeesStrategy), typeof(FeesPCT))]
-    sealed class AnnualFeesStrategy(FeesPCT Options) : ISimObjective, ISimStrategy
+    sealed class AnnualFeesStrategy(FeesPCT F) : ISimObjective, ISimStrategy
     {
         int ISimObjective.Order => 30;
 
@@ -12,12 +12,11 @@ namespace NinthBall.Core
         {
             // Calculate fees
             context.Fees = new(
-                Math.Ceiling(context.Jan.PreTax.Amount * Options.PreTax),
-                Math.Ceiling(context.Jan.PostTax.Amount * Options.PostTax),
-                Math.Ceiling(context.Jan.Cash.Amount * Options.Cash)
+                Math.Round(context.Jan.PreTax.Amount  * F.PreTax),
+                Math.Round(context.Jan.PostTax.Amount * F.PostTax)
             );
         }
 
-        public override string ToString() => $"Annual fees | PreTax: {Options.PreTax:P1} | PostTax: {Options.PostTax:P1} | Cash: {Options.Cash:P1}";
+        public override string ToString() => $"Annual fees | PreTax: {F.PreTax:P1} | PostTax: {F.PostTax:P1} | Cash: None";
     }
 }

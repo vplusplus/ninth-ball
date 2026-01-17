@@ -96,8 +96,7 @@ namespace NinthBall.Core
     public sealed record FeesPCT
     (
         [property: Range(0, 1)] double PreTax, 
-        [property: Range(0, 1)] double PostTax, 
-        [property: Range(0, 1)] double Cash
+        [property: Range(0, 1)] double PostTax
     );
 
     public sealed record TaxConfig

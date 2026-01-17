@@ -23,14 +23,16 @@ namespace NinthBall.Core
 
                 context.Expenses = context.Expenses with
                 {
+                    // Suggested year #0 tax amount is lumped into OrdIncTax. We need to account for it somewhere...
+
                     PYTax = 0 == context.YearIndex
                         ? new() { TaxOnOrdInc = TaxOptions.YearZeroTaxAmount }
-                        : TaxMath.ComputePriorYearTaxes(TaxOptions, inflationMultiplier, context.PriorYears.Span[^1])
+                        : TaxMath.ComputePriorYearTaxes(TaxOptions, inflationMultiplier, context.PriorYear)
                 };
             }
         }
 
-        static void ThrowIfZero(double d, string name) { if (d <= 0) throw new Exception($"{name} cannot be zero. Use some very low value, but not zero, to model zero-tax scenario"); }
+        static void ThrowIfZero(double d, string name) { if (d <= 0) throw new Exception($"{name} cannot be zero. To model zero-tax scenario use some very low value, but not zero."); }
 
         public override string ToString() => $"Taxes | Ordinary: {TaxOptions.TaxRates.OrdinaryIncome:P1} | CapGains: {TaxOptions.TaxRates.CapitalGains:P1}";
     }
@@ -162,8 +164,10 @@ namespace NinthBall.Core
             }
 
             // Note:
-            // Dividends and capital gains are NOT reduced by standard deduction
-            // per IRS rules. They remain untouched.
+            // Left over standard deduction can be applied to Dividends and capital gains to reduce tax-bracket but not the taxable amount.
+            // Currently we are using a fixed tax bracket.
+            // Also, we are treating all DIV as qualified and all capital gains as long-term.
+            // Together, do not touch DIV and CGAIN.
         }
     }
 

@@ -5,12 +5,11 @@ namespace NinthBall.Core
 
     public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear)
     {
-        // The engine's "Stop Order" - how many full years did we actually clear?
+        // How many full years did we actually clear?
         public int SurvivedYears => Success ? ByYear.Length : Math.Max(0, ByYear.Length - 1);
 
-        // The last year that successfully completed (or Empty))
+        // The last year that successfully completed (or Empty)
         public SimYear LastGoodYear => SurvivedYears > 0 ? ByYear.Span[SurvivedYears - 1] : new();
-
     }
 
     public readonly record struct SimYear
@@ -51,9 +50,9 @@ namespace NinthBall.Core
         public readonly double Total() => PreTax.Amount + PostTax.Amount + Cash.Amount;
     }
 
-    public readonly record struct Fees(double PreTax, double PostTax, double Cash)
+    public readonly record struct Fees(double PreTax, double PostTax)
     {
-        public readonly double Total() => PreTax + PostTax + Cash;
+        public readonly double Total() => PreTax + PostTax;
     }
 
     public readonly record struct Withdrawals(double PreTax, double PostTax, double Cash)

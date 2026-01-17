@@ -3,7 +3,7 @@
 namespace NinthBall.Core
 {
     [SimInput(typeof(GrowthStrategy), typeof(Growth))]
-    sealed class GrowthStrategy(SimParams SimParams, Growth Options, IBootstrapper Bootstrapper) : ISimObjective
+    sealed class GrowthStrategy(SimParams SimParams, IBootstrapper Bootstrapper) : ISimObjective
     {
         int ISimObjective.Order => 40;
 
@@ -33,6 +33,6 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Growth | {Bootstrapper.ToString()}";
+        public override string ToString() => $"Growth | {Bootstrapper}";
     }
 }

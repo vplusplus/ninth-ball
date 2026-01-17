@@ -167,7 +167,6 @@ namespace NinthBall.Core
             // Fees goes first. 
             available.PreTax -= Fees.PreTax;
             available.PostTax -= Fees.PostTax;
-            available.Cash -= Fees.Cash;
 
             // Fees can't make balance go negative. If that happens, assume zero balance.
             available.PreTax = Math.Max(0.0, available.PreTax);
@@ -259,8 +258,7 @@ namespace NinthBall.Core
         static Fees RoundToCents(this Fees fees) => new
         (
             PreTax:  fees.PreTax.RoundToCents(),
-            PostTax: fees.PostTax.RoundToCents(),
-            Cash:    fees.Cash.RoundToCents()
+            PostTax: fees.PostTax.RoundToCents()
         );
 
         static Incomes RoundToCents(this Incomes x) => new
@@ -304,7 +302,7 @@ namespace NinthBall.Core
         #region ThrowIfNegative()
         //......................................................................
         static Assets ThrowIfNegative(this Assets x) { ThrowIfNegative(nameof(Assets), x.PreTax.Amount, x.PostTax.Amount, x.Cash.Amount); return x; }
-        static Fees ThrowIfNegative(this Fees x) { ThrowIfNegative(nameof(Fees), x.PreTax, x.PostTax, x.Cash); return x; }
+        static Fees ThrowIfNegative(this Fees x) { ThrowIfNegative(nameof(Fees), x.PreTax, x.PostTax); return x; }
         static Incomes ThrowIfNegative(this Incomes x) { ThrowIfNegative(nameof(Incomes), x.SS, x.Ann); return x; }
         static Expenses ThrowIfNegative(this Expenses x) { ThrowIfNegative(nameof(Expenses), x.PYTax.TaxOnOrdInc, x.PYTax.TaxOnDiv, x.PYTax.TaxOnInt, x.PYTax.TaxOnCapGain, x.LivExp); return x; }
         static Withdrawals ThrowIfNegative(this Withdrawals x) { ThrowIfNegative(nameof(Withdrawals), x.PreTax, x.PostTax, x.Cash); return x; }
@@ -342,7 +340,7 @@ namespace NinthBall.Core
             // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
             good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
             good &= (y.Jan.PostTax.Amount - y.Fees.PostTax - y.Withdrawals.PostTax + y.Change.PostTax + y.Deposits.PostTax).AlmostSame(y.Dec.PostTax.Amount, Precision.Amount);
-            good &= (y.Jan.Cash.Amount - y.Fees.Cash - y.Withdrawals.Cash + y.Deposits.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
+            good &= (y.Jan.Cash.Amount - y.Withdrawals.Cash + y.Deposits.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
             if (!good) throw new Exception("Balance reconciliation failed: Jan - Fees - Withdrawals + Change + Deposits != Dec");
 
             // Either withdrawals or Deposits should be zero.

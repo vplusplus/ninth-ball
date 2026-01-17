@@ -87,7 +87,7 @@ namespace NinthBall.Core
             (
                 PreTax:  assets.PreTax.Post(-fees.PreTax),
                 PostTax: assets.PostTax.Post(-fees.PostTax),
-                Cash:    assets.Cash.Post(-fees.Cash)
+                Cash:    assets.Cash
             );
 
             public Assets Grow(ROI roi, out Change change)

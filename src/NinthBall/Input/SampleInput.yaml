@@ -46,7 +46,6 @@ AdditionalIncomes:
 FeesPCT:
   PreTax:   0.2%    # Tax deferred account
   PostTax:  0.9%    # Investment account
-  Cash:     0%      # HY Savings
 
 Taxes:
   YearZeroTaxAmount: 25,000

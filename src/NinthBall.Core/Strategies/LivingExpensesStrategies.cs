@@ -28,10 +28,9 @@ namespace NinthBall.Core
                 else
                 {
                     // Subsequent years: Inflate prior year amount.
-                    // On Jan 1st, we do not know current year CPI. Use prior year CPI.
-                    var priorYear = context.PriorYears.Span[^1];
-                    var priorYearInflationRate = priorYear.ROI.InflationRate;
-                    runningLivingExpenseNominal *= (1 +  priorYearInflationRate);
+                    // On Jan 1st, we do not know current year CPI.
+                    // Incfrease estimate living expense using prior year CPI.
+                    runningLivingExpenseNominal *= (1 + context.PriorYear.ROI.InflationRate);
                 }
 
                 // On step-down years (if defined)
@@ -41,8 +40,9 @@ namespace NinthBall.Core
                     var reductionNominal = LExp.StepDown.Where(x => x.AtAge == context.Age).Sum(x => x.Reduction);
 
                     // BY-DESIGN: Step-down amount is treated as nominal amount on that year/age.
-                    // Step down amount is not infation-adjusted
-                    // Reduce living expenses by specified amount.
+                    // We can't guess the intention of the input number.
+                    // For example, "I will stop paying life insurance premium of $5000 - is nominal, not to be inflated"
+                    // Reduce living expenses exactly  by specified amount.
                     if (reductionNominal > 0) runningLivingExpenseNominal -= reductionNominal;
                 }
 
