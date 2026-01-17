@@ -1,24 +1,24 @@
 ﻿
-
 using NinthBall.Core;
 using NF = NinthBall.Core.ExcelStylesheetBuilder.NumberFormats; 
+using static NinthBall.Outputs.Suggested;  // For GetColName, GetFormatHint, GetColorHint ...
 
 namespace NinthBall.Outputs.Excel
 {
     internal static class ExcelOutput
     {
+        // Colors & Styles for bespoke tabs (Strategy, Summary)
         static class MyColors
         {
             public const uint Black  = 0xFF000000;
             public const uint Red    = 0xFFC00000;
             public const uint Green  = 0xFF00B050;
-            public const uint Blue   = 0xFF0070C0;
             public const uint Purple = 0xFF7030A0;
             public const uint Gray   = 0x808080;
         };
 
-        // StyleIDs used by our report.
-        private readonly record struct MyStyles
+        // StyleIDs used by custom tabs (Strategy, Summary)
+        private readonly record struct SummaryStyles
         (
             uint ColHeader,
             uint Alloc,
@@ -29,29 +29,55 @@ namespace NinthBall.Outputs.Excel
         );
 
 
-        // For annualization
-        // const double InflationRate = 0.03;
-
-        public static async Task Generate(SimResult simResult, string excelFileName)
+        public static async Task Generate(SimResult simResult, string excelFileName, SimOutput? outputConfig)
         {
             ArgumentNullException.ThrowIfNull(simResult);
             ArgumentNullException.ThrowIfNull(excelFileName);
 
+            var columns = outputConfig?.ExcelColumns.Count > 0 
+                ? outputConfig.Value.ExcelColumns 
+                : SimOutputDefaults.DefaultColumns;
+            
+                var ssb = new ExcelStylesheetBuilder();
+
+                // Register specific styles for Summary/Strategy tabs
+                var summaryStyles = RegisterSummaryStyles(ssb);
+
+                // Register dynamic styles for Percentile tabs need to be resolved on the fly
+                // We use a caching convention inside RenderPercentile, or just rely on ssb caching?
+                // ssb has internal caching, so we can just call ssb.RegisterStyle(spec) repeatedly.
+                // It is efficient enough.
+
+                using(var xl = new ExcelWriter(excelFileName))
+                {
+                    // Render chosen strategies and related assumptions.
+                    RenderStrategy(xl, summaryStyles, simResult);
+
+                    // Render Summary sheet
+                    // NOTE: Still uses bespoke logic as it's a summary table, not a time-series
+                    RenderSummary(xl, summaryStyles, simResult);
+
+                    // Render one sheet per percentile
+                    // Dynamic column generation
+                    foreach(var pctl in SimOutputDefaults.DefaultPercentiles) RenderPercentile(xl, ssb, simResult, pctl, columns);
+
+                    // NOTE: Dispose will not save. We have to save.
+                    // Build stylesheet at the very end
+                    var stylesheet = ssb.Build();
+                    xl.Save(stylesheet);
+                }
+        }
+
+        static SummaryStyles RegisterSummaryStyles(ExcelStylesheetBuilder ssb)
+        {
             var BASE = new XLStyle()
             {
-                Format = "General",
-                FName = "Aptos Narrow",
-                FSize = 11,
-                IsBold = false,
-                FColor = MyColors.Black,
-                HAlign = HAlign.Left,
-                VAlign = VAlign.Middle
+                Format = "General", FName = "Aptos Narrow", FSize = 11, IsBold = false,
+                FColor = MyColors.Black, HAlign = HAlign.Left, VAlign = VAlign.Middle
             };
             var CENT = BASE with { HAlign = HAlign.Center };
 
-            // Register the styles used by our report. Capture the CellFormatIds.
-            var ssb = new ExcelStylesheetBuilder();
-            var myStyles = new MyStyles
+            return new SummaryStyles
             (
                 ColHeader:  ssb.RegisterStyle(CENT with { IsBold = true }),
 
@@ -66,33 +92,16 @@ namespace NinthBall.Outputs.Excel
 
                 Alloc:      ssb.RegisterStyle(CENT with { Format = NF.P0, FColor = MyColors.Gray}),
 
-
                 ROI:        ssb.RegisterStyle(BASE with { Format = NF.P1 }),
                 ROIRed:     ssb.RegisterStyle(BASE with { Format = NF.P1, FColor = MyColors.Red }),
                 ROIGreen:   ssb.RegisterStyle(BASE with { Format = NF.P1, FColor = MyColors.Green }),
 
-                YYYY:       ssb.RegisterStyle(CENT with { Format = "0;-0;;", }),
+                YYYY:       ssb.RegisterStyle(CENT with { Format = "0;-0;;" }),
                 YYYYRed:    ssb.RegisterStyle(CENT with { Format = "0;-0;;", FColor = MyColors.Red })
             );
-            var stylesheet = ssb.Build();
-
-            using(var xl = new ExcelWriter(excelFileName, stylesheet))
-            {
-                // Render chosen strategies and related assumptions.
-                RenderStrategy(xl, myStyles, simResult);
-
-                // Render Summary sheet
-                RenderSummary(xl, myStyles, simResult);
-
-                // Render one sheet per percentile
-                foreach(var pctl in SimOutputDefaults.DefaultPercentiles) RenderPercentile(xl, myStyles, simResult, pctl);
-
-                // NOTE: Dispose will not save. We have to save.
-                xl.Save();
-            }
         }
 
-        static void RenderStrategy(ExcelWriter xl, MyStyles styles, SimResult simResult)
+        static void RenderStrategy(ExcelWriter xl, SummaryStyles styles, SimResult simResult)
         {
             using (var sheet = xl.BeginSheet("Strategy"))
             {
@@ -153,7 +162,7 @@ namespace NinthBall.Outputs.Excel
             }
         }
 
-        static void RenderSummary(ExcelWriter xl, MyStyles styles, SimResult simResult)
+        static void RenderSummary(ExcelWriter xl, SummaryStyles styles, SimResult simResult)
         {
             const double W10 = 10;
             const double W20 = 20;
@@ -236,120 +245,116 @@ namespace NinthBall.Outputs.Excel
             }
         }
 
-        static void RenderPercentile(ExcelWriter xl, MyStyles styles, SimResult simResult, double pctl)
+        static void RenderPercentile(ExcelWriter xl, ExcelStylesheetBuilder ssb, SimResult simResult, double pctl, IReadOnlyList<CID> columns)
         {
-            const double Blank = 2;
-            const double W4 = 4;
-            const double W6 = 6;
-            const double W8 = 8;
-            const double W12 = 12;
-
             var sheetName = $"{pctl.PctlName}";
             var p = simResult.Percentile(pctl);
 
+            // Dynamically calculate widths based on Suggested format
+            // Just a rough heuristic for now: 12 for most things, 4 for year/age
+            var widths = columns.Select(c => c == CID.Empty ? 2.0 : (c == CID.Year || c == CID.Age) ? 4.0 : 12.0).Cast<double?>().ToArray();
+            
+            // Base style with safe defaults
+            var baseStyle = new XLStyle() 
+            { 
+                Format = "General", 
+                FName = "Calibri", 
+                FSize = 11, 
+                FColor = MyColors.Black,
+                HAlign = HAlign.Right,
+                VAlign = VAlign.Bottom 
+            };
+
+            // Resolve Header Style
+            var headerStyle = ssb.RegisterStyle(baseStyle with { IsBold = true, HAlign = HAlign.Center });
+
             using (var sheet = xl.BeginSheet(sheetName))
             {
-                double?[] colWidths = Enumerable.Range(0, 23).Select(x => (double?)W12).ToArray();
-                colWidths[0] = colWidths[1] = W4;
-                colWidths[3] = colWidths[5] = W6;
-                colWidths[7] = colWidths[12] = colWidths[15] = colWidths[19] = Blank;
-                colWidths[20] = W6;
-                colWidths[21] = colWidths[22] = W8;
-
-                sheet.WriteColumns(colWidths.AsSpan());
+                sheet.WriteColumns(widths.AsSpan());
 
                 using (var rows = sheet.BeginSheetData())
                 {
                     // Header
                     using (var row = rows.BeginRow())
                     {
-                        row
-                            .Append("Year", styles.ColHeader)
-                            .Append("Age", styles.ColHeader)
-
-                            .Append("Jan-401K", styles.ColHeader)     // JanTotal, alloc and less fees
-                            .Append("Alloc", styles.ColHeader)
-                            .Append("Jan-Inv", styles.ColHeader)
-                            .Append("Alloc", styles.ColHeader)
-                            .Append("Fees", styles.ColHeader)
-                            .Append("", styles.ColHeader)
-
-                            .Append("SS", styles.ColHeader)           // Incomes & Withdrawals (inflow)
-                            .Append("ANN", styles.ColHeader)
-                            .Append("401K", styles.ColHeader)
-                            .Append("Inv", styles.ColHeader)
-                            // .Append("Cash", styles.ColHeader)
-                            .Append("", styles.ColHeader)
-
-                            .Append("PYTax", styles.ColHeader)        // Expenses (outflow)
-                            .Append("CYExp", styles.ColHeader)
-                            .Append("", styles.ColHeader)
-
-                            .Append("ROI-401K", styles.ColHeader)     // ROI-ROIAmount and excess deposits
-                            .Append("ROI-Inv", styles.ColHeader)
-                            .Append("Deposits-Inv", styles.ColHeader)
-                            .Append("", styles.ColHeader)
-
-                            .Append("Like", styles.ColHeader)         // ROI History
-                            .Append("Stocks", styles.ColHeader)
-                            .Append("Bonds", styles.ColHeader)
-                            ;
-
+                        foreach(var col in columns)
+                        {
+                            if (col == CID.Empty)
+                                row.Append("", headerStyle);
+                            else
+                                row.Append(col.GetColName(), headerStyle);
+                        }
                     }
 
+                    // Data
                     foreach(var y in p.ByYear.Span)
                     {
-                        double fromPreTax = y.Withdrawals.PreTax * -1;
-                        double fromPostTax = y.Deposits.PostTax - y.Withdrawals.PostTax;
-                        double fromCash = y.Deposits.Cash - y.Withdrawals.Cash;
-
                         using (var row = rows.BeginRow())
                         {
-                            uint likeYearStyle = y.ROI.StocksROI < 0 || y.ROI.BondsROI < 0 ? styles.ROIRed : styles.ROIGreen;
+                            foreach(var col in columns)
+                            {
+                                if (col == CID.Empty)
+                                {
+                                    row.Append("");
+                                    continue;
+                                }
 
-                            row
-                                .Append(y.Year + 1)
-                                .Append(y.Age)
+                                var value = y.GetCellValue(col, p);
+                                if (value == null) 
+                                {
+                                    row.Append("");
+                                    continue;
+                                }
 
-                                // JanTotal, Alloc and Fees
-                                .Append(y.Jan.PreTax.Amount, styles.C0)
-                                .Append(y.Jan.PreTax.Allocation, styles.Alloc)
-                                .Append(y.Jan.PostTax.Amount, styles.C0)
-                                .Append(y.Jan.PostTax.Allocation, styles.Alloc)
-                                .Append(y.Fees.Total(), styles.C0)
-                                .Append("")
+                                // Style resolution
+                                var formatHint = col.GetFormatHint();
+                                var colorHint = y.GetCellColorHint(col, p);
+                                
+                                // Map hints to XLStyle props
+                                var fStr = GetFormatString(formatHint);
+                                if (string.IsNullOrWhiteSpace(fStr)) 
+                                {
+                                    fStr = "General";   // Defensive fallback
+                                }
 
-                                // Incomes & withdrawals
-                                .Append(y.Incomes.SS, styles.C0)
-                                .Append(y.Incomes.Ann, styles.C0)
-                                .Append(y.Withdrawals.PreTax, styles.C0)
-                                .Append(y.Withdrawals.PostTax, styles.C0)
-                                // .Append(y.Withdrawals.Cash, styles.C0)
-                                .Append("")
+                                var stylePrice = ssb.RegisterStyle(baseStyle with 
+                                {
+                                     Format = fStr,
+                                     FColor = GetColorHex(colorHint),
+                                     HAlign = (col == CID.Year || col == CID.Age || col == CID.LikeYear) ? HAlign.Center : HAlign.Right
+                                });
 
-                                // Expenses
-                                .Append(y.Expenses.PYTax.Total(), styles.C0)
-                                .Append(y.Expenses.LivExp, styles.C0)
-                                .Append("")
-
-                                // ROIAmount in value and excess deposits
-                                .Append(y.Change.PreTax, y.Change.PreTax < 0 ? styles.C0Red : styles.C0Green)
-                                .Append(y.Change.PostTax, y.Change.PostTax < 0 ? styles.C0Red : styles.C0Green)
-                                .Append(y.Deposits.PostTax, styles.C0)
-                                .Append("")
-
-                                .Append(y.ROI.LikeYear,  y.ROI.StocksROI < 0 || y.ROI.BondsROI < 0 ? styles.YYYYRed : styles.YYYY)
-                                .Append(y.ROI.StocksROI, y.ROI.StocksROI < 0 ? styles.ROIRed : styles.ROIGreen)
-                                .Append(y.ROI.BondsROI,  y.ROI.BondsROI < 0  ? styles.ROIRed : styles.ROIGreen)
-                                ;
+                                row.Append(value.Value, stylePrice);
+                            }
                         }
                     }
                 }
             }
         }
 
+        static string GetFormatString(FormatHint f) => f switch
+        {
+            FormatHint.F0 => "0;-0;;",
+            FormatHint.C0 => NF.C0,
+            FormatHint.C1 => NF.C1,
+            FormatHint.C2 => NF.C2,
+            FormatHint.P0 => NF.P0,
+            FormatHint.P1 => NF.P1,
+            FormatHint.P2 => NF.P2,
+            _ => "General"
+        };
+        
+        static uint GetColorHex(ColorHint c) => c switch
+        {
+            ColorHint.Success => MyColors.Green,
+            ColorHint.Danger  => MyColors.Red,
+            ColorHint.Muted   => MyColors.Gray,
+            ColorHint.Warning => 0xFFC09000, 
+            ColorHint.Primary => 0xFF0070C0,
+            _ => MyColors.Black
+        };
+
 
         static double Mil(this double value) => value / 1000000.0;
     }
 }
-

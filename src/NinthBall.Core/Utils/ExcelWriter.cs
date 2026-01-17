@@ -19,15 +19,12 @@ namespace NinthBall.Core
 
         readonly SpreadsheetDocument Document;
         readonly WorkbookPart WorkbookPart;
-        readonly Stylesheet Stylesheet;
 
-        public ExcelWriter(string outputFilePath, Stylesheet stylesheet)
+        public ExcelWriter(string outputFilePath)
         {
             ArgumentNullException.ThrowIfNull(outputFilePath);
-            ArgumentNullException.ThrowIfNull(stylesheet);
 
             FilePath = outputFilePath;
-            Stylesheet = stylesheet;
 
             // Content written to a temp file, deleted on Save() or Dispose()
             TempFilePath = Path.GetTempFileName();
@@ -75,17 +72,19 @@ namespace NinthBall.Core
             }
         }
 
-        public void Save()
+        public void Save(Stylesheet stylesheet)
         {
+            ArgumentNullException.ThrowIfNull(stylesheet);
+
             ThrowIfDisposed();
 
             // Flush WorkbookPart content.
             WorkbookPart.Workbook.Save();
 
             // Write Styles at the end.
-            UpdateCounts(Stylesheet);
-            WorkbookPart.AddNewPart<WorkbookStylesPart>().Stylesheet = Stylesheet;
-            Stylesheet.Save();
+            UpdateCounts(stylesheet);
+            WorkbookPart.AddNewPart<WorkbookStylesPart>().Stylesheet = stylesheet;
+            stylesheet.Save();
 
             // Save and close XML Document (flushes to disk)
             Document.Save();

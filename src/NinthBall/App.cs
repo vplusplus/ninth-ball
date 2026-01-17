@@ -103,7 +103,7 @@ namespace NinthBall
                 try
                 {
                     var excelFileName = Path.ChangeExtension(htmlFileName, ".xlsx");
-                    await ExcelOutput.Generate(simResult, excelFileName);
+                    await ExcelOutput.Generate(simResult, excelFileName, outputConfig);
                     Console.WriteLine($" Excel report | See {excelFileName}");
                 }
                 catch(System.IO.IOException ioErr)
