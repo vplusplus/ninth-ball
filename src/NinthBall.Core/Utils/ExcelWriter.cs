@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Globalization;
@@ -227,6 +228,8 @@ namespace NinthBall.Core
 
             public readonly RowWriter Append(double value, uint? styleIndex = null)
             {
+                // TODO: For NaN and Inf, correct way is to render text cell with special symbols "NaN" or "Infinity", not as a NumberCell.
+                value = double.IsNaN(value) || double.IsInfinity(value) ? 0.0 : value;
                 OneNumberCell.WriteCell(Writer, value, styleIndex);
                 return this;
             }
