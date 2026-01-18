@@ -8,17 +8,16 @@ namespace NinthBall.Core
         //....................................................
         int IterationIndex { get; }
         int StartAge { get; }
-        Assets Initial { get; }
+        int YearIndex { get; }
+        int Age { get; }
+
         SimYear PriorYear { get; }
         Metrics PriorYearMetrics { get; }
 
-        //....................................................
-        // Current year
-        //....................................................
-        int YearIndex { get; }
-        int Age { get; }
+        Assets Initial { get; }
         Assets Jan { get; }
         Fees Fees { get; set; }
+        Taxes Taxes { get; set; }
         Incomes Incomes { get; set; }
         Expenses Expenses { get; set; }
         Withdrawals Withdrawals { get; set; }
@@ -31,19 +30,20 @@ namespace NinthBall.Core
     {
         int IterationIndex { get; }
         int StartAge { get; }
-        Assets Initial { get; }
+        int YearIndex { get; }
+        int Age { get; }
+
         SimYear PriorYear { get; }
         Metrics PriorYearMetrics { get; }
 
-        int YearIndex { get; }
-        int Age { get; }
+        Assets Initial { get; }
         Assets Jan { get; }
         Fees Fees { get; }
+        Taxes Taxes { get; }
         Incomes Incomes { get; }
         Expenses Expenses { get; }
         Withdrawals Withdrawals { get; }
         ROI ROI { get; }
-        
     }
 
     internal sealed record class SimState(int IterationIndex, int StartAge, Assets Initial, Memory<SimYear> Storage) : ISimState, IReadOnlySimState
@@ -56,13 +56,14 @@ namespace NinthBall.Core
         // Current year
         public int YearIndex { get; private set; } = 0;
         public int Age => StartAge + YearIndex;
+
         public Assets Jan { get; private set; } = Initial;
         public Fees Fees { get; set; }
+        public Taxes Taxes { get; set; }
         public Incomes Incomes { get; set; }
         public Expenses Expenses { get; set; }
         public Withdrawals Withdrawals { get; set; }
         public ROI ROI { get; set; }
-
 
         void ISimState.Rebalance(double preTaxAllocation, double postTaxAllocation, double maxDrift)
         {
@@ -76,11 +77,13 @@ namespace NinthBall.Core
             (Fees, Incomes, Expenses, Withdrawals, ROI) = (default, default, default, default, default);
         }
 
-        int _competedYears = 0;
         public void EndYear(SimYear aboutThisYear)
         {
             Storage.Span[_competedYears++] = aboutThisYear;
         }
+        
+        int _competedYears = 0;
+
     }
 
 }

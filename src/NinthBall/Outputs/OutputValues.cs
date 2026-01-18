@@ -43,11 +43,11 @@ namespace NinthBall.Outputs
             [CID.JanPostTaxAlloc] = (it, in y) => y.Jan.PostTax.Allocation,
 
             [CID.Fees]            = (it, in y) => y.Fees.Total,
-            [CID.TaxOrdInc]       = (it, in y) => y.Expenses.PYTax.TaxOnOrdInc,
-            [CID.TaxDiv]          = (it, in y) => y.Expenses.PYTax.TaxOnDiv,
-            [CID.TaxInt]          = (it, in y) => y.Expenses.PYTax.TaxOnInt,
-            [CID.TaxCapGain]      = (it, in y) => y.Expenses.PYTax.TaxOnCapGain,
-            [CID.PYTaxes]         = (it, in y) => y.Expenses.PYTax.Total,
+            [CID.TaxOrdInc]       = (it, in y) => y.Taxes.Tax.OrdInc,
+            [CID.TaxDiv]          = (it, in y) => y.Taxes.Tax.DIV,
+            [CID.TaxInt]          = (it, in y) => y.Taxes.Tax.INT,
+            [CID.TaxCapGain]      = (it, in y) => y.Taxes.Tax.LTCG,
+            [CID.PYTaxes]         = (it, in y) => y.Taxes.Total,
             [CID.LivExp]          = (it, in y) => y.Expenses.LivExp,
 
             [CID.Incomes]         = (it, in y) => y.Incomes.Total,
@@ -88,11 +88,11 @@ namespace NinthBall.Outputs
             [CID.JanCash]      = (it) => it. LastGoodYear.Jan.Cash.Amount,
 
             [CID.Fees]         = (it) => it. Sum(y => y.Fees.Total),
-            [CID.TaxOrdInc]    = (it) => it. Sum(y => y.Expenses.PYTax.TaxOnOrdInc),
-            [CID.TaxDiv]       = (it) => it. Sum(y => y.Expenses.PYTax.TaxOnDiv),
-            [CID.TaxInt]       = (it) => it. Sum(y => y.Expenses.PYTax.TaxOnInt),
-            [CID.TaxCapGain]   = (it) => it. Sum(y => y.Expenses.PYTax.TaxOnCapGain),
-            [CID.PYTaxes]      = (it) => it. Sum(y => y.Expenses.PYTax.Total),
+            [CID.TaxOrdInc]    = (it) => it. Sum(y => y.Taxes.Tax.OrdInc),
+            [CID.TaxDiv]       = (it) => it. Sum(y => y.Taxes.Tax.DIV),
+            [CID.TaxInt]       = (it) => it. Sum(y => y.Taxes.Tax.INT),
+            [CID.TaxCapGain]   = (it) => it. Sum(y => y.Taxes.Tax.LTCG),
+            [CID.PYTaxes]      = (it) => it. Sum(y => y.Taxes.Total),
 
             [CID.LivExp]       = (it) => it. Sum(y => y.Expenses.LivExp),
 

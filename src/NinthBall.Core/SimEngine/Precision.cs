@@ -40,17 +40,31 @@ namespace NinthBall.Core
 
         public static Expenses RoundToCents(this Expenses x) => new
         (
-            PYTax: x.PYTax.RoundToCents(),
             LivExp: x.LivExp.RoundToCents()
         );
 
-        public static Tax RoundToCents(this Tax x) => new
+        public static Taxes RoundToCents(this Taxes x) => new
         (
             StandardDeduction: x.StandardDeduction.RoundToCents(),
-            TaxOnOrdInc: x.TaxOnOrdInc.RoundToCents(),
-            TaxOnDiv: x.TaxOnDiv.RoundToCents(),
-            TaxOnInt: x.TaxOnInt.RoundToCents(),
-            TaxOnCapGain: x.TaxOnCapGain.RoundToCents()
+            TaxRates: x.TaxRates,
+            Taxable: x.Taxable.RoundToCents(),
+            Tax: x.Tax.RoundToCents()
+        );
+
+        public static Taxable RoundToCents(this Taxable x) => new
+        (
+            OrdInc: x.OrdInc.RoundToCents(),
+            DIV: x.DIV.RoundToCents(),
+            INT: x.INT.RoundToCents(),
+            LTCG: x.LTCG.RoundToCents()
+        );
+
+        public static TaxAmt RoundToCents(this TaxAmt x) => new
+        (
+            OrdInc: x.OrdInc.RoundToCents(),
+            DIV: x.DIV.RoundToCents(),
+            INT: x.INT.RoundToCents(),
+            LTCG: x.LTCG.RoundToCents()
         );
 
         public static Withdrawals RoundToCents(this Withdrawals x) => new

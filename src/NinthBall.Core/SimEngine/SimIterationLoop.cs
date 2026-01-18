@@ -69,6 +69,7 @@ namespace NinthBall.Core
                     simState.Age,
                     simState.Jan,
                     simState.Fees,
+                    simState.Taxes,
                     simState.Incomes,
                     simState.Expenses,
 
@@ -90,8 +91,9 @@ namespace NinthBall.Core
                     simState.Age,               // We know this
                     simState.Jan,               // We know the starting balances
                     simState.Fees,              // We know the fees since we know the starting balances
-                    simState.Incomes,           // These are known incomes. 
-                    simState.Expenses,          // We know the taxes-due and estimated expenses
+                    simState.Taxes,             // We know prior year taxes
+                    simState.Incomes,           // We know the additional known incomes (if any) 
+                    simState.Expenses,          // We know the estimated expenses that we could not meet
 
                     Withdrawals: default,       // Since we didn't withdraw any amount.
                     Deposits: default,          // Since we can't even meet expenses.
@@ -114,6 +116,7 @@ namespace NinthBall.Core
             // BY-DESIGN: Invariants use Pascal case local variable names.
             var Jan = context.Jan.ThrowIfNegative();
             var Fees = context.Fees.ThrowIfNegative().RoundToCents();
+            var Taxes = context.Taxes.ThrowIfNegative().RoundToCents();
             var Incomes = context.Incomes.ThrowIfNegative();
             var Expenses = context.Expenses.ThrowIfNegative();
             var SuggestedWithdrawals = context.Withdrawals.ThrowIfNegative();
@@ -143,7 +146,7 @@ namespace NinthBall.Core
             available.Cash -= withdrawals.Cash;
 
             // Do we have enough? 
-            double deficit = Math.Max(0, Expenses.Total - Incomes.Total - withdrawals.Total);
+            double deficit = Math.Max(0, Taxes.Total + Expenses.Total - Incomes.Total - withdrawals.Total);
             if (deficit.IsMoreThanZero(Precision.Amount))
             {
                 // Model is not withdrawing enough.
@@ -162,7 +165,7 @@ namespace NinthBall.Core
             // We survived.
             // We may even have some surplus.
             // All remaining surplus (if any) gets re-invested in post-tax assets
-            var surplus = Math.Max(0, Incomes.Total + withdrawals.Total - Expenses.Total);
+            var surplus = Math.Max(0, Incomes.Total + withdrawals.Total - Taxes.Total -  Expenses.Total);
             if (surplus.IsMoreThanZero(Precision.Amount))
             {
                 deposits.PostTax += surplus;
@@ -236,13 +239,23 @@ namespace NinthBall.Core
 
             var good = true;
 
-            // Cashflow: (Incomes + Withdrawals) = (Expenses + Deposits)
-            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Expenses.Total + y.Deposits.Total, Precision.Amount);
-            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} != Expenses {y.Expenses.Total:C0} + Deposits {y.Deposits.Total:C0}");
+            // Cashflow: (Incomes + Withdrawals) = (Taxes + Expenses + Deposits)
+            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Taxes.Total + y.Expenses.Total + y.Deposits.Total, Precision.Amount);
+            if (!good)
+            {
+                Console.WriteLine(y.Incomes);
+                Console.WriteLine(y.Withdrawals);
+
+                Console.WriteLine(y.Taxes);
+                Console.WriteLine(y.Expenses);
+                Console.WriteLine(y.Deposits);
+
+                throw new Exception($"Inflow(Incomes + Withdrawals) doesn't match Outflow(Taxes + Expenses + Deposits)");
+            }
 
             // Expenses are met.
-            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= y.Expenses.Total;
-            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} is less than expenses {y.Expenses.Total:C0}");
+            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= (y.Taxes.Total + y.Expenses.Total);
+            if (!good) throw new Exception($"Inflow(Incomes + Withdrawals) is less than Outflow(Taxes + Expenses)");
 
             // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
             good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
@@ -263,8 +276,9 @@ namespace NinthBall.Core
         //......................................................................
         static Assets ThrowIfNegative(this Assets x) { ThrowIfNegative(nameof(Assets), x.PreTax.Amount, x.PostTax.Amount, x.Cash.Amount); return x; }
         static Fees ThrowIfNegative(this Fees x) { ThrowIfNegative(nameof(Fees), x.PreTax, x.PostTax); return x; }
+        static Taxes ThrowIfNegative(this Taxes x) { ThrowIfNegative(nameof(Taxes), x.Tax.OrdInc, x.Tax.DIV, x.Tax.INT, x.Tax.LTCG); return x; }
         static Incomes ThrowIfNegative(this Incomes x) { ThrowIfNegative(nameof(Incomes), x.SS, x.Ann); return x; }
-        static Expenses ThrowIfNegative(this Expenses x) { ThrowIfNegative(nameof(Expenses), x.PYTax.TaxOnOrdInc, x.PYTax.TaxOnDiv, x.PYTax.TaxOnInt, x.PYTax.TaxOnCapGain, x.LivExp); return x; }
+        static Expenses ThrowIfNegative(this Expenses x) { ThrowIfNegative(nameof(Expenses), x.LivExp); return x; }
         static Withdrawals ThrowIfNegative(this Withdrawals x) { ThrowIfNegative(nameof(Withdrawals), x.PreTax, x.PostTax, x.Cash); return x; }
         static Deposits ThrowIfNegative(this Deposits x) { ThrowIfNegative(nameof(Deposits), x.PostTax, x.Cash); return x; }
 

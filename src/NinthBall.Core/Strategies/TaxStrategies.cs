@@ -19,18 +19,19 @@ namespace NinthBall.Core
         {
             void ISimStrategy.Apply(ISimState context)
             {
-                double inflationMultiplier = 0 == context.YearIndex ? 1.0 : context.PriorYear.Metrics.InflationMultiplier;
-
-                context.Expenses = context.Expenses with
-                {
-                    // Suggested year #0 tax amount is lumped into OrdIncTax. We need to account for it somewhere...
-
-                    PYTax = 0 == context.YearIndex
-                        ? new() { TaxOnOrdInc = TaxOptions.YearZeroTaxAmount }
-                        : TaxMath.ComputePriorYearTaxes(TaxOptions, inflationMultiplier, context.PriorYear)
-                };
+                context.Taxes = 0 == context.YearIndex
+                    ? FirstYearTaxes(TaxOptions.YearZeroTaxAmount) 
+                    : context.PriorYear.ComputePriorYearTaxes(TaxOptions);
             }
         }
+
+        static Taxes FirstYearTaxes(double firstYearTaxAmount) => new Taxes
+        (
+            StandardDeduction: 0.0,
+            Taxable: new(),
+            TaxRates: new(),
+            Tax: new(OrdInc: firstYearTaxAmount, 0.0, 0.0, 0.0)
+        );
 
         static void ThrowIfZero(double d, string name) { if (d <= 0) throw new Exception($"{name} cannot be zero. To model zero-tax scenario use some very low value, but not zero."); }
 
@@ -43,62 +44,66 @@ namespace NinthBall.Core
     /// </summary>
     public static class TaxMath
     {
-        // Mutable working memory for tax calculations. 
-        sealed class DDDD 
+        public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxConfig TaxConfig)
         {
-            public double OrdIncome = 0.0;
-            public double Interest  = 0.0;
-            public double Dividends = 0.0;
-            public double CapGain   = 0.0;
-        };
+            // Standard deduction adjusted for inflation.
+            var stdDeduction = TaxConfig.StandardDeduction > 0 ? TaxConfig.StandardDeduction : 31500.0;
+            var inflationMultiplier = Math.Max(1.0, priorYear.Metrics.InflationMultiplier);
+            var inflationAdjustedStdDeduction = stdDeduction * inflationMultiplier;
 
-        public static Tax ComputePriorYearTaxes(TaxConfig TaxConfig, double inflationMultiplier, SimYear priorYear)
-        {
             // Collect taxable income from various sources.
-            var incomes = new DDDD()
+            // Adjust to reflect std deduction.
+            var taxable = new Taxable()
                 .AddIncomeFromPreTaxAsset(priorYear)
                 .AddIncomeFromPostTaxAsset(priorYear)
                 .AddIncomeFromAdditionalIncomeSources(priorYear)
+                .ApplyStandardDeduction(inflationAdjustedStdDeduction)
                 ;
 
-            // Standard deduction adjusted for inflation.
-            var stdDeduction = TaxConfig.StandardDeduction > 0 ? TaxConfig.StandardDeduction : 31500.0;
-            var inflationAdjustedStdDeduction = stdDeduction * inflationMultiplier;
+            var taxRates = new TaxRate(
+                OrdInc: TaxConfig.TaxRates.OrdinaryIncome,
+                LTCG: TaxConfig.TaxRates.CapitalGains
+            );
 
-            // Adjust the taxable ordinary income and taxable interest income to reflect std deduction.
-            incomes.ApplyStandardDeduction(inflationAdjustedStdDeduction);
-
-            var taxes = new Tax
+            var taxes = new Taxes
             (
                 // Capture standard deduction
                 StandardDeduction: inflationAdjustedStdDeduction,
+                Taxable: taxable,
+                TaxRates: taxRates,
+                Tax: taxable.ComputeTaxes(taxRates)
+            );
 
+            return taxes;
+        }
+
+        static TaxAmt ComputeTaxes(this Taxable taxable, TaxRate taxRate)
+        {
+            return new TaxAmt
+            (
                 // Ordinary income and interest income are taxed at ordinary income tax rates.
-                TaxOnOrdInc: Math.Round(Math.Max(0, incomes.OrdIncome * TaxConfig.TaxRates.OrdinaryIncome)),
-                TaxOnInt: Math.Round(Math.Max(0, incomes.Interest * TaxConfig.TaxRates.OrdinaryIncome)),
+                OrdInc: Math.Max(0, Math.Round(taxable.OrdInc * taxRate.OrdInc)),
+                INT: Math.Max(0, Math.Round(taxable.INT * taxRate.OrdInc)),
 
                 // All dividends are assumed to be qualified.
                 // All capital gains are assumed to be long-term gains.
                 // Both are taxed at preferential tax rates.
                 // For simplicity, state taxes are not factored-in here.
                 // Net Investment Income Tax (NIIT) is not considered here.
-                TaxOnDiv: Math.Round(Math.Max(0, incomes.Dividends * TaxConfig.TaxRates.CapitalGains)),
-                TaxOnCapGain: Math.Round(Math.Max(0, incomes.CapGain * TaxConfig.TaxRates.CapitalGains))
+                DIV: Math.Max(0, Math.Round(taxable.DIV * taxRate.LTCG)),
+                LTCG: Math.Max(0, Math.Round(taxable.LTCG * taxRate.LTCG))
             );
-
-            return taxes;
         }
 
-        static DDDD AddIncomeFromPreTaxAsset(this DDDD incomes, SimYear priorYear)
+        static Taxable AddIncomeFromPreTaxAsset(this Taxable taxable, SimYear priorYear)
         {
             // We are looking at tax deferred asset (PreTax).
             // Only withdrawals are taxed as ordinary income.
             // Dividends, interest, and capital gains are not applicable.
-            incomes.OrdIncome += priorYear.Withdrawals.PreTax;
-            return incomes;
+            return taxable.Add(ordInc: priorYear.Withdrawals.PreTax);
         }
 
-        static DDDD AddIncomeFromPostTaxAsset(this DDDD incomes, SimYear priorYear)
+        static Taxable AddIncomeFromPostTaxAsset(this Taxable taxable, SimYear priorYear)
         {
             // We are looking at taxable asset (PostTax)
             var asset = priorYear.Jan.PostTax;
@@ -126,13 +131,18 @@ namespace NinthBall.Core
             // However, avoid frequent rebalancing or reallocations that may trigger short-term capital gains.
             var longTermCapitalGain = priorYear.Withdrawals.PostTax;
 
-            incomes.Dividends   += qualifiedDividendAmount;
-            incomes.Interest    += interestAmount;
-            incomes.CapGain     += longTermCapitalGain;
-            return incomes;
+            return taxable.Add(DIV: qualifiedDividendAmount, INT: interestAmount, LTCG: longTermCapitalGain);
         }
 
-        static DDDD AddIncomeFromAdditionalIncomeSources(this DDDD incomes, SimYear priorYear)
+        static Taxable Add(this Taxable taxable, double ordInc = 0, double DIV = 0, double INT = 0, double LTCG = 0) => new
+        (
+            OrdInc: taxable.OrdInc + ordInc,
+            DIV: taxable.DIV + DIV,
+            INT: taxable.INT + INT,
+            LTCG: taxable.LTCG + LTCG
+        );
+
+        static Taxable AddIncomeFromAdditionalIncomeSources(this Taxable taxable, SimYear priorYear)
         {
             // Conservative assumption - Maximum (85%) taxable portion of Social security regardless of income bracket.
             double ssIncome = priorYear.Incomes.SS * 0.85;
@@ -140,29 +150,29 @@ namespace NinthBall.Core
             // Conservative assumption - Annuity income is fully taxable, ignores non-taxed principal portion
             double annIncome = priorYear.Incomes.Ann * 1.0;
 
-            // Social security and annuity are taxed as ordinary income.            
-            incomes.OrdIncome += ssIncome;
-            incomes.OrdIncome += annIncome;
-            return incomes;
+            // Social security and annuity are taxed as ordinary income.
+            return taxable.Add(
+                ordInc: ssIncome + annIncome
+            );
         }
 
-        static void ApplyStandardDeduction(this DDDD incomes, double stdDeduction)
+        static Taxable ApplyStandardDeduction(this Taxable taxable, double stdDeduction)
         {
             double remainingDeduction = stdDeduction;
 
             // Apply deduction to ordinary income first
             if (remainingDeduction > 0)
             {
-                double reduction = Math.Min(incomes.OrdIncome, remainingDeduction);
-                incomes.OrdIncome  -= reduction;
+                double reduction = Math.Min(taxable.OrdInc, remainingDeduction);
+                taxable = taxable.Add(ordInc: -reduction);
                 remainingDeduction -= reduction;
             }
 
             // Apply deduction to interest income next
             if (remainingDeduction > 0)
             {
-                double reduction = Math.Min(incomes.Interest, remainingDeduction);
-                incomes.Interest -= reduction;
+                double reduction = Math.Min(taxable.INT, remainingDeduction);
+                taxable = taxable.Add(INT: -reduction);
                 remainingDeduction -= reduction;
             }
 
@@ -171,6 +181,8 @@ namespace NinthBall.Core
             // Currently we are using a fixed tax bracket.
             // Also, we are treating all DIV as qualified and all capital gains as long-term.
             // Together, do not touch DIV and CGAIN.
+
+            return taxable;
         }
     }
 
