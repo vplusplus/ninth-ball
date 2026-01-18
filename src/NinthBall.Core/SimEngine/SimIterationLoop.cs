@@ -18,11 +18,13 @@ namespace NinthBall.Core
             var simState = new SimState(iterationIndex, simParams.StartAge, initialBalance, iterationStore);
 
             // Asses each year. Exit if failed.
-            bool success = false;
-            for(int yearIndex  = 0; yearIndex < simParams.NoOfYears; yearIndex++)
+            bool survived = true;
+            for(int yearIndex  = 0; yearIndex < simParams.NoOfYears && survived; yearIndex++)
             {
+                // Start fresh year.
                 simState.BeginYear(yearIndex);
 
+                // Apply all strategies
                 foreach (var s in strategies) s.Apply(simState);
 
                 // Before we start working on the suggestions...
@@ -32,19 +34,21 @@ namespace NinthBall.Core
                 simState.Expenses    = simState.Expenses.ThrowIfNegative().RoundToCents();
                 simState.Withdrawals = simState.Withdrawals.ThrowIfNegative().RoundToCents();
 
-                (success, var simYear) = simState.FinalizeYear();
-                simState.EndYear(simYear);
+                // Check for survivability, optimize and apply the strategy suggestions.
+                (survived, var simYear) = simState.FinalizeYear();
 
-                if (!success) break;
+                // Capture the year to the history (even if failed)
+                simState.EndYear(simYear);
             }
 
-            return new(iterationIndex, success, simState.PriorYears);
+            return new(iterationIndex, Success: survived, simState.PriorYears);
         }
 
 
         private static (bool success, SimYear simYear) FinalizeYear(this IReadOnlySimState simState)
         {
             var (success, adjustedWithdrawals, adjustedDeposits) = simState.FinalizeWithdrawals();
+
             if (success)
             {
                 Assets dec = simState.Jan
@@ -54,7 +58,11 @@ namespace NinthBall.Core
                     .Deposit(adjustedDeposits)
                     ;
 
-                Metrics metrics = simState.PriorYearMetrics.UpdateRunningMetrics(simState.YearIndex, portfolioReturn: portfolioReturn, inflationRate: simState.ROI.InflationRate);
+                Metrics metrics = simState.PriorYearMetrics.UpdateRunningMetrics(
+                    simState.YearIndex, 
+                    portfolioReturn: portfolioReturn, 
+                    inflationRate: simState.ROI.InflationRate
+                );
 
                 SimYear successYear = new 
                 (
@@ -90,12 +98,12 @@ namespace NinthBall.Core
                     Deposits: default,          // Since we can't even meet expenses.
                     ROI: default,               // Irrelevant
                     Change: default,            // Since ROI is irrelevant
-                    Dec: default,               // User would have spend left-overs before Dec anyway
+                    Dec: default,               // Would have spent any left-overs before Dec anyway
 
                     Metrics: new(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)
                 );
 
-                return (success, failedYear);
+                return (success: false, failedYear);
             }
         }
 
@@ -123,7 +131,7 @@ namespace NinthBall.Core
             // Real annualized return (adjusted for inflation) since year #0
             double realAnnualizedReturn = Math.Pow(cumulativeGrowthMultiplier / inflationMultiplier, 1.0 / (yearIndex + 1)) - 1.0;
 
-            // Update the running metrics, return updated metrics.
+            // The updated metrics...
             return new
             (
                 InflationMultiplier: inflationMultiplier,
@@ -135,6 +143,39 @@ namespace NinthBall.Core
             );
         }
 
+        static SimYear ValidateMath(this SimYear y)
+        {
+            y.Jan.ThrowIfNegative();
+            y.Fees.ThrowIfNegative();
+            y.Incomes.ThrowIfNegative();
+            y.Expenses.ThrowIfNegative();
+            y.Withdrawals.ThrowIfNegative();
+            y.Deposits.ThrowIfNegative();
+            y.Dec.ThrowIfNegative();
+
+            var good = true;
+
+            // Cashflow: (Incomes + Withdrawals) = (Expenses + Deposits)
+            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Expenses.Total + y.Deposits.Total, Precision.Amount);
+            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} != Expenses {y.Expenses.Total:C0} + Deposits {y.Deposits.Total:C0}");
+
+            // Expenses are met.
+            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= y.Expenses.Total;
+            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} is less than expenses {y.Expenses.Total:C0}");
+
+            // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
+            good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
+            good &= (y.Jan.PostTax.Amount - y.Fees.PostTax - y.Withdrawals.PostTax + y.Change.PostTax + y.Deposits.PostTax).AlmostSame(y.Dec.PostTax.Amount, Precision.Amount);
+            good &= (y.Jan.Cash.Amount - y.Withdrawals.Cash + y.Deposits.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
+            if (!good) throw new Exception("Balance reconciliation failed: Jan - Fees - Withdrawals + Change + Deposits != Dec");
+
+            // Either withdrawals or Deposits should be zero.
+            good &= y.Withdrawals.PostTax.AlmostZero(Precision.Amount) || y.Deposits.PostTax.AlmostZero(Precision.Amount);
+            good &= y.Withdrawals.Cash.AlmostZero(Precision.Amount) || y.Deposits.Cash.AlmostZero(Precision.Amount);
+            if (!good) throw new Exception($"Meaningless fund transfers. Both withdrawal and deposit can't be positive.");
+
+            return y;
+        }
 
         //......................................................................
         #region FinalizeWithdrawals()
@@ -202,7 +243,7 @@ namespace NinthBall.Core
                 surplus = 0;
             }
 
-            // This is our final withdrawal and deposit (if any) amounts and we survived.
+            // This is our final withdrawal and deposits (if any) and we survived.
             var adjustedWithdrawals = new Withdrawals(withdrawals.PreTax, withdrawals.PostTax, withdrawals.Cash);
             var adjustedDeposits = new Deposits(deposits.PostTax, deposits.Cash);
             return (true, adjustedWithdrawals, adjustedDeposits);
@@ -313,40 +354,6 @@ namespace NinthBall.Core
         }
 
         #endregion
-
-        static SimYear ValidateMath(this SimYear y)
-        {
-            y.Jan.ThrowIfNegative();
-            y.Fees.ThrowIfNegative();
-            y.Incomes.ThrowIfNegative();
-            y.Expenses.ThrowIfNegative();
-            y.Withdrawals.ThrowIfNegative();
-            y.Deposits.ThrowIfNegative();
-            y.Dec.ThrowIfNegative();
-
-            var good = true;
-
-            // Cashflow: (Incomes + Withdrawals) = (Expenses + Deposits)
-            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Expenses.Total + y.Deposits.Total, Precision.Amount);
-            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} != Expenses {y.Expenses.Total:C0} + Deposits {y.Deposits.Total:C0}");
-
-            // Expenses are met.
-            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= y.Expenses.Total;
-            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} is less than expenses {y.Expenses.Total:C0}");
-
-            // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
-            good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
-            good &= (y.Jan.PostTax.Amount - y.Fees.PostTax - y.Withdrawals.PostTax + y.Change.PostTax + y.Deposits.PostTax).AlmostSame(y.Dec.PostTax.Amount, Precision.Amount);
-            good &= (y.Jan.Cash.Amount - y.Withdrawals.Cash + y.Deposits.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
-            if (!good) throw new Exception("Balance reconciliation failed: Jan - Fees - Withdrawals + Change + Deposits != Dec");
-
-            // Either withdrawals or Deposits should be zero.
-            good &= y.Withdrawals.PostTax.AlmostZero(Precision.Amount) || y.Deposits.PostTax.AlmostZero(Precision.Amount);
-            good &= y.Withdrawals.Cash.AlmostZero(Precision.Amount) || y.Deposits.Cash.AlmostZero(Precision.Amount);
-            if (!good) throw new Exception($"Meaningless fund transfers. Both withdrawal and deposit can't be positive.");
-
-            return y;
-        }
 
     }
 
