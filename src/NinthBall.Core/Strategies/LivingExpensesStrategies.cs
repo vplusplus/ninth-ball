@@ -29,7 +29,7 @@ namespace NinthBall.Core
                 {
                     // Subsequent years: Inflate prior year amount.
                     // On Jan 1st, we do not know current year CPI.
-                    // Incfrease estimate living expense using prior year CPI.
+                    // Increase estimated living expense using prior year CPI.
                     runningLivingExpenseNominal *= (1 + context.PriorYear.ROI.InflationRate);
                 }
 

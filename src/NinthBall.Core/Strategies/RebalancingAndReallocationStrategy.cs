@@ -17,13 +17,14 @@ namespace NinthBall.Core
 
             void ISimStrategy.Apply(ISimState context)
             {
-                // Check if allocation shift is specified for this year.
+                // Check if reallocation-steps is specified for this year.
                 var reallocateThisYear = null != RBL.Reallocate && RBL.Reallocate.Count > 0 && RBL.Reallocate.Any(x => x.AtAge == context.Age);
 
                 if (reallocateThisYear)
                 {
-                    // Ensure its not an empty-configuration with all default values.
                     var alloc = RBL.Reallocate!.Single(x => x.AtAge == context.Age);
+
+                    // Ensure its not an empty-configuration with all default values.
                     if (alloc != default)
                     {
                         // From this year on, use the new allocation.

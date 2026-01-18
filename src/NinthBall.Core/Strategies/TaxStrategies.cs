@@ -60,38 +60,56 @@ namespace NinthBall.Core
                 .ApplyStandardDeduction(inflationAdjustedStdDeduction)
                 ;
 
-            var taxRates = new TaxRate(
-                OrdInc: TaxConfig.TaxRates.OrdinaryIncome,
-                LTCG: TaxConfig.TaxRates.CapitalGains
-            );
-
-            var taxes = new Taxes
+            // Guard: Taxable income can't be negative.
+            taxable = new
             (
-                // Capture standard deduction
-                StandardDeduction: inflationAdjustedStdDeduction,
-                Taxable: taxable,
-                TaxRates: taxRates,
-                Tax: taxable.ComputeTaxes(taxRates)
+                OrdInc: Math.Max(0, Math.Round(taxable.OrdInc)),
+                DIV:    Math.Max(0, Math.Round(taxable.DIV)),
+                INT:    Math.Max(0, Math.Round(taxable.INT)),
+                LTCG:   Math.Max(0, Math.Round(taxable.LTCG))
             );
 
-            return taxes;
+            var taxRates = new TaxRate
+            (
+                OrdInc: TaxConfig.TaxRates.OrdinaryIncome,
+                LTCG:   TaxConfig.TaxRates.CapitalGains
+            );
+
+            var taxAmounts = taxable.ComputeTaxes(taxRates);
+
+            return new Taxes
+            (
+                StandardDeduction:  inflationAdjustedStdDeduction,
+                Taxable:            taxable,
+                TaxRates:           taxRates,
+                Tax:                taxAmounts
+            );
         }
 
         static Tax ComputeTaxes(this Taxable taxable, TaxRate taxRate)
         {
-            return new Tax
+            Tax tax = new
             (
                 // Ordinary income and interest income are taxed at ordinary income tax rates.
-                OrdInc: Math.Max(0, Math.Round(taxable.OrdInc * taxRate.OrdInc)),
-                INT: Math.Max(0, Math.Round(taxable.INT * taxRate.OrdInc)),
+                OrdInc: taxable.OrdInc * taxRate.OrdInc,
+                INT:    taxable.INT    * taxRate.OrdInc,
 
                 // All dividends are assumed to be qualified.
                 // All capital gains are assumed to be long-term gains.
                 // Both are taxed at preferential tax rates.
                 // For simplicity, state taxes are not factored-in here.
                 // Net Investment Income Tax (NIIT) is not considered here.
-                DIV: Math.Max(0, Math.Round(taxable.DIV * taxRate.LTCG)),
-                LTCG: Math.Max(0, Math.Round(taxable.LTCG * taxRate.LTCG))
+                DIV:  taxable.DIV  * taxRate.LTCG,
+                LTCG: taxable.LTCG * taxRate.LTCG
+            );
+
+            // Cleanup and drop fractions.
+            return new
+            (
+                OrdInc: Math.Max(0, Math.Round(tax.OrdInc)),
+                DIV:    Math.Max(0, Math.Round(tax.DIV)),
+                INT:    Math.Max(0, Math.Round(tax.INT)),
+                LTCG:   Math.Max(0, Math.Round(tax.LTCG))
             );
         }
 
@@ -100,7 +118,7 @@ namespace NinthBall.Core
             // We are looking at tax deferred asset (PreTax).
             // Only withdrawals are taxed as ordinary income.
             // Dividends, interest, and capital gains are not applicable.
-            return taxable.Add(ordInc: priorYear.Withdrawals.PreTax);
+            return taxable.Adjust(ordInc: priorYear.Withdrawals.PreTax);
         }
 
         static Taxable AddIncomeFromPostTaxAsset(this Taxable taxable, SimYear priorYear)
@@ -131,16 +149,8 @@ namespace NinthBall.Core
             // However, avoid frequent rebalancing or reallocations that may trigger short-term capital gains.
             var longTermCapitalGain = priorYear.Withdrawals.PostTax;
 
-            return taxable.Add(DIV: qualifiedDividendAmount, INT: interestAmount, LTCG: longTermCapitalGain);
+            return taxable.Adjust(DIV: qualifiedDividendAmount, INT: interestAmount, LTCG: longTermCapitalGain);
         }
-
-        static Taxable Add(this Taxable taxable, double ordInc = 0, double DIV = 0, double INT = 0, double LTCG = 0) => new
-        (
-            OrdInc: taxable.OrdInc + ordInc,
-            DIV: taxable.DIV + DIV,
-            INT: taxable.INT + INT,
-            LTCG: taxable.LTCG + LTCG
-        );
 
         static Taxable AddIncomeFromAdditionalIncomeSources(this Taxable taxable, SimYear priorYear)
         {
@@ -151,7 +161,7 @@ namespace NinthBall.Core
             double annIncome = priorYear.Incomes.Ann * 1.0;
 
             // Social security and annuity are taxed as ordinary income.
-            return taxable.Add(
+            return taxable.Adjust(
                 ordInc: ssIncome + annIncome
             );
         }
@@ -164,7 +174,7 @@ namespace NinthBall.Core
             if (remainingDeduction > 0)
             {
                 double reduction = Math.Min(taxable.OrdInc, remainingDeduction);
-                taxable = taxable.Add(ordInc: -reduction);
+                taxable = taxable.Adjust(ordInc: -reduction);
                 remainingDeduction -= reduction;
             }
 
@@ -172,7 +182,7 @@ namespace NinthBall.Core
             if (remainingDeduction > 0)
             {
                 double reduction = Math.Min(taxable.INT, remainingDeduction);
-                taxable = taxable.Add(INT: -reduction);
+                taxable = taxable.Adjust(INT: -reduction);
                 remainingDeduction -= reduction;
             }
 
@@ -184,6 +194,14 @@ namespace NinthBall.Core
 
             return taxable;
         }
+
+        static Taxable Adjust(this Taxable taxable, double ordInc = 0, double DIV = 0, double INT = 0, double LTCG = 0) => new
+        (
+            OrdInc: taxable.OrdInc + ordInc,
+            DIV:    taxable.DIV + DIV,
+            INT:    taxable.INT + INT,
+            LTCG:   taxable.LTCG + LTCG
+        );
     }
 
 }

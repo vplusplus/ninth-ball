@@ -23,7 +23,7 @@ namespace NinthBall.Core
             void ISimStrategy.Apply(ISimState context)
             {
                 // On income start year, use the exact amount specified.
-                // On year #0 do not make any adjustment.
+                // On year #0, do not make any adjustment (User sees exactly the specified amount).
                 // Other years, increment by prior year inflation.
                 ssAmount = context.Age == AddInc.SS.FromAge ? AddInc.SS.Amount 
                     : 0 == context.YearIndex ? ssAmount 
