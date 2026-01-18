@@ -5,10 +5,7 @@ namespace NinthBall.Core
 
     public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear)
     {
-        // How many full years did we actually clear?
         public int SurvivedYears => Success ? ByYear.Length : Math.Max(0, ByYear.Length - 1);
-
-        // The last year that successfully completed (or Empty)
         public SimYear LastGoodYear => SurvivedYears > 0 ? ByYear.Span[SurvivedYears - 1] : new();
     }
 
@@ -32,7 +29,7 @@ namespace NinthBall.Core
     public readonly record struct Metrics
     (
         // Multiplication factors
-        double InflationMultiplier,     // Cumulative inflation factor since year #0
+        double InflationMultiplier,     // Cumulative inflation multiplier since year #0
         double GrowthMultiplier,        // Nominal growth multiplier since year #0
 
         // Percentage values
@@ -84,7 +81,7 @@ namespace NinthBall.Core
         public readonly double Total => PreTax + PostTax;
     }
 
-    public readonly record struct Tax(double TaxOnOrdInc, double TaxOnDiv, double TaxOnInt, double TaxOnCapGain) 
+    public readonly record struct Tax(double StandardDeduction, double TaxOnOrdInc, double TaxOnDiv, double TaxOnInt, double TaxOnCapGain) 
     {
         public readonly double Total => TaxOnOrdInc + TaxOnDiv + TaxOnInt + TaxOnCapGain;
     }

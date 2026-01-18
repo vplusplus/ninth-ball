@@ -269,6 +269,7 @@ namespace NinthBall.Core
 
         static Tax RoundToCents(this Tax x) => new
         (
+            StandardDeduction: x.StandardDeduction.RoundToCents(),
             TaxOnOrdInc:  x.TaxOnOrdInc.RoundToCents(),
             TaxOnDiv:     x.TaxOnDiv.RoundToCents(),
             TaxOnInt:     x.TaxOnInt.RoundToCents(),

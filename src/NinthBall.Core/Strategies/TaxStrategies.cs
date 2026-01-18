@@ -68,20 +68,23 @@ namespace NinthBall.Core
             // Adjust the taxable ordinary income and taxable interest income to reflect std deduction.
             incomes.ApplyStandardDeduction(inflationAdjustedStdDeduction);
 
-            var taxes = new Tax()
-            {
+            var taxes = new Tax
+            (
+                // Capture standard deduction
+                StandardDeduction: inflationAdjustedStdDeduction,
+
                 // Ordinary income and interest income are taxed at ordinary income tax rates.
-                TaxOnOrdInc = Math.Round(Math.Max(0, incomes.OrdIncome * TaxConfig.TaxRates.OrdinaryIncome)),
-                TaxOnInt = Math.Round(Math.Max(0, incomes.Interest * TaxConfig.TaxRates.OrdinaryIncome)),
+                TaxOnOrdInc: Math.Round(Math.Max(0, incomes.OrdIncome * TaxConfig.TaxRates.OrdinaryIncome)),
+                TaxOnInt: Math.Round(Math.Max(0, incomes.Interest * TaxConfig.TaxRates.OrdinaryIncome)),
 
                 // All dividends are assumed to be qualified.
                 // All capital gains are assumed to be long-term gains.
                 // Both are taxed at preferential tax rates.
                 // For simplicity, state taxes are not factored-in here.
                 // Net Investment Income Tax (NIIT) is not considered here.
-                TaxOnDiv = Math.Round(Math.Max(0, incomes.Dividends * TaxConfig.TaxRates.CapitalGains)),
-                TaxOnCapGain   = Math.Round(Math.Max(0, incomes.CapGain * TaxConfig.TaxRates.CapitalGains))
-            };
+                TaxOnDiv: Math.Round(Math.Max(0, incomes.Dividends * TaxConfig.TaxRates.CapitalGains)),
+                TaxOnCapGain: Math.Round(Math.Max(0, incomes.CapGain * TaxConfig.TaxRates.CapitalGains))
+            );
 
             return taxes;
         }
