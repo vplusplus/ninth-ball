@@ -41,7 +41,7 @@ namespace NinthBall.Core
                 .ToList();
 
             // Sort the iteration results worst to best.
-            // InflationRate sequence can skew nominal value perception.
+            // Do not use nominal balance for ranking. The variation in InflationRate sequence can skew nominal value.
             // Use real purchaing power to ensure percentiles are monotonic under variable inflation.
             var iterationResultsWorstToBest = iterationResults
                 .OrderBy(iter => iter.SurvivedYears)
