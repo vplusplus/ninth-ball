@@ -317,8 +317,12 @@ namespace NinthBall.Core
         static SimYear ValidateMath(this SimYear y)
         {
             y.Jan.ThrowIfNegative();
-            y.Dec.ThrowIfNegative();
             y.Fees.ThrowIfNegative();
+            y.Incomes.ThrowIfNegative();
+            y.Expenses.ThrowIfNegative();
+            y.Withdrawals.ThrowIfNegative();
+            y.Deposits.ThrowIfNegative();
+            y.Dec.ThrowIfNegative();
 
             var good = true;
 
