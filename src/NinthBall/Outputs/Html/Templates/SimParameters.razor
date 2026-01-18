@@ -4,11 +4,11 @@
 <div class="section">
 
     @{
-        SimYear Y0 = SimResult.Iterations[0].FirstYear;
+        var P = SimResult.Input.InitialBalance;
 
-        var startPreTax   = $"{Y0.Jan.PreTax.Amount:C0}";
-        var startPostTax  = $"{Y0.Jan.PostTax.Amount:C0}";
-        var startAlloc    = Y0.Jan.PreTax.Allocation;
+        var startPreTax   = $"{P.PreTax.Amount:C0}";
+        var startPostTax  = $"{P.PostTax.Amount:C0}";
+        var startAlloc    = P.PreTax.Allocation;
         int numYears      = SimResult.NoOfYears;
         int numIterations = SimResult.Iterations.Count;
     }

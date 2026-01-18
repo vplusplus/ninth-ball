@@ -51,7 +51,7 @@
 
                 if (iter.Success)
                 {
-                    var endBalance = iter.EndingBalance.Millions();
+                    var endBalance = iter.LastGoodYear.Dec.Total.Millions();
                     <td class="text-secondary">@endBalance</td>
                 }
                 else

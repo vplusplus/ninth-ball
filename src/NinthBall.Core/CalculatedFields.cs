@@ -47,12 +47,6 @@ namespace NinthBall.Core
         //......................................................................
         extension(SimIteration iteration)
         {
-            public SimYear FirstYear     => iteration.ByYear.Span.Length > 0 ? iteration.ByYear.Span[0]  : new();
-            public SimYear LastYear      => iteration.ByYear.Span.Length > 0 ? iteration.ByYear.Span[^1] : new();
-
-            public double StartingBalance => iteration.FirstYear.Jan.Total;
-            public double EndingBalance   => iteration.LastYear.Dec.Total;
-
             /// <summary>
             /// Zero-copy extension to calculate the sum of a selected field across all years in the iteration 
             /// </summary>
@@ -78,7 +72,6 @@ namespace NinthBall.Core
 
         extension(SimResult simResult)
         {
-            //public int NoOfYears => simResult.Iterations.Count == 0 ? 0 : simResult.Iterations.Max(x => x.ByYear.Length);
             public int NoOfYears => simResult.Input.SimParams.NoOfYears;
 
             public double SurvivalRate => simResult.Iterations.Count == 0 ? 0.0 : (double)simResult.Iterations.Count(x => x.Success) / (double)simResult.Iterations.Count;

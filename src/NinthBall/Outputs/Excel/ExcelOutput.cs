@@ -107,7 +107,8 @@ namespace NinthBall.Outputs.Excel
             {
                 sheet.WriteColumns(20, 120);
 
-                var firstYear = simResult.Iterations[0].FirstYear;
+                var I = simResult.Input.InitialBalance;
+                var P = simResult.Input.SimParams;
 
                 using (var rows = sheet.BeginSheetData())
                 {
@@ -116,19 +117,19 @@ namespace NinthBall.Outputs.Excel
                     rows
                         .BeginRow()
                         .Append("PreTax (401K)")
-                        .Append($"{firstYear.Jan.PreTax.Amount/1000000:C2} M")
+                        .Append($"{I.PreTax.Amount/1000000:C2} M")
                         .EndRow();
 
                     rows
                         .BeginRow()
                         .Append("PostTax")
-                        .Append($"{firstYear.Jan.PostTax.Amount/1000000:C2} M")
+                        .Append($"{I.PostTax.Amount/1000000:C2} M")
                         .EndRow();
 
                     rows
                         .BeginRow()
                         .Append("Allocation")
-                        .Append($"{firstYear.Jan.PreTax.Allocation:P0} - {1 - firstYear.Jan.PreTax.Allocation:P0}")
+                        .Append($"{I.PreTax.Allocation:P0} - {1 - I.PreTax.Allocation:P0}")
                         .EndRow();
 
                     rows
@@ -167,6 +168,8 @@ namespace NinthBall.Outputs.Excel
             const double W10 = 10;
             const double W20 = 20;
 
+            var I = simResult.Input.InitialBalance;
+            var P = simResult.Input.SimParams;
             var percentiles = SimOutputDefaults.DefaultPercentiles;
 
             using (var sheet = xl.BeginSheet("Summary"))
@@ -198,8 +201,8 @@ namespace NinthBall.Outputs.Excel
                         row.Append("Start (Real)");
                         foreach (var pctl in percentiles)
                         {
-                            var p = simResult.Percentile(pctl);
-                            var m = p.StartingBalance.Mil();
+                            var iter = simResult.Percentile(pctl);
+                            var m = iter.ByYear.Span[0].Jan.Total.Mil();
                             row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");
@@ -224,7 +227,7 @@ namespace NinthBall.Outputs.Excel
                         foreach (var pctl in percentiles)
                         {
                             var p = simResult.Percentile(pctl);
-                            var m = p.EndingBalance.Mil();
+                            var m = p.LastGoodYear.Dec.Total.Mil();
                             row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");
