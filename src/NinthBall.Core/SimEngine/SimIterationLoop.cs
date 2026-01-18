@@ -39,26 +39,31 @@ namespace NinthBall.Core
                 // Before we start working on the suggestions...
                 // Reject negative numbers, and drop double-precision-dust.
                 simState.Fees        = simState.Fees.ThrowIfNegative().RoundToCents();
+                simState.Taxes       = simState.Taxes.ThrowIfNegative().RoundToCents();
                 simState.Incomes     = simState.Incomes.ThrowIfNegative().RoundToCents();
                 simState.Expenses    = simState.Expenses.ThrowIfNegative().RoundToCents();
                 simState.Withdrawals = simState.Withdrawals.ThrowIfNegative().RoundToCents();
 
-                // Check for survivability, optimize and apply the strategy suggestions.
+                // Check for survivability, optimize and implement the strategy suggestions.
                 (survived, var simYear) = simState.FinalizeYear();
 
-                // Capture the year to the history (even if failed)
+                // Capture the year to the history (even the failed year)
                 simState.EndYear(simYear);
             }
 
+            // Return iteration details.
             return new(iterationIndex, Success: survived, simState.PriorYears);
         }
 
         static (bool success, SimYear simYear) FinalizeYear(this IReadOnlySimState simState)
         {
+            // Adjust withdrawals to meet the expenses.
+            // See if we survived.
             var (success, adjustedWithdrawals, adjustedDeposits) = simState.FinalizeWithdrawals();
 
             if (success)
             {
+                // Apply the changes, capture year-end balance
                 Assets dec = simState.Jan
                     .ApplyFees(simState.Fees)
                     .Withdraw(adjustedWithdrawals)
@@ -66,12 +71,15 @@ namespace NinthBall.Core
                     .Deposit(adjustedDeposits)
                     ;
 
-                Metrics metrics = simState.PriorYearMetrics.UpdateRunningMetrics(
+                // Update running metrics.
+                Metrics metrics = simState.PriorYearMetrics.UpdateRunningMetrics
+                (
                     simState.YearIndex, 
                     portfolioReturn: portfolioReturn, 
                     inflationRate: simState.ROI.InflationRate
                 );
 
+                // Capture the year performance.
                 SimYear successYear = new 
                 (
                     simState.YearIndex,
@@ -81,16 +89,18 @@ namespace NinthBall.Core
                     simState.Taxes,
                     simState.Incomes,
                     simState.Expenses,
+                    simState.ROI,
 
                     Withdrawals: adjustedWithdrawals,
-                    Deposits: adjustedDeposits,
-                    ROI: simState.ROI,
-                    Change: changes,
-                    Dec: dec,
-                    Metrics: metrics
+                    Deposits:    adjustedDeposits,
+                    Change:      changes,
+
+                    Dec:         dec,
+                    Metrics:     metrics
                 );
 
-                return (success, successYear.ValidateMath());
+                // Validate the calculation integrity, and return success result.
+                return (success: true, successYear.ValidateMath());
             }
             else
             {
@@ -168,6 +178,7 @@ namespace NinthBall.Core
                 // If we need more, try cash-reserve (survival is imprtant than future emergency)
                 TryTransferFunds(ref deficit, ref available.Cash, ref withdrawals.Cash);
 
+                // If we still need more, we didn't survive this year.
                 if (deficit.IsMoreThanZero(Precision.Amount)) return (false, default, default);
             }
 
@@ -181,11 +192,10 @@ namespace NinthBall.Core
                 surplus = 0;
             }
 
-            // This is our final withdrawal and deposits (if any) and we survived.
+            // We survived, and this is our final withdrawal and deposits (if any).
             var adjustedWithdrawals = new Withdrawals(withdrawals.PreTax, withdrawals.PostTax, withdrawals.Cash);
             var adjustedDeposits = new Deposits(deposits.PostTax, deposits.Cash);
             return (true, adjustedWithdrawals, adjustedDeposits);
-
 
             // Try to transfer suggested funds from source to target.
             static void TryTransferFunds(ref double need, ref double source, ref double target)
@@ -266,11 +276,11 @@ namespace NinthBall.Core
             good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= (y.Taxes.Tax.Total + y.Expenses.Total);
             if (!good) throw new Exception($"Inflow(Incomes + Withdrawals) is less than Outflow(Taxes + Expenses)");
 
-            // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
+            // Cash flow from starting to ending balances (and the in-between exchanges) agree.
             good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
             good &= (y.Jan.PostTax.Amount - y.Fees.PostTax - y.Withdrawals.PostTax + y.Change.PostTax + y.Deposits.PostTax).AlmostSame(y.Dec.PostTax.Amount, Precision.Amount);
             good &= (y.Jan.Cash.Amount - y.Withdrawals.Cash + y.Deposits.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
-            if (!good) throw new Exception("Balance reconciliation failed: Jan - Fees - Withdrawals + Change + Deposits != Dec");
+            if (!good) throw new Exception("(Jan - Fees - Withdrawals + Change + Deposits) doen't match Dec balance.");
 
             // Either withdrawals or Deposits should be zero.
             good &= y.Withdrawals.PostTax.AlmostZero(Precision.Amount) || y.Deposits.PostTax.AlmostZero(Precision.Amount);

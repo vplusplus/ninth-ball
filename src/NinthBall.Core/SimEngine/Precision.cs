@@ -12,7 +12,7 @@ namespace NinthBall.Core
         public const double Rate = 1e-7;
 
         //......................................................................
-        #region AlmostZero(), AlmostSame() and IsMoreThanZero()
+        #region Precision aware comparison: AlmostZero(), AlmostSame() and IsMoreThanZero()
         //......................................................................
         public static bool AlmostZero(this double val, double epsilon) => Math.Abs(val) < epsilon;
 

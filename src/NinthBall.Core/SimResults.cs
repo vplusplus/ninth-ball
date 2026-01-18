@@ -14,9 +14,9 @@ namespace NinthBall.Core
         Taxes       Taxes,
         Incomes     Incomes,
         Expenses    Expenses,
+        ROI         ROI,
         Withdrawals Withdrawals,
         Deposits    Deposits,
-        ROI         ROI,
         Change      Change,
         Assets      Dec,
         Metrics     Metrics
