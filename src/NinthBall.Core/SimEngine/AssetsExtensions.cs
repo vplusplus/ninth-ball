@@ -62,20 +62,6 @@ namespace NinthBall.Core
 
         extension (Assets assets)
         {
-            public Assets Withdraw(Withdrawals withdrawals) => new
-            (
-                PreTax:  assets.PreTax.Post(-withdrawals.PreTax),
-                PostTax: assets.PostTax.Post(-withdrawals.PostTax),
-                Cash:    assets.Cash.Post(-withdrawals.Cash)
-            );
-
-            public Assets Deposit(Deposits deposits) => new
-            (
-                PreTax:  assets.PreTax,
-                PostTax: assets.PostTax.Post(deposits.PostTax),
-                Cash:    assets.Cash.Post(deposits.Cash)
-            );
-
             public Assets Rebalance(double preTaxAllocation, double postTaxAllocation, double maxDrift) => new
             (
                 assets.PreTax.Rebalance(preTaxAllocation, maxDrift),
@@ -88,6 +74,20 @@ namespace NinthBall.Core
                 PreTax:  assets.PreTax.Post(-fees.PreTax),
                 PostTax: assets.PostTax.Post(-fees.PostTax),
                 Cash:    assets.Cash
+            );
+
+            public Assets Withdraw(Withdrawals withdrawals) => new
+            (
+                PreTax:  assets.PreTax.Post(-withdrawals.PreTax),
+                PostTax: assets.PostTax.Post(-withdrawals.PostTax),
+                Cash:    assets.Cash.Post(-withdrawals.Cash)
+            );
+
+            public Assets Deposit(Deposits deposits) => new
+            (
+                PreTax:  assets.PreTax,
+                PostTax: assets.PostTax.Post(deposits.PostTax),
+                Cash:    assets.Cash.Post(deposits.Cash)
             );
 
             public Assets Grow(ROI roi, out Change change, out double portfolioReturn)
