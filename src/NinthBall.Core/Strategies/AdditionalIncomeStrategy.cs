@@ -2,37 +2,39 @@
 namespace NinthBall.Core
 {
     [SimInput(typeof(AdditionalIncomeStrategy), typeof(AdditionalIncomes))]
-    sealed class AdditionalIncomeStrategy(AdditionalIncomes AInc) : ISimObjective
+    sealed class AdditionalIncomeStrategy(SimParams P, AdditionalIncomes AInc) : ISimObjective
     {
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(AInc);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) 
+        {
+            return new Strategy(P, AInc);
+        }
 
         int ISimObjective.Order => 10;
 
-        sealed record Strategy(AdditionalIncomes AddInc) : ISimStrategy
+        sealed record Strategy(SimParams P, AdditionalIncomes AddInc) : ISimStrategy
         {
+            // If the Simulation start age is past the additional income start age:
+            // Pre-initialize to the exact specified value.
+            // We do not adjust for inflation or increment for the gap (if any)
+            // BY-DESIGN: User sees exactly the specified amount on first year.
+            double ssAmount  = AddInc.SS.FromAge < P.StartAge ? AddInc.SS.Amount : 0.0;
+            double annAmount = AddInc.Ann.FromAge < P.StartAge ? AddInc.Ann.Amount : 0.0;
 
             void ISimStrategy.Apply(ISimState context)
             {
-                // Income is active if current age >= FromAge
-                bool ssActive  = context.Age >= AddInc.SS.FromAge;
-                bool annActive = context.Age >= AddInc.Ann.FromAge;
+                // On income start year, use the exact amount specified.
+                // On year #0 do not make any adjustment.
+                // Other years, increment by prior year inflation.
+                ssAmount = context.Age == AddInc.SS.FromAge ? AddInc.SS.Amount 
+                    : 0 == context.YearIndex ? ssAmount 
+                    : ssAmount * (1 + context.PriorYear.ROI.InflationRate);
 
-                double ssAmount = 0;
-                double annAmount = 0;
-
-                if (ssActive)
-                {
-                    // Social Security is baseline Amount inflated up to today
-                    var inflationMultiplier = 0 == context.YearIndex ? 1.0 : context.PriorYear.Metrics.InflationMultiplier;
-                    ssAmount = AddInc.SS.Amount * inflationMultiplier;
-                }
-
-                if (annActive)
-                {
-                    // Annuity has its own fixed compound increment, independent of CPI.
-                    // StartAge is our reference point (Year 0).
-                    annAmount = AddInc.Ann.Amount * Math.Pow(1 + AddInc.Ann.Increment, context.Age - AddInc.Ann.FromAge);
-                }
+                // On income start year, use the exact amount specified.
+                // On year 0 do not make any adjustment.
+                // Other years, increment by suggested increment (NOT the inflation rate)
+                annAmount = context.Age == AddInc.Ann.FromAge ? AddInc.Ann.Amount
+                    : 0 == context.YearIndex ? annAmount
+                    : annAmount * (1 + AddInc.Ann.Increment);
 
                 context.Incomes = context.Incomes with
                 {

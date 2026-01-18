@@ -34,10 +34,10 @@ LivingExpenses:
 AdditionalIncomes:
   SS:
     FromAge: 70
-    Amount: 70,000
+    Amount: 50,000
   Ann:
     FromAge: 70
-    Amount: 50,000
+    Amount: 25,000
     Increment: 0%
 
 # ............................................................
@@ -45,7 +45,7 @@ AdditionalIncomes:
 # Availble options: Flat | Sequential | MovingBlock | Parametric
 # ............................................................
 Growth:
-  Bootstrapper: Parametric     
+  Bootstrapper: MovingBlock     
 
 # ............................................................
 # PreTax (401K) depletion velocity; Pick one.
