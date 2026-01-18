@@ -1,6 +1,4 @@
 ﻿
-using DocumentFormat.OpenXml.Office2010.Drawing;
-
 namespace NinthBall.Core
 {
     /// <summary>

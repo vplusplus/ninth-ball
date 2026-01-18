@@ -1,5 +1,4 @@
 ﻿
-
 namespace NinthBall.Core
 {
     [SimInput(typeof(RebalancingAndReallocationStrategy), typeof(Rebalance), Family = StrategyFamily.PortfolioManagement)]

@@ -1,4 +1,5 @@
-﻿namespace NinthBall.Core
+﻿
+namespace NinthBall.Core
 {
     sealed class RMDStrategy : ISimObjective, ISimStrategy
     {

@@ -1,5 +1,4 @@
 ﻿
-
 namespace NinthBall.Core
 {
     [SimInput(typeof(GrowthStrategy), typeof(Growth))]
