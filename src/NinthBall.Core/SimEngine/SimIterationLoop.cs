@@ -44,8 +44,7 @@ namespace NinthBall.Core
             return new(iterationIndex, Success: survived, simState.PriorYears);
         }
 
-
-        private static (bool success, SimYear simYear) FinalizeYear(this IReadOnlySimState simState)
+        static (bool success, SimYear simYear) FinalizeYear(this IReadOnlySimState simState)
         {
             var (success, adjustedWithdrawals, adjustedDeposits) = simState.FinalizeWithdrawals();
 
@@ -107,79 +106,6 @@ namespace NinthBall.Core
             }
         }
 
-        public static Metrics UpdateRunningMetrics(this Metrics pyMetrics, int yearIndex, double portfolioReturn, double inflationRate)
-        {
-            // Not trusting external year #0 initialization...
-            Metrics prior = yearIndex > 0 ? pyMetrics : new
-            (
-                InflationMultiplier: 1.0,
-                GrowthMultiplier: 1.0,
-                PortfolioReturn: 0.0,
-                AnnualizedReturn: 0.0,
-                RealAnnualizedReturn: 0.0
-            );
-
-            // Running multiplier that represents cumulative inflation impact since year #0
-            var inflationMultiplier = prior.InflationMultiplier * (1 + inflationRate);
-
-            // Running multipler that represents cumulative growth since year #0
-            double cumulativeGrowthMultiplier = prior.GrowthMultiplier * (1 + portfolioReturn);
-
-            // Annualized nominal return since year #0
-            double annualizedReturn = Math.Pow(cumulativeGrowthMultiplier, 1.0 / (yearIndex + 1)) - 1.0;
-
-            // Real annualized return (adjusted for inflation) since year #0
-            double realAnnualizedReturn = Math.Pow(cumulativeGrowthMultiplier / inflationMultiplier, 1.0 / (yearIndex + 1)) - 1.0;
-
-            // The updated metrics...
-            return new
-            (
-                InflationMultiplier: inflationMultiplier,
-                GrowthMultiplier: cumulativeGrowthMultiplier,
-
-                PortfolioReturn: portfolioReturn,
-                AnnualizedReturn: annualizedReturn,
-                RealAnnualizedReturn: realAnnualizedReturn
-            );
-        }
-
-        static SimYear ValidateMath(this SimYear y)
-        {
-            y.Jan.ThrowIfNegative();
-            y.Fees.ThrowIfNegative();
-            y.Incomes.ThrowIfNegative();
-            y.Expenses.ThrowIfNegative();
-            y.Withdrawals.ThrowIfNegative();
-            y.Deposits.ThrowIfNegative();
-            y.Dec.ThrowIfNegative();
-
-            var good = true;
-
-            // Cashflow: (Incomes + Withdrawals) = (Expenses + Deposits)
-            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Expenses.Total + y.Deposits.Total, Precision.Amount);
-            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} != Expenses {y.Expenses.Total:C0} + Deposits {y.Deposits.Total:C0}");
-
-            // Expenses are met.
-            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= y.Expenses.Total;
-            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} is less than expenses {y.Expenses.Total:C0}");
-
-            // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
-            good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
-            good &= (y.Jan.PostTax.Amount - y.Fees.PostTax - y.Withdrawals.PostTax + y.Change.PostTax + y.Deposits.PostTax).AlmostSame(y.Dec.PostTax.Amount, Precision.Amount);
-            good &= (y.Jan.Cash.Amount - y.Withdrawals.Cash + y.Deposits.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
-            if (!good) throw new Exception("Balance reconciliation failed: Jan - Fees - Withdrawals + Change + Deposits != Dec");
-
-            // Either withdrawals or Deposits should be zero.
-            good &= y.Withdrawals.PostTax.AlmostZero(Precision.Amount) || y.Deposits.PostTax.AlmostZero(Precision.Amount);
-            good &= y.Withdrawals.Cash.AlmostZero(Precision.Amount) || y.Deposits.Cash.AlmostZero(Precision.Amount);
-            if (!good) throw new Exception($"Meaningless fund transfers. Both withdrawal and deposit can't be positive.");
-
-            return y;
-        }
-
-        //......................................................................
-        #region FinalizeWithdrawals()
-        //......................................................................
         static (bool success, Withdrawals adjustedWithdrawals, Deposits adjustedDeposits) FinalizeWithdrawals(this IReadOnlySimState context)
         {
             // Model works on all +ve numbers. 
@@ -262,75 +188,75 @@ namespace NinthBall.Core
             }
         }
 
-        //......................................................................
-        // Temp data structures for tracking and adjusting numbers
-        //......................................................................
-        private struct ThreeD(double PreTax, double PostTax, double Cash)
+        static Metrics UpdateRunningMetrics(this Metrics pyMetrics, int yearIndex, double portfolioReturn, double inflationRate)
         {
-            // Temp data structure to track the three asset values.
-            public double PreTax = PreTax;
-            public double PostTax = PostTax;
-            public double Cash = Cash;
-            public double Total => PreTax + PostTax + Cash;
+            // Not trusting external year #0 initialization...
+            Metrics prior = yearIndex > 0 ? pyMetrics : new
+            (
+                InflationMultiplier: 1.0,
+                GrowthMultiplier: 1.0,
+                PortfolioReturn: 0.0,
+                AnnualizedReturn: 0.0,
+                RealAnnualizedReturn: 0.0
+            );
+
+            // Running multiplier that represents cumulative inflation impact since year #0
+            var inflationMultiplier = prior.InflationMultiplier * (1 + inflationRate);
+
+            // Running multipler that represents cumulative growth since year #0
+            double cumulativeGrowthMultiplier = prior.GrowthMultiplier * (1 + portfolioReturn);
+
+            // Annualized nominal return since year #0
+            double annualizedReturn = Math.Pow(cumulativeGrowthMultiplier, 1.0 / (yearIndex + 1)) - 1.0;
+
+            // Real annualized return (adjusted for inflation) since year #0
+            double realAnnualizedReturn = Math.Pow(cumulativeGrowthMultiplier / inflationMultiplier, 1.0 / (yearIndex + 1)) - 1.0;
+
+            // The updated metrics...
+            return new
+            (
+                InflationMultiplier: inflationMultiplier,
+                GrowthMultiplier: cumulativeGrowthMultiplier,
+
+                PortfolioReturn: portfolioReturn,
+                AnnualizedReturn: annualizedReturn,
+                RealAnnualizedReturn: realAnnualizedReturn
+            );
         }
 
-        private struct TwoD(double PostTax, double Cash)
+        static SimYear ValidateMath(this SimYear y)
         {
-            // Temp data structure to track assets except PreTax
-            public double PostTax = PostTax;
-            public double Cash = Cash;
-            public double Total => PostTax + Cash;
+            y.Jan.ThrowIfNegative();
+            y.Fees.ThrowIfNegative();
+            y.Incomes.ThrowIfNegative();
+            y.Expenses.ThrowIfNegative();
+            y.Withdrawals.ThrowIfNegative();
+            y.Deposits.ThrowIfNegative();
+            y.Dec.ThrowIfNegative();
+
+            var good = true;
+
+            // Cashflow: (Incomes + Withdrawals) = (Expenses + Deposits)
+            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Expenses.Total + y.Deposits.Total, Precision.Amount);
+            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} != Expenses {y.Expenses.Total:C0} + Deposits {y.Deposits.Total:C0}");
+
+            // Expenses are met.
+            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= y.Expenses.Total;
+            if (!good) throw new Exception($"Incomes {y.Incomes.Total:C0} + Withdrawals {y.Withdrawals.Total:C0} is less than expenses {y.Expenses.Total:C0}");
+
+            // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available
+            good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
+            good &= (y.Jan.PostTax.Amount - y.Fees.PostTax - y.Withdrawals.PostTax + y.Change.PostTax + y.Deposits.PostTax).AlmostSame(y.Dec.PostTax.Amount, Precision.Amount);
+            good &= (y.Jan.Cash.Amount - y.Withdrawals.Cash + y.Deposits.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
+            if (!good) throw new Exception("Balance reconciliation failed: Jan - Fees - Withdrawals + Change + Deposits != Dec");
+
+            // Either withdrawals or Deposits should be zero.
+            good &= y.Withdrawals.PostTax.AlmostZero(Precision.Amount) || y.Deposits.PostTax.AlmostZero(Precision.Amount);
+            good &= y.Withdrawals.Cash.AlmostZero(Precision.Amount) || y.Deposits.Cash.AlmostZero(Precision.Amount);
+            if (!good) throw new Exception($"Meaningless fund transfers. Both withdrawal and deposit can't be positive.");
+
+            return y;
         }
-
-        #endregion
-
-        //......................................................................
-        #region RoundToCents() extensions
-        //......................................................................
-
-        static Fees RoundToCents(this Fees fees) => new
-        (
-            PreTax:  fees.PreTax.RoundToCents(),
-            PostTax: fees.PostTax.RoundToCents()
-        );
-
-        static Incomes RoundToCents(this Incomes x) => new
-        (
-            SS: x.SS.RoundToCents(),
-            Ann: x.Ann.RoundToCents()
-        );
-
-        static Expenses RoundToCents(this Expenses x) => new
-        (
-            PYTax:  x.PYTax.RoundToCents(),
-            LivExp: x.LivExp.RoundToCents()
-        );
-
-        static Tax RoundToCents(this Tax x) => new
-        (
-            StandardDeduction: x.StandardDeduction.RoundToCents(),
-            TaxOnOrdInc:  x.TaxOnOrdInc.RoundToCents(),
-            TaxOnDiv:     x.TaxOnDiv.RoundToCents(),
-            TaxOnInt:     x.TaxOnInt.RoundToCents(),
-            TaxOnCapGain: x.TaxOnCapGain.RoundToCents()
-        );
-
-        static Withdrawals RoundToCents(this Withdrawals x) => new
-        (
-            PreTax:  x.PreTax.RoundToCents(),
-            PostTax: x.PostTax.RoundToCents(),
-            Cash:    x.Cash.RoundToCents()
-        );
-
-        static Deposits RoundToCents(this Deposits x) => new
-        (
-            PostTax: x.PostTax.RoundToCents(),
-            Cash:    x.Cash.RoundToCents()
-        );
-
-        private static double RoundToCents(this double amount) => Math.Round(amount, 2);
-
-        #endregion
 
         //......................................................................
         #region ThrowIfNegative()
@@ -351,6 +277,28 @@ namespace NinthBall.Core
             double minValue = values[0];
             for (int i = 0; i < values.Length; i++) minValue = Math.Min(minValue, values[i]);
             return minValue;
+        }
+
+        #endregion
+
+        //......................................................................
+        #region Temp data structures for tracking and adjusting numbers
+        //......................................................................
+        private struct ThreeD(double PreTax, double PostTax, double Cash)
+        {
+            // Temp data structure to track the three asset values.
+            public double PreTax = PreTax;
+            public double PostTax = PostTax;
+            public double Cash = Cash;
+            public double Total => PreTax + PostTax + Cash;
+        }
+
+        private struct TwoD(double PostTax, double Cash)
+        {
+            // Temp data structure to track assets except PreTax
+            public double PostTax = PostTax;
+            public double Cash = Cash;
+            public double Total => PostTax + Cash;
         }
 
         #endregion
