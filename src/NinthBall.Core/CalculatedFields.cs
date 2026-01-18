@@ -1,52 +1,92 @@
 ﻿
+
 namespace NinthBall.Core
 {
     public static class CalculatedFields
     {
-        //......................................................................
-        #region Calculated fields on SimInput
-        //......................................................................
-        extension(SimInput input)
-        {
-            // Nothing yet
-        }
-
-        #endregion
-
-        //......................................................................
-        #region Calculated fields on Assets
-        //......................................................................
-        extension(in Assets assets)
+        extension(in Assets A)
         {
             // Approximate value, less taxes (Indicative value, not exact)
             // This is not cash in hand, if you try to withdraw all amount, will push to higher tax bracket.
             // Ignoring cash basis, and loss-harvesting - Taxes are overstated.
             // PreTax  - 100% taxable at 25%
             // PostTax - Assuming all gains are long term gains, 
-            public double ApproxValue => (assets.PreTax.Amount * 0.75) + (assets.PostTax.Amount * 0.85) + assets.Cash.Amount;
+            public double ApproxValue => (A.PreTax.Amount * 0.75) + (A.PostTax.Amount * 0.85) + A.Cash.Amount;
+
             public static string ApproxValueDesc => "Approx value (401K x 75% + Inv x 85%)";
+
+            public double Total => A.PreTax.Amount + A.PostTax.Amount + A.Cash.Amount;
+
         }
 
-        #endregion
+        extension (Fees F)
+        {
+            public double Total => F.PreTax + F.PostTax;
+        }
+
+        extension (Tax TA)
+        {
+            public double Total => TA.OrdInc + TA.DIV + TA.INT + TA.LTCG;
+        }
+
+        extension (Taxes T)
+        {
+            public double Total => T.Tax.Total;
+        }
+
+        extension (Incomes I)
+        {
+            public double Total => I.SS + I.Ann;
+        }
+
+        extension (Expenses E)
+        {
+            public double Total => E.LivExp;
+        }
+
+        extension (Withdrawals W)
+        {
+            public double Total => W.PreTax + W.PostTax + W.Cash;
+        }
+
+        extension (Deposits D)
+        {
+            public double Total => D.PostTax + D.Cash;
+        }
+
+        extension (Change C)
+        {
+            public double Total => C.PreTax + C.PostTax;
+        }
 
         //......................................................................
-        #region Calculated fields on SimYear
+        // Calculated fields on SimYear
         //......................................................................
-        extension(in SimYear simYear)
+        extension(in SimYear Y)
         {
             // Net change
-            public double XPreTax   => 0 - simYear.Withdrawals.PreTax;
-            public double XPostTax  => simYear.Deposits.PostTax - simYear.Withdrawals.PostTax;
-            public double XCash     => simYear.Deposits.Cash - simYear.Withdrawals.Cash;
+            public double XPreTax   => 0 - Y.Withdrawals.PreTax;
+            public double XPostTax  => Y.Deposits.PostTax - Y.Withdrawals.PostTax;
+            public double XCash     => Y.Deposits.Cash - Y.Withdrawals.Cash;
         }
 
-        #endregion
-
         //......................................................................
-        #region Calculated fields on SimIteration 
+        // Calculated fields on SimIteration 
         //......................................................................
         extension(SimIteration iteration)
         {
+            public int SurvivedYears => iteration.Success ? iteration.ByYear.Length : Math.Max(0, iteration.ByYear.Length - 1);
+            
+            /// <summary>
+            /// Last year of successful iteration, last-but-one year of failed iterations (Empty on zero survived years)
+            /// </summary>
+            public SimYear LastGoodYear => iteration.SurvivedYears > 0 ? iteration.ByYear.Span[iteration.SurvivedYears - 1] : new();
+
+            /// <summary>
+            /// Ending balance of last survived year, adjusted for inflation.
+            /// </summary>
+            public double EndingBalanceReal => iteration.LastGoodYear.Dec.Total / Math.Max(iteration.LastGoodYear.Metrics.InflationMultiplier, Precision.Rate);
+
             /// <summary>
             /// Zero-copy extension to calculate the sum of a selected field across all years in the iteration 
             /// </summary>
@@ -63,10 +103,8 @@ namespace NinthBall.Core
             }
         }
 
-        #endregion
-
         //......................................................................
-        #region Calculated fields on SimResult
+        // Calculated fields on SimResult
         //......................................................................
         public readonly record struct FailureBucket(int FromYear, int ToYear, int NumFailed);
 
@@ -76,21 +114,32 @@ namespace NinthBall.Core
 
             public double SurvivalRate => simResult.Iterations.Count == 0 ? 0.0 : (double)simResult.Iterations.Count(x => x.Success) / (double)simResult.Iterations.Count;
 
+            /// <summary>
+            /// IMP: Iterations are expected to be pre-ordered worst-to-best based on chosen metrics.
+            /// </summary>
             public SimIteration Percentile(double percentile) =>
                 percentile < 0.0 || percentile > 1.0 ? throw new ArgumentOutOfRangeException(nameof(percentile), "Percentile must be between 0.0 and 1.0") :
                 simResult.Iterations.Count == 0 ? throw new InvalidOperationException("No results available") :
                 0.0 == percentile ? simResult.Iterations.First() :
                 1.0 == percentile ? simResult.Iterations.Last() :
-                simResult.Iterations[(int)(percentile * (simResult.Iterations.Count - 1))];
+                simResult.Iterations[ (int)Math.Floor(percentile * (simResult.Iterations.Count - 1)) ];
 
 
+            /// <summary>
+            /// Returns no of failures by year-range.
+            /// </summary>
             public IList<FailureBucket> GetFailureBuckets()
             {
                 var numYears = simResult.NoOfYears;
 
                 // Prepare five-year-buckets with start and end years.
                 // You can't directly use GroupBy() on Model.Iterations, which will miss buckets with no failures.
-                var fiveYearBuckets = Enumerable.Range(0, numYears).Select(y => y / 5).Distinct().Select(y => new { Start = 1 + (y * 5), End = 5 + (y * 5) });
+                var fiveYearBuckets = Enumerable.Range(0, (numYears + 4) / 5)
+                    .Select(i => new
+                    {
+                        Start = 1 + i * 5,
+                        End   = Math.Min(numYears, 5 + i * 5)
+                    });
 
                 // Count no of failures in each bucket.
                 // Note: Failed year = One Plus SurvivedYears
@@ -104,8 +153,6 @@ namespace NinthBall.Core
                     .ToList();
             }
         }
-
-        #endregion
 
     }
 }

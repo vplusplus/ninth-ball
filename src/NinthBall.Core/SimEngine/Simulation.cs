@@ -2,7 +2,7 @@
 
 namespace NinthBall.Core
 {
-    internal sealed class Simulation(SimInput Input, InitialBalance InitPortfolio, SimParams SimParams, IEnumerable<ISimObjective> Objectives)
+    internal sealed class Simulation(SimInput Input, InitialBalance InitBalance, SimParams SimParams, IEnumerable<ISimObjective> Objectives)
     {
         // TODO: Re-integrate object pooling.
         // A pool of SimContext instances, reset & reused for each iteration.
@@ -34,13 +34,6 @@ namespace NinthBall.Core
                 };
             }
 
-            Assets initialBalance = new
-            (
-                new(InitPortfolio.PreTax.Amount, InitPortfolio.PreTax.Allocation),
-                new(InitPortfolio.PostTax.Amount, InitPortfolio.PostTax.Allocation),
-                new(InitPortfolio.Cash.Amount, 1.0)
-            );
-
             // Pre-allocate ONE giant contiguous block of memory for ALL results (total simYears = maxIterations * noOfYears)
             var dataStore = new SimYear[maxIterations * noOfYears];
 
@@ -48,7 +41,7 @@ namespace NinthBall.Core
             var iterationResults = Enumerable.Range(0, maxIterations)
                 .AsParallel()
                 .WithDegreeOfParallelism(Environment.ProcessorCount)
-                .Select(iterationIndex => SimIterationLoop.RunOneIteration(iterationIndex, SimParams, initialBalance, orderedObjectives, dataStore.AsMemory(iterationIndex * noOfYears, noOfYears)))
+                .Select(iterationIndex => SimIterationLoop.RunOneIteration(iterationIndex, SimParams, InitBalance, orderedObjectives, dataStore.AsMemory(iterationIndex * noOfYears, noOfYears)))
                 .ToList();
 
             // Sort the iteration results worst to best.
@@ -56,7 +49,7 @@ namespace NinthBall.Core
             // Use real purchaing power to ensure percentiles are monotonic under variable inflation.
             var iterationResultsWorstToBest = iterationResults
                 .OrderBy(iter => iter.SurvivedYears)
-                .ThenBy(iter => iter.LastGoodYear.Dec.Total / Math.Max(iter.LastGoodYear.Metrics.InflationMultiplier, 1e-12))
+                .ThenBy(iter => iter.EndingBalanceReal)
                 .ToList()
                 .AsReadOnly();
 

@@ -6,20 +6,29 @@ namespace NinthBall.Core
     /// </summary>
     internal static class SimIterationLoop
     {
-        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, Assets initialBalance, IReadOnlyList<ISimObjective> simObjectives, Memory<SimYear> iterationStore)
+        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, InitialBalance InitBalance, IReadOnlyList<ISimObjective> simObjectives, Memory<SimYear> iterationStore)
         {
             ArgumentNullException.ThrowIfNull(simParams);
             ArgumentNullException.ThrowIfNull(simObjectives);
+
+            int startAge = simParams.StartAge;
+            int numYears = simParams.NoOfYears;
+            Assets initialBalance = new
+            (
+                new(InitBalance.PreTax.Amount, InitBalance.PreTax.Allocation),
+                new(InitBalance.PostTax.Amount, InitBalance.PostTax.Allocation),
+                new(InitBalance.Cash.Amount, 1.0)
+            );
 
             // Strategies can be stateful. Each iteration creates a fresh set.
             var strategies = simObjectives.Select(x => x.CreateStrategy(iterationIndex)).ToList();
 
             // SimState represents the working memory of the iteration.
-            var simState = new SimState(iterationIndex, simParams.StartAge, initialBalance, iterationStore);
+            var simState = new SimState(iterationIndex, startAge, initialBalance, iterationStore);
 
             // Asses each year. Exit if failed.
             bool survived = true;
-            for(int yearIndex  = 0; yearIndex < simParams.NoOfYears && survived; yearIndex++)
+            for(int yearIndex  = 0; yearIndex < numYears && survived; yearIndex++)
             {
                 // Start fresh year.
                 simState.BeginYear(yearIndex);
@@ -146,7 +155,7 @@ namespace NinthBall.Core
             available.Cash -= withdrawals.Cash;
 
             // Do we have enough? 
-            double deficit = Math.Max(0, Taxes.Total + Expenses.Total - Incomes.Total - withdrawals.Total);
+            double deficit = Math.Max(0, Taxes.Tax.Total + Expenses.Total - Incomes.Total - withdrawals.Total);
             if (deficit.IsMoreThanZero(Precision.Amount))
             {
                 // Model is not withdrawing enough.
@@ -165,7 +174,7 @@ namespace NinthBall.Core
             // We survived.
             // We may even have some surplus.
             // All remaining surplus (if any) gets re-invested in post-tax assets
-            var surplus = Math.Max(0, Incomes.Total + withdrawals.Total - Taxes.Total -  Expenses.Total);
+            var surplus = Math.Max(0, Incomes.Total + withdrawals.Total - Taxes.Tax.Total -  Expenses.Total);
             if (surplus.IsMoreThanZero(Precision.Amount))
             {
                 deposits.PostTax += surplus;
@@ -240,7 +249,7 @@ namespace NinthBall.Core
             var good = true;
 
             // Cashflow: (Incomes + Withdrawals) = (Taxes + Expenses + Deposits)
-            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Taxes.Total + y.Expenses.Total + y.Deposits.Total, Precision.Amount);
+            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Taxes.Tax.Total + y.Expenses.Total + y.Deposits.Total, Precision.Amount);
             if (!good)
             {
                 Console.WriteLine(y.Incomes);
@@ -254,7 +263,7 @@ namespace NinthBall.Core
             }
 
             // Expenses are met.
-            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= (y.Taxes.Total + y.Expenses.Total);
+            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= (y.Taxes.Tax.Total + y.Expenses.Total);
             if (!good) throw new Exception($"Inflow(Incomes + Withdrawals) is less than Outflow(Taxes + Expenses)");
 
             // Starting and ending balances agree: a.Starting - a.Fees - a.Withdrawals = a.Available

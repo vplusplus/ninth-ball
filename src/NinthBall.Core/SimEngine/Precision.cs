@@ -59,7 +59,7 @@ namespace NinthBall.Core
             LTCG: x.LTCG.RoundToCents()
         );
 
-        public static TaxAmt RoundToCents(this TaxAmt x) => new
+        public static Tax RoundToCents(this Tax x) => new
         (
             OrdInc: x.OrdInc.RoundToCents(),
             DIV: x.DIV.RoundToCents(),

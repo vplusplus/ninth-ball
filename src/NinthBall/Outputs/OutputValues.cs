@@ -47,7 +47,7 @@ namespace NinthBall.Outputs
             [CID.TaxDiv]          = (it, in y) => y.Taxes.Tax.DIV,
             [CID.TaxInt]          = (it, in y) => y.Taxes.Tax.INT,
             [CID.TaxCapGain]      = (it, in y) => y.Taxes.Tax.LTCG,
-            [CID.PYTaxes]         = (it, in y) => y.Taxes.Total,
+            [CID.PYTaxes]         = (it, in y) => y.Taxes.Tax.Total,
             [CID.LivExp]          = (it, in y) => y.Expenses.LivExp,
 
             [CID.Incomes]         = (it, in y) => y.Incomes.Total,
@@ -92,7 +92,7 @@ namespace NinthBall.Outputs
             [CID.TaxDiv]       = (it) => it. Sum(y => y.Taxes.Tax.DIV),
             [CID.TaxInt]       = (it) => it. Sum(y => y.Taxes.Tax.INT),
             [CID.TaxCapGain]   = (it) => it. Sum(y => y.Taxes.Tax.LTCG),
-            [CID.PYTaxes]      = (it) => it. Sum(y => y.Taxes.Total),
+            [CID.PYTaxes]      = (it) => it. Sum(y => y.Taxes.Tax.Total),
 
             [CID.LivExp]       = (it) => it. Sum(y => y.Expenses.LivExp),
 

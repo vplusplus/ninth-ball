@@ -77,9 +77,9 @@ namespace NinthBall.Core
             return taxes;
         }
 
-        static TaxAmt ComputeTaxes(this Taxable taxable, TaxRate taxRate)
+        static Tax ComputeTaxes(this Taxable taxable, TaxRate taxRate)
         {
-            return new TaxAmt
+            return new Tax
             (
                 // Ordinary income and interest income are taxed at ordinary income tax rates.
                 OrdInc: Math.Max(0, Math.Round(taxable.OrdInc * taxRate.OrdInc)),
