@@ -9,11 +9,6 @@ namespace NinthBall.Core
         int IterationIndex { get; }
         int StartAge { get; }
         Assets Initial { get; }
-
-        //....................................................
-        // History
-        //....................................................
-        ReadOnlyMemory<SimYear> PriorYears { get; }
         SimYear PriorYear { get; }
         Metrics PriorYearMetrics { get; }
 
@@ -22,7 +17,6 @@ namespace NinthBall.Core
         //....................................................
         int YearIndex { get; }
         int Age { get; }
-
         Assets Jan { get; }
         Fees Fees { get; set; }
         Incomes Incomes { get; set; }
@@ -37,14 +31,12 @@ namespace NinthBall.Core
     {
         int IterationIndex { get; }
         int StartAge { get; }
-        int YearIndex { get; }
-        int Age { get; }
-
         Assets Initial { get; }
-        ReadOnlyMemory<SimYear> PriorYears { get; }
         SimYear PriorYear { get; }
         Metrics PriorYearMetrics { get; }
 
+        int YearIndex { get; }
+        int Age { get; }
         Assets Jan { get; }
         Fees Fees { get; }
         Incomes Incomes { get; }
