@@ -32,14 +32,18 @@ namespace NinthBall.Core
     public readonly record struct Metrics
     (
         // Multiplication factors
-        double InflationMultiplier = 1.0,       // Cumulative inflation factor since year #0
-        double GrowthMultiplier = 1.0,          // Nominal growth multiplier since year #0
+        double InflationMultiplier,     // Cumulative inflation factor since year #0
+        double GrowthMultiplier,        // Nominal growth multiplier since year #0
 
         // Percentage values
-        double PortfolioReturn = 0.0,           // Portfolio-weighted nominal return for the current year
-        double AnnualizedReturn = 0.0,          // Annualized nominal return (CAGR) since year #0
-        double RealAnnualizedReturn = 0.0       // Inflation-adjusted annualized return since year #0
-    );
+        double PortfolioReturn,         // Portfolio-weighted nominal return for the current year
+        double AnnualizedReturn,        // Annualized nominal return (CAGR) since year #0
+        double RealAnnualizedReturn     // Inflation-adjusted annualized return since year #0
+    )
+    {
+        // CRITICAL: Multipliers start with 1.0, rest are zero
+        public Metrics() : this ( InflationMultiplier: 1.0, GrowthMultiplier: 1.0, 0.0, 0.0, 0.0 ) { }
+    }
 
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double InflationRate);
 
