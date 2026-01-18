@@ -175,7 +175,7 @@ namespace NinthBall.Core
                 // If we need more, try take more from Pre-Tax assets (cash reserve is for emergency)
                 TryTransferFunds(ref deficit, ref available.PreTax, ref withdrawals.PreTax);
 
-                // If we need more, try cash-reserve (survival is imprtant than future emergency)
+                // If we need more, try cash-reserve (survival is important than future emergency)
                 TryTransferFunds(ref deficit, ref available.Cash, ref withdrawals.Cash);
 
                 // If we still need more, we didn't survive this year.
@@ -280,7 +280,7 @@ namespace NinthBall.Core
             good &= (y.Jan.PreTax.Amount - y.Fees.PreTax - y.Withdrawals.PreTax + y.Change.PreTax).AlmostSame(y.Dec.PreTax.Amount, Precision.Amount);
             good &= (y.Jan.PostTax.Amount - y.Fees.PostTax - y.Withdrawals.PostTax + y.Change.PostTax + y.Deposits.PostTax).AlmostSame(y.Dec.PostTax.Amount, Precision.Amount);
             good &= (y.Jan.Cash.Amount - y.Withdrawals.Cash + y.Deposits.Cash).AlmostSame(y.Dec.Cash.Amount, Precision.Amount);
-            if (!good) throw new Exception("(Jan - Fees - Withdrawals + Change + Deposits) doen't match Dec balance.");
+            if (!good) throw new Exception("(Jan - Fees - Withdrawals + Change + Deposits) doesn't match Dec balance.");
 
             // Either withdrawals or Deposits should be zero.
             good &= y.Withdrawals.PostTax.AlmostZero(Precision.Amount) || y.Deposits.PostTax.AlmostZero(Precision.Amount);

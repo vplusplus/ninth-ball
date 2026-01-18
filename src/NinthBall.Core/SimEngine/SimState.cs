@@ -49,7 +49,7 @@ namespace NinthBall.Core
     internal sealed record class SimState(int IterationIndex, int StartAge, Assets Initial, Memory<SimYear> Storage) : ISimState, IReadOnlySimState
     {
         // History - PriorYears and PriorYear
-        public ReadOnlyMemory<SimYear> PriorYears => Storage.Slice(0, _competedYears);
+        public ReadOnlyMemory<SimYear> PriorYears => Storage.Slice(0, _completedYears);
         public SimYear PriorYear => YearIndex > 0 ? PriorYears.Span[^1] : new();
         public Metrics PriorYearMetrics => 0 == YearIndex ? new() : PriorYear.Metrics;
 
@@ -79,10 +79,10 @@ namespace NinthBall.Core
 
         public void EndYear(SimYear aboutThisYear)
         {
-            Storage.Span[_competedYears++] = aboutThisYear;
+            Storage.Span[_completedYears++] = aboutThisYear;
         }
         
-        int _competedYears = 0;
+        int _completedYears = 0;
 
     }
 

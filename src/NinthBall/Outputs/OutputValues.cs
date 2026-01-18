@@ -7,7 +7,7 @@ namespace NinthBall.Outputs
     {
         private delegate double ValueSelector(SimIteration iteration, in SimYear simYear);
 
-        private delegate double SumValueSelector(SimIteration simIeration);
+        private delegate double SumValueSelector(SimIteration simIteration);
 
         /// <summary>
         /// Retrieves the value of a specific cell for a given year and column.
@@ -80,7 +80,7 @@ namespace NinthBall.Outputs
         {
             [CID.Year]         = (it) => it. SurvivedYears,
 
-            // Aggregated version prsents the last good year info
+            // Aggregated version presents the last good year info
             [CID.JanTotal]     = (it) => it. LastGoodYear.Jan.Total,
             [CID.JanValue]     = (it) => it. LastGoodYear.Jan.ApproxValue,
             [CID.JanPreTax]    = (it) => it. LastGoodYear.Jan.PreTax.Amount,
@@ -112,7 +112,7 @@ namespace NinthBall.Outputs
             [CID.DecCash]      = (it) => it. LastGoodYear.Dec.Cash.Amount,
 
             // Bottom-line: Show annualized-effective-roi at last good year for both ROI and AnnROI
-            // Do not try to summarize the market nois: StocksROI & BondROI - They are just bootstrapper data.
+            // Do not try to summarize the market noise: StocksROI & BondROI - They are just bootstrapper data.
             [CID.ROI]          = (it) => it.LastGoodYear.Metrics.PortfolioReturn,
             [CID.AnnROI]       = (it) => it.LastGoodYear.Metrics.AnnualizedReturn,
             [CID.RealCAGR]     = (it) => it.LastGoodYear.Metrics.RealAnnualizedReturn,

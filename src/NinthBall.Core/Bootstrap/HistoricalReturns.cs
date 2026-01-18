@@ -44,7 +44,7 @@ namespace NinthBall.Core
                 {
                     if (null == row) continue;
 
-                    // Skip first (header) row.  Do not use IEnumerable.Skip(1). Check Rowindex.
+                    // Skip first (header) row.  Do not use IEnumerable.Skip(1). Check RowIndex.
                     var isFirstRow = null != row.RowIndex && 1 == row.RowIndex.Value;
                     if (isFirstRow) continue;
 

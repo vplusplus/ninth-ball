@@ -154,13 +154,13 @@ namespace NinthBall.Core
 
         static Taxable AddIncomeFromAdditionalIncomeSources(this Taxable taxable, SimYear priorYear)
         {
-            // Conservative assumption - Maximum (85%) taxable portion of Social security regardless of income bracket.
+            // Conservative assumption - Maximum (85%) taxable portion of Social Security regardless of income bracket.
             double ssIncome = priorYear.Incomes.SS * 0.85;
 
             // Conservative assumption - Annuity income is fully taxable, ignores non-taxed principal portion
             double annIncome = priorYear.Incomes.Ann * 1.0;
 
-            // Social security and annuity are taxed as ordinary income.
+            // Social Security and annuity are taxed as ordinary income.
             return taxable.Adjust(
                 ordInc: ssIncome + annIncome
             );

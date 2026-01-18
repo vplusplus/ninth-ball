@@ -109,7 +109,7 @@ namespace NinthBall
                 catch(System.IO.IOException ioErr)
                 {
                     // Excel file is probably currently open.
-                    Console.WriteLine(" WRNING: Excel report not generted, if present, may not agree with html report.");
+                    Console.WriteLine(" WARNING: Excel report not generated, if present, may not agree with html report.");
                     Console.WriteLine($" {ioErr.Message}");
                 }
 
