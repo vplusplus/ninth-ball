@@ -4,10 +4,6 @@ namespace NinthBall.Core
 {
     internal sealed class Simulation(SimInput Input, InitialBalance InitBalance, SimParams SimParams, IEnumerable<ISimObjective> Objectives)
     {
-        // TODO: Re-integrate object pooling.
-        // A pool of SimContext instances, reset & reused for each iteration.
-        // private readonly ObjectPool<SimContext> SimContextPool = new(() => new SimContext());
- 
         public SimResult RunSimulation()
         {
             ArgumentNullException.ThrowIfNull(Input);
