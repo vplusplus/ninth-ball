@@ -134,14 +134,12 @@ namespace NinthBall.Core
             // Using a reasonable assumption of 2% of the stock balance.
             // This is a standard assumption used by: Vanguard, Fidelity and Schwab
             // BY-DESIGN: For simplicity, we assume all dividends are qualified dividends.
-            const double TypicalStocksDividendYield = 0.02;
-            var qualifiedDividendAmount = janStockBalance * TypicalStocksDividendYield;
+            var qualifiedDividendAmount = janStockBalance * SimConfig.TypicalStocksDividendYield;
 
             // Bond ROI is treated as interest income, and is taxable.
             // Bond interest is approximated using a fixed long‑term Treasury coupon yield (≈2–3%), 
             // since yield‑to‑maturity includes price changes that are not taxable as interest.
-            const double TypicalBondCouponYield = 0.025;    // 2.5%
-            var interestAmount = Math.Max(0, janBondBalance * TypicalBondCouponYield);
+            var interestAmount = Math.Max(0, janBondBalance * SimConfig.TypicalBondCouponYield);
 
             // We do not track cash basis, too complex.
             // BY-DESIGN: 100% of the Withdrawal is treated as long-term capital gain.

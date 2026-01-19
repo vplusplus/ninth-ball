@@ -20,12 +20,12 @@ namespace NinthBall.Core
         /// <summary>
         /// Can parse numbers represented as a fractional value (0.6) or percentage (60%)
         /// </summary>
-        private static double ParseDoubleOrPercentage(string? something)
+        public static double ParseDoubleOrPercentage(string? something)
         {
             if (string.IsNullOrWhiteSpace(something)) return 0.0;
             else if (double.TryParse(something, out var dblValue)) return dblValue;
             else if (something.EndsWith('%') && something.Length > 1 && double.TryParse(something[..^1].Trim(), out dblValue)) return dblValue / 100.0;
-            else throw new Exception($"Cannot convert '{something}' to double value.");
+            else throw new FatalWarning($"Cannot convert '{something}' to double value.");
         }
     }
 }
