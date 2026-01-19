@@ -89,27 +89,21 @@ namespace NinthBall.Core.Strategies
                 LTCG:   incomeNominal.LTCG * fedLTCGRate
             );
 
-            // 4. Calculate NJ taxable amounts (all ordinary for NJ)
-            var njTaxable = new Taxable
-            (
-                OrdInc: Math.Max(0, incomeNominal.OrdInc - 2 * TaxRateSchedules.NJPersonalExemption2026),
-                DIV:    incomeNominal.DIV,
-                INT:    incomeNominal.INT,
-                LTCG:   incomeNominal.LTCG
-            );
+            // 4. Calculate NJ taxable amounts
+            double totalNJExemptions = 2 * TaxRateSchedules.NJPersonalExemption2026;
+            double totalIncomeNominal = incomeNominal.OrdInc + incomeNominal.DIV + incomeNominal.INT + incomeNominal.LTCG;
+            double taxableNJTotal = Math.Max(0, totalIncomeNominal - totalNJExemptions);
 
-            // 5. Calculate NJ effective tax rate on combined income
-            double njEffectiveRate = njBracketsNominal.CalculateStackedEffectiveTaxRate(
-                njTaxable.OrdInc + njTaxable.DIV + njTaxable.INT + njTaxable.LTCG
-            );
+            // 5. Calculate NJ effective tax rate on combined income (NJ taxes all income at same graduated rates)
+            double njEffectiveRate = njBracketsNominal.CalculateStackedEffectiveTaxRate(taxableNJTotal);
 
-            // 6. Calculate NJ taxes
+            // 6. Calculate NJ taxes (allocate based on total effective rate)
             var njTax = new Tax
             (
-                OrdInc: njTaxable.OrdInc * njEffectiveRate,
-                DIV: njTaxable.DIV * njEffectiveRate,
-                INT: njTaxable.INT * njEffectiveRate,
-                LTCG: njTaxable.LTCG * njEffectiveRate
+                OrdInc: incomeNominal.OrdInc * njEffectiveRate,
+                DIV:    incomeNominal.DIV * njEffectiveRate,
+                INT:    incomeNominal.INT * njEffectiveRate,
+                LTCG:   incomeNominal.LTCG * njEffectiveRate
             );
 
             return (fedTax, njTax);
@@ -125,25 +119,27 @@ namespace NinthBall.Core.Strategies
                 double lower = baseIncome;
                 double upper = baseIncome + incrementalIncome;
 
-                foreach (var (threshold, rate) in TS.Brackets)
+                for (int i = 0; i < TS.Brackets.Count; i++)
                 {
-                    if (upper <= threshold)
+                    double currentThreshold = TS.Brackets[i].IncomeThreshold;
+                    double currentRate = TS.Brackets[i].MarginalRate;
+
+                    // Next threshold defines the boundary; last bracket goes to infinity
+                    double nextThreshold = (i + 1 < TS.Brackets.Count)
+                        ? TS.Brackets[i + 1].IncomeThreshold
+                        : double.PositiveInfinity;
+
+                    // Calculate overlap of [lower, upper] with [currentThreshold, nextThreshold]
+                    double bracketStart = Math.Max(lower, currentThreshold);
+                    double bracketEnd = Math.Min(upper, nextThreshold);
+
+                    if (bracketEnd > bracketStart)
                     {
-                        tax += Math.Max(0, upper - lower) * rate;
-                        break;
+                        tax += (bracketEnd - bracketStart) * currentRate;
                     }
 
-                    if (lower < threshold)
-                    {
-                        tax += Math.Max(0, threshold - lower) * rate;
-                        lower = threshold;
-                    }
-                }
-
-                if (upper > TS.Brackets[^1].IncomeThreshold)
-                {
-                    tax += (upper - Math.Max(lower, TS.Brackets[^1].IncomeThreshold))
-                           * TS.Brackets[^1].MarginalRate;
+                    // Optimization: if we've covered the entire 'upper' range, we can stop
+                    if (upper <= nextThreshold) break;
                 }
 
                 return tax / incrementalIncome;

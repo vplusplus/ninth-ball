@@ -65,3 +65,13 @@ namespace NinthBall.Core
     }
 
 }
+
+// TODO: Adjust Taxes - Include provision for Federal tax and State tax 
+// TODO: Track adjusted inflation rate for NJ State tax - 70% lag
+// TODO: CHeck if Federal schedule is indexed down on negative inflation years
+// TODO: CHeck how negative inflation should be handled for NJ tax inflation rate
+// TODO: ??? Property tax deductions
+// TODO: Check out Pension exclusion and Pension exclusion cliff.
+// TODO: Split Tax calculators to Federal and State tax calculator
+// TODO: Consider early design provision for alternate state (PA) tax calculator
+// TODO: Anti-gravity made some correction to ChatGPT suggested logic on how tax brackets are applied. Write unit test to validate
