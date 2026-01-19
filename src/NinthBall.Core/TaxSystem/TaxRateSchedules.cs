@@ -25,7 +25,12 @@ namespace NinthBall.Core
         public static TaxRateSchedule FederalLTCG => LazyFederalLTCG2026Joint.Value;
         public static TaxRateSchedule State => LazyNJ2026Joint.Value;
 
-        
+        /// <summary>
+        /// Represents a tax schedule that uses single tax rate.
+        /// </summary>
+        public static TaxRateSchedule Flat(double taxRate) => new([new(0, taxRate)]);
+
+
         // TODO: Public properties should drop 2026 suffix. Private fall backs and defaults should carry year suffix
         public static double FedStdDeduction2026 => Config.GetValue("FedStdDeduction2026", 32200.0);
 
