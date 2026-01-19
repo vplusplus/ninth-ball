@@ -12,7 +12,7 @@ namespace NinthBall.Core
             /// Returns effective tax rate (NOT the tax amount).
             /// Multiply with income to get the tax-amount.
             /// </summary>
-            public (double MarginalTaxRate, double TaxRate, double TaxAmunt) CalculateStackedEffectiveTaxRate(double incrementalIncome, double baseIncome = 0.0)
+            public (double MarginalTaxRate, double TaxRate, double TaxAmount) CalculateStackedEffectiveTaxRate(double incrementalIncome, double baseIncome = 0.0)
             {
                 // if (incrementalIncome <= 0) return (0.0, 0.0, 0.0);
                 incrementalIncome = Math.Max(0, incrementalIncome);
@@ -48,8 +48,8 @@ namespace NinthBall.Core
                 return 
                 (
                     MarginalTaxRate: marginalRate,
-                    incrementalIncome < 0.01 ? 0.0 : tax / incrementalIncome,
-                    tax
+                    TaxRate:         incrementalIncome < 0.01 ? 0.0 : tax / incrementalIncome,
+                    TaxAmount:       tax
                 );
             }
 
