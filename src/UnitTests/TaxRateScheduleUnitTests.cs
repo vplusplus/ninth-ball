@@ -1,4 +1,5 @@
 ﻿using NinthBall.Core;
+using static NinthBall.Core.AdditionalIncomes;
 
 namespace UnitTests
 {
@@ -52,10 +53,9 @@ namespace UnitTests
 
             foreach (var (income, expectedTax) in TestData)
             {
-                var rate = TaxRateSchedules.Federal.CalculateStackedEffectiveTaxRate(income);
-                var tax = income * rate;
+                var (marginalTaxRate, taxRate, tax) = TaxRateSchedules.Federal.CalculateStackedEffectiveTaxRate(income);
 
-                Console.WriteLine($"{income,12:C0} | {rate,8:P4} | Tax: {tax:C2}");
+                Console.WriteLine($"{income,12:C0} | {marginalTaxRate,8:P2} | {taxRate,8:P4} | Tax: {tax,10:C0}");
                 Assert.AreEqual(Math.Round(expectedTax, 2), Math.Round(tax, 2), $"Input: {income:C0} | Expected Tax: {expectedTax:C2} | Actual Tax: {tax:C2} ");
             }
         }
@@ -89,10 +89,10 @@ namespace UnitTests
 
             foreach (var (baseIncome, incrementalIncome, expectedTax) in TestData)
             {
-                var rate = TaxRateSchedules.Federal.CalculateStackedEffectiveTaxRate(incrementalIncome, baseIncome: baseIncome);
-                var tax = incrementalIncome * rate;
+                var (marginalTaxRate, taxRate, tax) = TaxRateSchedules.Federal.CalculateStackedEffectiveTaxRate(incrementalIncome, baseIncome: baseIncome);
 
-                Console.WriteLine($"{baseIncome,12:C0} + {incrementalIncome,-12:C0} | {rate,8:P4} | Tax: {tax:C2}");
+                Console.WriteLine($"{baseIncome,12:C0} + {incrementalIncome,-12:C0} | {marginalTaxRate,8:P2} | {taxRate,8:P4} | Tax: {tax,10:C0}");
+
                 Assert.AreEqual(Math.Round(expectedTax, 2), Math.Round(tax, 2), $" {baseIncome:C0} + {incrementalIncome:C0} | Expected Tax: {expectedTax:C2} | Actual Tax: {tax:C2} ");
             }
         }

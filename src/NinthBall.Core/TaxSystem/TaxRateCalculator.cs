@@ -12,18 +12,20 @@ namespace NinthBall.Core
             /// Returns effective tax rate (NOT the tax amount).
             /// Multiply with income to get the tax-amount.
             /// </summary>
-            public double CalculateStackedEffectiveTaxRate(double incrementalIncome, double baseIncome = 0.0)
+            public (double MarginalTaxRate, double TaxRate, double TaxAmunt) CalculateStackedEffectiveTaxRate(double incrementalIncome, double baseIncome = 0.0)
             {
-                if (incrementalIncome <= 0) return 0;
+                // if (incrementalIncome <= 0) return (0.0, 0.0, 0.0);
+                incrementalIncome = Math.Max(0, incrementalIncome);
 
                 double tax = 0;
                 double lower = baseIncome;
                 double upper = baseIncome + incrementalIncome;
+                double marginalRate = 0.0;
 
                 for (int i = 0; i < TS.Brackets.Count; i++)
                 {
                     double currentThreshold = TS.Brackets[i].IncomeThreshold;
-                    double currentRate = TS.Brackets[i].MarginalRate;
+                    double currentRate = marginalRate = TS.Brackets[i].MarginalRate;
 
                     // Next threshold defines the boundary; last bracket goes to infinity
                     double nextThreshold = (i + 1 < TS.Brackets.Count)
@@ -43,7 +45,12 @@ namespace NinthBall.Core
                     if (upper <= nextThreshold) break;
                 }
 
-                return tax / incrementalIncome;
+                return 
+                (
+                    MarginalTaxRate: marginalRate,
+                    incrementalIncome < 0.01 ? 0.0 : tax / incrementalIncome,
+                    tax
+                );
             }
 
             /// <summary>

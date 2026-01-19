@@ -17,7 +17,6 @@ namespace NinthBall.Core
     /// </summary>
     public static class TaxRateSchedules
     {
-
         static readonly Lazy<TaxRateSchedule> LazyFederal2026Joint      = new (() => FromConfigOrDefault("Federal2026Joint", FallbackFederal2026Joint!));
         static readonly Lazy<TaxRateSchedule> LazyFederalLTCG2026Joint  = new (() => FromConfigOrDefault("FederalLTCG2026Joint", FallbackFederalLTCG2026Joint!));
         static readonly Lazy<TaxRateSchedule> LazyNJ2026Joint           = new(() => FromConfigOrDefault("NJ2026Joint", FallbackNJ2026Joint!));
