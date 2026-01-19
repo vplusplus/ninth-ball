@@ -3,84 +3,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace NinthBall.Core
 {
-    
     /// <summary>
     /// Describes the tiered tax rate schedule.
     /// </summary>
-    public readonly record struct TaxRateSchedule(IReadOnlyList<TaxRateSchedule.TaxBracket> Brackets)
+    public sealed record TaxRateSchedule(IReadOnlyList<TaxRateSchedule.TaxBracket> Brackets)
     {
         public readonly record struct TaxBracket(double IncomeThreshold, double MarginalRate);
-    }
-
-    /// <summary>
-    /// Can calculate effective tax rate using tax rate schedule.
-    /// </summary>
-    public static class TaxRateCalculator
-    {
-        extension(TaxRateSchedule TS)
-        {
-            /// <summary>
-            /// Returns effective tax rate (NOT the tax amount).
-            /// Multiply with income to get the tax-amount.
-            /// </summary>
-            public double CalculateStackedEffectiveTaxRate(double incrementalIncome, double baseIncome = 0.0)
-            {
-                if (incrementalIncome <= 0) return 0;
-
-                double tax = 0;
-                double lower = baseIncome;
-                double upper = baseIncome + incrementalIncome;
-
-                for (int i = 0; i < TS.Brackets.Count; i++)
-                {
-                    double currentThreshold = TS.Brackets[i].IncomeThreshold;
-                    double currentRate = TS.Brackets[i].MarginalRate;
-
-                    // Next threshold defines the boundary; last bracket goes to infinity
-                    double nextThreshold = (i + 1 < TS.Brackets.Count)
-                        ? TS.Brackets[i + 1].IncomeThreshold
-                        : double.PositiveInfinity;
-
-                    // Calculate overlap of [lower, upper] with [currentThreshold, nextThreshold]
-                    double bracketStart = Math.Max(lower, currentThreshold);
-                    double bracketEnd = Math.Min(upper, nextThreshold);
-
-                    if (bracketEnd > bracketStart)
-                    {
-                        tax += (bracketEnd - bracketStart) * currentRate;
-                    }
-
-                    // Optimization: if we've covered the entire 'upper' range, we can stop
-                    if (upper <= nextThreshold) break;
-                }
-
-                return tax / incrementalIncome;
-            }
-
-            /// <summary>
-            /// Can index the tax schedule using inflation rate multiplier.
-            /// </summary>
-            public TaxRateSchedule Inflate(double inflationMultiplier)
-            {
-                if (inflationMultiplier <= 0) throw new ArgumentOutOfRangeException(nameof(inflationMultiplier), "Multiplier must be positive.");
-
-                int n = TS.Brackets.Count;
-                var inflatedBrackets = new List<TaxRateSchedule.TaxBracket>(n);
-
-                for (int i = 0; i < n; i++)
-                {
-                    var b = TS.Brackets[i];
-
-                    inflatedBrackets.Add(new TaxRateSchedule.TaxBracket
-                    (
-                        IncomeThreshold: b.IncomeThreshold * inflationMultiplier,
-                        MarginalRate: b.MarginalRate
-                    ));
-                }
-
-                return new TaxRateSchedule(inflatedBrackets);
-            }
-        }
     }
     
     /// <summary>
@@ -90,16 +18,21 @@ namespace NinthBall.Core
     public static class TaxRateSchedules
     {
 
-        static readonly Lazy<TaxRateSchedule> LazyFederal2026Joint      = new (() => FromConfigOrDefault("Federal2026Joint", FallbackFederal2026Joint));
-        static readonly Lazy<TaxRateSchedule> LazyFederalLTCG2026Joint  = new (() => FromConfigOrDefault("FederalLTCG2026Joint", FallbackFederalLTCG2026Joint));
-        static readonly Lazy<TaxRateSchedule> LazyNJ2026Joint           = new (() => FromConfigOrDefault("NJ2026Joint", FallbackNJ2026Joint));
-
-        public static double FedStdDeduction2026 => Config.GetValue("FedStdDeduction2026", 32200.0);
-        public static double NJPersonalExemption2026 => Config.GetValue("NJPersonalExemption2026", 1500);
+        static readonly Lazy<TaxRateSchedule> LazyFederal2026Joint      = new (() => FromConfigOrDefault("Federal2026Joint", FallbackFederal2026Joint!));
+        static readonly Lazy<TaxRateSchedule> LazyFederalLTCG2026Joint  = new (() => FromConfigOrDefault("FederalLTCG2026Joint", FallbackFederalLTCG2026Joint!));
+        static readonly Lazy<TaxRateSchedule> LazyNJ2026Joint           = new(() => FromConfigOrDefault("NJ2026Joint", FallbackNJ2026Joint!));
 
         public static TaxRateSchedule Federal => LazyFederal2026Joint.Value;
         public static TaxRateSchedule FederalLTCG => LazyFederalLTCG2026Joint.Value;
         public static TaxRateSchedule State => LazyNJ2026Joint.Value;
+
+        
+        // TODO: Public properties should drop 2026 suffix. Private fall backs and defaults should carry year suffix
+        public static double FedStdDeduction2026 => Config.GetValue("FedStdDeduction2026", 32200.0);
+
+        // TODO: Probably doesn't belong here. Should move to state specific calculators.
+        public static double NJPersonalExemption2026 => Config.GetValue("NJPersonalExemption2026", 1500);
+
 
         //......................................................................
         #region Fallback tax rate schedules if not externally configured.
@@ -109,7 +42,7 @@ namespace NinthBall.Core
             var configSection = Config.Current.GetSection(sectionName);
             var exists = null != configSection && configSection.Exists();
             var schedule = exists ? configSection!.Get<TaxRateSchedule>() : fallbackSchedule;
-            if (null == schedule.Brackets || 0 == schedule.Brackets.Count) throw new FatalWarning($"Invalid TaxRateSchedule | Zero brackets | '{sectionName}'");
+            if (null == schedule || null == schedule.Brackets || 0 == schedule.Brackets.Count) throw new FatalWarning($"Invalid TaxRateSchedule | Zero brackets | '{sectionName}'");
             return schedule;
         }
 
