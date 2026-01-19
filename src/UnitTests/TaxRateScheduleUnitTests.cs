@@ -52,7 +52,7 @@ namespace UnitTests
 
             foreach (var (income, expectedTax) in TestData)
             {
-                var rate = TaxRateSchedules.Federal2026Joint.CalculateStackedEffectiveTaxRate(income);
+                var rate = TaxRateSchedules.Federal.CalculateStackedEffectiveTaxRate(income);
                 var tax = income * rate;
 
                 Console.WriteLine($"{income,12:C0} | {rate,8:P4} | Tax: {tax:C2}");
@@ -89,7 +89,7 @@ namespace UnitTests
 
             foreach (var (baseIncome, incrementalIncome, expectedTax) in TestData)
             {
-                var rate = TaxRateSchedules.Federal2026Joint.CalculateStackedEffectiveTaxRate(incrementalIncome, baseIncome: baseIncome);
+                var rate = TaxRateSchedules.Federal.CalculateStackedEffectiveTaxRate(incrementalIncome, baseIncome: baseIncome);
                 var tax = incrementalIncome * rate;
 
                 Console.WriteLine($"{baseIncome,12:C0} + {incrementalIncome,-12:C0} | {rate,8:P4} | Tax: {tax:C2}");

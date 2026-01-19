@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.Extensions.Configuration;
+
 namespace NinthBall.Core
 {
     
@@ -13,7 +15,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Can calculate effective tax rate using tax rate schedule.
     /// </summary>
-    public static class TaxRateScheduleCalculator
+    public static class TaxRateCalculator
     {
         extension(TaxRateSchedule TS)
         {
@@ -87,14 +89,35 @@ namespace NinthBall.Core
     /// </summary>
     public static class TaxRateSchedules
     {
-        public const double FedStdDeduction2026 = 32200.0;          // Married Filing Jointly, 2026 example
-        public const double NJPersonalExemption2026 = 1500.0;       // Simplified per person, MFJ 2 persons = 3000
+
+        static readonly Lazy<TaxRateSchedule> LazyFederal2026Joint      = new (() => FromConfigOrDefault("Federal2026Joint", FallbackFederal2026Joint));
+        static readonly Lazy<TaxRateSchedule> LazyFederalLTCG2026Joint  = new (() => FromConfigOrDefault("FederalLTCG2026Joint", FallbackFederalLTCG2026Joint));
+        static readonly Lazy<TaxRateSchedule> LazyNJ2026Joint           = new (() => FromConfigOrDefault("NJ2026Joint", FallbackNJ2026Joint));
+
+        public static double FedStdDeduction2026 => Config.GetValue("FedStdDeduction2026", 32200.0);
+        public static double NJPersonalExemption2026 => Config.GetValue("NJPersonalExemption2026", 1500);
+
+        public static TaxRateSchedule Federal => LazyFederal2026Joint.Value;
+        public static TaxRateSchedule FederalLTCG => LazyFederalLTCG2026Joint.Value;
+        public static TaxRateSchedule State => LazyNJ2026Joint.Value;
+
+        //......................................................................
+        #region Fallback tax rate schedules if not externally configured.
+        //......................................................................
+        static TaxRateSchedule FromConfigOrDefault(string sectionName, TaxRateSchedule fallbackSchedule)
+        {
+            var configSection = Config.Current.GetSection(sectionName);
+            var exists = null != configSection && configSection.Exists();
+            var schedule = exists ? configSection!.Get<TaxRateSchedule>() : fallbackSchedule;
+            if (null == schedule.Brackets || 0 == schedule.Brackets.Count) throw new FatalWarning($"Invalid TaxRateSchedule | Zero brackets | '{sectionName}'");
+            return schedule;
+        }
 
         /// <summary>
         /// 2026 Federal Income Tax Brackets for Married Filing Jointly.
         /// Values updated per IRS 2026 inflation adjustments.
         /// </summary>
-        public static readonly TaxRateSchedule Federal2026Joint = new
+        static readonly TaxRateSchedule FallbackFederal2026Joint = new
         ([
             new (0, 0.10),
             new (24800, 0.12),
@@ -108,7 +131,7 @@ namespace NinthBall.Core
         /// <summary>
         /// 2026 Long-Term Capital Gains Brackets for Married Filing Jointly.
         /// </summary>
-        public static readonly TaxRateSchedule FedLTCG2026Joint = new
+        public static readonly TaxRateSchedule FallbackFederalLTCG2026Joint = new
         ([
             new (0, 0.0),
             new (98900, 0.15),   // Updated from 89,250
@@ -118,7 +141,7 @@ namespace NinthBall.Core
         /// <summary>
         /// 2026 New Jersey Gross Income Tax Brackets for Married Filing Jointly.
         /// </summary>
-        public static readonly TaxRateSchedule NJ2026Joint = new
+        public static readonly TaxRateSchedule FallbackNJ2026Joint = new
         ([
             new (0, 0.014),
             new (20000, 0.0175),
@@ -129,6 +152,8 @@ namespace NinthBall.Core
             new (500000, 0.0897),
             new (1000000, 0.1075)
         ]);
+
+        #endregion
     }
 
 }

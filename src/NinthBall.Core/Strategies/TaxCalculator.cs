@@ -16,9 +16,9 @@ namespace NinthBall.Core.Strategies
             double fedStdDeductionNominal = TaxRateSchedules.FedStdDeduction2026 * federalInflationMultiplier;
 
             // 1. Inflate tax schedules
-            var fedOrdBracketsNominal   = TaxRateSchedules.Federal2026Joint.Inflate(federalInflationMultiplier);
-            var fedLTCGBracketsNominal  = TaxRateSchedules.FedLTCG2026Joint.Inflate(federalInflationMultiplier);
-            var njBracketsNominal       = TaxRateSchedules.NJ2026Joint.Inflate(adjustedNJTaxInflationMultiplier);
+            var fedOrdBracketsNominal   = TaxRateSchedules.Federal.Inflate(federalInflationMultiplier);
+            var fedLTCGBracketsNominal  = TaxRateSchedules.FederalLTCG.Inflate(federalInflationMultiplier);
+            var njBracketsNominal       = TaxRateSchedules.State.Inflate(adjustedNJTaxInflationMultiplier);
 
             // 2. Calculate Federal effective tax rates
             double fedOrdIncBase = Math.Max(0, incomeNominal.OrdInc + incomeNominal.INT - fedStdDeductionNominal);
