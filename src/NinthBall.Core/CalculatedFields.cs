@@ -24,15 +24,6 @@ namespace NinthBall.Core
             public double Total => F.PreTax + F.PostTax;
         }
 
-        extension (Tax TA)
-        {
-            public double Total => TA.OrdInc + TA.DIV + TA.INT + TA.LTCG;
-        }
-
-        extension (Taxes T)
-        {
-            public double Total => T.Tax.Total;
-        }
 
         extension (Incomes I)
         {

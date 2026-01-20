@@ -60,6 +60,9 @@ namespace NinthBall.Core
             {
                 if (inflationMultiplier <= 0) throw new ArgumentOutOfRangeException(nameof(inflationMultiplier), "Multiplier must be positive.");
 
+                // Optmization: InflationMultiplier 1.0 means no indexing.
+                if (1.0 == inflationMultiplier) return TS;
+
                 int n = TS.Brackets.Count;
                 var inflatedBrackets = new List<TaxRateSchedule.TaxBracket>(n);
 

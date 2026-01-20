@@ -11,7 +11,7 @@ namespace NinthBall.Core
         public static double FedTaxInflationLag => Config.GetPct("FedTaxInflationLag", 10.0/100.0);                 // Lags by 10%
 
         /// <summary>
-        /// State tax components (looking at yyou NJ) may not be indexed to CPI, but eventually will be adjusted.
+        /// State tax components (looking at you NJ) may not be indexed to CPI, but eventually will be adjusted.
         /// Configure a higher lag, a middle ground between no-adjustment vs cpi-adjustment.
         /// </summary>
         public static double StateTaxInflationLag => Config.GetPct("StateTaxInflationLag", 30.0/100.0 );            // Lags by 30%

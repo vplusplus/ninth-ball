@@ -24,7 +24,7 @@ namespace NinthBall.Core
                 .AddSingleton(input)
                 .RegisterSimulationInputs(validInputs)
                 .RegisterActiveStrategies(validInputs)
-                .RegisterHistoricalReturnsAndBootstrappers()
+                .RegisterSystemDependencies()
                 .AddSingleton<Simulation>()
                 .BuildServiceProvider();
 
@@ -82,8 +82,8 @@ namespace NinthBall.Core
             return services;
         }
 
-        // Register historical ROI data provider and the chosen IBootstrapper.
-        private static IServiceCollection RegisterHistoricalReturnsAndBootstrappers(this IServiceCollection services)
+        // Register historical ROI data provider, bootstrappers and tax schedules.
+        private static IServiceCollection RegisterSystemDependencies(this IServiceCollection services)
         {
             return services
 
@@ -95,6 +95,11 @@ namespace NinthBall.Core
                 .AddSingleton<SequentialBootstrapper>()
                 .AddSingleton<MovingBlockBootstrapper>()
                 .AddSingleton<ParametricBootstrapper>()
+
+                // Tax Schedules for DI injection
+                .AddKeyedSingleton(TaxScheduleKind.Federal, (sp, key) => TaxRateSchedules.FromConfigOrDefault("Federal2026Joint", TaxRateSchedules.FallbackFed2026))
+                .AddKeyedSingleton(TaxScheduleKind.FederalLTCG, (sp, key) => TaxRateSchedules.FromConfigOrDefault("FederalLTCG2026Joint", TaxRateSchedules.FallbackFedLTCG2026))
+                .AddKeyedSingleton(TaxScheduleKind.State, (sp, key) => TaxRateSchedules.FromConfigOrDefault("NJ2026Joint", TaxRateSchedules.FallbackNJ2026))
 
                 // Chosen bootstrapper based on Growth option.
                 .AddSingleton<IBootstrapper>(sp =>

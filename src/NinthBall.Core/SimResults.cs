@@ -40,7 +40,7 @@ namespace NinthBall.Core
     {
         public readonly record struct Inc(double OrdInc, double INT, double DIV, double LTCG) { public readonly double Total => OrdInc + INT + DIV + LTCG; }
         public readonly record struct TR(double OrdInc, double LTCG);
-        public readonly record struct TD(double Deduction, double Taxable, TR MarginalRate, double Tax) { public readonly double EffectiveRate => Taxable < 0.01 ? 0.0 : Tax / Taxable; }
+        public readonly record struct TD(double Deduction, double Taxable, TR MarginalRate, double Tax, Inc TaxBreakdown) { public readonly double EffectiveRate => Taxable < 0.01 ? 0.0 : Tax / Taxable; }
         public readonly double Total => Federal.Tax + State.Tax;
         public readonly double EffectiveRate => GrossIncome.Total < 0.01 ? 0.0 : Total / GrossIncome.Total;
     }
@@ -60,8 +60,10 @@ namespace NinthBall.Core
     public readonly record struct Metrics
     (
         // Multiplication factors
-        double InflationMultiplier,     // Cumulative inflation multiplier since year #0
-        double GrowthMultiplier,        // Nominal growth multiplier since year #0
+        double InflationMultiplier,         // Cumulative inflation multiplier since year #0
+        double FedTaxInflationMultiplier,   // Cumulative Federal tax indexing (with lag + ratchet)
+        double StateTaxInflationMultiplier, // Cumulative State tax indexing (with lag + ratchet)
+        double GrowthMultiplier,            // Nominal growth multiplier since year #0
 
         // Percentage values
         double PortfolioReturn,         // Portfolio-weighted nominal return for the current year
@@ -70,7 +72,7 @@ namespace NinthBall.Core
     )
     {
         // CRITICAL: Multipliers start with 1.0, rest are zero
-        public Metrics() : this(InflationMultiplier: 1.0, GrowthMultiplier: 1.0, 0.0, 0.0, 0.0) { }
+        public Metrics() : this(1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0) { }
     }
 
 }

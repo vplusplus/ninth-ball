@@ -120,7 +120,7 @@ namespace NinthBall.Core
                     Change: default,            // Since ROI is irrelevant
                     Dec: default,               // Would have spent any left-overs before Dec anyway
 
-                    Metrics: new(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)
+                    Metrics: new(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)
                 );
 
                 return (success: false, failedYear);
@@ -165,7 +165,7 @@ namespace NinthBall.Core
             available.Cash -= withdrawals.Cash;
 
             // Do we have enough? 
-            double deficit = Math.Max(0, Taxes.Tax.Total + Expenses.Total - Incomes.Total - withdrawals.Total);
+            double deficit = Math.Max(0, Taxes.Total + Expenses.Total - Incomes.Total - withdrawals.Total);
             if (deficit.IsMoreThanZero(Precision.Amount))
             {
                 // Model is not withdrawing enough.
@@ -185,7 +185,7 @@ namespace NinthBall.Core
             // We survived.
             // We may even have some surplus.
             // All remaining surplus (if any) gets re-invested in post-tax assets
-            var surplus = Math.Max(0, Incomes.Total + withdrawals.Total - Taxes.Tax.Total -  Expenses.Total);
+            var surplus = Math.Max(0, Incomes.Total + withdrawals.Total - Taxes.Total -  Expenses.Total);
             if (surplus.IsMoreThanZero(Precision.Amount))
             {
                 deposits.PostTax += surplus;
@@ -216,6 +216,8 @@ namespace NinthBall.Core
             Metrics prior = yearIndex > 0 ? pyMetrics : new
             (
                 InflationMultiplier: 1.0,
+                FedTaxInflationMultiplier: 1.0,
+                StateTaxInflationMultiplier: 1.0,
                 GrowthMultiplier: 1.0,
                 PortfolioReturn: 0.0,
                 AnnualizedReturn: 0.0,
@@ -223,7 +225,20 @@ namespace NinthBall.Core
             );
 
             // Running multiplier that represents cumulative inflation impact since year #0
-            var inflationMultiplier = prior.InflationMultiplier * (1 + inflationRate);
+            // BY-DESIGN: Quantize to 4 decimal places (Basis Points) to eliminate "Numerical Jitter" 
+            // across paths and stabilize tax/reporting calculations. 1.34521... -> 1.3452
+            var inflationMultiplier = Math.Round(prior.InflationMultiplier * (1 + inflationRate), 4);
+
+            // Federal tax indexing (with lag + ratchet)
+            // Fed lag is typically 10% (from SimConfig)
+            // Math: Max(LastYear, LastYear * (1 + InflationRate * (1 - Lag)))
+            var fedInflationImpact = inflationRate * (1.0 - SimConfig.FedTaxInflationLag);
+            var fedTaxMultiplier = Math.Round(Math.Max(prior.FedTaxInflationMultiplier, prior.FedTaxInflationMultiplier * (1.0 + fedInflationImpact)), 4);
+
+            // State tax indexing (with lag + ratchet)
+            // State lag is typically 30% (from SimConfig)
+            var stateInflationImpact = inflationRate * (1.0 - SimConfig.StateTaxInflationLag);
+            var stateTaxMultiplier = Math.Round(Math.Max(prior.StateTaxInflationMultiplier, prior.StateTaxInflationMultiplier * (1.0 + stateInflationImpact)), 4);
 
             // Running multipler that represents cumulative growth since year #0
             double cumulativeGrowthMultiplier = prior.GrowthMultiplier * (1 + portfolioReturn);
@@ -238,6 +253,8 @@ namespace NinthBall.Core
             return new
             (
                 InflationMultiplier: inflationMultiplier,
+                FedTaxInflationMultiplier: fedTaxMultiplier,
+                StateTaxInflationMultiplier: stateTaxMultiplier,
                 GrowthMultiplier: cumulativeGrowthMultiplier,
 
                 PortfolioReturn: portfolioReturn,
@@ -259,7 +276,7 @@ namespace NinthBall.Core
             var good = true;
 
             // Cashflow: (Incomes + Withdrawals) = (Taxes + Expenses + Deposits)
-            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Taxes.Tax.Total + y.Expenses.Total + y.Deposits.Total, Precision.Amount);
+            good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Taxes.Total + y.Expenses.Total + y.Deposits.Total, Precision.Amount);
             if (!good)
             {
                 Console.WriteLine(y.Incomes);
@@ -273,7 +290,7 @@ namespace NinthBall.Core
             }
 
             // Expenses are met.
-            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= (y.Taxes.Tax.Total + y.Expenses.Total);
+            good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= (y.Taxes.Total + y.Expenses.Total);
             if (!good) throw new Exception($"Inflow(Incomes + Withdrawals) is less than Outflow(Taxes + Expenses)");
 
             // Cash flow from starting to ending balances (and the in-between exchanges) agree.
@@ -295,7 +312,7 @@ namespace NinthBall.Core
         //......................................................................
         static Assets ThrowIfNegative(this Assets x) { ThrowIfNegative(nameof(Assets), x.PreTax.Amount, x.PostTax.Amount, x.Cash.Amount); return x; }
         static Fees ThrowIfNegative(this Fees x) { ThrowIfNegative(nameof(Fees), x.PreTax, x.PostTax); return x; }
-        static Taxes ThrowIfNegative(this Taxes x) { ThrowIfNegative(nameof(Taxes), x.Tax.OrdInc, x.Tax.DIV, x.Tax.INT, x.Tax.LTCG); return x; }
+        static Taxes ThrowIfNegative(this Taxes x) { ThrowIfNegative(nameof(Taxes), x.Federal.Tax, x.State.Tax); return x; }
         static Incomes ThrowIfNegative(this Incomes x) { ThrowIfNegative(nameof(Incomes), x.SS, x.Ann); return x; }
         static Expenses ThrowIfNegative(this Expenses x) { ThrowIfNegative(nameof(Expenses), x.LivExp); return x; }
         static Withdrawals ThrowIfNegative(this Withdrawals x) { ThrowIfNegative(nameof(Withdrawals), x.PreTax, x.PostTax, x.Cash); return x; }

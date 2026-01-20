@@ -45,26 +45,26 @@ namespace NinthBall.Core
 
         public static Taxes RoundToCents(this Taxes x) => new
         (
-            StandardDeduction: x.StandardDeduction.RoundToCents(),
-            TaxRates: x.TaxRates,
+            GrossIncome: x.GrossIncome.RoundToCents(),
+            Federal: x.Federal.RoundToCents(),
+            State: x.State.RoundToCents()
+        );
+
+        public static Taxes.Inc RoundToCents(this Taxes.Inc x) => new
+        (
+            OrdInc: x.OrdInc.RoundToCents(),
+            DIV: x.DIV.RoundToCents(),
+            INT: x.INT.RoundToCents(),
+            LTCG: x.LTCG.RoundToCents()
+        );
+
+        public static Taxes.TD RoundToCents(this Taxes.TD x) => new
+        (
+            Deduction: x.Deduction.RoundToCents(),
             Taxable: x.Taxable.RoundToCents(),
-            Tax: x.Tax.RoundToCents()
-        );
-
-        public static Taxable RoundToCents(this Taxable x) => new
-        (
-            OrdInc: x.OrdInc.RoundToCents(),
-            DIV: x.DIV.RoundToCents(),
-            INT: x.INT.RoundToCents(),
-            LTCG: x.LTCG.RoundToCents()
-        );
-
-        public static Tax RoundToCents(this Tax x) => new
-        (
-            OrdInc: x.OrdInc.RoundToCents(),
-            DIV: x.DIV.RoundToCents(),
-            INT: x.INT.RoundToCents(),
-            LTCG: x.LTCG.RoundToCents()
+            MarginalRate: x.MarginalRate,
+            Tax: x.Tax.RoundToCents(),
+            TaxBreakdown: x.TaxBreakdown.RoundToCents()
         );
 
         public static Withdrawals RoundToCents(this Withdrawals x) => new

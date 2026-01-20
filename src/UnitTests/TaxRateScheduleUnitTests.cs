@@ -53,7 +53,7 @@ namespace UnitTests
 
             foreach (var (income, expectedTax) in TestData)
             {
-                var (marginalTaxRate, taxRate, tax) = TaxRateSchedules.Federal.CalculateStackedEffectiveTaxRate(income);
+                var (marginalTaxRate, taxRate, tax) = TaxRateSchedules.FallbackFed2026.CalculateStackedEffectiveTaxRate(income);
 
                 Console.WriteLine($"{income,12:C0} | {marginalTaxRate,8:P2} | {taxRate,8:P4} | Tax: {tax,10:C0}");
                 Assert.AreEqual(Math.Round(expectedTax, 2), Math.Round(tax, 2), $"Input: {income:C0} | Expected Tax: {expectedTax:C2} | Actual Tax: {tax:C2} ");
@@ -89,7 +89,7 @@ namespace UnitTests
 
             foreach (var (baseIncome, incrementalIncome, expectedTax) in TestData)
             {
-                var (marginalTaxRate, taxRate, tax) = TaxRateSchedules.Federal.CalculateStackedEffectiveTaxRate(incrementalIncome, baseIncome: baseIncome);
+                var (marginalTaxRate, taxRate, tax) = TaxRateSchedules.FallbackFed2026.CalculateStackedEffectiveTaxRate(incrementalIncome, baseIncome: baseIncome);
 
                 Console.WriteLine($"{baseIncome,12:C0} + {incrementalIncome,-12:C0} | {marginalTaxRate,8:P2} | {taxRate,8:P4} | Tax: {tax,10:C0}");
 

@@ -107,11 +107,14 @@ namespace NinthBall.Core
         [property: Min(1000)] 
         double YearZeroTaxAmount,
 
-        [property: Min(1000)]
+        [property: Min(0)]
         double StandardDeduction,
 
         [property: ValidateNested]
-        TaxConfig.Rates TaxRates
+        TaxConfig.Rates TaxRates,
+
+        string? FederalSchedule = null,
+        string? StateSchedule = null
     )
     {
         public readonly record struct Rates
