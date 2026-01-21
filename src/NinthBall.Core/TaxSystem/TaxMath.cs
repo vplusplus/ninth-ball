@@ -12,7 +12,7 @@ namespace NinthBall.Core
 
         MTR     – Marginal Tax Rate
         ETTR    – Effective Tax Rates
-        NIIT    – Net Investment Income Tax  (We do not do check this yet. Check impact and include)
+        NIIT    – Net Investment Income Tax 
     
         TaxPCT  = Total Taxes Paid ÷ Every $ of cash inflow (not a standard term; not a statutory tax rate)
 
@@ -62,6 +62,11 @@ namespace NinthBall.Core
         const double HundredPCT    = 1.00;
         const double TenDollars    = 10.00;
 
+        // NIIT thresholds are not indexed for inflation under current law.
+        // For planning realism, consider inflating or policy-adjusting this value
+        const double NIITThreshold = 250000.0;          // TODO: MFJ - Move to optional cofiguration
+        const double NIITRate = 0.038;                  // TODO: Move to optional cofiguration
+
         public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxRateSchedule taxRatesFederal, TaxRateSchedule taxRatesLTCG, TaxRateSchedule taxRatesState, double year0StdDeductions, double year0StateExemptions)
         {
             // We do not want 30,000 tax schedules (30 years x 10000 iterations paths)
@@ -71,7 +76,7 @@ namespace NinthBall.Core
 
             // Adjust tax brackets for inflation 
             // Use $10.0 jitterGuard to avoid false-precision.
-            taxRatesFederal = taxRatesFederal.Inflate(inflationMultiplierFederal, jitterGuard: TenDollars);
+            taxRatesFederal = taxRatesFederal.Inflate(inflationMultiplierFederal,   jitterGuard: TenDollars);
             taxRatesLTCG      = taxRatesLTCG.Inflate(inflationMultiplierFederal,    jitterGuard: TenDollars);
             taxRatesState     = taxRatesState.Inflate(inflationMultiplierState,     jitterGuard: TenDollars);
 
@@ -128,26 +133,34 @@ namespace NinthBall.Core
         )
         .MinZero();
 
-        static Taxes.Fed ComputeFederalTaxes(this Taxes.AGI grossIncome, double standardDeductions, TaxRateSchedule fedTaxRates, TaxRateSchedule longTermCapGainsTaxRates)
+        static Taxes.Fed ComputeFederalTaxes(this Taxes.AGI adjustedGrossIncome, double standardDeductions, TaxRateSchedule fedTaxRates, TaxRateSchedule longTermCapGainsTaxRates)
         {
             // Take standard deductions...
             double remainingDeduction = standardDeductions;
-            double taxableOrdInc  = TryReduce(ref remainingDeduction, grossIncome.OrdInc);
-            double taxableINT     = TryReduce(ref remainingDeduction, grossIncome.INT);
-            double taxableDIV     = TryReduce(ref remainingDeduction, grossIncome.QDI);
-            double taxableCapGain = TryReduce(ref remainingDeduction, grossIncome.LTCG);
+            double taxableOrdInc  = TryReduce(ref remainingDeduction, adjustedGrossIncome.OrdInc);
+            double taxableINT     = TryReduce(ref remainingDeduction, adjustedGrossIncome.INT);
+            double taxableDIV     = TryReduce(ref remainingDeduction, adjustedGrossIncome.QDI);
+            double taxableCapGain = TryReduce(ref remainingDeduction, adjustedGrossIncome.LTCG);
 
             // Consult tax brackets. Compute marginal tax rate and the tax amount.
             var taxOnOrdInc   = fedTaxRates.CalculateStackedEffectiveTax(taxableOrdInc + taxableINT);
             var taxcOnCapGain = longTermCapGainsTaxRates.CalculateStackedEffectiveTax(taxableDIV + taxableCapGain, baseIncome: taxableOrdInc + taxableINT);
 
+            // Net Investment Income Tax
+            // MAGI ~= AGI in this model (simplification)
+            // NIIT base uses post-deduction investment income (simplification)
+            double magi = adjustedGrossIncome.Total;
+            double netInvestmentIncome = taxableINT + taxableDIV + taxableCapGain;
+            double niitBase = Math.Min( netInvestmentIncome, Math.Max(0, magi - NIITThreshold));
+            double niitTax = Math.Max(0,  niitBase * NIITRate);
+
             return new Taxes.Fed
             (
-                StdDeduction:         standardDeductions,
-                Taxable:    taxableOrdInc + taxableINT + taxableDIV + taxableCapGain, 
-                MTR:        taxOnOrdInc.MarginalTaxRate,
-                MTRCapGain: taxcOnCapGain.MarginalTaxRate,
-                Tax:        taxOnOrdInc.TaxAmount + taxcOnCapGain.TaxAmount
+                StdDeduction:   standardDeductions,
+                Taxable:        taxableOrdInc + taxableINT + taxableDIV + taxableCapGain, 
+                MTR:            taxOnOrdInc.MarginalTaxRate,
+                MTRCapGain:     taxcOnCapGain.MarginalTaxRate,
+                Tax:            taxOnOrdInc.TaxAmount + taxcOnCapGain.TaxAmount + niitTax
             );
 
             static double TryReduce(ref double remaining, in double source)
