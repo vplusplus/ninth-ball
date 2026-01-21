@@ -46,7 +46,12 @@ Views:
     TaxFedCapGainMarginalRate,
     TaxStateMarginalRate,
     TaxEffectiveRate,
-    PYTaxes
+    PYTaxes,
+    MXInf,
+    MXFedInf,
+    MXNJInf,
+    InflationRate
+
 
     ]
 

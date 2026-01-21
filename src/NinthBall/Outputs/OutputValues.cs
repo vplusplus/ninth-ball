@@ -76,6 +76,12 @@ namespace NinthBall.Outputs
             [CID.TaxStateMarginalRate]      = (it, in y) => y.Taxes.StateTax.MarginalRate,
             [CID.TaxEffectiveRate]          = (it, in y) => y.Taxes.EffectiveRate,
 
+
+            [CID.MXInf]         = (it, in y) => y.Metrics.InflationMultiplier,
+            [CID.MXFedInf]      = (it, in y) => y.Metrics.FedTaxInflationMultiplier,
+            [CID.MXNJInf]       = (it, in y) => y.Metrics.StateTaxInflationMultiplier,
+
+
         }.AsReadOnly();
 
         static readonly IReadOnlyDictionary<CID, SumValueSelector> FxAggregates = new Dictionary<CID, SumValueSelector>()

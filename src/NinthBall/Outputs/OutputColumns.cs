@@ -28,6 +28,11 @@ namespace NinthBall.Outputs
         TaxStateMarginalRate,
         TaxEffectiveRate,
 
+        MXInf,
+        MXFedInf,
+        MXNJInf,
+
+
 
         LivExp,                 // Current Year Expenses (Inflation adjusted)
 

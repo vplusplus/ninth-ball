@@ -3,7 +3,7 @@ using static NinthBall.Outputs.FormatHint;
 
 namespace NinthBall.Outputs
 {
-    internal enum FormatHint { F0, C0, C1, C2, P0, P1, P2 }
+    internal enum FormatHint { F0, F1, F2, C0, C1, C2, P0, P1, P2 }
 
     internal static partial class Suggested
     {
@@ -37,6 +37,11 @@ namespace NinthBall.Outputs
             [CID.TaxFedCapGainMarginalRate] = P1,
             [CID.TaxStateMarginalRate] = P1,
             [CID.TaxEffectiveRate] = P1,
+
+
+            [CID.MXInf]    = F2,
+            [CID.MXFedInf] = F2,
+            [CID.MXNJInf]  = F2,
 
 
         }.AsReadOnly();

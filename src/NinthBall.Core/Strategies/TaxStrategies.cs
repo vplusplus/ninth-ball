@@ -60,13 +60,16 @@ namespace NinthBall.Core
                     var indexedCapGainTaxRates = FedLtcg.Inflate(context.PriorYear.Metrics.FedTaxInflationMultiplier);
                     var indexedStateTaxRates = State.Inflate(context.PriorYear.Metrics.StateTaxInflationMultiplier);
 
+                    var fedDeductionNominal = BaseFedDeduction * context.PriorYear.Metrics.FedTaxInflationMultiplier;
+                    var stateDeductionNominal = BaseStateExemption * context.PriorYear.Metrics.StateTaxInflationMultiplier;
+
                     context.Taxes = context.PriorYear.ComputePriorYearTaxes
                     (
                         fedTaxRates: indexedFedTaxRates,
                         fedCapGainTaxRates: indexedCapGainTaxRates,
                         stateTaxRates: indexedStateTaxRates,
-                        fedDeductions: BaseFedDeduction,
-                        stateDeduction: BaseStateExemption
+                        fedDeductions: fedDeductionNominal,
+                        stateDeduction: stateDeductionNominal
                     );
                 }
             }
