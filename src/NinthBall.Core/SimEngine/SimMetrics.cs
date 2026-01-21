@@ -1,6 +1,13 @@
 ﻿
 namespace NinthBall.Core
 {
+    /*
+        Multiplier                  | Reasonable 30-year range |
+        --------------------------- | ------------------------ |
+        InflationMultiplier         | 2.0 – 2.5                |
+        FedTaxInflationMultiplier   | 1.7 – 2.3                |
+        StateTaxInflationMultiplier | 1.4 – 1.9                |
+    */
 
     /// <summary>
     /// Running inflation rate(s) and cummulative metrics.
@@ -57,7 +64,10 @@ namespace NinthBall.Core
             // Running multiplier that represents cumulative inflation impact since year #0
             // Tracked at full precision, not quantized.
             // In theory, this can go-back.
-            var inflationMultiplier = prior.InflationMultiplier * (1 + currentYearInflationRate);
+            var inflationMultiplier = Math.Max(
+                0.01,
+                prior.InflationMultiplier * (1 + currentYearInflationRate)
+            );
 
             // The IRS uses the Chained CPI (C-CPI-U) to measure inflation.
             // C-CPI generally rises slower than the standard CPI (Apply small haitcut)
