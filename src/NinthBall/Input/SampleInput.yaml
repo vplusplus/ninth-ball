@@ -76,7 +76,7 @@ FeesPCT:
 Taxes:
   YearZeroTaxAmount: 25,000
   StandardDeduction: 31,500
-  TaxRates:
+  ZZTaxRates:
     OrdinaryIncome: 22%
     CapitalGains: 15%
 

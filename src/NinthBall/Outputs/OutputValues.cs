@@ -43,10 +43,6 @@ namespace NinthBall.Outputs
             [CID.JanPostTaxAlloc] = (it, in y) => y.Jan.PostTax.Allocation,
 
             [CID.Fees]            = (it, in y) => y.Fees.Total,
-            [CID.TaxOrdInc]       = (it, in y) => y.Taxes.Federal.TaxBreakdown.OrdInc + y.Taxes.State.TaxBreakdown.OrdInc,
-            [CID.TaxDiv]          = (it, in y) => y.Taxes.Federal.TaxBreakdown.DIV + y.Taxes.State.TaxBreakdown.DIV,
-            [CID.TaxInt]          = (it, in y) => y.Taxes.Federal.TaxBreakdown.INT + y.Taxes.State.TaxBreakdown.INT,
-            [CID.TaxCapGain]      = (it, in y) => y.Taxes.Federal.TaxBreakdown.LTCG + y.Taxes.State.TaxBreakdown.LTCG,
             [CID.PYTaxes]         = (it, in y) => y.Taxes.Total,
             [CID.LivExp]          = (it, in y) => y.Expenses.LivExp,
 
@@ -74,6 +70,12 @@ namespace NinthBall.Outputs
             [CID.AnnROI]          = (it, in y) => y.Metrics.AnnualizedReturn,
             [CID.RealCAGR]        = (it, in y) => y.Metrics.RealAnnualizedReturn,
 
+
+            [CID.TaxFedMarginalRate]        = (it, in y) => y.Taxes.FederalTax.MarginalRateOrdInc,
+            [CID.TaxFedCapGainMarginalRate] = (it, in y) => y.Taxes.FederalTax.MarginalRateCapGain,
+            [CID.TaxStateMarginalRate]      = (it, in y) => y.Taxes.StateTax.MarginalRate,
+            [CID.TaxEffectiveRate]          = (it, in y) => y.Taxes.EffectiveRate,
+
         }.AsReadOnly();
 
         static readonly IReadOnlyDictionary<CID, SumValueSelector> FxAggregates = new Dictionary<CID, SumValueSelector>()
@@ -88,10 +90,6 @@ namespace NinthBall.Outputs
             [CID.JanCash]      = (it) => it. LastGoodYear.Jan.Cash.Amount,
 
             [CID.Fees]         = (it) => it. Sum(y => y.Fees.Total),
-            [CID.TaxOrdInc]    = (it) => it. Sum(y => y.Taxes.Federal.TaxBreakdown.OrdInc + y.Taxes.State.TaxBreakdown.OrdInc),
-            [CID.TaxDiv]       = (it) => it. Sum(y => y.Taxes.Federal.TaxBreakdown.DIV + y.Taxes.State.TaxBreakdown.DIV),
-            [CID.TaxInt]       = (it) => it. Sum(y => y.Taxes.Federal.TaxBreakdown.INT + y.Taxes.State.TaxBreakdown.INT),
-            [CID.TaxCapGain]   = (it) => it. Sum(y => y.Taxes.Federal.TaxBreakdown.LTCG + y.Taxes.State.TaxBreakdown.LTCG),
             [CID.PYTaxes]      = (it) => it. Sum(y => y.Taxes.Total),
 
             [CID.LivExp]       = (it) => it. Sum(y => y.Expenses.LivExp),

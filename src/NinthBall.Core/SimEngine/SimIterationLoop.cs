@@ -76,7 +76,7 @@ namespace NinthBall.Core
                 (
                     simState.YearIndex, 
                     portfolioReturn: portfolioReturn, 
-                    inflationRate: simState.ROI.InflationRate
+                    currentYearInflationRate: simState.ROI.InflationRate
                 );
 
                 // Capture the year performance.
@@ -210,58 +210,6 @@ namespace NinthBall.Core
             }
         }
 
-        static Metrics UpdateRunningMetrics(this Metrics pyMetrics, int yearIndex, double portfolioReturn, double inflationRate)
-        {
-            // Not trusting external year #0 initialization...
-            Metrics prior = yearIndex > 0 ? pyMetrics : new
-            (
-                InflationMultiplier: 1.0,
-                FedTaxInflationMultiplier: 1.0,
-                StateTaxInflationMultiplier: 1.0,
-                GrowthMultiplier: 1.0,
-                PortfolioReturn: 0.0,
-                AnnualizedReturn: 0.0,
-                RealAnnualizedReturn: 0.0
-            );
-
-            // Running multiplier that represents cumulative inflation impact since year #0
-            // BY-DESIGN: Quantize to 4 decimal places (Basis Points) to eliminate "Numerical Jitter" 
-            // across paths and stabilize tax/reporting calculations. 1.34521... -> 1.3452
-            var inflationMultiplier = Math.Round(prior.InflationMultiplier * (1 + inflationRate), 4);
-
-            // Federal tax indexing (with lag + ratchet)
-            // Fed lag is typically 10% (from SimConfig)
-            // Math: Max(LastYear, LastYear * (1 + InflationRate * (1 - Lag)))
-            var fedInflationImpact = inflationRate * (1.0 - SimConfig.FedTaxInflationLag);
-            var fedTaxMultiplier = Math.Round(Math.Max(prior.FedTaxInflationMultiplier, prior.FedTaxInflationMultiplier * (1.0 + fedInflationImpact)), 4);
-
-            // State tax indexing (with lag + ratchet)
-            // State lag is typically 30% (from SimConfig)
-            var stateInflationImpact = inflationRate * (1.0 - SimConfig.StateTaxInflationLag);
-            var stateTaxMultiplier = Math.Round(Math.Max(prior.StateTaxInflationMultiplier, prior.StateTaxInflationMultiplier * (1.0 + stateInflationImpact)), 4);
-
-            // Running multipler that represents cumulative growth since year #0
-            double cumulativeGrowthMultiplier = prior.GrowthMultiplier * (1 + portfolioReturn);
-
-            // Annualized nominal return since year #0
-            double annualizedReturn = Math.Pow(cumulativeGrowthMultiplier, 1.0 / (yearIndex + 1)) - 1.0;
-
-            // Real annualized return (adjusted for inflation) since year #0
-            double realAnnualizedReturn = Math.Pow(cumulativeGrowthMultiplier / inflationMultiplier, 1.0 / (yearIndex + 1)) - 1.0;
-
-            // The updated metrics...
-            return new
-            (
-                InflationMultiplier: inflationMultiplier,
-                FedTaxInflationMultiplier: fedTaxMultiplier,
-                StateTaxInflationMultiplier: stateTaxMultiplier,
-                GrowthMultiplier: cumulativeGrowthMultiplier,
-
-                PortfolioReturn: portfolioReturn,
-                AnnualizedReturn: annualizedReturn,
-                RealAnnualizedReturn: realAnnualizedReturn
-            );
-        }
 
         static SimYear ValidateMath(this SimYear y)
         {
@@ -312,7 +260,7 @@ namespace NinthBall.Core
         //......................................................................
         static Assets ThrowIfNegative(this Assets x) { ThrowIfNegative(nameof(Assets), x.PreTax.Amount, x.PostTax.Amount, x.Cash.Amount); return x; }
         static Fees ThrowIfNegative(this Fees x) { ThrowIfNegative(nameof(Fees), x.PreTax, x.PostTax); return x; }
-        static Taxes ThrowIfNegative(this Taxes x) { ThrowIfNegative(nameof(Taxes), x.Federal.Tax, x.State.Tax); return x; }
+        static Taxes ThrowIfNegative(this Taxes x) { ThrowIfNegative(nameof(Taxes), x.FederalTax.Tax, x.StateTax.Tax); return x; }
         static Incomes ThrowIfNegative(this Incomes x) { ThrowIfNegative(nameof(Incomes), x.SS, x.Ann); return x; }
         static Expenses ThrowIfNegative(this Expenses x) { ThrowIfNegative(nameof(Expenses), x.LivExp); return x; }
         static Withdrawals ThrowIfNegative(this Withdrawals x) { ThrowIfNegative(nameof(Withdrawals), x.PreTax, x.PostTax, x.Cash); return x; }

@@ -32,6 +32,13 @@ namespace NinthBall.Outputs
             [CID.AnnROI]        = P1,
             [CID.RealCAGR]      = P1,
 
+
+            [CID.TaxFedMarginalRate] = P1,
+            [CID.TaxFedCapGainMarginalRate] = P1,
+            [CID.TaxStateMarginalRate] = P1,
+            [CID.TaxEffectiveRate] = P1,
+
+
         }.AsReadOnly();
 
     }

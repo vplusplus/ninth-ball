@@ -46,26 +46,31 @@ namespace NinthBall.Core
         public static Taxes RoundToCents(this Taxes x) => new
         (
             GrossIncome: x.GrossIncome.RoundToCents(),
-            Federal: x.Federal.RoundToCents(),
-            State: x.State.RoundToCents()
+            FederalTax: x.FederalTax.RoundToCents(),
+            StateTax: x.StateTax.RoundToCents()
         );
 
-        public static Taxes.Inc RoundToCents(this Taxes.Inc x) => new
+        public static Taxes.Gross RoundToCents(this Taxes.Gross x) => new
         (
             OrdInc: x.OrdInc.RoundToCents(),
             DIV: x.DIV.RoundToCents(),
             INT: x.INT.RoundToCents(),
-            LTCG: x.LTCG.RoundToCents()
+            CapGain: x.CapGain.RoundToCents()
         );
 
-        public static Taxes.TD RoundToCents(this Taxes.TD x) => new
-        (
-            Deduction: x.Deduction.RoundToCents(),
-            Taxable: x.Taxable.RoundToCents(),
-            MarginalRate: x.MarginalRate,
-            Tax: x.Tax.RoundToCents(),
-            TaxBreakdown: x.TaxBreakdown.RoundToCents()
-        );
+        public static Taxes.Fed RoundToCents(this Taxes.Fed x) => x with
+        {
+            Deductions = x.Deductions.RoundToCents(),
+            Taxable = x.Taxable.RoundToCents(),
+            Tax = x.Tax.RoundToCents()
+        };
+
+        public static Taxes.State RoundToCents(this Taxes.State x) => x with
+        {
+            Deductions = x.Deductions.RoundToCents(),
+            Taxable = x.Taxable.RoundToCents(),
+            Tax = x.Tax.RoundToCents()
+        };
 
         public static Withdrawals RoundToCents(this Withdrawals x) => new
         (

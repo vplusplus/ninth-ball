@@ -12,15 +12,17 @@ namespace NinthBall.Core
     {
         int ISimObjective.Order => 31;
 
+        bool UseFlatTaxRate => TaxOptions.TaxRates.OrdinaryIncome > 0 && TaxOptions.TaxRates.CapitalGains > 0;
+
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex)
         {
             // The strategy wraps the DI-resolved schedules but allows for flat-rate overrides 
             // from the simulation input (for backwards compatibility/simplicity).
-            var fed = TaxOptions.TaxRates.OrdinaryIncome > 0 
+            var fed = UseFlatTaxRate
                 ? TaxRateSchedules.Flat(TaxOptions.TaxRates.OrdinaryIncome) 
                 : fedSched;
 
-            var ltcg = TaxOptions.TaxRates.CapitalGains > 0 
+            var ltcg = UseFlatTaxRate
                 ? TaxRateSchedules.Flat(TaxOptions.TaxRates.CapitalGains) 
                 : fedLtcgSched;
 
@@ -32,6 +34,7 @@ namespace NinthBall.Core
 
             return new Strategy(fed, ltcg, stateSched, TaxOptions.YearZeroTaxAmount, fedDeduction, stateExemption);
         }
+
 
         sealed record Strategy(
             TaxRateSchedule Fed, 
@@ -50,26 +53,42 @@ namespace NinthBall.Core
                     context.Taxes = FirstYearTaxes(YearZeroTax);
                     return;
                 }
+                else
+                {
+                    // Index the tax schedules.
+                    var indexedFedTaxRates = Fed.Inflate(context.PriorYear.Metrics.FedTaxInflationMultiplier);
+                    var indexedCapGainTaxRates = FedLtcg.Inflate(context.PriorYear.Metrics.FedTaxInflationMultiplier);
+                    var indexedStateTaxRates = State.Inflate(context.PriorYear.Metrics.StateTaxInflationMultiplier);
 
-                context.Taxes = TaxMath.Calculate(
-                    context.PriorYear,
-                    Fed,
-                    FedLtcg,
-                    State,
-                    context.PriorYear.Metrics.FedTaxInflationMultiplier,
-                    context.PriorYear.Metrics.StateTaxInflationMultiplier,
-                    BaseFedDeduction,
-                    BaseStateExemption
-                );
+                    context.Taxes = context.PriorYear.ComputePriorYearTaxes
+                    (
+                        fedTaxRates: indexedFedTaxRates,
+                        fedCapGainTaxRates: indexedCapGainTaxRates,
+                        stateTaxRates: indexedStateTaxRates,
+                        fedDeductions: BaseFedDeduction,
+                        stateDeduction: BaseStateExemption
+                    );
+                }
             }
 
-            static Taxes FirstYearTaxes(double amount) => new Taxes(
-                new Taxes.Inc(0, 0, 0, 0),
-                new Taxes.TD(0, 0, new Taxes.TR(0, 15), amount, new Taxes.Inc(amount, 0, 0, 0)), // Allocated to Federal for simplicity
-                new Taxes.TD(0, 0, new Taxes.TR(0, 0), 0, new Taxes.Inc(0, 0, 0, 0))
-            ).RoundToCents();
+            //static Taxes ZZFirstYearTaxes(double amount) => new Taxes(
+            //    new Taxes.GrossInc(0, 0, 0, 0),
+            //    new Taxes.TD(0, 0, new Taxes.TR(0, 0), amount, new Taxes.GrossInc(amount, 0, 0, 0)), // Allocated to Federal for simplicity
+            //    new Taxes.TD(0, 0, new Taxes.TR(0, 0), 0, new Taxes.GrossInc(0, 0, 0, 0))
+            //).RoundToCents();
+
+            static Taxes FirstYearTaxes(double amount) => new Taxes()
+            {
+                FederalTax = new() { 
+                    Tax = amount,
+                }
+            };
         }
 
-        public override string ToString() => $"Taxes | Jurisdictional (Fed & State) | DI-Powered";
+        public override string ToString() => UseFlatTaxRate
+            ? $"Taxes | Ord Income: {TaxOptions.TaxRates.OrdinaryIncome:P0} | Cap Gains: {TaxOptions.TaxRates.CapitalGains:P0}"
+            : $"Taxes | Tiered rate using Federal, CapGain and State tax schedules | Brackets are indexed for inflation with lag.";
+
+
     }
 }

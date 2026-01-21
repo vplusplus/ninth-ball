@@ -21,11 +21,13 @@ namespace NinthBall.Outputs
         JanCash,                // Cash balance in January
 
         Fees,                   // Total investment/advisory fees for the year
-        TaxOrdInc,              // PYTaxes paid on ordinary income
-        TaxDiv,                 // PYTaxes paid on dividends
-        TaxInt,                 // PYTaxes paid on interest
-        TaxCapGain,             // PYTaxes paid on capital gains
         PYTaxes,                // Total taxes paid (Sum of Ord, Div, Int, CapGains)
+
+        TaxFedMarginalRate,
+        TaxFedCapGainMarginalRate,
+        TaxStateMarginalRate,
+        TaxEffectiveRate,
+
 
         LivExp,                 // Current Year Expenses (Inflation adjusted)
 
@@ -54,5 +56,7 @@ namespace NinthBall.Outputs
         InflationRate,          // Consumer Price Index (CPI-U)
 
         RealCAGR                // Annualized Real Effective ROI (only 'Real' data in our table)
+
+        
     }
 }

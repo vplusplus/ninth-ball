@@ -28,22 +28,8 @@ namespace NinthBall.Core
 
     public readonly record struct Fees(double PreTax, double PostTax);
 
-    //public readonly record struct Taxable(double OrdInc, double DIV, double INT, double LTCG);
 
-    //public readonly record struct Tax(double OrdInc, double DIV, double INT, double LTCG);
 
-    //public readonly record struct TaxRate(double OrdInc, double LTCG);
-
-    //public readonly record struct Taxes(double StandardDeduction, TaxRate TaxRates, Taxable Taxable, Tax Tax);
-
-    public readonly record struct Taxes(Taxes.Inc GrossIncome, Taxes.TD Federal, Taxes.TD State)
-    {
-        public readonly record struct Inc(double OrdInc, double INT, double DIV, double LTCG) { public readonly double Total => OrdInc + INT + DIV + LTCG; }
-        public readonly record struct TR(double OrdInc, double LTCG);
-        public readonly record struct TD(double Deduction, double Taxable, TR MarginalRate, double Tax, Inc TaxBreakdown) { public readonly double EffectiveRate => Taxable < 0.01 ? 0.0 : Tax / Taxable; }
-        public readonly double Total => Federal.Tax + State.Tax;
-        public readonly double EffectiveRate => GrossIncome.Total < 0.01 ? 0.0 : Total / GrossIncome.Total;
-    }
 
     public readonly record struct Incomes(double SS, double Ann);
 
@@ -57,24 +43,6 @@ namespace NinthBall.Core
 
     public readonly record struct Change(double PreTax, double PostTax);
 
-    public readonly record struct Metrics
-    (
-        // Multiplication factors
-        double InflationMultiplier,         // Cumulative inflation multiplier since year #0
-        double FedTaxInflationMultiplier,   // Cumulative Federal tax indexing (with lag + ratchet)
-        double StateTaxInflationMultiplier, // Cumulative State tax indexing (with lag + ratchet)
-        double GrowthMultiplier,            // Nominal growth multiplier since year #0
-
-        // Percentage values
-        double PortfolioReturn,         // Portfolio-weighted nominal return for the current year
-        double AnnualizedReturn,        // Annualized nominal return (CAGR) since year #0
-        double RealAnnualizedReturn     // Inflation-adjusted annualized return since year #0
-    )
-    {
-        // CRITICAL: Multipliers start with 1.0, rest are zero
-        public Metrics() : this(1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0) { }
-    }
-
 }
 
 // TODO: Adjust Taxes - Include provision for Federal tax and State tax 
@@ -86,3 +54,24 @@ namespace NinthBall.Core
 // TODO: Split Tax calculators to Federal and State tax calculator
 // TODO: Consider early design provision for alternate state (PA) tax calculator
 // TODO: Anti-gravity made some correction to ChatGPT suggested logic on how tax brackets are applied. Write unit test to validate
+
+
+/*
+     public readonly record struct TaxesOLD(TaxesOLD.GrossInc GrossIncome, TaxesOLD.TD Federal, TaxesOLD.TD State)
+    {
+        public readonly record struct GrossInc(double OrdInc, double INT, double DIV, double LTCG) { public readonly double Total => OrdInc + INT + DIV + LTCG; }
+        public readonly record struct TR(double OrdInc, double LTCG);
+        public readonly record struct TD(double Deduction, double Taxable, TR MarginalRate, double Tax, GrossInc TaxBreakdown) { public readonly double EffectiveRate => Taxable < 0.01 ? 0.0 : Tax / Taxable; }
+        public readonly double Total => Federal.Tax + State.Tax;
+        public readonly double EffectiveRate => GrossIncome.Total < 0.01 ? 0.0 : Total / GrossIncome.Total;
+    }
+
+    //public readonly record struct Taxable(double OrdInc, double DIV, double INT, double LTCG);
+
+    //public readonly record struct Tax(double OrdInc, double DIV, double INT, double LTCG);
+
+    //public readonly record struct TaxRate(double OrdInc, double LTCG);
+
+    //public readonly record struct Taxes(double StandardDeduction, TaxRate TaxRates, Taxable Taxable, Tax Tax);
+
+*/

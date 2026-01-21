@@ -1,5 +1,5 @@
 
-HtmlView:  Essential
+HtmlView:  TaxView
 ExcelView: Essential
 
 ZZZ-Percentiles: [ 0%, 1%, 5%, 10%, 20%, 50%, 80% ]
@@ -17,14 +17,12 @@ Views:
       Fees, PYTaxes, LivExp,
       XPreTax, XPostTax, 
       LikeYear, ROI, ROIStocks, ROIBonds, InflationRate,
-      DecValue, RealCAGR, 
+      DecValue, RealCAGR
     ]
-  
+
   # Detailed view of money coming in, going out, and net changes to assets
   CashFlow: [ Year, Age, Incomes, LivExp, Fees, PYTaxes, XPreTax, XPostTax, XCash, DecValue ]
 
-  # Deep dive into the tax components of the plan
-  TaxAnalysis: [ Year, Age, JanPreTax, JanPostTax, TaxOrdInc, TaxDiv, TaxInt, TaxCapGain, PYTaxes ]
 
   # Understanding the market sequence and portfolio performance
   MarketContext: [ Year, Age, JanPreTaxAlloc, JanPostTaxAlloc, LikeYear, ROIStocks, ROIBonds, ROI, AnnROI, DecValue ]
@@ -33,7 +31,7 @@ Views:
   ALL: [
       Year, Age,
       JanTotal, JanValue, JanPreTax, JanPreTaxAlloc, JanPostTax, JanPostTaxAlloc, JanCash,
-      Fees, TaxOrdInc, TaxDiv, TaxInt, TaxCapGain, PYTaxes, 
+      Fees, PYTaxes, 
       LivExp,
       SS, Ann, Incomes,
       XPreTax, XPostTax, XCash,
@@ -41,4 +39,15 @@ Views:
       LikeYear, ROI, AnnROI, ROIAmount, ROIStocks, ROIBonds, 
       Empty
     ]
+
+  TaxView: [
+    Year, Age, JanPreTax, JanPostTax, 
+    TaxFedMarginalRate, 
+    TaxFedCapGainMarginalRate,
+    TaxStateMarginalRate,
+    TaxEffectiveRate,
+    PYTaxes
+
+    ]
+
 
