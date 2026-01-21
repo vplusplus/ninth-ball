@@ -109,29 +109,62 @@ namespace NinthBall.Core
         )
         .MinZero();
 
-        static Taxes.AGI AdjustedGrossIncomes(this Taxes.GI inc) => new Taxes.AGI
-        (
-            // 100% of 401K withdrawal is ordinary income
-            // Non-taxable portion of SS excluded from AGI
-            // Conservative: 85% of SS is taxed - May be over stated. 
-            // Conservative: 100% of Ann is taxed - Is overstated during first 7 years.
-            OrdInc: (inc.PreTaxWDraw * HundredPCT) + (inc.SS * EightyFivePCT) + (inc.Ann * HundredPCT),
 
-            // Model doesn't track cash basis.
-            // Conservative: 100% of bond yields is taxable. 
-            INT: inc.BondsYield,
+        static Taxes.AGI AdjustedGrossIncomes(this Taxes.GI inc)
+        {
+            // Taxable SS thresholds are statutory and not inflation-adjusted.
+            // TODO: Move to external optional configuration.
+            const double SSNonTaxableThresholdMFJ = 32000.0;
+            const double SS50PctTaxableThresholdMFJ = 44000.0;
 
-            // Model doesn't track cash basis.
-            // Conservative: Not all portions are taxable - overstated
-            // Simplification: 100% of dividends are treated qualified (may understate the tax if sold < 1 year)
-            QDI: inc.Dividends,
+            // Interim math to guess taxable portion of social security income.
+            // Social Security taxation modeled using provisional income.
+            // Thresholds are statutory and not inflation-adjusted.
+            double nonSSOrdinary = inc.PreTaxWDraw + inc.Ann;
+            double provisionalInvestmentIncome = inc.BondsYield + inc.Dividends + inc.CapGains;
+            double provisionalIncome = nonSSOrdinary + provisionalInvestmentIncome + (0.5 * inc.SS);
+            double taxableSS = TaxableSocialSecurity(inc.SS, provisionalIncome, base1: SSNonTaxableThresholdMFJ, base2: SS50PctTaxableThresholdMFJ);
 
-            // Model doesn't track cash basis.
-            // Conservative: Not all portions are taxable - overstated
-            // Simplification: 100% of capital gains treated long-term (may understate the tax if sold < 1 year)
-            LTCG: inc.CapGains
-        )
-        .MinZero();
+            return new Taxes.AGI
+            (
+                // 100% of 401K withdrawal is ordinary income (which is true).
+                // Non-taxable portion of SS excluded from AGI
+                // Conservative: 100% of Ann is taxed - Is overstated during first 7 years.
+                OrdInc: (inc.PreTaxWDraw * HundredPCT) + taxableSS + (inc.Ann * HundredPCT),
+
+                // Model doesn't track cash basis.
+                // Conservative: 100% of bond yields is taxable. 
+                INT: inc.BondsYield,
+
+                // Model doesn't track cash basis.
+                // Conservative: Not all portions are taxable - overstated
+                // Simplification: 100% of dividends are treated qualified (may understate the tax if sold < 1 year)
+                QDI: inc.Dividends,
+
+                // Model doesn't track cash basis.
+                // Conservative: Not all portions are taxable - overstated
+                // Simplification: 100% of capital gains treated long-term (may understate the tax if sold < 1 year)
+                LTCG: inc.CapGains
+            )
+            .MinZero();
+        }
+
+        static double TaxableSocialSecurity(double ss, double provisionalIncome, double base1, double base2)
+        {
+            if (provisionalIncome <= base1)
+                return 0.0;
+
+            if (provisionalIncome <= base2)
+                return Math.Min(
+                    0.5 * (provisionalIncome - base1),
+                    0.5 * ss
+                );
+
+            return Math.Min(
+                0.85 * ss,
+                0.85 * (provisionalIncome - base2) + 0.5 * (base2 - base1)
+            );
+        }
 
         static Taxes.Fed ComputeFederalTaxes(this Taxes.AGI adjustedGrossIncome, double standardDeductions, TaxRateSchedule fedTaxRates, TaxRateSchedule longTermCapGainsTaxRates)
         {
