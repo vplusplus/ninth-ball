@@ -14,7 +14,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Identifies the type of tax schedule for DI and resolution.
     /// </summary>
-    public enum TaxScheduleKind { Federal, FederalLTCG, State }
+    public enum TaxScheduleKind { Federal, LTCG, State }
 
     /// <summary>
     /// Known tax schedules and fallbacks.

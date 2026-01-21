@@ -76,9 +76,14 @@ FeesPCT:
 Taxes:
   YearZeroTaxAmount: 25,000
   StandardDeduction: 31,500
-  ZZTaxRates:
-    OrdinaryIncome: 22%
-    CapitalGains: 15%
+  StateExemption:    12,000
+
+  UseFlatTaxRates: false
+  FlatTaxRates:
+    FederalOrdInc: 22%
+    FederalLTCG:  15%
+    State: 5%
+
 
 # ............................................................
 # Portfolio adjustment

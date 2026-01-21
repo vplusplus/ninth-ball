@@ -42,16 +42,17 @@ Views:
 
   TaxView: [
     Year, Age, JanPreTax, JanPostTax, 
-    TaxFedMarginalRate, 
-    TaxFedCapGainMarginalRate,
-    TaxStateMarginalRate,
-    TaxEffectiveRate,
-    PYTaxes,
-    MXInf,
-    MXFedInf,
-    MXNJInf,
-    InflationRate
 
+    
+    MTROrdInc, MTRCapGain, MTRState,
+
+    TaxPCT, TaxPCTFed, TaxPCTState,
+
+
+    PYTaxes,
+
+    MXInf, MXFedInf, MXNJInf,
+    InflationRate
 
     ]
 

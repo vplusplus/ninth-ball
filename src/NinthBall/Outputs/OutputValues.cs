@@ -71,10 +71,14 @@ namespace NinthBall.Outputs
             [CID.RealCAGR]        = (it, in y) => y.Metrics.RealAnnualizedReturn,
 
 
-            [CID.TaxFedMarginalRate]        = (it, in y) => y.Taxes.FederalTax.MarginalRateOrdInc,
-            [CID.TaxFedCapGainMarginalRate] = (it, in y) => y.Taxes.FederalTax.MarginalRateCapGain,
-            [CID.TaxStateMarginalRate]      = (it, in y) => y.Taxes.StateTax.MarginalRate,
-            [CID.TaxEffectiveRate]          = (it, in y) => y.Taxes.EffectiveRate,
+            [CID.MTROrdInc]     = (it, in y) => y.Taxes.FederalTax.MTR,
+            [CID.MTRCapGain]    = (it, in y) => y.Taxes.FederalTax.MTRCapGain,
+            [CID.MTRState]      = (it, in y) => y.Taxes.StateTax.MTR,
+
+
+            [CID.TaxPCT]        = (it, in y) => y.Taxes.TaxPCT,
+            [CID.TaxPCTFed]     = (it, in y) => y.Taxes.TaxPCTFed,
+            [CID.TaxPCTState]   = (it, in y) => y.Taxes.TaxPCTState,
 
 
             [CID.MXInf]         = (it, in y) => y.Metrics.InflationMultiplier,

@@ -1,151 +1,214 @@
 
 namespace NinthBall.Core
 {
-    public readonly record struct Taxes(Taxes.Gross GrossIncome, Taxes.Fed FederalTax, Taxes.State StateTax)
-    {
-        public readonly record struct Gross(double OrdInc, double INT, double DIV, double CapGain) { public readonly double Total => OrdInc + INT + DIV + CapGain; }
-        public readonly record struct Fed(double Deductions, double Taxable, double MarginalRateOrdInc, double MarginalRateCapGain, double Tax) { public readonly double TaxPct => Taxable < 0.01 ? 0.0 : Tax / Taxable; }
-        public readonly record struct State(double Deductions, double Taxable, double MarginalRate, double Tax) { public readonly double TaxPct => Taxable < 0.01 ? 0.0 : Tax / Taxable; }
-        public readonly double Total => FederalTax.Tax + StateTax.Tax;
-        public readonly double EffectiveRate => GrossIncome.Total < 0.01 ? 0.0 : Total / GrossIncome.Total;
+    /*
+        GI      – Gross Income
+        AGI     – Adjusted Gross Income
 
+        OrdInc  – Ordinary Income (Also OI)
+        INT     – Interest
+        QDI     – Qualified Dividends
+        LTCG    – Long term Capital Gains
+
+        MTR     – Marginal Tax Rate
+        ETTR    – Effective Tax Rates
+        NIIT    – Net Investment Income Tax  (We do not do check this yet. Check impact and include)
+    
+        TaxPCT  = Total Taxes Paid ÷ Every $ of cash inflow (not a standard term; not a statutory tax rate)
+
+     */
+
+    public readonly record struct Taxes(Taxes.GI GrossIncome, Taxes.AGI AdjustedGrossIncome, Taxes.Fed FederalTax, Taxes.State StateTax)
+    {
+        public readonly record struct GI
+        (
+            double PreTaxWDraw,     // Withdrawals from tax deferred account
+            double SS,              // Social security income
+            double Ann,             // Annuity incomes
+            double BondsYield,      // Bonds yield from PostTax accounts
+            double Dividends,       // Dividends from PostTax accounts
+            double CapGains         // Capital gains from PostTax accounts
+        )
+        {
+            public readonly double Total => PreTaxWDraw + SS + Ann + BondsYield + Dividends + CapGains;
+        }
+
+        public readonly record struct AGI(double OrdInc, double INT, double QDI, double LTCG) {
+            public readonly double Total => OrdInc + INT + QDI + LTCG;
+        }
+
+        public readonly record struct Fed(double StdDeduction, double Taxable, double MTR, double MTRCapGain, double Tax);
+        public readonly record struct State(double StateDeduction, double Taxable, double MTR, double Tax);
+
+        // Total taxes.
+        public readonly double Total => FederalTax.Tax + StateTax.Tax;
+
+        // PCT tax paid on adjusted gross income.
+        public readonly double ETTR => AdjustedGrossIncome.Total <= 0.01 ? 0.0 : Total / AdjustedGrossIncome.Total;
+
+        // For every $ that came in, what PCT went to taxes
+        public readonly double TaxPCT => GrossIncome.Total <= 0.01 ? 0.0 : (FederalTax.Tax + StateTax.Tax) / GrossIncome.Total;
+
+        // For every $ that came in, what PCT went to Federal taxes
+        public readonly double TaxPCTFed => GrossIncome.Total <= 0.01 ? 0.0 : FederalTax.Tax / GrossIncome.Total;
+
+        // For every $ that came in, what PCT went to State taxes
+        public readonly double TaxPCTState => GrossIncome.Total <= 0.01 ? 0.0 : StateTax.Tax / GrossIncome.Total;
     }
 
     public static class TaxMath
     {
-        public static Taxes ComputePriorYearTaxes(this SimYear py, TaxRateSchedule fedTaxRates, TaxRateSchedule fedCapGainTaxRates, TaxRateSchedule stateTaxRates, double fedDeductions, double stateDeduction)
+        const double EightyFivePCT = 0.85;
+        const double HundredPCT    = 1.00;
+        const double TenDollars    = 10.00;
+
+        public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxRateSchedule taxRatesFederal, TaxRateSchedule taxRatesLTCG, TaxRateSchedule taxRatesState, double year0StdDeductions, double year0StateExemptions)
         {
-            // Collect Gross Income
-            Taxes.Gross gross = new
-            (
-                // 100% of 401K (PreTax) withdrawal is OrdInc.
-                //  85% of Social Security is taxable as OrdInc (Conservative)
-                // 100% of Annuity is taxable as OrdInc (Conservative)
-                OrdInc: py.Withdrawals.PreTax + py.Incomes.SS * 0.85 + py.Incomes.Ann,
+            // We do not want 30,000 tax schedules (30 years x 10000 iterations paths)
+            // Quantize the inflation rate multipliers to avoid 30,000 jitters
+            double inflationMultiplierFederal = Math.Round(priorYear.Metrics.FedTaxInflationMultiplier,   4);
+            double inflationMultiplierState   = Math.Round(priorYear.Metrics.StateTaxInflationMultiplier, 4);
 
-                // 401K bonds-yield are not taxable (tax deferred)
-                // 100% of PostTax bonds-yield is taxable (Conservative - Cash basis not tracked)
-                INT: py.Jan.PostTax.BondsAmount * SimConfig.TypicalBondCouponYield,
+            // Adjust tax brackets for inflation 
+            // Use $10.0 jitterGuard to avoid false-precision.
+            taxRatesFederal = taxRatesFederal.Inflate(inflationMultiplierFederal, jitterGuard: TenDollars);
+            taxRatesLTCG      = taxRatesLTCG.Inflate(inflationMultiplierFederal,    jitterGuard: TenDollars);
+            taxRatesState     = taxRatesState.Inflate(inflationMultiplierState,     jitterGuard: TenDollars);
 
-                // 401K Dividends are not taxable (tax deferred)
-                // 100% of PostTax Dividends are taxable (tax deferred)
-                DIV: py.Jan.PostTax.StocksAmount * SimConfig.TypicalStocksDividendYield,
+            // Adjust standard deductions and state exemptions for inflation
+            // Use $10.0 jitterGuard to avoid false-precision.
+            var standardDeductions = (year0StdDeductions * inflationMultiplierFederal).RoundToMultiples(TenDollars);
+            var stateExemptions    = (year0StateExemptions * inflationMultiplierState).RoundToMultiples(TenDollars);
 
-                // 401K Capital gains are not taxable (tax deferred)
-                // 100% of PostTax Capital gains are taxable (Conservative - Cash basis not tracked)
-                CapGain: py.Withdrawals.PostTax
-            );
-
-            // Each component can't be negative.
-            // Losses on one bucket doesn't offset gains on others.
-            gross = new
-            (
-                OrdInc:  Math.Max(0, gross.OrdInc),
-                INT:     Math.Max(0, gross.INT),
-                DIV:     Math.Max(0, gross.DIV),
-                CapGain: Math.Max(0, gross.CapGain)
-            );
-
+            // Collect gross incomes, arranged by taxable buckets
+            var unadjustedIncomes = priorYear.RawIncomes().MinZero().RoundToCents();
+            var agi = unadjustedIncomes.AdjustedGrossIncomes().MinZero().RoundToCents();
 
             return new Taxes
             (
-                GrossIncome: gross,
-                FederalTax: ComputeFederalTaxes(gross, fedDeductions, fedTaxRates, fedCapGainTaxRates),
-                StateTax: ComputeStateTaxes(gross, stateDeduction, stateTaxRates)
+                GrossIncome:         unadjustedIncomes,
+                AdjustedGrossIncome: agi,
+                FederalTax:          agi.ComputeFederalTaxes(standardDeductions, taxRatesFederal, taxRatesLTCG),
+                StateTax:            agi.ComputeStateTaxes(stateExemptions, taxRatesState)
+            );
+        }
+
+        static Taxes.GI RawIncomes(this SimYear priorYear) => new Taxes.GI
+        (
+            PreTaxWDraw:    priorYear.Withdrawals.PreTax,
+            SS:             priorYear.Incomes.SS,
+            Ann:            priorYear.Incomes.Ann,
+            BondsYield:     priorYear.Jan.PostTax.BondsAmount * SimConfig.TypicalBondCouponYield,
+            Dividends:      priorYear.Jan.PostTax.StocksAmount * SimConfig.TypicalStocksDividendYield,
+            CapGains:       priorYear.Withdrawals.PostTax
+        )
+        .MinZero();
+
+        static Taxes.AGI AdjustedGrossIncomes(this Taxes.GI inc) => new Taxes.AGI
+        (
+            // 100% of 401K withdrawal is ordinary income
+            // Non-taxable portion of SS excluded from AGI
+            // Conservative: 85% of SS is taxed - May be over stated. 
+            // Conservative: 100% of Ann is taxed - Is overstated during first 7 years.
+            OrdInc: (inc.PreTaxWDraw * HundredPCT) + (inc.SS * EightyFivePCT) + (inc.Ann * HundredPCT),
+
+            // Model doesn't track cash basis.
+            // Conservative: 100% of bond yields is taxable. 
+            INT: inc.BondsYield,
+
+            // Model doesn't track cash basis.
+            // Conservative: Not all portions are taxable - overstated
+            // Simplification: 100% of dividends are treated qualified (may understate the tax if sold < 1 year)
+            QDI: inc.Dividends,
+
+            // Model doesn't track cash basis.
+            // Conservative: Not all portions are taxable - overstated
+            // Simplification: 100% of capital gains treated long-term (may understate the tax if sold < 1 year)
+            LTCG: inc.CapGains
+        )
+        .MinZero();
+
+        static Taxes.Fed ComputeFederalTaxes(this Taxes.AGI grossIncome, double standardDeductions, TaxRateSchedule fedTaxRates, TaxRateSchedule longTermCapGainsTaxRates)
+        {
+            // Take standard deductions...
+            double remainingDeduction = standardDeductions;
+            double taxableOrdInc  = TryReduce(ref remainingDeduction, grossIncome.OrdInc);
+            double taxableINT     = TryReduce(ref remainingDeduction, grossIncome.INT);
+            double taxableDIV     = TryReduce(ref remainingDeduction, grossIncome.QDI);
+            double taxableCapGain = TryReduce(ref remainingDeduction, grossIncome.LTCG);
+
+            // Consult tax brackets. Compute marginal tax rate and the tax amount.
+            var taxOnOrdInc   = fedTaxRates.CalculateStackedEffectiveTax(taxableOrdInc + taxableINT);
+            var taxcOnCapGain = longTermCapGainsTaxRates.CalculateStackedEffectiveTax(taxableDIV + taxableCapGain, baseIncome: taxableOrdInc + taxableINT);
+
+            return new Taxes.Fed
+            (
+                StdDeduction:         standardDeductions,
+                Taxable:    taxableOrdInc + taxableINT + taxableDIV + taxableCapGain, 
+                MTR:        taxOnOrdInc.MarginalTaxRate,
+                MTRCapGain: taxcOnCapGain.MarginalTaxRate,
+                Tax:        taxOnOrdInc.TaxAmount + taxcOnCapGain.TaxAmount
             );
 
-
-            static Taxes.Fed ComputeFederalTaxes(Taxes.Gross grossIncome, double standardDeductions, TaxRateSchedule fedTaxRates, TaxRateSchedule longTermCapGainsTaxRates)
+            static double TryReduce(ref double remaining, in double source)
             {
-                // Take standard deductions...
-                double remainingDeduction = standardDeductions;
-                double taxableOrdInc  = TryReduce(ref remainingDeduction, grossIncome.OrdInc);
-                double taxableINT     = TryReduce(ref remainingDeduction, grossIncome.INT);
-                double taxableDIV     = TryReduce(ref remainingDeduction, grossIncome.DIV);
-                double taxableCapGain = TryReduce(ref remainingDeduction, grossIncome.CapGain);
-
-                // Consult tax brackets. Compute tax.
-                var taxOnOrdInc   = fedTaxRates.CalculateStackedEffectiveTaxRate(taxableOrdInc + taxableINT);
-                var taxcOnCapGain = longTermCapGainsTaxRates.CalculateStackedEffectiveTaxRate(taxableDIV + taxableCapGain, baseIncome: taxableOrdInc + taxableINT);
-
-                return new Taxes.Fed
-                (
-                    Deductions:          standardDeductions,
-                    Taxable:             taxableOrdInc + taxableINT + taxableDIV + taxableINT,
-                    MarginalRateOrdInc:  taxOnOrdInc.MarginalTaxRate,
-                    MarginalRateCapGain: taxcOnCapGain.MarginalTaxRate,
-                    Tax:                 taxOnOrdInc.TaxAmount + taxcOnCapGain.TaxAmount
-                );
-
-                static double TryReduce(ref double remaining, in double source)
-                {
-                    var reduction = Math.Max(0, Math.Min(remaining, source));
-                    remaining -= reduction;
-                    return source - reduction;
-                }
+                var reduction = Math.Max(0, Math.Min(remaining, source));
+                remaining -= reduction;
+                return source - reduction;
             }
-
-            static Taxes.State ComputeStateTaxes(Taxes.Gross grossIncome, double stateDeductions, TaxRateSchedule stateTaxRates)
-            {
-                var taxable = Math.Max(0, grossIncome.Total - stateDeductions);
-
-                var stateTaxes = stateTaxRates.CalculateStackedEffectiveTaxRate(taxable);
-
-                return new Taxes.State
-                (
-                    Deductions: stateDeductions,
-                    Taxable: taxable,
-                    MarginalRate: stateTaxes.MarginalTaxRate,
-                    Tax: stateTaxes.TaxAmount
-                );
-            }
-
         }
+
+        static Taxes.State ComputeStateTaxes(this Taxes.AGI grossIncome, double stateDeductions, TaxRateSchedule stateTaxRates)
+        {
+            var taxable = Math.Max(0, grossIncome.Total - stateDeductions);
+
+            var stateTaxes = stateTaxRates.CalculateStackedEffectiveTax(taxable);
+
+            return new Taxes.State
+            (
+                StateDeduction:       stateDeductions,
+                Taxable:    taxable,
+                MTR:        stateTaxes.MarginalTaxRate,
+                Tax:        stateTaxes.TaxAmount
+            );
+        }
+
+        static Taxes.GI MinZero(this Taxes.GI x) => new
+        (
+            PreTaxWDraw: Math.Max(0, x.PreTaxWDraw),
+            SS:         Math.Max(0, x.SS),
+            Ann:        Math.Max(0, x.Ann),
+            BondsYield: Math.Max(0, x.BondsYield),
+            Dividends:  Math.Max(0, x.Dividends),
+            CapGains:   Math.Max(0, x.CapGains)
+        );
+
+        static Taxes.AGI MinZero(this Taxes.AGI x) => new
+        (
+            OrdInc: Math.Max(0, x.OrdInc),
+            INT:    Math.Max(0, x.INT),
+            QDI:    Math.Max(0, x.QDI),
+            LTCG:   Math.Max(0, x.LTCG)
+        );
+
+        static Taxes.GI RoundToCents(this Taxes.GI x) => new
+        (
+            PreTaxWDraw: Math.Round(x.PreTaxWDraw, 2),
+            SS:          Math.Round(x.SS, 2),
+            Ann:         Math.Round(x.Ann, 2),
+            BondsYield:  Math.Round(x.BondsYield, 2),
+            Dividends:   Math.Round(x.Dividends, 2),
+            CapGains:    Math.Round(x.CapGains, 2)
+        );
+
+        static Taxes.AGI RoundToCents(this Taxes.AGI x) => new
+        (
+            OrdInc: Math.Round(x.OrdInc, 2),
+            QDI:    Math.Round(x.QDI, 2),
+            INT:    Math.Round(x.INT, 2),
+            LTCG:   Math.Round(x.LTCG, 2)
+        );
 
     }
+
 }
-
-
-/*
-         public static Taxes Calculate(SimYear py, TaxRateSchedule fedSched, TaxRateSchedule fedLtcgSched, TaxRateSchedule stateSched, double fedMult, double stateMult, double baseFedDeduction, double baseStateExemption)
-        {
-            // 1. Collect Gross Income
-            var gross = new Taxes.GrossInc(
-                OrdInc: py.Withdrawals.PreTax + py.Incomes.SS * 0.85 + py.Incomes.Ann,
-                INT:    py.Jan.PostTax.Amount * (1 - py.Jan.PostTax.Allocation) * SimConfig.TypicalBondCouponYield,
-                DIV:    py.Jan.PostTax.Amount * py.Jan.PostTax.Allocation * SimConfig.TypicalStocksDividendYield,
-                LTCG:   py.Withdrawals.PostTax
-            );
-
-            // 2. Federal Jurisdiction
-            var fedDeduction = baseFedDeduction * fedMult; 
-            var fedTaxableOrd = Math.Max(0, gross.OrdInc + gross.INT - fedDeduction);
-            
-            var resFedOrd = fedSched.Inflate(fedMult).CalculateStackedEffectiveTaxRate(fedTaxableOrd);
-            var resFedLtcg = fedLtcgSched.Inflate(fedMult).CalculateStackedEffectiveTaxRate(gross.DIV + gross.LTCG, baseIncome: fedTaxableOrd);
-
-            var federal = new Taxes.TD(
-                Deduction:  fedDeduction,
-                Taxable:    fedTaxableOrd + gross.DIV + gross.LTCG,
-                MarginalRate: new Taxes.TR(resFedOrd.MarginalTaxRate, resFedLtcg.MarginalTaxRate),
-                Tax:        resFedOrd.TaxAmount + resFedLtcg.TaxAmount,
-                TaxBreakdown: new Taxes.GrossInc(resFedOrd.TaxAmount, 0, 0, resFedLtcg.TaxAmount) // Simplification: Fed INT/DIV taxes often bundled with Ord
-            );
-
-            // 3. State Jurisdiction (NJ Fallback)
-            var stateExemption = baseStateExemption; 
-            var stateTaxable = Math.Max(0, gross.Total - stateExemption);
-            var resState = stateSched.Inflate(stateMult).CalculateStackedEffectiveTaxRate(stateTaxable);
-
-            var state = new Taxes.TD(
-                Deduction:  stateExemption,
-                Taxable:    stateTaxable,
-                MarginalRate: new Taxes.TR(resState.MarginalTaxRate, 0.0),
-                Tax:        resState.TaxAmount,
-                TaxBreakdown: new Taxes.GrossInc(resState.TaxAmount, 0, 0, 0)
-            );
-
-            // 4. Return Composed Taxes
-            return new Taxes(gross, federal, state).RoundToCents();
-        }
-*/

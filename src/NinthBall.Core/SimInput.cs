@@ -107,20 +107,23 @@ namespace NinthBall.Core
         [property: Min(1000)] 
         double YearZeroTaxAmount,
 
-        [property: Min(0)]
+        [property: Range(1.0, 100000.0)]
         double StandardDeduction,
 
-        [property: ValidateNested]
-        TaxConfig.Rates TaxRates,
+        [property: Range(1.0, 100000.0)]
+        double StateExemption,
 
-        string? FederalSchedule = null,
-        string? StateSchedule = null
+        bool UseFlatTaxRates,
+
+        [property: ValidateNested]
+        TaxConfig.TaxRates FlatTaxRates
     )
     {
-        public readonly record struct Rates
+        public readonly record struct TaxRates
         (
-            [property: Range(0, 1)] double OrdinaryIncome, 
-            [property: Range(0, 1)] double CapitalGains
+            [property: Range(0.12, 0.50)] double FederalOrdInc,     // 12% to 50%
+            [property: Range(0.15, 0.50)] double FederalLTCG,       // 15% to 50%
+            [property: Range(0.05, 0.50)] double State              //  5% to 50%
         );
     }
 

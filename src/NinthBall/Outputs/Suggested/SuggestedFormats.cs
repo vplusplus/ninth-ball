@@ -33,11 +33,12 @@ namespace NinthBall.Outputs
             [CID.RealCAGR]      = P1,
 
 
-            [CID.TaxFedMarginalRate] = P1,
-            [CID.TaxFedCapGainMarginalRate] = P1,
-            [CID.TaxStateMarginalRate] = P1,
-            [CID.TaxEffectiveRate] = P1,
-
+            [CID.MTROrdInc]     = P1,
+            [CID.MTRCapGain]    = P1,
+            [CID.MTRState]      = P1,
+            [CID.TaxPCT]        = P1,
+            [CID.TaxPCTFed]     = P1,
+            [CID.TaxPCTState]   = P1,
 
             [CID.MXInf]    = F2,
             [CID.MXFedInf] = F2,

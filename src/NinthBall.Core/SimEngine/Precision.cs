@@ -43,35 +43,6 @@ namespace NinthBall.Core
             LivExp: x.LivExp.RoundToCents()
         );
 
-        public static Taxes RoundToCents(this Taxes x) => new
-        (
-            GrossIncome: x.GrossIncome.RoundToCents(),
-            FederalTax: x.FederalTax.RoundToCents(),
-            StateTax: x.StateTax.RoundToCents()
-        );
-
-        public static Taxes.Gross RoundToCents(this Taxes.Gross x) => new
-        (
-            OrdInc: x.OrdInc.RoundToCents(),
-            DIV: x.DIV.RoundToCents(),
-            INT: x.INT.RoundToCents(),
-            CapGain: x.CapGain.RoundToCents()
-        );
-
-        public static Taxes.Fed RoundToCents(this Taxes.Fed x) => x with
-        {
-            Deductions = x.Deductions.RoundToCents(),
-            Taxable = x.Taxable.RoundToCents(),
-            Tax = x.Tax.RoundToCents()
-        };
-
-        public static Taxes.State RoundToCents(this Taxes.State x) => x with
-        {
-            Deductions = x.Deductions.RoundToCents(),
-            Taxable = x.Taxable.RoundToCents(),
-            Tax = x.Tax.RoundToCents()
-        };
-
         public static Withdrawals RoundToCents(this Withdrawals x) => new
         (
             PreTax: x.PreTax.RoundToCents(),
@@ -84,6 +55,24 @@ namespace NinthBall.Core
             PostTax: x.PostTax.RoundToCents(),
             Cash: x.Cash.RoundToCents()
         );
+
+        public static Taxes RoundToCents(this Taxes x) => x with
+        {
+            FederalTax = x.FederalTax.RoundToCents(),
+            StateTax   = x.StateTax.RoundToCents()
+        };
+
+        public static Taxes.Fed RoundToCents(this Taxes.Fed x) => x with
+        {
+            Taxable = x.Taxable.RoundToCents(),
+            Tax = x.Tax.RoundToCents()
+        };
+
+        public static Taxes.State RoundToCents(this Taxes.State x) => x with
+        {
+            Taxable = x.Taxable.RoundToCents(),
+            Tax = x.Tax.RoundToCents()
+        };
 
         private static double RoundToCents(this double amount) => Math.Round(amount, 2);
 

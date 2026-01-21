@@ -23,15 +23,17 @@ namespace NinthBall.Outputs
         Fees,                   // Total investment/advisory fees for the year
         PYTaxes,                // Total taxes paid (Sum of Ord, Div, Int, CapGains)
 
-        TaxFedMarginalRate,
-        TaxFedCapGainMarginalRate,
-        TaxStateMarginalRate,
-        TaxEffectiveRate,
+        MTROrdInc,
+        MTRCapGain,
+        MTRState,
+
+        TaxPCT,                 // For every $ that cam in, what PCT went to taxes
+        TaxPCTFed,              // For every $ that cam in, what PCT went to Federal taxes
+        TaxPCTState,            // For every $ that cam in, what PCT went to State taxes
 
         MXInf,
         MXFedInf,
         MXNJInf,
-
 
 
         LivExp,                 // Current Year Expenses (Inflation adjusted)
