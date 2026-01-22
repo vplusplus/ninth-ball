@@ -29,10 +29,7 @@ namespace NinthBall.Core
         VariablePercentageWithdrawal? VariablePercentageWithdrawal,
 
         // Growth strategy, Historical Data & Bootstrapping
-        Growth? Growth,
-        FlatBootstrap? FlatBootstrap,
-        MovingBlockBootstrap? MovingBlockBootstrap,
-        ParametricBootstrap? ParametricBootstrap
+        Growth? Growth
     );
 
     public sealed record SimulationSeed(string? SeedHint)
@@ -213,46 +210,6 @@ namespace NinthBall.Core
         BootstrapKind Bootstrapper
     );
 
-    public sealed record FlatBootstrap
-    (
-        [property: Range(0, 1)] double Stocks,
-        [property: Range(0, 1)] double Bonds,
-        [property: Range(0, 1)] double InflationRate
-    );
 
-    public sealed record MovingBlockBootstrap
-    (
-        [property: Required] IReadOnlyList<int> BlockSizes, 
-        [property: Required] bool NoConsecutiveBlocks
-    );
-    
-    public sealed record ParametricBootstrap
-    (
-        [property: Range(-1.0, 1.0)] 
-        double StocksBondCorrelation,
 
-        [property: Range(-1.0, 1.0)]
-        double StocksInflationCorrelation,
-
-        [property: Range(-1.0, 1.0)]
-        double BondsInflationCorrelation,
-
-        [property: ValidateNested]
-        ParametricBootstrap.Dist Stocks,
-
-        [property: ValidateNested]
-        ParametricBootstrap.Dist Bonds,
-
-        [property: ValidateNested]
-        ParametricBootstrap.Dist Inflation)
-    {
-        public readonly record struct Dist
-        (
-            [property: Range(-1.0, 1.0)]   double MeanReturn, 
-            [property: Range(0.0, 1.0)]    double Volatility, 
-            [property: Range(-10.0, 10.0)] double Skewness, 
-            [property: Range(0.0, 100.0)]  double Kurtosis, 
-            [property: Range(-1.0, 1.0)]   double AutoCorrelation
-        );
-    }
 }

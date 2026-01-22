@@ -1,10 +1,42 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace NinthBall.Core
 {
+    public sealed record ParametricBootstrapOptions
+    (
+        [property: Range(-1.0, 1.0)]
+        double StocksBondCorrelation,
+
+        [property: Range(-1.0, 1.0)]
+        double StocksInflationCorrelation,
+
+        [property: Range(-1.0, 1.0)]
+        double BondsInflationCorrelation,
+
+        [property: ValidateNested]
+        ParametricBootstrapOptions.Dist Stocks,
+
+        [property: ValidateNested]
+        ParametricBootstrapOptions.Dist Bonds,
+
+        [property: ValidateNested]
+        ParametricBootstrapOptions.Dist Inflation)
+    {
+        public readonly record struct Dist
+        (
+            [property: Range( -1.0, 1.0  )] double MeanReturn,
+            [property: Range(  0.0, 1.0  )] double Volatility,
+            [property: Range(-10.0, 10.0 )] double Skewness,
+            [property: Range(  0.0, 100.0)] double Kurtosis,
+            [property: Range( -1.0, 1.0  )] double AutoCorrelation
+        );
+    }
+
     /// <summary>
     /// Generates repeatable synthetic sequence of returns using statistical parameters.
     /// </summary>
-    internal sealed class ParametricBootstrapper(SimulationSeed SimSeed, ParametricBootstrap Options) : IBootstrapper
+    internal sealed class ParametricBootstrapper(SimulationSeed SimSeed, ParametricBootstrapOptions Options) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;

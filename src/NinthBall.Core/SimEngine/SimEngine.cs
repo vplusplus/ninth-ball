@@ -24,7 +24,8 @@ namespace NinthBall.Core
                 .AddSingleton(input)
                 .RegisterSimulationInputs(validInputs)
                 .RegisterActiveStrategies(validInputs)
-                .RegisterSystemDependencies()
+                .RegisterHistoricalDataAndBootstrapper()
+                .RegisterTaxSchedules()
                 .AddSingleton<Simulation>()
                 .BuildServiceProvider();
 
@@ -83,23 +84,23 @@ namespace NinthBall.Core
         }
 
         // Register historical ROI data provider, bootstrappers and tax schedules.
-        private static IServiceCollection RegisterSystemDependencies(this IServiceCollection services)
+        private static IServiceCollection RegisterHistoricalDataAndBootstrapper(this IServiceCollection services)
         {
             return services
 
                 // Shared dependency that serves historical data to bootstrappers.
                 .AddSingleton<HistoricalReturns>()
 
+                // Bootstrapper options - Optional configurations
+                .AddSingleton<FlatBootstrapOptions>((sp) => BootstrapConfiguration.GetFlatBootstrapOptions())
+                .AddSingleton<MovingBlockBootstrapOptions>((sp) => BootstrapConfiguration.GetMovingBlockBootstrapOptions())
+                .AddSingleton<ParametricBootstrapOptions>((sp) => BootstrapConfiguration.GetParametricBootstrapOptions())
+
                 // Available bootstrappers
                 .AddSingleton<FlatBootstrapper>()
                 .AddSingleton<SequentialBootstrapper>()
                 .AddSingleton<MovingBlockBootstrapper>()
                 .AddSingleton<ParametricBootstrapper>()
-
-                // Tax Schedules for DI injection
-                .AddKeyedSingleton(TaxScheduleKind.Federal, (sp, key) => TaxRateSchedules.FromConfigOrDefault("Federal2026Joint", TaxRateSchedules.FallbackFed2026))
-                .AddKeyedSingleton(TaxScheduleKind.LTCG, (sp, key) => TaxRateSchedules.FromConfigOrDefault("FederalLTCG2026Joint", TaxRateSchedules.FallbackFedLTCG2026))
-                .AddKeyedSingleton(TaxScheduleKind.State, (sp, key) => TaxRateSchedules.FromConfigOrDefault("NJ2026Joint", TaxRateSchedules.FallbackNJ2026))
 
                 // Chosen bootstrapper based on Growth option.
                 .AddSingleton<IBootstrapper>(sp =>
@@ -122,6 +123,18 @@ namespace NinthBall.Core
                 })
                 ;
         }
+
+        private static IServiceCollection RegisterTaxSchedules(this IServiceCollection services)
+        {
+            return services
+
+                // Tax Schedules for DI injection
+                .AddKeyedSingleton(TaxScheduleKind.Federal, (sp, key) => TaxRateSchedules.FromConfigOrDefault("Federal2026Joint", TaxRateSchedules.FallbackFed2026))
+                .AddKeyedSingleton(TaxScheduleKind.LTCG, (sp, key) => TaxRateSchedules.FromConfigOrDefault("FederalLTCG2026Joint", TaxRateSchedules.FallbackFedLTCG2026))
+                .AddKeyedSingleton(TaxScheduleKind.State, (sp, key) => TaxRateSchedules.FromConfigOrDefault("NJ2026Joint", TaxRateSchedules.FallbackNJ2026))
+                ;
+        }
+
 
         // For some strategy families, only one of its kind is allowed.
         // Throws an exception if more than one strategy is activated with-in each exclusive-families.

@@ -1,7 +1,16 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace NinthBall.Core
 {
-    internal sealed class FlatBootstrapper(FlatBootstrap Options) : IBootstrapper
+    public sealed record FlatBootstrapOptions
+    (
+        [property: Range(0, 1)] double Stocks,
+        [property: Range(0, 1)] double Bonds,
+        [property: Range(0, 1)] double InflationRate
+    );
+
+    internal sealed class FlatBootstrapper(FlatBootstrapOptions Options) : IBootstrapper
     {
         // We need only one single-instance-sequence since it's flat growth.
         readonly IROISequence FlatSequence = new ROISequence(

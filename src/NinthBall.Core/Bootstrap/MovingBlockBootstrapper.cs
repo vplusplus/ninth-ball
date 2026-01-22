@@ -1,12 +1,19 @@
 ﻿
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace NinthBall.Core
 {
+    public sealed record MovingBlockBootstrapOptions
+    (
+        [property: Required] IReadOnlyList<int> BlockSizes,
+        [property: Required] bool NoConsecutiveBlocks
+    );
+
     /// <summary>
     /// Replays random blocks (with replacement) of historical returns and inflation.
     /// </summary>
-    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, MovingBlockBootstrap Options) : IBootstrapper
+    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, MovingBlockBootstrapOptions Options) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
