@@ -45,7 +45,10 @@ AdditionalIncomes:
 # Availble options: Flat | Sequential | MovingBlock | Parametric
 # ............................................................
 Growth:
-  Bootstrapper: MovingBlock     
+  Bootstrapper: Flat
+  Stocks: 10.0%                # Used only by flat bootstrapper
+  Bonds:  4.0%                # Used only by flat bootstrapper
+  InflationRate: 3.0%         # Used only by flat bootstrapper 
 
 # ............................................................
 # PreTax (401K) depletion velocity; Pick one.
@@ -84,7 +87,6 @@ Taxes:
     FederalLTCG:  15%
     State: 5%
 
-
 # ............................................................
 # Portfolio adjustment
 # ............................................................
@@ -97,15 +99,3 @@ Rebalance:
     - AtAge: 80
       PreTaxStocksAllocation:  80%
       PostTaxStocksAllocation: 80%
-
-# ............................................................
-# Bootstrapper configurations
-# ............................................................
-
-# Useful for baseliing and validting the calculations.
-# It doesnt make sense to move this to appSetting.json
-# TODO: Bring it back
-ZZZ-MovedToConfig-FlatBootstrap:
-  Stocks: 5%
-  Bonds: 5%
-  InflationRate: 3%

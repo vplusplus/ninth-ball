@@ -207,9 +207,13 @@ namespace NinthBall.Core
     public sealed record Growth
     (
         [property: Required]
-        BootstrapKind Bootstrapper
+        BootstrapKind Bootstrapper,
+
+        // Options used only by FlatBootstrapper
+        // Ignored by other bootstrappers
+        [property: Range(0, 1)] double Stocks,
+        [property: Range(0, 1)] double Bonds,
+        [property: Range(0, 1)] double InflationRate
     );
-
-
 
 }

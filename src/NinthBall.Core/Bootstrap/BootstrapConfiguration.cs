@@ -6,8 +6,6 @@ namespace NinthBall.Core
 {
     internal static class BootstrapConfiguration
     {
-        public static FlatBootstrapOptions GetFlatBootstrapOptions() => GetAndValidateOptionalConfiguration<FlatBootstrapOptions>("FlatBootstrap", DefaultFlatBootstrapOptions);
-
         public static MovingBlockBootstrapOptions GetMovingBlockBootstrapOptions() => GetAndValidateOptionalConfiguration<MovingBlockBootstrapOptions>("MovingBlockBootstrap", DefaultMovingBlockBootstrapOptions);
 
         public static ParametricBootstrapOptions GetParametricBootstrapOptions() => GetAndValidateOptionalConfiguration<ParametricBootstrapOptions>("ParametricBootstrap", DefaultParametricBootstrapOptions);
@@ -22,7 +20,7 @@ namespace NinthBall.Core
             var configSection = Config.Current.GetSection(sectionName);
 
             TConfig options = null != configSection && configSection.Exists() 
-                ? configSection.Get<TConfig>()! 
+                ? configSection.Get<TConfig>() ?? throw new Exception($"Unexpected | IConfiguration returned null | {typeof(TConfig).Name} ")
                 : defaultConfiguration;
 
             // Validate
@@ -38,13 +36,6 @@ namespace NinthBall.Core
 
             return options!;
         }
-
-        static FlatBootstrapOptions DefaultFlatBootstrapOptions => new
-        (
-            Stocks:         0.10,       // 10% Nominal annual return (no inflation adjustment)
-            Bonds:          0.05,       //  5% Nominal annual return (no inflation adjustment) 
-            InflationRate:  0.03        //  3%
-        );
 
         static MovingBlockBootstrapOptions DefaultMovingBlockBootstrapOptions => new
         (

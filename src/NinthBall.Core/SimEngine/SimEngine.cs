@@ -92,9 +92,8 @@ namespace NinthBall.Core
                 .AddSingleton<HistoricalReturns>()
 
                 // Bootstrapper options - Optional configurations
-                .AddSingleton<FlatBootstrapOptions>((sp) => BootstrapConfiguration.GetFlatBootstrapOptions())
-                .AddSingleton<MovingBlockBootstrapOptions>((sp) => BootstrapConfiguration.GetMovingBlockBootstrapOptions())
-                .AddSingleton<ParametricBootstrapOptions>((sp) => BootstrapConfiguration.GetParametricBootstrapOptions())
+                .AddSingleton((sp) => BootstrapConfiguration.GetMovingBlockBootstrapOptions())
+                .AddSingleton((sp) => BootstrapConfiguration.GetParametricBootstrapOptions())
 
                 // Available bootstrappers
                 .AddSingleton<FlatBootstrapper>()
