@@ -1,0 +1,14 @@
+﻿
+InitialBalance:
+  PreTax:
+    Amount: $1,000,000
+    Allocation: 60%
+    Rebalance: true
+  PostTax:
+    Amount: $1,000,000
+    Allocation: 60%
+    Rebalance: false
+  Cash:
+    Amount: 0 
+
+
