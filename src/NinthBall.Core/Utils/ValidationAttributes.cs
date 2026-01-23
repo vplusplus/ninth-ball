@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace NinthBall.Core
@@ -31,20 +32,6 @@ namespace NinthBall.Core
         }
     }
 
-    //[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-    //public sealed class FileExistsAttribute : ValidationAttribute
-    //{
-    //    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-    //    {
-    //        // 'Required' is not my concern.
-    //        if (value == null) return ValidationResult.Success;
-
-    //        return value is not string fileName ? ValidationResult.Success
-    //            : File.Exists(fileName) ? ValidationResult.Success
-    //            : new ValidationResult($"{validationContext.MemberName} | File not found | {Path.GetFileName(fileName)}");
-    //    }
-    //}
-
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class ValidateNestedAttribute : ValidationAttribute
     {
@@ -53,25 +40,47 @@ namespace NinthBall.Core
             // 'Required' is not my concern.
             if (value == null) return ValidationResult.Success;
 
-            var innerResults = new List<ValidationResult>();
-            var innerContext = new ValidationContext(value, serviceProvider: null, items: null);
-            var innerIsValid = Validator.TryValidateObject(value, innerContext, innerResults, validateAllProperties: true);
+            var results = new List<ValidationResult>();
+            var parentName = validationContext.DisplayName;
 
-            if (!innerIsValid)
+            // Handle collections
+            if (value is IEnumerable enumerable && value is not string)
             {
-                var buffer = new StringBuilder();
-                var parentName = validationContext.DisplayName;
-
-                foreach (var inner in innerResults)
+                var index = 0;
+                foreach (var element in enumerable)
                 {
-                    var mssgWithPrefix = $"{parentName}: {inner.ErrorMessage}";
-                    buffer.AppendLine(mssgWithPrefix);
-                }
+                    if (element == null)
+                    {
+                        index++;
+                        continue;
+                    }
+                    else
+                    {
+                        var elementContext = new ValidationContext(element);
+                        var elementResults = new List<ValidationResult>();
 
-                return new ValidationResult(buffer.ToString());
+                        if (!Validator.TryValidateObject(element, elementContext, elementResults, true))
+                            foreach (var r in elementResults)
+                                results.Add(new ValidationResult($"{parentName}[{index}]: {r.ErrorMessage}", r.MemberNames));
+
+                        index++;
+                    }
+                }
+            }
+            else
+            {
+                // Handle single nested object
+                var nestedContext = new ValidationContext(value);
+                Validator.TryValidateObject(value, nestedContext, results, true);
+
             }
 
-            return ValidationResult.Success;
+            if (results.Count == 0)
+                return ValidationResult.Success;
+
+            return new ValidationResult(
+                string.Join(Environment.NewLine, results.Select(r => r.ErrorMessage))
+            );
         }
     }
 }

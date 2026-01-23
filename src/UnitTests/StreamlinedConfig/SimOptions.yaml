@@ -1,4 +1,4 @@
-
+﻿
 
 RandomSeedHint: "JSR"
 
@@ -45,10 +45,10 @@ AdditionalIncomes:
 # Availble options: Flat | Sequential | MovingBlock | Parametric
 # ............................................................
 Growth:
-  Bootstrapper: MovingBlock
-  Stocks: 10.0%             # Used only by flat bootstrapper
-  Bonds:  4.0%              # Used only by flat bootstrapper
-  InflationRate: 3.0%       # Used only by flat bootstrapper 
+  Bootstrapper: Flat
+  Stocks: 10.0%                # Used only by flat bootstrapper
+  Bonds:  4.0%                # Used only by flat bootstrapper
+  InflationRate: 3.0%         # Used only by flat bootstrapper 
 
 # ............................................................
 # PreTax (401K) depletion velocity; Pick one.

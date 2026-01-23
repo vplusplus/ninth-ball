@@ -2,11 +2,15 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NinthBall.Core;
+using NinthBall.Outputs;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using static NinthBall.Core.Taxes;
 
 namespace UnitTests
 {
@@ -16,27 +20,40 @@ namespace UnitTests
         [TestMethod]
         public void HelloConfig()
         {
+            var PrintEnumnsUseTabs = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Converters = { new JsonStringEnumConverter() }
+            };
+
             var appBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
 
             appBuilder.Configuration
-                .AddYamlResource(typeof(ConfigBindUnitTests).Assembly, "Sample.yaml")
+                .AddYamlResource(typeof(ConfigBindUnitTests).Assembly, "SimOptions-Embedded.yaml")
+                .AddYamlResource(typeof(ConfigBindUnitTests).Assembly, "SimOptions.yaml")
                 .Build();
 
             appBuilder.Services
                 .RegisterConfigSection<InitialBalance>()
+                .RegisterConfigSection<MyTaxRateSchedules>("TaxRateSchedules")
                 ;
 
             var app = appBuilder.Build();
 
-            // var c1 = app.Services.GetRequiredService<InitialBalance>();
-            // Console.WriteLine(c1);
 
-            var c2 = app.Services.GetRequiredService<Lazy<InitialBalance>>();
-            Console.WriteLine(null == c2.Value ? "NULL" : c2.Value);
+            var schedules = app.Services.GetRequiredService<MyTaxRateSchedules>();
+
+            var json = System.Text.Json.JsonSerializer.Serialize(schedules, PrintEnumnsUseTabs);
+            Console.WriteLine(json);
         }
     }
 
-
+    public sealed record class MyTaxRateSchedules
+    (
+        [property: Required, ValidateNested] TaxRateSchedule Federal,
+        [property: Required, ValidateNested] TaxRateSchedule LTCG,
+        [property: Required, ValidateNested] TaxRateSchedule State
+    );
 
 
     public static class ConfigurationExtensions
@@ -150,13 +167,15 @@ namespace UnitTests
 
         }
 
-        public static IServiceCollection RegisterConfigSection<TSection>(this IServiceCollection services) where TSection : class
+        public static IServiceCollection RegisterConfigSection<TSection>(this IServiceCollection services, string? optionalSectionName = null) where TSection : class
         {
-            var sectionName = typeof(TSection).Name;
+            // Type name is the section name if not provided.
+            var sectionName = string.IsNullOrWhiteSpace(optionalSectionName) ? typeof(TSection).Name : optionalSectionName.Trim();
 
             // Lazy option:
             // Returns null if section not defined.
-            // Returns validated TSection is section is defined
+            // Returns validated TSection if section is defined.
+            // Throws an exception on first use if section is invalid.
             services.AddSingleton<Lazy<TSection>>(sp => new Lazy<TSection>(() =>
             {
                 var configuration = sp.GetRequiredService<IConfiguration>();

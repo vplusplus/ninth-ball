@@ -8,11 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Sample.yaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Sample.yaml" />
+    <EmbeddedResource Include="StreamlinedConfig\SimOptions.yaml" />
+    <EmbeddedResource Include="StreamlinedConfig\SimOptions-Embedded.yaml" />
   </ItemGroup>
 
   <ItemGroup>

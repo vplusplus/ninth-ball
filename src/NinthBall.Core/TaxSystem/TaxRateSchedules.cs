@@ -1,14 +1,23 @@
 ﻿
 using Microsoft.Extensions.Configuration;
+using System.ComponentModel.DataAnnotations;
 
 namespace NinthBall.Core
 {
     /// <summary>
     /// Describes the tiered tax rate schedule.
     /// </summary>
-    public sealed record TaxRateSchedule(IReadOnlyList<TaxRateSchedule.TaxBracket> Brackets)
+    public sealed record TaxRateSchedule
+    (
+        [property: ValidateNested]
+        IReadOnlyList<TaxRateSchedule.TaxBracket> Brackets
+    )
     {
-        public readonly record struct TaxBracket(double IncomeThreshold, double MarginalRate);
+        public readonly record struct TaxBracket
+        (
+            [property: Min(0)] double IncomeThreshold,
+            [property: Range(0.0, 0.75)] double MarginalRate
+        );
     }
     
     /// <summary>
