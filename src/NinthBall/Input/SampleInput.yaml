@@ -1,7 +1,4 @@
 
-
-RandomSeedHint: "JSR"
-
 SimParams:
   StartAge: 60
   NoOfYears: 35

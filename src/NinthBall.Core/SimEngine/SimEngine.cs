@@ -1,5 +1,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -12,16 +13,28 @@ namespace NinthBall.Core
     /// </summary>
     public static class SimEngine
     {
-        public static SimResult Run(SimInput input)
+        public static SimResult Run(string simInputFileName)
         {
+            ArgumentNullException.ThrowIfNull(simInputFileName);
+
             // Deconstruct SimInput components, ignore nulls and validate if specified.
-            var validInputs = input.DeconstructAndValidateSimulationInputs();
+            var simInput = SimInputReader.ReadFromYamlFile(simInputFileName);
+            var validInputs = simInput.DeconstructAndValidateSimulationInputs();
+
+            var simSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
+
+            simSessionBuilder.Configuration
+                .AddYamlResource(typeof(SimEngine).Assembly, "SimulationOptions-Defaults.yaml")
+                .AddYamlFile(simInputFileName)
+                .Build();
 
             // Register components for the simulation.
             // NOTE: Dispose te DI container on return; we will prepare a fresh container for each run.
-            using var services = new ServiceCollection()
-                .AddSingleton(new SimulationSeed(input.RandomSeedHint))
-                .AddSingleton(input)
+            simSessionBuilder.Services
+                //.AddSingleton(new SimulationSeed(simInput.RandomSeedHint))
+                .RegisterConfigSection<SimulationSeed>()
+
+                .AddSingleton(simInput)
                 .RegisterSimulationInputs(validInputs)
                 .AddSimObjectives()
                 .AddSingleton<SimObjectivesSelector>()
@@ -30,10 +43,18 @@ namespace NinthBall.Core
                 .AddSingleton<Simulation>()
                 .BuildServiceProvider();
 
-            // Run
-            return services
-                .GetRequiredService<Simulation>()
-                .RunSimulation();
+            using (var simSession = simSessionBuilder.Build())
+            {
+                return simSession
+                    .Services
+                    .GetRequiredService<Simulation>()
+                    .RunSimulation();
+            }
+
+            //// Run
+            //return services
+            //    .GetRequiredService<Simulation>()
+            //    .RunSimulation();
         }
 
 

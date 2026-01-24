@@ -88,12 +88,12 @@ namespace NinthBall
             try
             {
                 // Load Config
-                var inputConfig  = SimInputReader.ReadFromYamlFile(InputFileName);
+                
                 var outputConfig = SimOutputReader.ReadFromYamlFile(LocateOutputConfigFile(InputFileName)).ToSimOutput();
 
                 // Run simulation
                 var timer = Stopwatch.StartNew();
-                var simResult = SimEngine.Run(inputConfig);
+                var simResult = SimEngine.Run(InputFileName);
                 timer.Stop();
 
                 var htmlFileName = OutputFileName;

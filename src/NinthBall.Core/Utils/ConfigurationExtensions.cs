@@ -18,7 +18,7 @@ namespace NinthBall.Core
             ArgumentNullException.ThrowIfNull(yamlFileName);
 
             return File.Exists(yamlFileName)
-                ? builder.AddYamlFile(yamlFileName) 
+                ? builder.AddYamlContent(File.ReadAllText(yamlFileName)) 
                 : throw new FatalWarning($"Yaml config file not found | {Path.GetFullPath(yamlFileName)}");
         }
 
@@ -27,7 +27,9 @@ namespace NinthBall.Core
             ArgumentNullException.ThrowIfNull(builder);
             ArgumentNullException.ThrowIfNull(yamlFileName);
 
-            return File.Exists(yamlFileName) ? builder.AddYamlFile(yamlFileName) : builder;
+            return File.Exists(yamlFileName)
+                ? builder.AddYamlContent(File.ReadAllText(yamlFileName))
+                : builder;
         }
 
         public static IConfigurationBuilder AddYamlResource(this IConfigurationBuilder builder, Assembly resourceAssembly, string resourceNameEndsWith)

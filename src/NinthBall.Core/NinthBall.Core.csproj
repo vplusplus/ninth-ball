@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Data\ROI-History.xlsx" />
+    <EmbeddedResource Include="SimulationOptions-Defaults.yaml" />
   </ItemGroup>
 
   <ItemGroup>
