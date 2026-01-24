@@ -20,7 +20,7 @@ namespace NinthBall.Core
             );
         }
 
-        public override string ToString() => $"Taxes | Fed: {FT.FederalOrdInc:P1} | LTCG: {FT.FederalLTCG:P1} | State: {FT.State:P1} | Deductions - Fed: {FT.StandardDeduction:C0} State: {FT.StateExemption:C0}";
+        public override string ToString() => $"Taxes | Fed: {FT.FederalOrdInc:P1} | LTCG: {FT.FederalLTCG:P1} | State: {FT.State:P1} | Standard deduction: {FT.StandardDeduction:C0} | State exemptions: {FT.StateExemption:C0} (indexed)";
     }
 
     [StrategyFamily(StrategyFamily.Taxes)] sealed class TieredTaxStrategy(InitialBalance Initial, TaxRateSchedules TaxSchedules) : ISimObjective
@@ -38,7 +38,7 @@ namespace NinthBall.Core
             );
         }
 
-        public override string ToString() => $"Taxes | Tiered rate using Federal, CapGain and State tax schedules indexed for inflation | StdDeduction: {TaxSchedules.Federal.TaxDeductions:C0} | State exemptions: {TaxSchedules.State.TaxDeductions:C0}";
+        public override string ToString() => $"Taxes | Federal, LTCG and State tax-schedules indexed for inflation | Standard deduction: {TaxSchedules.Federal.TaxDeductions:C0} | State exemptions: {TaxSchedules.State.TaxDeductions:C0} (indexed)";
     }
 
     sealed record TaxStrategy(double YearZeroTaxLiability, TaxRateSchedule TaxRatesFederal, TaxRateSchedule TaxRatesLTCG, TaxRateSchedule TaxRatesState) : ISimStrategy
