@@ -54,43 +54,4 @@ namespace NinthBall.Core
 
         private static readonly Regex DashDashNoDash = new("^--[^\\s-]+", RegexOptions.Compiled);
     }
-
-    /// <summary>
-    /// Provides access to configurations (AppSettings, Env, CmdLine) for parts of the sysdtem not governed by DI.
-    /// </summary>
-    public static class Config
-    {
-        static readonly Lazy<IConfiguration> LazyConfig = new(() =>
-            new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                .AddEnvironmentVariables()
-                .AddInMemoryCollection(CmdLine.ParseCommandLineOnce())
-                .Build()
-        );
-
-        public static IConfiguration Current => LazyConfig.Value;
-
-        // Similar to IConfiguration[] - Difference is empty string or whitespaces is treated as missing key
-        public static string GetValue(string name, string defaultValue)
-        {
-            var something = Current[name];
-            return string.IsNullOrWhiteSpace(something) ? defaultValue : something;
-        }
-
-        // Similar to IConfiguration.GetValue<T>() - Difference is empty string or whitespaces is treated as missing key
-        public static TValue GetValue<TValue>(string name, TValue defaultValue)
-        {
-            var something = Current.GetValue<TValue>(name, defaultValue);
-            return something ?? defaultValue;
-        }
-
-        // Similar to IConfiguration.GetValue<double>() - Accepts string formatted numbers (1,000,000) and Percenytages (60%)
-        public static double GetPct(string name, double defaultValue)
-        {
-            var strValue = GetValue(name, null!);
-            return string.IsNullOrWhiteSpace(strValue) ? defaultValue : PercentageToDoubleConverter.ParseDoubleOrPercentage(strValue);
-        }
-    }
-
 }

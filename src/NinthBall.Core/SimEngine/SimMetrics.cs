@@ -36,13 +36,13 @@ namespace NinthBall.Core
         /// Small haircut on current year inflation rate to represent Federal C-CPI lag.
         /// Optionally configurable.
         /// </summary>
-        static double FedTaxInflationLagHairCut => Config.GetPct("FedTaxInflationLagHairCut", 0.0025);
+        static double FedTaxInflationLagHairCut => 0.0025;      // TODO: Move to config
 
         /// <summary>
         /// Larger haircut on current year inflation rate to represent State's delayed adjustments and lag.
         /// Optionally configurable.
         /// </summary>
-        static double NJStateTaxInflationLagHaircut => Config.GetPct("NJStateTaxInflationLagHaircut", 0.0075);
+        static double NJStateTaxInflationLagHaircut => 0.0075;  // TODO: Move to config 
 
         /// <summary>
         /// Tracks running inflation multipliers and cummulative metrics.
