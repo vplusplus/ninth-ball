@@ -6,8 +6,9 @@ namespace NinthBall.Outputs
     /// </summary>
     public readonly record struct SimOutput
     (
-        IReadOnlyList<double> Percentiles,
-        IReadOnlyList<CID>  HtmlColumns,
-        IReadOnlyList<CID>  ExcelColumns
+        IReadOnlyList<double>   Percentiles,
+        IReadOnlyList<int>      Iterations,
+        IReadOnlyList<CID>      HtmlColumns,
+        IReadOnlyList<CID>      ExcelColumns
     );
 }

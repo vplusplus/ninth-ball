@@ -20,9 +20,24 @@
                 <a class="nav-link @isActive" data-bs-toggle="tab" href="#@(pctlId)">@pctlCaption</a>
             </li>
         }
+
+        @foreach (var IT in Iterations)
+        {
+            if (IT < 0 || IT > Model.Iterations.Count - 1) continue;
+
+            var iter = Model.Iterations.Where(x => x.Index == IT).Single();
+            var iterId  = $"I{IT:0000}";
+            var caption = $"#{IT:0000}";
+
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#@(iterId)">@caption</a>
+            </li>
+        }
+
     </ul>
 
     <div class="tab-content">
+
         @foreach (var p in Percentiles)
         {
             var iter = Model.Percentile(p);
@@ -33,6 +48,22 @@
                 <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter OutputConfig=OutputConfig />
             </div>
         }
+
+        @foreach (var IT in Iterations)
+        {
+            if (IT < 0 || IT > Model.Iterations.Count - 1) continue;
+
+            // We are using un-sorted view of a specific iteration path
+            // Iteration is selected using SimIteration.Index, not by array index which will be sorted.
+            var iter = Model.Iterations.Where(x => x.Index == IT).Single();
+            var iterId  = $"I{IT:0000}";
+            var caption = $"#{IT:0000}";
+
+            <div class="tab-pane" id="@(iterId)">
+                <SimIterationDetails Id="@iterId" Caption="@caption" Iteration=iter OutputConfig=OutputConfig />
+            </div>
+        }
+
     </div>
 </div>
 
@@ -42,6 +73,7 @@
     [Parameter] public SimOutput OutputConfig { get; set; }
 
     private IReadOnlyList<double> Percentiles => OutputConfig.Percentiles;
+    private IReadOnlyList<int> Iterations => OutputConfig.Iterations;
 
     private double? ActivePctl => Percentiles.Count == 0 ? null : Percentiles.OrderBy(p => Math.Abs(p - SimOutputDefaults.TargetPercentile)).First();
 

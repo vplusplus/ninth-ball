@@ -1,8 +1,10 @@
 
 HtmlView:  Essential
-ExcelView: Essential
+ExcelView: ALL
 
 ZZZ-Percentiles: [ 0%, 1%, 5%, 10%, 20%, 50%, 80% ]
+
+Iterations: [ 0, 2500, 5000, 7500, 9999] 
 
 Views:
 
@@ -30,14 +32,28 @@ Views:
   # List of all available columns.
   ALL: [
       Year, Age,
+
       JanTotal, JanValue, JanPreTax, JanPreTaxAlloc, JanPostTax, JanPostTaxAlloc, JanCash,
-      Fees, PYTaxes, 
-      LivExp,
+
+      Fees, 
+
+      PYTaxes, 
+      MTROrdInc, MTRCapGain, MTRState,
+      TaxPCT, TaxPCTFed, TaxPCTState,
+
       SS, Ann, Incomes,
+      LivExp,
+
       XPreTax, XPostTax, XCash,
+
       DecTotal, DecValue, DecPreTax, DecPreTaxAlloc, DecPostTax, DecPostTaxAlloc, DecCash,
+
       LikeYear, ROI, AnnROI, ROIAmount, ROIStocks, ROIBonds, 
-      Empty
+
+      # The multiplication factors
+      InflationRate,
+      MXInf, MXFedInf, MXNJInf,
+      RealCAGR
     ]
 
   TaxView: [
@@ -45,7 +61,6 @@ Views:
 
     
     MTROrdInc, MTRCapGain, MTRState,
-
     TaxPCT, TaxPCTFed, TaxPCTState,
 
 

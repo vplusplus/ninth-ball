@@ -1,7 +1,8 @@
 ﻿
 using NinthBall.Core;
 using NF = NinthBall.Core.ExcelStylesheetBuilder.NumberFormats; 
-using static NinthBall.Outputs.Suggested;  // For GetColName, GetFormatHint, GetColorHint ...
+using static NinthBall.Outputs.Suggested;
+using System.ComponentModel.DataAnnotations;  // For GetColName, GetFormatHint, GetColorHint ...
 
 namespace NinthBall.Outputs.Excel
 {
@@ -29,43 +30,58 @@ namespace NinthBall.Outputs.Excel
         );
 
 
-        public static async Task Generate(SimResult simResult, string excelFileName, SimOutput? outputConfig)
+        public static async Task Generate(SimResult simResult, string excelFileName, SimOutput outputConfig)
         {
             ArgumentNullException.ThrowIfNull(simResult);
             ArgumentNullException.ThrowIfNull(excelFileName);
 
-            var columns = outputConfig?.ExcelColumns.Count > 0 
-                ? outputConfig.Value.ExcelColumns 
-                : SimOutputDefaults.DefaultColumns;
-            
-                var ssb = new ExcelStylesheetBuilder();
+            var columns = outputConfig.ExcelColumns;
+            var ssb = new ExcelStylesheetBuilder();
 
-                // Register specific styles for Summary/Strategy tabs
-                var summaryStyles = RegisterSummaryStyles(ssb);
+            // Register specific styles for Summary/Strategy tabs
+            var summaryStyles = RegisterSummaryStyles(ssb);
 
-                // Register dynamic styles for Percentile tabs need to be resolved on the fly
-                // We use a caching convention inside RenderPercentile, or just rely on ssb caching?
-                // ssb has internal caching, so we can just call ssb.RegisterStyle(spec) repeatedly.
-                // It is efficient enough.
+            // Register dynamic styles for Percentile tabs need to be resolved on the fly
+            // We use a caching convention inside RenderPercentile, or just rely on ssb caching?
+            // ssb has internal caching, so we can just call ssb.RegisterStyle(spec) repeatedly.
+            // It is efficient enough.
 
-                using(var xl = new ExcelWriter(excelFileName))
+            using(var xl = new ExcelWriter(excelFileName))
+            {
+                // Render chosen strategies and related assumptions.
+                RenderStrategy(xl, summaryStyles, simResult);
+
+                // Render Summary sheet
+                // NOTE: Still uses bespoke logic as it's a summary table, not a time-series
+                RenderSummary(xl, summaryStyles, simResult);
+
+                // Render one sheet per percentile
+                foreach (var pctl in outputConfig.Percentiles)
                 {
-                    // Render chosen strategies and related assumptions.
-                    RenderStrategy(xl, summaryStyles, simResult);
-
-                    // Render Summary sheet
-                    // NOTE: Still uses bespoke logic as it's a summary table, not a time-series
-                    RenderSummary(xl, summaryStyles, simResult);
-
-                    // Render one sheet per percentile
-                    // Dynamic column generation
-                    foreach(var pctl in SimOutputDefaults.DefaultPercentiles) RenderPercentile(xl, ssb, simResult, pctl, columns);
-
-                    // NOTE: Dispose will not save. We have to save.
-                    // Build stylesheet at the very end
-                    var stylesheet = ssb.Build();
-                    xl.Save(stylesheet);
+                    var iter = simResult.Percentile(pctl);
+                    var sheetName = $"{pctl.PctlName}";
+                    
+                    RenderIteration(xl, ssb, iter, sheetName, columns);
                 }
+
+                // Render one sheet per suggested un-ordered iteration
+                foreach (var IT in outputConfig.Iterations)
+                {
+                    if (IT < 0 || IT > simResult.Iterations.Count - 1) continue;
+
+                    // NOTE: We are selecting a specific simulation path by its IterationIndex.
+                    // We are NOT selecting by index of sorted result, which can move around.
+                    var iter = simResult.Iterations.Where(x => x.Index == IT).Single();
+                    var sheetName = $"#{iter.Index:0000}";
+                    
+                    RenderIteration(xl, ssb, iter, sheetName, columns);
+                }
+
+                // NOTE: Dispose will not save. We have to save.
+                // Build stylesheet at the very end
+                var stylesheet = ssb.Build();
+                    xl.Save(stylesheet);
+            }
         }
 
         static SummaryStyles RegisterSummaryStyles(ExcelStylesheetBuilder ssb)
@@ -248,7 +264,125 @@ namespace NinthBall.Outputs.Excel
             }
         }
 
-        static void RenderPercentile(ExcelWriter xl, ExcelStylesheetBuilder ssb, SimResult simResult, double pctl, IReadOnlyList<CID> columns)
+
+        static void RenderIteration(ExcelWriter xl, ExcelStylesheetBuilder ssb, SimIteration iteration, string sheetName, IReadOnlyList<CID> columns)
+        {
+            //var sheetName = $"{pctl.PctlName}";
+            var p = iteration;
+
+            // Dynamically calculate widths based on Suggested format
+            // Just a rough heuristic for now: 12 for most things, 4 for year/age
+            var widths = columns.Select(c => c == CID.Empty ? 2.0 : (c == CID.Year || c == CID.Age) ? 4.0 : 12.0).Cast<double?>().ToArray();
+
+            // Base style with safe defaults
+            var baseStyle = new XLStyle()
+            {
+                Format = "General",
+                FName = "Calibri",
+                FSize = 11,
+                FColor = MyColors.Black,
+                HAlign = HAlign.Right,
+                VAlign = VAlign.Bottom
+            };
+
+            // Resolve Header Style
+            var headerStyle = ssb.RegisterStyle(baseStyle with { IsBold = true, HAlign = HAlign.Center });
+
+            using (var sheet = xl.BeginSheet(sheetName))
+            {
+                sheet.WriteColumns(widths.AsSpan());
+
+                using (var rows = sheet.BeginSheetData())
+                {
+                    // Header
+                    using (var row = rows.BeginRow())
+                    {
+                        foreach (var col in columns)
+                        {
+                            if (col == CID.Empty)
+                                row.Append("", headerStyle);
+                            else
+                                row.Append(col.GetColName(), headerStyle);
+                        }
+                    }
+
+                    // Data
+                    foreach (var y in p.ByYear.Span)
+                    {
+                        using (var row = rows.BeginRow())
+                        {
+                            foreach (var col in columns)
+                            {
+                                if (col == CID.Empty)
+                                {
+                                    row.Append("");
+                                    continue;
+                                }
+
+                                var value = y.GetCellValue(col, p);
+                                if (value == null)
+                                {
+                                    row.Append("");
+                                    continue;
+                                }
+
+                                // Style resolution
+                                var formatHint = col.GetFormatHint();
+                                var colorHint = y.GetCellColorHint(col, p);
+
+                                // Map hints to XLStyle props
+                                var fStr = GetFormatString(formatHint);
+                                if (string.IsNullOrWhiteSpace(fStr))
+                                {
+                                    fStr = "General";   // Defensive fallback
+                                }
+
+                                var stylePrice = ssb.RegisterStyle(baseStyle with
+                                {
+                                    Format = fStr,
+                                    FColor = GetColorHex(colorHint),
+                                    HAlign = (col == CID.Year || col == CID.Age || col == CID.LikeYear) ? HAlign.Center : HAlign.Right
+                                });
+
+                                row.Append(value.Value, stylePrice);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        static string GetFormatString(FormatHint f) => f switch
+        {
+            FormatHint.F0 => "0;-0;;",
+            FormatHint.C0 => NF.C0,
+            FormatHint.C1 => NF.C1,
+            FormatHint.C2 => NF.C2,
+            FormatHint.P0 => NF.P0,
+            FormatHint.P1 => NF.P1,
+            FormatHint.P2 => NF.P2,
+            _ => "General"
+        };
+        
+        static uint GetColorHex(ColorHint c) => c switch
+        {
+            ColorHint.Success => MyColors.Green,
+            ColorHint.Danger  => MyColors.Red,
+            ColorHint.Muted   => MyColors.Gray,
+            ColorHint.Warning => 0xFFC09000, 
+            ColorHint.Primary => 0xFF0070C0,
+            _ => MyColors.Black
+        };
+
+
+        static double Mil(this double value) => value / 1000000.0;
+    }
+}
+
+
+/*
+         static void RenderPercentile(ExcelWriter xl, ExcelStylesheetBuilder ssb, SimResult simResult, double pctl, IReadOnlyList<CID> columns)
         {
             var sheetName = $"{pctl.PctlName}";
             var p = simResult.Percentile(pctl);
@@ -334,30 +468,4 @@ namespace NinthBall.Outputs.Excel
                 }
             }
         }
-
-        static string GetFormatString(FormatHint f) => f switch
-        {
-            FormatHint.F0 => "0;-0;;",
-            FormatHint.C0 => NF.C0,
-            FormatHint.C1 => NF.C1,
-            FormatHint.C2 => NF.C2,
-            FormatHint.P0 => NF.P0,
-            FormatHint.P1 => NF.P1,
-            FormatHint.P2 => NF.P2,
-            _ => "General"
-        };
-        
-        static uint GetColorHex(ColorHint c) => c switch
-        {
-            ColorHint.Success => MyColors.Green,
-            ColorHint.Danger  => MyColors.Red,
-            ColorHint.Muted   => MyColors.Gray,
-            ColorHint.Warning => 0xFFC09000, 
-            ColorHint.Primary => 0xFF0070C0,
-            _ => MyColors.Black
-        };
-
-
-        static double Mil(this double value) => value / 1000000.0;
-    }
-}
+*/
