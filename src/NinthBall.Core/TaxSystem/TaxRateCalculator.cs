@@ -22,12 +22,12 @@ namespace NinthBall.Core
 
             for (int i = 0; i < TS.Brackets.Count; i++)
             {
-                double currentThreshold = TS.Brackets[i].IncomeThreshold;
-                double currentRate = marginalRate = TS.Brackets[i].MarginalRate;
+                double currentThreshold = TS.Brackets[i].Threshold;
+                double currentRate = marginalRate = TS.Brackets[i].MTR;
 
                 // Next threshold defines the boundary; last bracket goes to infinity
                 double nextThreshold = (i + 1 < TS.Brackets.Count)
-                    ? TS.Brackets[i + 1].IncomeThreshold
+                    ? TS.Brackets[i + 1].Threshold
                     : double.PositiveInfinity;
 
                 // Calculate overlap of [lower, upper] with [currentThreshold, nextThreshold]
@@ -63,7 +63,7 @@ namespace NinthBall.Core
             if (1.0 == inflationMultiplier) return TS;
 
             // Optmization 2: Flat tax rate schedule. Zero to Infinite range. Nothing to index.
-            if (1 == TS.Brackets.Count && 0 == TS.Brackets[0].IncomeThreshold) return TS;
+            if (1 == TS.Brackets.Count && 0 == TS.Brackets[0].Threshold) return TS;
 
             int n = TS.Brackets.Count;
             var inflatedBrackets = new List<TaxRateSchedule.TaxBracket>(n);
@@ -74,21 +74,24 @@ namespace NinthBall.Core
 
                 inflatedBrackets.Add(new TaxRateSchedule.TaxBracket
                 (
-                    IncomeThreshold: ComputeThresholdReduceJitter(threshold: b.IncomeThreshold, multiplier: inflationMultiplier, jitterGuard: jitterGuard),
-                    MarginalRate: b.MarginalRate
+                    Threshold: InflateAndReduceJitter(amount: b.Threshold, multiplier: inflationMultiplier, jitterGuard: jitterGuard),
+                    MTR: b.MTR
                 ));
             }
 
-            return new TaxRateSchedule(inflatedBrackets);
+            var inflatedTaxDeductions = InflateAndReduceJitter(TS.TaxDeductions, multiplier: inflationMultiplier, jitterGuard);
+
+
+            return new TaxRateSchedule(inflatedTaxDeductions, inflatedBrackets);
 
             // WHY?
             // We do not want 30,000 schedules (30 years x 10,000 iteration-paths)
             // Fed also rounds up the thresholds.
             // Our objective is not to faithfully reproduce IRS behavior.
             // Our objective is to reduce jitter across iteration paths. 
-            static double ComputeThresholdReduceJitter(double threshold, double multiplier, double jitterGuard)
+            static double InflateAndReduceJitter(double amount, double multiplier, double jitterGuard)
             {
-                var newThreshold = threshold * multiplier;
+                var newThreshold = amount * multiplier;
                 var newThrsholdLowJitter = Math.Round(newThreshold / jitterGuard) * jitterGuard;
                 return newThrsholdLowJitter;
             }

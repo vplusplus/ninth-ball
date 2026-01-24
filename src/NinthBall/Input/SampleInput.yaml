@@ -3,11 +3,12 @@ SimParams:
   StartAge: 60
   NoOfYears: 35
   Iterations: 10000
-  Objectives: [
+  Strategies: [
       AdditionalIncome,
       LivingExpenses,
       AnnualFees,
-      TaxStrategy,
+      TieredTax,
+      # FlatTax,
       Growth,
       # FixedWithdrawal,
       VariableWithdrawal,
@@ -17,15 +18,14 @@ SimParams:
     ]
 
 InitialBalance:
+  YearZeroCashBalance: 0.01
+  YearZeroTaxAmount:   25,000
   PreTax:
     Amount: 1,000,000
     Allocation: 60%
   PostTax:
     Amount: 1,000,000
     Allocation: 60%
-  Cash:
-    Amount: 0
-
 
 
 # ............................................................
@@ -84,16 +84,12 @@ FeesPCT:
   PreTax:   0.2%    # Tax deferred account
   PostTax:  0.9%    # Investment account
 
-Taxes:
-  YearZeroTaxAmount: 25,000
+FlatTax:
   StandardDeduction: 31,500
   StateExemption:    12,000
-
-  UseFlatTaxRates: false
-  FlatTaxRates:
-    FederalOrdInc: 22%
-    FederalLTCG:  15%
-    State: 5%
+  FederalOrdInc:     17%
+  FederalLTCG:       15%
+  State:             5%
 
 # ............................................................
 # Portfolio adjustment

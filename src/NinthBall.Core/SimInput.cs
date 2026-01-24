@@ -1,5 +1,4 @@
 ﻿
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace NinthBall.Core
@@ -20,7 +19,7 @@ namespace NinthBall.Core
 
         Rebalance? Rebalance,
         FeesPCT? FeesPCT,
-        TaxConfig? Taxes,
+        FlatTax? FlatTax,
         AdditionalIncomes? AdditionalIncomes,
         LivingExpenses? LivingExpenses,
 
@@ -49,7 +48,7 @@ namespace NinthBall.Core
         int Iterations,
 
         [property: Required]
-        IReadOnlyList<string> Objectives
+        IReadOnlyList<string> Strategies
     );
 
     public sealed record InitialBalance
@@ -60,8 +59,14 @@ namespace NinthBall.Core
         [property: ValidateNested]
         InitialBalance.AA PostTax,
 
-        [property: ValidateNested]
-        InitialBalance.AA Cash                  // Allocation is ignored for Cash assets
+        //[property: ValidateNested]
+        //InitialBalance.AA Cash,                 // Allocation is ignored for Cash assets
+
+        [property: Min(0.01)]
+        double YearZeroCashBalance,
+
+        [property: Min(1000)]
+        double YearZeroTaxAmount
     )
     {
         public readonly record struct AA
@@ -102,30 +107,18 @@ namespace NinthBall.Core
         [property: Range(0, 1)] double PostTax
     );
 
-    public sealed record TaxConfig
+    public sealed record FlatTax
     ( 
-        [property: Min(1000)] 
-        double YearZeroTaxAmount,
-
         [property: Range(1.0, 100000.0)]
         double StandardDeduction,
 
         [property: Range(1.0, 100000.0)]
         double StateExemption,
 
-        bool UseFlatTaxRates,
-
-        [property: ValidateNested]
-        TaxConfig.TaxRates FlatTaxRates
-    )
-    {
-        public readonly record struct TaxRates
-        (
-            [property: Range(0.12, 0.50)] double FederalOrdInc,     // 12% to 50%
-            [property: Range(0.15, 0.50)] double FederalLTCG,       // 15% to 50%
-            [property: Range(0.05, 0.50)] double State              //  5% to 50%
-        );
-    }
+        [property: Range(0.12, 0.50)] double FederalOrdInc,     // 12% to 50%
+        [property: Range(0.15, 0.50)] double FederalLTCG,       // 15% to 50%
+        [property: Range(0.05, 0.50)] double State              //  5% to 50%
+    );
 
     public sealed record AdditionalIncomes
     (
@@ -168,12 +161,6 @@ namespace NinthBall.Core
             [property: Min(00)] double  Reduction
         );
     }
-
-    //public sealed record FixedWithdrawal
-    //(
-    //    [property: Min(0)]     double FirstYearAmount, 
-    //    [property: Range(0,1)] double Increment
-    //);
 
     public sealed record FixedWithdrawal
     (

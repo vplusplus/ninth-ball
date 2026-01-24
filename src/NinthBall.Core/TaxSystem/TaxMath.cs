@@ -67,23 +67,18 @@ namespace NinthBall.Core
         const double NIITThreshold = 250000.0;          // TODO: MFJ - Move to optional cofiguration
         const double NIITRate = 0.038;                  // TODO: Move to optional cofiguration
 
-        public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxRateSchedule taxRatesFederal, TaxRateSchedule taxRatesLTCG, TaxRateSchedule taxRatesState, double year0StdDeductions, double year0StateExemptions)
+        public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxRateSchedule taxRatesFederal, TaxRateSchedule taxRatesLTCG, TaxRateSchedule taxRatesState)
         {
             // We do not want 30,000 tax schedules (30 years x 10000 iterations paths)
             // Quantize the inflation rate multipliers to avoid 30,000 jitters
             double inflationMultiplierFederal = Math.Round(priorYear.Metrics.FedTaxInflationMultiplier,   4);
             double inflationMultiplierState   = Math.Round(priorYear.Metrics.StateTaxInflationMultiplier, 4);
 
-            // Adjust tax brackets for inflation 
+            // Adjust tax brackets, Federal standard deductions and state exemptions for inflation
             // Use $10.0 jitterGuard to avoid false-precision.
-            taxRatesFederal = taxRatesFederal.Inflate(inflationMultiplierFederal,   jitterGuard: TenDollars);
+            taxRatesFederal   = taxRatesFederal.Inflate(inflationMultiplierFederal, jitterGuard: TenDollars);
             taxRatesLTCG      = taxRatesLTCG.Inflate(inflationMultiplierFederal,    jitterGuard: TenDollars);
             taxRatesState     = taxRatesState.Inflate(inflationMultiplierState,     jitterGuard: TenDollars);
-
-            // Adjust standard deductions and state exemptions for inflation
-            // Use $10.0 jitterGuard to avoid false-precision.
-            var standardDeductions = (year0StdDeductions * inflationMultiplierFederal).RoundToMultiples(TenDollars);
-            var stateExemptions    = (year0StateExemptions * inflationMultiplierState).RoundToMultiples(TenDollars);
 
             // Collect gross incomes, arranged by taxable buckets
             var unadjustedIncomes = priorYear.RawIncomes().MinZero().RoundToCents();
@@ -93,8 +88,8 @@ namespace NinthBall.Core
             (
                 GrossIncome:         unadjustedIncomes,
                 AdjustedGrossIncome: agi,
-                FederalTax:          agi.ComputeFederalTaxes(standardDeductions, taxRatesFederal, taxRatesLTCG),
-                StateTax:            agi.ComputeStateTaxes(stateExemptions, taxRatesState)
+                FederalTax:          agi.ComputeFederalTaxes(taxRatesFederal.TaxDeductions, taxRatesFederal, taxRatesLTCG),
+                StateTax:            agi.ComputeStateTaxes(taxRatesState.TaxDeductions, taxRatesState)
             );
         }
 

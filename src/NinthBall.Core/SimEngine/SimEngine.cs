@@ -31,15 +31,18 @@ namespace NinthBall.Core
             // Register components for the simulation.
             // NOTE: Dispose te DI container on return; we will prepare a fresh container for each run.
             simSessionBuilder.Services
-                //.AddSingleton(new SimulationSeed(simInput.RandomSeedHint))
+
                 .RegisterConfigSection<SimulationSeed>()
+                .RegisterConfigSection<TaxRateSchedules>()
+
+                // -----------------
 
                 .AddSingleton(simInput)
                 .RegisterSimulationInputs(validInputs)
                 .AddSimObjectives()
                 .AddSingleton<SimObjectivesSelector>()
                 .RegisterHistoricalDataAndBootstrappers()
-                .RegisterTaxSchedules()
+                
                 .AddSingleton<Simulation>()
                 .BuildServiceProvider();
 
@@ -50,11 +53,6 @@ namespace NinthBall.Core
                     .GetRequiredService<Simulation>()
                     .RunSimulation();
             }
-
-            //// Run
-            //return services
-            //    .GetRequiredService<Simulation>()
-            //    .RunSimulation();
         }
 
 
@@ -108,17 +106,6 @@ namespace NinthBall.Core
                 .AddSingleton((sp) => BootstrapConfiguration.GetMovingBlockBootstrapOptions())
                 .AddSingleton((sp) => BootstrapConfiguration.GetParametricBootstrapOptions())
                 
-                ;
-        }
-
-        private static IServiceCollection RegisterTaxSchedules(this IServiceCollection services)
-        {
-            return services
-
-                // Tax Schedules for DI injection
-                .AddKeyedSingleton(TaxScheduleKind.Federal, (sp, key) => TaxRateSchedules.FromConfigOrDefault("Federal2026Joint", TaxRateSchedules.FallbackFed2026))
-                .AddKeyedSingleton(TaxScheduleKind.LTCG, (sp, key) => TaxRateSchedules.FromConfigOrDefault("FederalLTCG2026Joint", TaxRateSchedules.FallbackFedLTCG2026))
-                .AddKeyedSingleton(TaxScheduleKind.State, (sp, key) => TaxRateSchedules.FromConfigOrDefault("NJ2026Joint", TaxRateSchedules.FallbackNJ2026))
                 ;
         }
 

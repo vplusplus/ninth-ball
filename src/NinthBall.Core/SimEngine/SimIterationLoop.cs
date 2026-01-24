@@ -17,7 +17,7 @@ namespace NinthBall.Core
             (
                 new(InitBalance.PreTax.Amount, InitBalance.PreTax.Allocation),
                 new(InitBalance.PostTax.Amount, InitBalance.PostTax.Allocation),
-                new(InitBalance.Cash.Amount, 1.0)
+                new(InitBalance.YearZeroCashBalance, Allocation: 1.0)
             );
 
             // Strategies can be stateful. Each iteration creates a fresh set.

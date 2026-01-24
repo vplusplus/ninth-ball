@@ -8,12 +8,12 @@ namespace NinthBall.Core
     {
         public IReadOnlyList<ISimObjective> GetOrderedActiveObjectives()
         {
-            if (null == MySimParams.Objectives) throw new FatalWarning($"Invalid input | List of simulation objectives was NULL.");
-            if (0 == MySimParams.Objectives.Count) throw new FatalWarning($"Invalid input | Specify one or more simulation objectives.");
+            if (null == MySimParams.Strategies) throw new FatalWarning($"Invalid input | List of simulation objectives was NULL.");
+            if (0 == MySimParams.Strategies.Count) throw new FatalWarning($"Invalid input | Specify one or more simulation objectives.");
 
             List<ObjectiveInfo> chosenObjectives = new();
 
-            foreach (var name in MySimParams.Objectives.Distinct())
+            foreach (var name in MySimParams.Strategies.Distinct())
             {
                 // Cosmetic: Name as provided in the input can skip the Strategy(s) or Objevctive(s) suffix.
                 var found = TryFindSimulationObjective(name, out var objectiveInfo);
