@@ -1,4 +1,5 @@
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.ObjectModel;
@@ -24,7 +25,8 @@ namespace NinthBall.Core
             var simSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
 
             simSessionBuilder.Configuration
-                .AddYamlResource(typeof(SimEngine).Assembly, "SimulationOptions-Defaults.yaml")
+                //.AddYamlResource(typeof(SimEngine).Assembly, "SimulationOptions-Defaults.yaml")
+                .AddEmbeddedDefaultYamls()
                 .AddYamlFile(simInputFileName)
                 .Build();
 
@@ -34,6 +36,16 @@ namespace NinthBall.Core
 
                 .RegisterConfigSection<SimulationSeed>()
                 .RegisterConfigSection<TaxRateSchedules>()
+
+                .RegisterConfigSection<MovingBlockBootstrapOptions>()
+                .RegisterConfigSection<ParametricBootstrapOptions>()
+                .AddSingleton<HistoricalReturns>()
+                .AddSingleton<FlatBootstrapper>()
+                .AddSingleton<SequentialBootstrapper>()
+                .AddSingleton<MovingBlockBootstrapper>()
+                .AddSingleton<ParametricBootstrapper>()
+                .AddSingleton<BootstrapSelector>()
+
 
                 // -----------------
 
@@ -55,6 +67,19 @@ namespace NinthBall.Core
             }
         }
 
+
+        static IConfigurationBuilder AddEmbeddedDefaultYamls(this IConfigurationBuilder builder)
+        {
+            var simAssembly = typeof(SimEngine).Assembly;
+            var embeddedDefaultsResourceNames = simAssembly
+                .GetManifestResourceNames()
+                .Where(name => null != name && name.Contains(".SimDefaults.") && name.EndsWith(".yaml"))
+                .ToList();
+
+            foreach(var resourceName in embeddedDefaultsResourceNames) builder.AddYamlResource(simAssembly, resourceName);
+
+            return builder;
+        }
 
         static IServiceCollection AddSimObjectives(this IServiceCollection services) => SimObjectivesSelector.AddSimulationObjectives(services);
 
@@ -92,19 +117,11 @@ namespace NinthBall.Core
         {
             return services
 
-                // Shared dependency that serves historical data to bootstrappers.
-                .AddSingleton<HistoricalReturns>()
 
-                // Add bootstrapper implementations and bootstrap selector
-                .AddSingleton<FlatBootstrapper>()
-                .AddSingleton<SequentialBootstrapper>()
-                .AddSingleton<MovingBlockBootstrapper>()
-                .AddSingleton<ParametricBootstrapper>()
-                .AddSingleton<BootstrapSelector>()
 
                 // Bootstrapper options - Optional configurations
-                .AddSingleton((sp) => BootstrapConfiguration.GetMovingBlockBootstrapOptions())
-                .AddSingleton((sp) => BootstrapConfiguration.GetParametricBootstrapOptions())
+                //.AddSingleton((sp) => BootstrapConfiguration.GetMovingBlockBootstrapOptions())
+                //.AddSingleton((sp) => BootstrapConfiguration.GetParametricBootstrapOptions())
                 
                 ;
         }

@@ -1,0 +1,47 @@
+
+#......................................................................
+# BlockBootstraps default options
+#......................................................................
+MovingBlockBootstrapOptions:
+  BlockSizes: [3, 4, 5]       # Catch sequence risk. Really no reason to second guess 3/4/5 years blocks
+  NoConsecutiveBlocks: true   # Avoid back to back identical collapse or runaway growth
+
+ParametricBootstrapOptions:
+  # When Stocks crash (panic), investors often sell stocks and buy Bonds (safe haven). 
+  # This drives Stock prices down and Bond prices up, creating a negative correlation.
+  # While this varies by decade (it was positive in the 1980s/90s), 
+  # it has been structurally negative for most of the 21st century. 
+  # -0.15 is a prudent estimate that acknowledges this benefit without overstating it.
+  StocksBondCorrelation: -0.15
+
+  # Stocks tend to struggle slightly when inflation rises unexpectedly (valuation compression).
+  StocksInflationCorrelation: -0.2
+
+  # Bonds hate inflation (yields rise, prices fall). This linkage is weak but generally positive
+  # in terms of yields (negative for prices). 
+  # However, for annual real returns, bonds often struggle during inflation spikes.
+  # A slight negative or near-zero correlation is safer for stress testing. 
+  # But technically, high inflation usually hurts nominal bond returns -> prices drop.
+  # Let's use a conservative negative correlation to model "bad times happen together".
+  BondsInflationCorrelation: -0.1
+
+  Stocks:
+    MeanReturn: 10%
+    Volatility: 18%
+    Skewness: -0.5          # Prudent Stress: Slightly negative to capture downside bias without extreme "wipeouts"
+    Kurtosis: 4             # Prudent Stress: "Fat tails" (Normal=3). 4.0 models a 2008-style crisis every ~25 years.
+    AutoCorrelation: 0.05   # Momentum: Slight positive correlation to model market regimes.
+
+  Bonds:
+    MeanReturn: 5%
+    Volatility: 8%
+    Skewness: 0             # Bonds are generally more symmetric in their annual return distribution.
+    Kurtosis: 3             # Normal distribution for bonds.
+    AutoCorrelation: 0
+
+  Inflation:
+    MeanReturn: 3%
+    Volatility: 2%
+    Skewness: 0.5           # Inflation shocks are often skewed to the upside
+    Kurtosis: 3
+    AutoCorrelation: 0.7    # Inflation tends to be "sticky" (high autocorrelation)

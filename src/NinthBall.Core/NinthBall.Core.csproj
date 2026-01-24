@@ -9,7 +9,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Data\ROI-History.xlsx" />
-    <EmbeddedResource Include="SimulationOptions-Defaults.yaml" />
+    <EmbeddedResource Include="SimDefaults\TaxRateSchedules.yaml" />
+    <EmbeddedResource Include="SimDefaults\Bootstrappers.yaml" />
+    <EmbeddedResource Include="SimDefaults\MoreDefaults.yaml" />
   </ItemGroup>
 
   <ItemGroup>

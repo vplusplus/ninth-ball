@@ -1,0 +1,17 @@
+
+SimulationSeed:
+  SeedHint: JSR
+
+# How much a company pays out in dividends relative to its current stock price, expressed as a percentage.
+# TODO: See if historical data is available, include to Bootstrapper.
+TypicalStocksDividendYield: 2.0%
+
+# Interest payment made by the bond issuer, expressed as a percentage of the bond's face value 
+TypicalBondCouponYield:     2.5%
+
+# Small haircut on current year inflation rate to represent Federal C-CPI lag.
+FedTaxInflationLagHairCut: 0.0025
+
+# Larger haircut on current year inflation rate to represent State's delayed adjustments and lag.
+NJStateTaxInflationLagHaircut: 0.0075
+

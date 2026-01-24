@@ -1,0 +1,53 @@
+
+#......................................................................
+# Federal, Federal long term cap gain and state tax rate schedules
+# Threshold: Nomimal income threshold. Simulation will adjust for inflation
+# MTR:       Marginal tax rate 
+#......................................................................
+TaxRateSchedules:
+
+  # 2026 Federal Income Tax Brackets for Married Filing Jointly.
+  # Values updated per IRS 2026 inflation adjustments.
+  # TaxDeductions represents Federal standard deductions
+  Federal:
+
+    # Fedeal 2026 MFJ Standard deductions
+    TaxDeductions: $31,500          # IMP: Update to $32,200 after testing
+    Brackets: [
+      { Threshold:      0,  MTR: 0.10    },
+      { Threshold:  24800,  MTR: 0.12    },
+      { Threshold: 100800,  MTR: 0.22    },
+      { Threshold: 211400,  MTR: 0.24    },
+      { Threshold: 403550,  MTR: 0.32    },
+      { Threshold: 512450,  MTR: 0.35    },
+      { Threshold: 768700,  MTR: 0.37    }
+    ]
+
+  # 2026 Federal Long term capital gains brackets for Married Filing Jointly.
+  # For LTCG there is no such thing as standard deduction or exemptions.
+  # Calling out to zero for this unused value.
+  LTCG:
+    TaxDeductions: 0,
+    Brackets: [
+      { Threshold:      0,  MTR: 0.00    },
+      { Threshold:  98900,  MTR: 0.15    },
+      { Threshold: 613700,  MTR: 0.20    }
+    ]
+
+  # 2026 New Jersey Gross Income Tax Brackets for Married Filing Jointly.
+  # TaxDeductions represents Personal and property tax exemptions.
+  # $1000 Personal Exemptions x 2 + $15,000 Property Tax Credit = $17,000
+  # Using conservative amount of $12000 
+  State:
+    TaxDeductions: $12,000
+    Brackets: [
+      { Threshold:       0, MTR: 0.01400 },
+      { Threshold:   20000, MTR: 0.01750 },
+      { Threshold:   50000, MTR: 0.02450 },
+      { Threshold:   70000, MTR: 0.03500 },
+      { Threshold:   80000, MTR: 0.05525 },
+      { Threshold:  150000, MTR: 0.06370 },
+      { Threshold:  500000, MTR: 0.08970 },
+      { Threshold: 1000000, MTR: 0.10750 }
+    ]
+
