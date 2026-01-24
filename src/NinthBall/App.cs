@@ -88,12 +88,12 @@ namespace NinthBall
             try
             {
                 // Load Config
-                var simConfig = SimInputReader.ReadFromYamlFile(InputFileName);
-                var outputConfig = SimOutputReader.TryLoad(InputFileName);
+                var inputConfig  = SimInputReader.ReadFromYamlFile(InputFileName);
+                var outputConfig = SimOutputReader.ReadFromYamlFile(LocateOutputConfigFile(InputFileName)).ToSimOutput();
 
                 // Run simulation
                 var timer = Stopwatch.StartNew();
-                var simResult = SimEngine.Run(simConfig);
+                var simResult = SimEngine.Run(inputConfig);
                 timer.Stop();
 
                 var htmlFileName = OutputFileName;
@@ -124,6 +124,34 @@ namespace NinthBall
                 // Capture details to output file.
                 await HtmlOutput.GenerateErrorHtmlAsync(Services, err, OutputFileName).ConfigureAwait(false);
             }
+        
+            static string LocateOutputConfigFile(string inputFileName)
+            {
+                ArgumentNullException.ThrowIfNull(inputFileName);
+
+                // Use the input file name directory as reasonable starting point
+                var dir = Path.GetDirectoryName(inputFileName) ?? "./";
+
+                // Convention based output configuration file names.
+                string[] possibleSimOutputYamlFileNames =
+                [
+                    Path.Combine(dir, Path.GetFileNameWithoutExtension(inputFileName) + ".output.yaml"),
+                    Path.Combine(dir,  "SimOutput.yaml"),
+                    Path.Combine("./", "SimOutput.yaml"),
+                ];
+
+                foreach (var candidateFileName in possibleSimOutputYamlFileNames)
+                {
+                    if (File.Exists(candidateFileName))
+                    {
+                        Console.WriteLine($"Using {Path.GetFullPath(candidateFileName)}");
+                        return candidateFileName;
+                    }
+                }
+
+                throw new FatalWarning($"Can't locate SimOutput.yaml");
+            }
+        
         }
     
         void ExportSampleYamlConfigFiles()
