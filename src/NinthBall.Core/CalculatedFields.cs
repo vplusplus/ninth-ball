@@ -101,7 +101,7 @@ namespace NinthBall.Core
 
         extension(SimResult simResult)
         {
-            public int NoOfYears => simResult.Input.SimParams.NoOfYears;
+            //public int NoOfYears => simResult.Input.SimParams.NoOfYears;
 
             public double SurvivalRate => simResult.Iterations.Count == 0 ? 0.0 : (double)simResult.Iterations.Count(x => x.Success) / (double)simResult.Iterations.Count;
 
@@ -121,7 +121,7 @@ namespace NinthBall.Core
             /// </summary>
             public IList<FailureBucket> GetFailureBuckets()
             {
-                var numYears = simResult.NoOfYears;
+                var numYears = simResult.SimParams.NoOfYears;
 
                 // Prepare five-year-buckets with start and end years.
                 // You can't directly use GroupBy() on Model.Iterations, which will miss buckets with no failures.

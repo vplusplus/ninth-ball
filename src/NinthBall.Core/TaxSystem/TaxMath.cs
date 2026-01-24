@@ -62,6 +62,19 @@ namespace NinthBall.Core
         const double HundredPCT    = 1.00;
         const double TenDollars    = 10.00;
 
+        // Taxable SS thresholds are statutory and not inflation-adjusted.
+        // TODO: Move to external optional configuration.
+        const double SSNonTaxableThresholdMFJ = 32000.0;
+        const double SS50PctTaxableThresholdMFJ = 44000.0;
+
+        // How much a company pays out in dividends relative to its current stock price, expressed as a percentage.
+        // TODO: See if historical data is available, include to Bootstrapper.
+        const double TypicalStocksDividendYield = 2.0 / 100.0;   // 2%
+
+        // Interest payment made by the bond issuer, expressed as a percentage of the bond's face value 
+        const double TypicalBondCouponYield = 2.5 / 100.0;          // 2.5%
+
+
         // NIIT thresholds are not indexed for inflation under current law.
         // For planning realism, consider inflating or policy-adjusting this value
         const double NIITThreshold = 250000.0;          // TODO: MFJ - Move to optional cofiguration
@@ -98,8 +111,8 @@ namespace NinthBall.Core
             PreTaxWDraw:    priorYear.Withdrawals.PreTax,
             SS:             priorYear.Incomes.SS,
             Ann:            priorYear.Incomes.Ann,
-            BondsYield:     priorYear.Jan.PostTax.BondsAmount * SimConfig.TypicalBondCouponYield,
-            Dividends:      priorYear.Jan.PostTax.StocksAmount * SimConfig.TypicalStocksDividendYield,
+            BondsYield:     priorYear.Jan.PostTax.BondsAmount * TypicalBondCouponYield,
+            Dividends:      priorYear.Jan.PostTax.StocksAmount * TypicalStocksDividendYield,
             CapGains:       priorYear.Withdrawals.PostTax
         )
         .MinZero();
@@ -107,10 +120,6 @@ namespace NinthBall.Core
 
         static Taxes.AGI AdjustedGrossIncomes(this Taxes.GI inc)
         {
-            // Taxable SS thresholds are statutory and not inflation-adjusted.
-            // TODO: Move to external optional configuration.
-            const double SSNonTaxableThresholdMFJ = 32000.0;
-            const double SS50PctTaxableThresholdMFJ = 44000.0;
 
             // Interim math to guess taxable portion of social security income.
             // Social Security taxation modeled using provisional income.

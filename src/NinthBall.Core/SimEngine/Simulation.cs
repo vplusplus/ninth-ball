@@ -1,13 +1,12 @@
 ﻿
 namespace NinthBall.Core
 {
-    internal sealed class Simulation(SimInput Input, InitialBalance InitBalance, SimParams SimParams, SimObjectivesSelector ActiveObjectives)
+    internal sealed class Simulation(SimParams SimParams, InitialBalance InitBalance, SimObjectivesSelector ActiveObjectives)
     {
         public SimResult RunSimulation()
         {
-            ArgumentNullException.ThrowIfNull(Input);
-            ArgumentNullException.ThrowIfNull(Input.SimParams);
-            ArgumentNullException.ThrowIfNull(Input.InitialBalance);
+            ArgumentNullException.ThrowIfNull(SimParams);
+            ArgumentNullException.ThrowIfNull(InitBalance);
             ArgumentNullException.ThrowIfNull(ActiveObjectives);
 
             // List of simulation objective, sorted by execution order.
@@ -20,12 +19,9 @@ namespace NinthBall.Core
             // Only input parameter we may modify...
             if (maxIterations != SimParams.Iterations)
             {
-                Input = Input with
+                SimParams = SimParams with
                 {
-                    SimParams = SimParams with
-                    {
-                        Iterations = maxIterations,
-                    }
+                    Iterations = maxIterations,
                 };
             }
 
@@ -55,7 +51,8 @@ namespace NinthBall.Core
                 .AsReadOnly();
 
             return new SimResult(
-                Input,
+                SimParams,
+                InitBalance,
                 strategyDescriptions,
                 iterationResultsWorstToBest
             );

@@ -3,34 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NinthBall.Core
 {
-    /// <summary>
-    /// Immutable data structure(s) representing simulation inputs.
-    /// This is the "Domain Contract" that can be deserialized from YAML/Json or populated by a UX.
-    /// </summary>
-    public sealed record SimInput
-    (
-        string? RandomSeedHint,
-
-        [property: Required]
-        SimParams SimParams,
-
-        [property: Required]
-        InitialBalance InitialBalance,
-
-        Rebalance? Rebalance,
-        FeesPCT? FeesPCT,
-        FlatTax? FlatTax,
-        AdditionalIncomes? AdditionalIncomes,
-        LivingExpenses? LivingExpenses,
-
-        // Pretax distribution (RMD is given, always added, not configurable)
-        FixedWithdrawal? FixedWithdrawal,
-        VariableWithdrawal? VariableWithdrawal
-
-        // Growth strategy, Historical Data & Bootstrapping
-        // FlatGrowth? FlatGrowth
-    );
-
     public sealed record SimulationSeed(string? SeedHint)
     {
         public readonly int Value = (SeedHint ?? "JSR").GetPredictableHashCode();
@@ -58,9 +30,6 @@ namespace NinthBall.Core
 
         [property: ValidateNested]
         InitialBalance.AA PostTax,
-
-        //[property: ValidateNested]
-        //InitialBalance.AA Cash,                 // Allocation is ignored for Cash assets
 
         [property: Min(0.01)]
         double YearZeroCashBalance,

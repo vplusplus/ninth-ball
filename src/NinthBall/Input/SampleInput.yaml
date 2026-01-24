@@ -8,18 +8,15 @@ SimParams:
       LivingExpenses,
       AnnualFees,
       TieredTax,
-      # FlatTax,
-      
-      # FlatGrowth,
-      # SequentialGrowth,
       RandomBlocksGrowth,
-      # ParametricGrowth,
-
-      # FixedWithdrawal,
       VariableWithdrawal,
-      # JustEnoughWithdrawal,
       RebalancingAndReallocation,
       RMD,
+
+      # FlatGrowth, SequentialGrowth, RandomBlocksGrowth, ParametricGrowth, 
+      # FixedWithdrawal, VariableWithdrawal, JustEnoughWithdrawal,
+      # FlatTax, TieredTax
+
     ]
 
 InitialBalance:
@@ -31,7 +28,6 @@ InitialBalance:
   PostTax:
     Amount: 1,000,000
     Allocation: 60%
-
 
 # ............................................................
 # Expense modelling
@@ -99,10 +95,10 @@ FlatTax:
 # ............................................................
 Rebalance:
   MaxDrift: 5%
-  ZZZ-Reallocate:
-    - AtAge: 70
+  Reallocate:
+    - AtAge: 125
       PreTaxStocksAllocation:  70%
       PostTaxStocksAllocation: 70%
-    - AtAge: 80
+    - AtAge: 125
       PreTaxStocksAllocation:  80%
       PostTaxStocksAllocation: 80%

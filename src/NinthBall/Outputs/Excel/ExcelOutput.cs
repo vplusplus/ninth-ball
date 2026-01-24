@@ -123,8 +123,8 @@ namespace NinthBall.Outputs.Excel
             {
                 sheet.WriteColumns(20, 120);
 
-                var I = simResult.Input.InitialBalance;
-                var P = simResult.Input.SimParams;
+                var P = simResult.SimParams;
+                var I = simResult.InitialBalance;
 
                 using (var rows = sheet.BeginSheetData())
                 {
@@ -151,7 +151,7 @@ namespace NinthBall.Outputs.Excel
                     rows
                         .BeginRow()
                         .Append("Horizon")
-                        .Append($"{simResult.NoOfYears} years")
+                        .Append($"{simResult.SimParams.NoOfYears} years")
                         .EndRow();
 
                     rows
@@ -184,8 +184,9 @@ namespace NinthBall.Outputs.Excel
             const double W10 = 10;
             const double W20 = 20;
 
-            var I = simResult.Input.InitialBalance;
-            var P = simResult.Input.SimParams;
+            var P = simResult.SimParams;
+            var I = simResult.InitialBalance;
+            
             var percentiles = SimOutputDefaults.DefaultPercentiles;
 
             using (var sheet = xl.BeginSheet("Summary"))
