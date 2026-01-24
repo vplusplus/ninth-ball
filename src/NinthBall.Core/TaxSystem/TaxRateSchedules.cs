@@ -19,7 +19,6 @@ namespace NinthBall.Core
         );
     }
 
-
     public sealed record TaxRateSchedules
     (
         [property: ValidateNested] TaxRateSchedule Federal,

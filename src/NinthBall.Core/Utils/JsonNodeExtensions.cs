@@ -12,7 +12,7 @@ namespace NinthBall.Core
         public static JsonObject AsJsonObject(this string jsonContent) => string.IsNullOrWhiteSpace(jsonContent)  ? [] : JsonNode.Parse(jsonContent) as JsonObject ?? [];
 
         /// <summary>
-        /// Can replace string formatted numbers ($1,000) and percentage values (60%) to double.
+        /// Replace string formatted numbers ($1,000) and percentage values (60%) to double.
         /// </summary>
         public static JsonNode PatchNumbersAndPercentage(this JsonNode node)
         {

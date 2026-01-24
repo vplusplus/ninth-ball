@@ -65,6 +65,7 @@ namespace NinthBall.Core
             // Optmization 2: Flat tax rate schedule. Zero to Infinite range. Nothing to index.
             if (1 == TS.Brackets.Count && 0 == TS.Brackets[0].Threshold) return TS;
 
+            // Adjust thresholds for inlfation.
             int n = TS.Brackets.Count;
             var inflatedBrackets = new List<TaxRateSchedule.TaxBracket>(n);
 
@@ -79,14 +80,15 @@ namespace NinthBall.Core
                 ));
             }
 
+            // Adjust tax deductions for inflation.
             var inflatedTaxDeductions = InflateAndReduceJitter(TS.TaxDeductions, multiplier: inflationMultiplier, jitterGuard);
 
-
+            // Return the inflated tax rate schedule.
             return new TaxRateSchedule(inflatedTaxDeductions, inflatedBrackets);
 
             // WHY?
             // We do not want 30,000 schedules (30 years x 10,000 iteration-paths)
-            // Fed also rounds up the thresholds.
+            // IRS also rounds up the thresholds.
             // Our objective is not to faithfully reproduce IRS behavior.
             // Our objective is to reduce jitter across iteration paths. 
             static double InflateAndReduceJitter(double amount, double multiplier, double jitterGuard)

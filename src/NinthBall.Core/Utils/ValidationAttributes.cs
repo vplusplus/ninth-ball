@@ -1,6 +1,6 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace NinthBall.Core
 {
