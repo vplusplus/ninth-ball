@@ -1,18 +1,17 @@
-﻿using System.Collections.ObjectModel;
-
+﻿
 namespace NinthBall.Core
 {
-    internal sealed class Simulation(SimInput Input, InitialBalance InitBalance, SimParams SimParams, IEnumerable<ISimObjective> Objectives)
+    internal sealed class Simulation(SimInput Input, InitialBalance InitBalance, SimParams SimParams, SimObjectivesSelector ActiveObjectives)
     {
         public SimResult RunSimulation()
         {
             ArgumentNullException.ThrowIfNull(Input);
             ArgumentNullException.ThrowIfNull(Input.SimParams);
             ArgumentNullException.ThrowIfNull(Input.InitialBalance);
-            ArgumentNullException.ThrowIfNull(Objectives);
+            ArgumentNullException.ThrowIfNull(ActiveObjectives);
 
             // List of simulation objective, sorted by execution order.
-            ReadOnlyCollection<ISimObjective> orderedObjectives = Objectives.OrderBy(x => x.Order).ToList().AsReadOnly();
+            var orderedObjectives = ActiveObjectives.GetOrderedActiveObjectives();
 
             // Find max iterations that we can support.
             int maxIterations = Math.Min(SimParams.Iterations, orderedObjectives.Min(x => x.MaxIterations));

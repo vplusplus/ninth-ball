@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    [SimInput(typeof(RebalancingAndReallocationStrategy), typeof(Rebalance), Family = StrategyFamily.PortfolioManagement)]
+    [StrategyFamily(StrategyFamily.Rebalance)]
     sealed class RebalancingAndReallocationStrategy(InitialBalance Initial, Rebalance RBL) : ISimObjective
     {
         int ISimObjective.Order => 1;

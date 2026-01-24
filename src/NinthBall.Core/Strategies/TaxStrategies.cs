@@ -2,7 +2,7 @@
 
 namespace NinthBall.Core
 {
-    [SimInput(typeof(TaxStrategy), typeof(TaxConfig))]
+    [StrategyFamily(StrategyFamily.Taxes)]
     sealed class TaxStrategy
     (
         TaxConfig TaxOptions,

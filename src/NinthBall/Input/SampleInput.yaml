@@ -6,6 +6,18 @@ SimParams:
   StartAge: 60
   NoOfYears: 35
   Iterations: 10000
+  Objectives: [
+      AdditionalIncome,
+      LivingExpenses,
+      AnnualFees,
+      TaxStrategy,
+      Growth,
+      # FixedWithdrawal,
+      VariableWithdrawal,
+      # JustEnoughWithdrawal,
+      RebalancingAndReallocation,
+      RMD,
+    ]
 
 InitialBalance:
   PreTax:
@@ -16,6 +28,8 @@ InitialBalance:
     Allocation: 60%
   Cash:
     Amount: 0
+
+
 
 # ............................................................
 # Expense modelling
@@ -51,23 +65,20 @@ Growth:
   InflationRate: 3.0%       # Used only by flat bootstrapper 
 
 # ............................................................
+# How fast you want to deplete the 401K funds
 # PreTax (401K) depletion velocity; Pick one.
 # All choices below are applicable ONLY to the PreTax assets
 # ............................................................
-VariablePercentageWithdrawal:
-  FutureROI: 4%
-  FutureInflation: 3%
-  Floor: 0
-  Ceiling: 150,000
-
-ZZZPercentageWithdrawal:
+FixedWithdrawal:
   FirstYearPct: 4%
   Increment:    2%
   ResetAtAge:   [65, 70]
 
-ZZZFixedWithdrawal:
-  FirstYearAmount: 80,000
-  Increment: 2%
+VariableWithdrawal:
+  FutureROI: 4%
+  FutureInflation: 3%
+  Floor: 0
+  Ceiling: 150,000
 
 # ............................................................
 # Fees and Taxes

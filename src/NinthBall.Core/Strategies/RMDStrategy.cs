@@ -1,6 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
+    [StrategyFamily(StrategyFamily.RMD)]
     sealed class RMDStrategy : ISimObjective, ISimStrategy
     {
         const int RMDStartAge = 73;

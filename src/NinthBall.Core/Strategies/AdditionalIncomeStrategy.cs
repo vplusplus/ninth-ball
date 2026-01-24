@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    [SimInput(typeof(AdditionalIncomeStrategy), typeof(AdditionalIncomes))]
+    [StrategyFamily(StrategyFamily.Income)]
     sealed class AdditionalIncomeStrategy(SimParams P, AdditionalIncomes AInc) : ISimObjective
     {
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) 

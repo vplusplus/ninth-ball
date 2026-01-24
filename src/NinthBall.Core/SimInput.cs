@@ -1,4 +1,5 @@
 ﻿
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace NinthBall.Core
@@ -10,23 +11,22 @@ namespace NinthBall.Core
     public sealed record SimInput
     (
         string? RandomSeedHint,
-        
+
+        [property: Required]
         SimParams SimParams,
 
-        // Portfolio management
+        [property: Required]
         InitialBalance InitialBalance,
+
         Rebalance? Rebalance,
         FeesPCT? FeesPCT,
-
-        // Inccome and expenses
-        AdditionalIncomes? AdditionalIncomes,
         TaxConfig? Taxes,
+        AdditionalIncomes? AdditionalIncomes,
         LivingExpenses? LivingExpenses,
 
         // Pretax distribution (RMD is given, always added, not configurable)
         FixedWithdrawal? FixedWithdrawal,
-        PercentageWithdrawal? PercentageWithdrawal,
-        VariablePercentageWithdrawal? VariablePercentageWithdrawal,
+        VariableWithdrawal? VariableWithdrawal,
 
         // Growth strategy, Historical Data & Bootstrapping
         Growth? Growth
@@ -46,7 +46,10 @@ namespace NinthBall.Core
         int NoOfYears,
 
         [property: Range(1, 50000)]
-        int Iterations = 10000
+        int Iterations,
+
+        [property: Required]
+        IReadOnlyList<string> Objectives
     );
 
     public sealed record InitialBalance
@@ -166,13 +169,13 @@ namespace NinthBall.Core
         );
     }
 
-    public sealed record FixedWithdrawal
-    (
-        [property: Min(0)]     double FirstYearAmount, 
-        [property: Range(0,1)] double Increment
-    );
+    //public sealed record FixedWithdrawal
+    //(
+    //    [property: Min(0)]     double FirstYearAmount, 
+    //    [property: Range(0,1)] double Increment
+    //);
 
-    public sealed record PercentageWithdrawal
+    public sealed record FixedWithdrawal
     (
         [property: Range(0,1)] 
         double FirstYearPct,
@@ -184,7 +187,7 @@ namespace NinthBall.Core
         IReadOnlyList<int> ResetAtAge
     );
 
-    public sealed record VariablePercentageWithdrawal
+    public sealed record VariableWithdrawal
     (
         [property: Range(0, 1)] 
         double FutureROI,

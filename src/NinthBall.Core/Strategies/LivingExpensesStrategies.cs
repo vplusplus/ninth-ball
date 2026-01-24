@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    [SimInput(typeof(LivingExpensesStrategy), typeof(LivingExpenses), Family = StrategyFamily.LifestyleExpenses)]
+    [StrategyFamily(StrategyFamily.Expenses)]
     sealed class LivingExpensesStrategy(SimParams P, LivingExpenses LExp) : ISimObjective
     {
         int ISimObjective.Order => 32;

@@ -1,17 +1,19 @@
 ﻿
 namespace NinthBall.Core
 {
-    [SimInput(typeof(GrowthStrategy), typeof(Growth))]
-    sealed class GrowthStrategy(SimParams SimParams, IBootstrapper Bootstrapper) : ISimObjective
+    [StrategyFamily(StrategyFamily.Growth)]
+    sealed class GrowthStrategy(SimParams SimParams, BootstrapSelector BootstrapSelector) : ISimObjective
     {
         int ISimObjective.Order => 40;
 
-        int ISimObjective.MaxIterations => Bootstrapper.GetMaxIterations(SimParams.NoOfYears);
+        IBootstrapper ChosenBootstrapper = BootstrapSelector.GetSelectedBootstrapper();
+
+        int ISimObjective.MaxIterations => ChosenBootstrapper.GetMaxIterations(SimParams.NoOfYears);
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) 
         {
             return new Strategy(
-                Bootstrapper.GetROISequence(iterationIndex, SimParams.NoOfYears)
+                ChosenBootstrapper.GetROISequence(iterationIndex, SimParams.NoOfYears)
             );
         }
 
@@ -32,6 +34,6 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Growth | {Bootstrapper}";
+        public override string ToString() => $"Growth | {ChosenBootstrapper}";
     }
 }

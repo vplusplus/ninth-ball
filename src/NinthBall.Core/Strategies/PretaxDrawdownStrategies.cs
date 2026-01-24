@@ -2,42 +2,63 @@
 namespace NinthBall.Core
 {
 
-    [SimInput(typeof(PreTaxFixedWithdrawalStrategy), typeof(FixedWithdrawal), Family = StrategyFamily.PreTaxWithdrawalVelocity)]
-    sealed class PreTaxFixedWithdrawalStrategy(FixedWithdrawal Options) : ISimObjective
+    //[StrategyFamily(StrategyFamily.Withdrawals)]
+    //sealed class FixedWithdrawalStrategy(FixedWithdrawal Options) : ISimObjective
+    //{
+    //    int ISimObjective.Order => 20;
+
+    //    ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
+
+    //    sealed class Strategy(FixedWithdrawal FW) : ISimStrategy
+    //    {
+    //        double from401K = 0;
+
+    //        void ISimStrategy.Apply(ISimState context)
+    //        {
+    //            var take = 0 == context.YearIndex
+    //                ? from401K = FW.FirstYearAmount
+    //                : from401K *= 1 + FW.Increment;
+
+    //            context.Withdrawals = context.Withdrawals with
+    //            {
+    //                // Adjust to multiples of $120 i.e. $10/month
+    //                PreTax = take.RoundToMultiples(120.0)   
+    //            };
+    //        }
+    //    }
+
+    //    public override string ToString() => $"Pre-Tax Drawdown | Fixed {Options.FirstYearAmount:C0} (+{Options.Increment:P1}/yr)";
+    //}
+
+
+    [StrategyFamily(StrategyFamily.Withdrawals)]
+    sealed class JustEnoughWithdrawalStrategy() : ISimObjective
     {
         int ISimObjective.Order => 20;
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy();
 
-        sealed class Strategy(FixedWithdrawal FW) : ISimStrategy
+        sealed class Strategy() : ISimStrategy
         {
-            double from401K = 0;
-
-            void ISimStrategy.Apply(ISimState context)
+            void ISimStrategy.Apply(ISimState ctx)
             {
-                var take = 0 == context.YearIndex
-                    ? from401K = FW.FirstYearAmount
-                    : from401K *= 1 + FW.Increment;
-
-                context.Withdrawals = context.Withdrawals with
-                {
-                    // Adjust to multiples of $120 i.e. $10/month
-                    PreTax = take.RoundToMultiples(120.0)   
-                };
+                // Strategy doesn't stipulate withdrawal amount.
+                // RMD strategy and/or Simulation finalization may decide to withdraw funds.
             }
         }
 
-        public override string ToString() => $"Pre-Tax Drawdown | Fixed {Options.FirstYearAmount:C0} (+{Options.Increment:P1}/yr)";
+        public override string ToString() => $"Pre-Tax Drawdown | Just enough to meet the expenses and/or RMD.";
     }
 
-    [SimInput(typeof(PreTaxPercentageWithdrawalStrategy), typeof(PercentageWithdrawal), Family = StrategyFamily.PreTaxWithdrawalVelocity)]
-    sealed class PreTaxPercentageWithdrawalStrategy(PercentageWithdrawal Options) : ISimObjective
+
+    [StrategyFamily(StrategyFamily.Withdrawals)]
+    sealed class FixedWithdrawalStrategy(FixedWithdrawal FW) : ISimObjective
     {
         int ISimObjective.Order => 20;
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(FW);
 
-        sealed class Strategy(PercentageWithdrawal PW) : ISimStrategy
+        sealed class Strategy(FixedWithdrawal FW) : ISimStrategy
         {
             double from401K = 0;
 
@@ -45,15 +66,15 @@ namespace NinthBall.Core
             {
                 if (0 == ctx.YearIndex)
                 {
-                    from401K = ctx.Jan.PreTax.Amount * PW.FirstYearPct;
+                    from401K = ctx.Jan.PreTax.Amount * FW.FirstYearPct;
                 }
-                else if (null != PW.ResetAtAge && PW.ResetAtAge.Contains(ctx.Age))
+                else if (null != FW.ResetAtAge &&  FW.ResetAtAge.Count > 0 && FW.ResetAtAge.Contains(ctx.Age))
                 {
-                    from401K = ctx.Jan.PreTax.Amount * PW.FirstYearPct;
+                    from401K = ctx.Jan.PreTax.Amount * FW.FirstYearPct;
                 }
                 else
                 {
-                    from401K *= 1 + PW.Increment;
+                    from401K *= 1 + FW.Increment;
                 }
 
                 ctx.Withdrawals = ctx.Withdrawals with
@@ -64,18 +85,18 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Pre-Tax Drawdown | {Options.FirstYearPct:P1} of PreTax (+{Options.Increment:P1}/yr){ResetYearsToString}";
-        string ResetYearsToString => (null == Options.ResetAtAge || 0 == Options.ResetAtAge.Count) ? string.Empty : $" | Reset to {Options.FirstYearPct:P1} @ age [{string.Join(',', Options.ResetAtAge)}]";
+        public override string ToString() => $"Pre-Tax Drawdown | {FW.FirstYearPct:P1} of PreTax (+{FW.Increment:P1}/yr){ResetYearsToString}";
+        string ResetYearsToString => (null == FW.ResetAtAge || 0 == FW.ResetAtAge.Count) ? string.Empty : $" | Reset to {FW.FirstYearPct:P1} @ age [{string.Join(',', FW.ResetAtAge)}]";
     }
 
-    [SimInput(typeof(PreTaxVariablePercentageWithdrawalStrategy), typeof(VariablePercentageWithdrawal), Family = StrategyFamily.PreTaxWithdrawalVelocity)]
-    sealed class PreTaxVariablePercentageWithdrawalStrategy(SimParams Params, VariablePercentageWithdrawal VPW) : ISimObjective
+    [StrategyFamily(StrategyFamily.Withdrawals)]
+    sealed class VariableWithdrawalStrategy(SimParams Params, VariableWithdrawal VW) : ISimObjective
     {
         int ISimObjective.Order => 20;
 
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Params, VPW);
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Params, VW);
 
-        sealed class Strategy(SimParams P, VariablePercentageWithdrawal VPW) : ISimStrategy
+        sealed class Strategy(SimParams P, VariableWithdrawal VW) : ISimStrategy
         {
             void ISimStrategy.Apply(ISimState ctx)
             {
@@ -84,23 +105,23 @@ namespace NinthBall.Core
                 // Calculate the "ideal" withdrawal to hit zero at the end of the horizon.
                 double amount = Stats.EquatedWithdrawal(
                     currentBalance:     ctx.Jan.PreTax.Amount, 
-                    estimatedROI:       VPW.FutureROI, 
-                    estimatedInflation: VPW.FutureInflation, 
+                    estimatedROI:       VW.FutureROI, 
+                    estimatedInflation: VW.FutureInflation, 
                     remainingYears:     remainingYears
                 );
 
                 // Apply guardrails (adjusted for inflation)
                 double inflationMultiplier = 0 == ctx.YearIndex ? 1.0 : ctx.PriorYear.Metrics.InflationMultiplier;
 
-                if (VPW.Floor.HasValue)
+                if (VW.Floor.HasValue)
                 {
-                    double currentFloor = VPW.Floor.Value * inflationMultiplier;
+                    double currentFloor = VW.Floor.Value * inflationMultiplier;
                     amount = Math.Max(amount, currentFloor);
                 }
 
-                if (VPW.Ceiling.HasValue)
+                if (VW.Ceiling.HasValue)
                 {
-                    double currentCeiling = VPW.Ceiling.Value * inflationMultiplier;
+                    double currentCeiling = VW.Ceiling.Value * inflationMultiplier;
                     amount = Math.Min(amount, currentCeiling);
                 }
 
@@ -112,10 +133,10 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {VPW.FutureROI:P1} future ROI, {VPW.FutureInflation:P1} future inflation{GuardrailsToString}";
+        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {VW.FutureROI:P1} future ROI, {VW.FutureInflation:P1} future inflation{GuardrailsToString}";
 
-        string GuardrailsToString => (VPW.Floor.HasValue || VPW.Ceiling.HasValue) 
-            ? $" | Guardrails: [{VPW.Floor?.ToString("C0") ?? "None"} - {VPW.Ceiling?.ToString("C0") ?? "None"}] adjusted for inflation" 
+        string GuardrailsToString => (VW.Floor.HasValue || VW.Ceiling.HasValue) 
+            ? $" | Guardrails: [{VW.Floor?.ToString("C0") ?? "None"} - {VW.Ceiling?.ToString("C0") ?? "None"}] adjusted for inflation" 
             : string.Empty;
     }
 }

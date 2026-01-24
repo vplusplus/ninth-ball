@@ -23,8 +23,9 @@ namespace NinthBall.Core
                 .AddSingleton(new SimulationSeed(input.RandomSeedHint))
                 .AddSingleton(input)
                 .RegisterSimulationInputs(validInputs)
-                .RegisterActiveStrategies(validInputs)
-                .RegisterHistoricalDataAndBootstrapper()
+                .AddSimObjectives()
+                .AddSingleton<SimObjectivesSelector>()
+                .RegisterHistoricalDataAndBootstrappers()
                 .RegisterTaxSchedules()
                 .AddSingleton<Simulation>()
                 .BuildServiceProvider();
@@ -34,6 +35,10 @@ namespace NinthBall.Core
                 .GetRequiredService<Simulation>()
                 .RunSimulation();
         }
+
+
+        static IServiceCollection AddSimObjectives(this IServiceCollection services) => SimObjectivesSelector.AddSimulationObjectives(services);
+
 
         // Discover SimInput properties that are not NULL.
         // Validate each active-input using DataAnnotations attributes.
@@ -63,63 +68,25 @@ namespace NinthBall.Core
             return services;
         }
 
-        // Register only active strategies to the DI system.
-        // Strategies are active if: 
-        // - They had not declared required input.
-        // - They have declared required input and the required input is available in the SimInput.
-        private static IServiceCollection RegisterActiveStrategies(this IServiceCollection services, Dictionary<PropertyInfo, object> availableInputs)
-        {
-            // Keep only active strategies.
-            var activeStrategies = SimObjectivesCache.StrategyMetaData
-                .Where(x => null == x.SimInputProperty || availableInputs.ContainsKey(x.SimInputProperty))
-                .ToList();
-
-            // Ensure more than one strategy is not active with-in each exclusive families
-            EnforceStrategyExclusivity(activeStrategies);
-
-            // Register active strategies to the DI system
-            foreach (var strategy in activeStrategies) services.AddSingleton(typeof(ISimObjective), strategy.StrategyType);
-
-            return services;
-        }
-
         // Register historical ROI data provider, bootstrappers and tax schedules.
-        private static IServiceCollection RegisterHistoricalDataAndBootstrapper(this IServiceCollection services)
+        private static IServiceCollection RegisterHistoricalDataAndBootstrappers(this IServiceCollection services)
         {
             return services
 
                 // Shared dependency that serves historical data to bootstrappers.
                 .AddSingleton<HistoricalReturns>()
 
-                // Bootstrapper options - Optional configurations
-                .AddSingleton((sp) => BootstrapConfiguration.GetMovingBlockBootstrapOptions())
-                .AddSingleton((sp) => BootstrapConfiguration.GetParametricBootstrapOptions())
-
-                // Available bootstrappers
+                // Add bootstrapper implementations and bootstrap selector
                 .AddSingleton<FlatBootstrapper>()
                 .AddSingleton<SequentialBootstrapper>()
                 .AddSingleton<MovingBlockBootstrapper>()
                 .AddSingleton<ParametricBootstrapper>()
+                .AddSingleton<BootstrapSelector>()
 
-                // Chosen bootstrapper based on Growth option.
-                .AddSingleton<IBootstrapper>(sp =>
-                {
-                    // Look for Growth options to determine which bootstrapper to use.
-                    var growthOptions = sp.GetRequiredService<Growth>();
-
-                    // If growth not specified, the Growth strategy should have been muted.
-                    if (null == growthOptions) throw new InvalidOperationException("Growth option not specified. Request for Bootstrapper is invalid.");
-
-                    // Choose the bootstrapper based on Growth options.
-                    return growthOptions.Bootstrapper switch
-                    {
-                        BootstrapKind.Flat        => sp.GetRequiredService<FlatBootstrapper>(),
-                        BootstrapKind.Sequential  => sp.GetRequiredService<SequentialBootstrapper>(),
-                        BootstrapKind.MovingBlock => sp.GetRequiredService<MovingBlockBootstrapper>(),
-                        BootstrapKind.Parametric  => sp.GetRequiredService<ParametricBootstrapper>(),
-                        _ => throw new NotSupportedException($"Unknown bootstrapper kind: {growthOptions.Bootstrapper}"),
-                    };
-                })
+                // Bootstrapper options - Optional configurations
+                .AddSingleton((sp) => BootstrapConfiguration.GetMovingBlockBootstrapOptions())
+                .AddSingleton((sp) => BootstrapConfiguration.GetParametricBootstrapOptions())
+                
                 ;
         }
 
@@ -132,29 +99,6 @@ namespace NinthBall.Core
                 .AddKeyedSingleton(TaxScheduleKind.LTCG, (sp, key) => TaxRateSchedules.FromConfigOrDefault("FederalLTCG2026Joint", TaxRateSchedules.FallbackFedLTCG2026))
                 .AddKeyedSingleton(TaxScheduleKind.State, (sp, key) => TaxRateSchedules.FromConfigOrDefault("NJ2026Joint", TaxRateSchedules.FallbackNJ2026))
                 ;
-        }
-
-
-        // For some strategy families, only one of its kind is allowed.
-        // Throws an exception if more than one strategy is activated with-in each exclusive-families.
-        private static void EnforceStrategyExclusivity(IList<SimObjectivesCache.MetaData> activeStrategies)
-        {
-            var exclusiveFamilies = new[]
-            {
-                StrategyFamily.LifestyleExpenses,
-                StrategyFamily.PreTaxWithdrawalVelocity,
-                StrategyFamily.Taxes
-            };
-
-            foreach (var family in exclusiveFamilies)
-            {
-                var conflicting = activeStrategies.Where(s => s.Family == family).ToList();
-                if (conflicting.Count > 1)
-                {
-                    var names = string.Join(", ", conflicting.Select(s => s.StrategyType.Name));
-                    throw new FatalWarning($"Conflicting strategies detected in family '{family}' [{names}] | Only one strategy from this family can be active at a time.");
-                }
-            }
         }
 
         // Readable top level properties of the SimInput.
