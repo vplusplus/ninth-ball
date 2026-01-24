@@ -1,19 +1,16 @@
 ﻿
 namespace NinthBall.Core
 {
-    [StrategyFamily(StrategyFamily.Growth)]
-    sealed class GrowthStrategy(SimParams SimParams, BootstrapSelector BootstrapSelector) : ISimObjective
+    abstract class GrowthStrategyBase(SimParams SimParams, IBootstrapper Bootstrapper) : ISimObjective
     {
         int ISimObjective.Order => 40;
 
-        IBootstrapper ChosenBootstrapper = BootstrapSelector.GetSelectedBootstrapper();
+        int ISimObjective.MaxIterations => Bootstrapper.GetMaxIterations(SimParams.NoOfYears);
 
-        int ISimObjective.MaxIterations => ChosenBootstrapper.GetMaxIterations(SimParams.NoOfYears);
-
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) 
+        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex)
         {
             return new Strategy(
-                ChosenBootstrapper.GetROISequence(iterationIndex, SimParams.NoOfYears)
+                Bootstrapper.GetROISequence(iterationIndex, SimParams.NoOfYears)
             );
         }
 
@@ -26,14 +23,21 @@ namespace NinthBall.Core
 
                 // Apply ROI suggested by bootstrapper.
                 context.ROI = new ROI(
-                    LikeYear: roi.Year, 
-                    StocksROI: roi.StocksROI, 
-                    BondsROI: roi.BondsROI, 
+                    LikeYear: roi.Year,
+                    StocksROI: roi.StocksROI,
+                    BondsROI: roi.BondsROI,
                     InflationRate: roi.InflationRate
                 );
             }
         }
 
-        public override string ToString() => $"Growth | {ChosenBootstrapper}";
+        public override string ToString() => $"Growth | {Bootstrapper}";
     }
+
+
+    [StrategyFamily(StrategyFamily.Growth)] sealed class FlatGrowthStrategy(SimParams SimParams, FlatBootstrapper Bootstrapper) : GrowthStrategyBase(SimParams, Bootstrapper) { }
+    [StrategyFamily(StrategyFamily.Growth)] sealed class SequentialGrowthStrategy(SimParams SimParams, SequentialBootstrapper Bootstrapper) : GrowthStrategyBase(SimParams, Bootstrapper) { }
+    [StrategyFamily(StrategyFamily.Growth)] sealed class RandomBlocksGrowthStrategy(SimParams SimParams, MovingBlockBootstrapper Bootstrapper) : GrowthStrategyBase(SimParams, Bootstrapper) { }
+    [StrategyFamily(StrategyFamily.Growth)] sealed class ParametricGrowthStrategy(SimParams SimParams, ParametricBootstrapper Bootstrapper) : GrowthStrategyBase(SimParams, Bootstrapper) { }
+
 }

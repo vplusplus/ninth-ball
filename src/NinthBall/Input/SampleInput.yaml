@@ -9,7 +9,12 @@ SimParams:
       AnnualFees,
       TieredTax,
       # FlatTax,
-      Growth,
+      
+      # FlatGrowth,
+      # SequentialGrowth,
+      RandomBlocksGrowth,
+      # ParametricGrowth,
+
       # FixedWithdrawal,
       VariableWithdrawal,
       # JustEnoughWithdrawal,
@@ -52,14 +57,12 @@ AdditionalIncomes:
     Increment: 0%
 
 # ............................................................
-# Growth strategies 
-# Availble options: Flat | Sequential | MovingBlock | Parametric
+# Flat Growth strategy
 # ............................................................
-Growth:
-  Bootstrapper: MovingBlock
-  Stocks: 10.0%             # Used only by flat bootstrapper
-  Bonds:  4.0%              # Used only by flat bootstrapper
-  InflationRate: 3.0%       # Used only by flat bootstrapper 
+FlatGrowth:
+  Stocks: 10.0%
+  Bonds:  4.0%
+  InflationRate: 3.0%
 
 # ............................................................
 # How fast you want to deplete the 401K funds

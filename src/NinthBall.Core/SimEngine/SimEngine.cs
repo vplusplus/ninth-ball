@@ -44,7 +44,9 @@ namespace NinthBall.Core
                 .AddSingleton<SequentialBootstrapper>()
                 .AddSingleton<MovingBlockBootstrapper>()
                 .AddSingleton<ParametricBootstrapper>()
-                .AddSingleton<BootstrapSelector>()
+
+                .RegisterConfigSection<FlatGrowth>()
+
 
 
                 // -----------------
@@ -53,7 +55,6 @@ namespace NinthBall.Core
                 .RegisterSimulationInputs(validInputs)
                 .AddSimObjectives()
                 .AddSingleton<SimObjectivesSelector>()
-                .RegisterHistoricalDataAndBootstrappers()
                 
                 .AddSingleton<Simulation>()
                 .BuildServiceProvider();
@@ -112,19 +113,6 @@ namespace NinthBall.Core
             return services;
         }
 
-        // Register historical ROI data provider, bootstrappers and tax schedules.
-        private static IServiceCollection RegisterHistoricalDataAndBootstrappers(this IServiceCollection services)
-        {
-            return services
-
-
-
-                // Bootstrapper options - Optional configurations
-                //.AddSingleton((sp) => BootstrapConfiguration.GetMovingBlockBootstrapOptions())
-                //.AddSingleton((sp) => BootstrapConfiguration.GetParametricBootstrapOptions())
-                
-                ;
-        }
 
         // Readable top level properties of the SimInput.
         // Complex types from the same namespace of SimInput.

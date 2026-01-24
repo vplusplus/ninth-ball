@@ -25,10 +25,10 @@ namespace NinthBall.Core
 
         // Pretax distribution (RMD is given, always added, not configurable)
         FixedWithdrawal? FixedWithdrawal,
-        VariableWithdrawal? VariableWithdrawal,
+        VariableWithdrawal? VariableWithdrawal
 
         // Growth strategy, Historical Data & Bootstrapping
-        Growth? Growth
+        // FlatGrowth? FlatGrowth
     );
 
     public sealed record SimulationSeed(string? SeedHint)
@@ -194,13 +194,8 @@ namespace NinthBall.Core
         Flat, Sequential, MovingBlock, Parametric
     }
 
-    public sealed record Growth
+    public sealed record FlatGrowth
     (
-        [property: Required]
-        BootstrapKind Bootstrapper,
-
-        // Options used only by FlatBootstrapper
-        // Ignored by other bootstrappers
         [property: Range(0, 1)] double Stocks,
         [property: Range(0, 1)] double Bonds,
         [property: Range(0, 1)] double InflationRate

@@ -2,7 +2,7 @@
 
 namespace NinthBall.Core
 {
-    internal sealed class FlatBootstrapper(Growth Options) : IBootstrapper
+    internal sealed class FlatBootstrapper(FlatGrowth Options) : IBootstrapper
     {
         // We need only one single-instance-sequence since it's flat growth.
         readonly IROISequence FlatSequence = new ROISequence(
