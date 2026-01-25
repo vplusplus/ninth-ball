@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    public sealed record SimResult(SimParams SimParams, Initial InitialBalance, IReadOnlyList<string> Strategies, IReadOnlyList<SimIteration> Iterations);
+    public sealed record SimResult(SimParams SimParams, IReadOnlyList<string> Strategies, IReadOnlyList<SimIteration> Iterations);
 
     public sealed record SimIteration(int Index, bool Success, ReadOnlyMemory<SimYear> ByYear);
 

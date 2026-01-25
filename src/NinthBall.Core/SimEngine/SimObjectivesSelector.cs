@@ -1,9 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿
 using System.Reflection;
-using static NinthBall.Core.AdditionalIncomes;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NinthBall.Core
 {
+    /// <summary>
+    /// Provides active simulation objectives selected for current simulation session.
+    /// </summary>
     internal sealed class SimObjectivesSelector(SimParams MySimParams, IServiceProvider AvailableServices)
     {
         public IReadOnlyList<ISimObjective> GetOrderedActiveObjectives()
@@ -25,6 +28,7 @@ namespace NinthBall.Core
                 );
             }
 
+            // Check for missing or conflicting objectives
             ValidateRequiredObjectives( chosenObjectives );
             ValidateConflictingObjectives( chosenObjectives );
 
@@ -40,53 +44,22 @@ namespace NinthBall.Core
             return 0 == orderedObjectives.Count 
                 ? throw new FatalWarning($"Invalid input | Specify one or more simulation objectives.") 
                 : orderedObjectives.AsReadOnly();
-        }
 
-
-        // Meta-data of ISimObjective implementation.
-        private readonly record struct ObjectiveInfo(Type Type, StrategyFamily Family);
-
-        // Discover ONCE all available implementations of ISimObjective.
-        static readonly Lazy<IReadOnlyDictionary<string, ObjectiveInfo>> KnownObjectives = new(() =>
-        {
-            // Discover ISimObjective implementations
-            var allObjectives = typeof(Simulation).Assembly
-                .GetTypes()
-                .Where(t => typeof(ISimObjective).IsAssignableFrom(t))      // Implements ISimObjective
-                .Where(t => t != typeof(ISimObjective))                     // Is not ISimObjective itself
-                .Where(t => !t.IsInterface)                                 // Is not just another interface
-                .Where(t => !t.IsAbstract)                                  // We can create instances
-                ;
-
-            var map = new Dictionary<string, ObjectiveInfo>();
-
-            foreach (var type in allObjectives)
+            // Cosmetic: Name as provided in the input can skip the Strategy(s) or Objevctive(s) suffix.
+            static bool TryFindSimulationObjective(string friendlyName, out ObjectiveInfo objectiveInfo)
             {
-                var attr = type.GetCustomAttribute<StrategyFamilyAttribute>(inherit: false) ?? throw new Exception($"Fix the code | {type.FullName} has not declared its StrategyFamily.");
-                map[type.Name] = new ObjectiveInfo(type, attr.Family);
+                return KnownObjectives.Value.TryGetValue(friendlyName, out objectiveInfo)
+                    || KnownObjectives.Value.TryGetValue($"{friendlyName}Objective", out objectiveInfo)
+                    || KnownObjectives.Value.TryGetValue($"{friendlyName}Objectives", out objectiveInfo)
+                    || KnownObjectives.Value.TryGetValue($"{friendlyName}Strategy", out objectiveInfo)
+                    || KnownObjectives.Value.TryGetValue($"{friendlyName}Strategies", out objectiveInfo)
+                    ;
             }
-
-            // Lock it down.
-            return map.AsReadOnly();
-        });
-
-        // Helper to register all known Simulation objectives to DI container.
-        public static IServiceCollection AddSimulationObjectives(IServiceCollection services)
-        {
-            foreach ((string friendlyName, ObjectiveInfo objectiveInfo) in KnownObjectives.Value) services.AddSingleton(objectiveInfo.Type);
-            return services;
         }
 
-        // Cosmetic: Name as provided in the input can skip the Strategy(s) or Objevctive(s) suffix.
-        // TODO: Review the naming convention of the ISumStrategy implementation, remove the guess work.
-        static bool TryFindSimulationObjective(string friendlyName, out ObjectiveInfo objectiveInfo)
-        {
-            return KnownObjectives.Value.TryGetValue(friendlyName, out objectiveInfo)
-                || KnownObjectives.Value.TryGetValue(friendlyName + "Strategy", out objectiveInfo)
-                || KnownObjectives.Value.TryGetValue(friendlyName + "Strategies", out objectiveInfo)
-                || KnownObjectives.Value.TryGetValue(friendlyName + "Objective", out objectiveInfo)
-                || KnownObjectives.Value.TryGetValue(friendlyName + "Objectives", out objectiveInfo);
-        }
+        //......................................................................
+        #region Validate chosen strategies - Requred & Conflicts
+        //......................................................................
 
         // Some strategies should not be ignored.
         // Throws an exception if a required strategy is not specified.
@@ -133,6 +106,38 @@ namespace NinthBall.Core
                 }
             }
         }
+
+        #endregion
+
+        //......................................................................
+        #region Discover all available SimObjectives once
+        //......................................................................
+        internal readonly record struct ObjectiveInfo(Type Type, StrategyFamily Family);
+
+        // Discover ONCE all available implementations of ISimObjective.
+        internal static readonly Lazy<IReadOnlyDictionary<string, ObjectiveInfo>> KnownObjectives = new(() =>
+        {
+            var allObjectives = typeof(Simulation).Assembly
+                .GetTypes()
+                .Where(t => typeof(ISimObjective).IsAssignableFrom(t))      // Implements ISimObjective
+                .Where(t => t != typeof(ISimObjective))                     // Is not ISimObjective itself
+                .Where(t => !t.IsInterface)                                 // Is not just another interface
+                .Where(t => !t.IsAbstract)                                  // We can create instances
+                ;
+
+            var map = new Dictionary<string, ObjectiveInfo>();
+
+            foreach (var type in allObjectives)
+            {
+                var attr = type.GetCustomAttribute<StrategyFamilyAttribute>(inherit: false) ?? throw new Exception($"Fix the code | {type.FullName} has not declared its StrategyFamily.");
+                map[type.Name] = new ObjectiveInfo(type, attr.Family);
+            }
+
+            // Lock it down.
+            return map.AsReadOnly();
+        });
+
+        #endregion
 
     }
 }

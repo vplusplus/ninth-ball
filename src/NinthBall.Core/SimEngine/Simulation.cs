@@ -16,7 +16,7 @@ namespace NinthBall.Core
             int maxIterations = Math.Min(SimParams.Iterations, orderedObjectives.Min(x => x.MaxIterations));
             int noOfYears = SimParams.NoOfYears;
 
-            // Only input parameter we may modify...
+            // The only input parameter we may modify...
             if (maxIterations != SimParams.Iterations)
             {
                 SimParams = SimParams with
@@ -36,7 +36,8 @@ namespace NinthBall.Core
                 .ToList();
 
             // Sort the iteration results worst to best.
-            // Do not use nominal balance for ranking. The variation in InflationRate sequence can skew nominal value.
+            // Do not use nominal balance for ranking.
+            // The variation in InflationRate sequence can skew nominal value.
             // Use real purchaing power to ensure percentiles are monotonic under variable inflation.
             var iterationResultsWorstToBest = iterationResults
                 .OrderBy(iter => iter.SurvivedYears)
@@ -52,7 +53,6 @@ namespace NinthBall.Core
 
             return new SimResult(
                 SimParams,
-                InitBalance,
                 strategyDescriptions,
                 iterationResultsWorstToBest
             );

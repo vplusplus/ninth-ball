@@ -1,16 +1,18 @@
 ﻿
 namespace NinthBall.Core
 {
-    /*
-        Multiplier                  | Reasonable 30-year range |
-        --------------------------- | ------------------------ |
-        InflationMultiplier         | 2.0 – 2.5                |
-        FedTaxInflationMultiplier   | 1.7 – 2.3                |
-        StateTaxInflationMultiplier | 1.4 – 1.9                |
+    /*  Typical range for the multipliers:
+        ---------------------------------------------------------
+        Multiplier                  | Reasonable 30-year range
+        ---------------------------------------------------------
+        InflationMultiplier         | 2.0 – 2.5
+        FedTaxInflationMultiplier   | 1.7 – 2.3
+        StateTaxInflationMultiplier | 1.4 – 1.9
+        ---------------------------------------------------------
     */
 
     /// <summary>
-    /// Running inflation rate(s) and cummulative metrics.
+    /// Iteration path specific running inflation miltipliers and cummulative metrics.
     /// </summary>
     public readonly record struct Metrics
     (
@@ -20,46 +22,43 @@ namespace NinthBall.Core
         double StateTaxInflationMultiplier, // Cumulative State tax indexing (with lag)
         double GrowthMultiplier,            // Nominal growth multiplier since year #0
 
-        // Percentage values
+        // Cummulative percentage values
         double PortfolioReturn,             // Portfolio-weighted nominal return for the current year
         double AnnualizedReturn,            // Annualized nominal return (CAGR) since year #0
         double RealAnnualizedReturn         // Inflation-adjusted annualized return since year #0
     )
     {
-        // CRITICAL: Multipliers start with 1.0, rest are zero
-        public Metrics() : this(1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0) { }
+        /// <summary>
+        /// CRITICAL: Metrics initialization for correct year #0 values.
+        /// </summary>
+        public Metrics() : this
+        (
+            // Multipliers start with 1.0
+            InflationMultiplier:            1.0,
+            FedTaxInflationMultiplier:      1.0,
+            StateTaxInflationMultiplier:    1.0,
+            GrowthMultiplier:               1.0,
+
+            // Rest starts with zero 
+            PortfolioReturn:                0.0,
+            AnnualizedReturn:               0.0,
+            RealAnnualizedReturn:           0.0
+
+        ){}
     }
 
     internal static class SimMetrics
     {
-        /// <summary>
-        /// Small haircut on current year inflation rate to represent Federal C-CPI lag.
-        /// Optionally configurable.
-        /// </summary>
+        // Small haircut on current year inflation rate to represent Federal C-CPI lag.
         static double FedTaxInflationLagHairCut => 0.0025;      // TODO: Move to config
 
-        /// <summary>
-        /// Larger haircut on current year inflation rate to represent State's delayed adjustments and lag.
-        /// Optionally configurable.
-        /// </summary>
+        // Larger haircut on current year inflation rate to represent State's delayed adjustments and lag.
         static double NJStateTaxInflationLagHaircut => 0.0075;  // TODO: Move to config 
 
-        /// <summary>
-        /// Tracks running inflation multipliers and cummulative metrics.
-        /// </summary>
         public static Metrics UpdateRunningMetrics(this Metrics pyMetrics, int yearIndex, double portfolioReturn, double currentYearInflationRate)
         {
             // Not trusting external year #0 initialization...
-            Metrics prior = yearIndex > 0 ? pyMetrics : new
-            (
-                InflationMultiplier:            1.0,
-                FedTaxInflationMultiplier:      1.0,
-                StateTaxInflationMultiplier:    1.0,
-                GrowthMultiplier:               1.0,
-                PortfolioReturn:                0.0,
-                AnnualizedReturn:               0.0,
-                RealAnnualizedReturn:           0.0
-            );
+            Metrics prior = yearIndex > 0 ? pyMetrics : new();
 
             // Running multiplier that represents cumulative inflation impact since year #0
             // Tracked at full precision, not quantized.
@@ -72,7 +71,7 @@ namespace NinthBall.Core
             // The IRS uses the Chained CPI (C-CPI-U) to measure inflation.
             // C-CPI generally rises slower than the standard CPI (Apply small haitcut)
             // And, it never goes back (Apply floor)
-            // Tracked at full precision, not quantized.
+            // Tracked at full precision (not quantized)
             var fedTaxInflationMultiplier = Math.Max(
                 prior.FedTaxInflationMultiplier,
                 prior.FedTaxInflationMultiplier * (1 + currentYearInflationRate - FedTaxInflationLagHairCut)
@@ -81,7 +80,7 @@ namespace NinthBall.Core
             // NJ, for example, doesn't index based on CPI or C-CPI each year.
             // Eventually they adjust, still fall behind (Apply larger haircut)
             // And, it never goes back (Apply floor)
-            // Tracked at full precision, not quantized.
+            // Tracked at full precision (not quantized)
             var stateTaxInflationRateMultiplier = Math.Max(
                 prior.StateTaxInflationMultiplier,
                 prior.StateTaxInflationMultiplier * (1 + currentYearInflationRate - NJStateTaxInflationLagHaircut)
@@ -104,9 +103,9 @@ namespace NinthBall.Core
                 StateTaxInflationMultiplier: stateTaxInflationRateMultiplier,
                 GrowthMultiplier:            cumulativeGrowthMultiplier,
 
-                PortfolioReturn:      portfolioReturn,
-                AnnualizedReturn:     annualizedReturn,
-                RealAnnualizedReturn: realAnnualizedReturn
+                PortfolioReturn:             portfolioReturn,
+                AnnualizedReturn:            annualizedReturn,
+                RealAnnualizedReturn:        realAnnualizedReturn
             );
         }
     }

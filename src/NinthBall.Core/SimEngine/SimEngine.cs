@@ -18,7 +18,7 @@ namespace NinthBall.Core
             var simSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
 
             simSessionBuilder.Configuration
-                .AddEmbeddedDefaultYamls()
+                .AddSimDefaults()
                 .AddYamlFile(simInputFileName)
                 .Build();
 
@@ -28,17 +28,19 @@ namespace NinthBall.Core
 
                 .RegisterConfigSection<SimulationSeed>()
                 .RegisterConfigSection<SimParams>()
+
                 .RegisterConfigSection<Initial>()
-                .RegisterConfigSection<TaxRateSchedules>()
-                .RegisterConfigSection<MovingBlockBootstrapOptions>()
-                .RegisterConfigSection<ParametricBootstrapOptions>()
                 .RegisterConfigSection<Rebalance>()
                 .RegisterConfigSection<AdditionalIncomes>()
                 .RegisterConfigSection<LivingExpenses>()
-                .RegisterConfigSection<AnnualFees>()
-                .RegisterConfigSection<FlatTax>()
+
                 .RegisterConfigSection<FixedWithdrawal>()
                 .RegisterConfigSection<VariableWithdrawal>()
+
+                .RegisterConfigSection<AnnualFees>()
+                .RegisterConfigSection<FlatTax>()
+                .RegisterConfigSection<TaxRateSchedules>()
+
                 .RegisterConfigSection<FlatGrowth>()
 
                 .AddSingleton<HistoricalReturns>()
@@ -46,9 +48,10 @@ namespace NinthBall.Core
                 .AddSingleton<SequentialBootstrapper>()
                 .AddSingleton<MovingBlockBootstrapper>()
                 .AddSingleton<ParametricBootstrapper>()
+                .RegisterConfigSection<MovingBlockBootstrapOptions>()
+                .RegisterConfigSection<ParametricBootstrapOptions>()
 
-
-                .AddSimulationStrategies()
+                .AddSimulationObjectives()
                 .AddSingleton<SimObjectivesSelector>()
                 .AddSingleton<Simulation>()
 
@@ -63,22 +66,26 @@ namespace NinthBall.Core
             }
         }
 
-
-        static IConfigurationBuilder AddEmbeddedDefaultYamls(this IConfigurationBuilder builder)
+        static IConfigurationBuilder AddSimDefaults(this IConfigurationBuilder builder)
         {
             var simAssembly = typeof(SimEngine).Assembly;
 
-            var embeddedDefaultsResourceNames = simAssembly
+            var simDefaultsResourceNames = simAssembly
                 .GetManifestResourceNames()
-                .Where(name => null != name && name.Contains(".SimDefaults.") && name.EndsWith(".yaml"))
+                .Where(name => null != name)
+                .Where(name => name.Contains(".SimDefaults.", StringComparison.OrdinalIgnoreCase))
+                .Where(name => name.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            foreach(var resourceName in embeddedDefaultsResourceNames) builder.AddYamlResource(simAssembly, resourceName);
+            foreach(var res in simDefaultsResourceNames) builder.AddYamlResource(simAssembly, res);
 
             return builder;
         }
 
-        static IServiceCollection AddSimulationStrategies(this IServiceCollection services) => SimObjectivesSelector.AddSimulationObjectives(services);
-
+        static IServiceCollection AddSimulationObjectives(this IServiceCollection services)
+        {
+            foreach ( var (friendlyName, objectiveInfo) in SimObjectivesSelector.KnownObjectives.Value) services.AddSingleton(objectiveInfo.Type);
+            return services;
+        }
     }
 }

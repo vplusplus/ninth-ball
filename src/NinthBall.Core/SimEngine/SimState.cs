@@ -1,6 +1,9 @@
 ﻿
 namespace NinthBall.Core
 {
+    /// <summary>
+    /// Represents working-memory of one iteration.
+    /// </summary>
     internal interface ISimState
     {
         //....................................................
@@ -26,6 +29,9 @@ namespace NinthBall.Core
         void Rebalance(double preTaxAllocation, double postTaxAllocation, double maxDrift);
     }
 
+    /// <summary>
+    /// Readonly access to the working-memory of one iteration.
+    /// </summary>
     internal interface IReadOnlySimState
     {
         int IterationIndex { get; }
@@ -46,6 +52,9 @@ namespace NinthBall.Core
         ROI ROI { get; }
     }
 
+    /// <summary>
+    /// Working-memory of one iteration.
+    /// </summary>
     internal sealed record class SimState(int IterationIndex, int StartAge, Assets Initial, Memory<SimYear> Storage) : ISimState, IReadOnlySimState
     {
         // History - PriorYears and PriorYear
@@ -53,10 +62,11 @@ namespace NinthBall.Core
         public SimYear PriorYear => YearIndex > 0 ? PriorYears.Span[^1] : new();
         public Metrics PriorYearMetrics => 0 == YearIndex ? new() : PriorYear.Metrics;
 
-        // Current year
+        // About current year
         public int YearIndex { get; private set; } = 0;
         public int Age => StartAge + YearIndex;
 
+        // Current year memory
         public Assets Jan { get; private set; } = Initial;
         public Fees Fees { get; set; }
         public Taxes Taxes { get; set; }
@@ -65,16 +75,16 @@ namespace NinthBall.Core
         public Withdrawals Withdrawals { get; set; }
         public ROI ROI { get; set; }
 
-        void ISimState.Rebalance(double preTaxAllocation, double postTaxAllocation, double maxDrift)
-        {
-            Jan = Jan.Rebalance(preTaxAllocation, postTaxAllocation, maxDrift);
-        } 
-
         public void BeginYear(int yearIndex)
         {
             YearIndex = yearIndex;
             Jan = (yearIndex == 0) ? Initial : PriorYear.Dec;
-            (Fees, Incomes, Expenses, Withdrawals, ROI) = (default, default, default, default, default);
+            (Fees, Taxes, Incomes, Expenses, Withdrawals, ROI) = (default, default, default, default, default, default);
+        }
+
+        void ISimState.Rebalance(double preTaxAllocation, double postTaxAllocation, double maxDrift)
+        {
+            Jan = Jan.Rebalance(preTaxAllocation, postTaxAllocation, maxDrift);
         }
 
         public void EndYear(SimYear aboutThisYear)

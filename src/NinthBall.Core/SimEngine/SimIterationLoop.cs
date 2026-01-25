@@ -6,18 +6,19 @@ namespace NinthBall.Core
     /// </summary>
     internal static class SimIterationLoop
     {
-        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, Initial InitBalance, IReadOnlyList<ISimObjective> simObjectives, Memory<SimYear> iterationStore)
+        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, Initial initial, IReadOnlyList<ISimObjective> simObjectives, Memory<SimYear> iterationStore)
         {
             ArgumentNullException.ThrowIfNull(simParams);
+            ArgumentNullException.ThrowIfNull(initial);
             ArgumentNullException.ThrowIfNull(simObjectives);
 
             int startAge = simParams.StartAge;
             int numYears = simParams.NoOfYears;
             Assets initialBalance = new
             (
-                new(InitBalance.PreTax.Amount, InitBalance.PreTax.Allocation),
-                new(InitBalance.PostTax.Amount, InitBalance.PostTax.Allocation),
-                new(InitBalance.YearZeroCashBalance, Allocation: 1.0)
+                new(initial.PreTax.Amount, initial.PreTax.Allocation),
+                new(initial.PostTax.Amount, initial.PostTax.Allocation),
+                new(initial.YearZeroCashBalance, Allocation: 1.0)
             );
 
             // Strategies can be stateful. Each iteration creates a fresh set.
@@ -72,7 +73,7 @@ namespace NinthBall.Core
                     ;
 
                 // Update running metrics.
-                Metrics metrics = simState.PriorYearMetrics.UpdateRunningMetrics
+                Metrics updatedMetrics = simState.PriorYearMetrics.UpdateRunningMetrics
                 (
                     simState.YearIndex, 
                     portfolioReturn: portfolioReturn, 
@@ -96,7 +97,7 @@ namespace NinthBall.Core
                     Change:      changes,
 
                     Dec:         dec,
-                    Metrics:     metrics
+                    Metrics:     updatedMetrics
                 );
 
                 // Validate the calculation integrity, and return success result.
@@ -120,6 +121,8 @@ namespace NinthBall.Core
                     Change: default,            // Since ROI is irrelevant
                     Dec: default,               // Would have spent any left-overs before Dec anyway
 
+                    // Metrics are rendered meaningless and unusable on the failed year.
+                    // Do not use default or new()
                     Metrics: new(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)
                 );
 
@@ -205,11 +208,10 @@ namespace NinthBall.Core
                     double taking = Math.Min(need, source);
                     source -= taking;
                     target += taking;
-                    need -= taking;
+                    need   -= taking;
                 }
             }
         }
-
 
         static SimYear ValidateMath(this SimYear y)
         {
@@ -225,17 +227,7 @@ namespace NinthBall.Core
 
             // Cashflow: (Incomes + Withdrawals) = (Taxes + Expenses + Deposits)
             good = (y.Incomes.Total + y.Withdrawals.Total).AlmostSame(y.Taxes.Total + y.Expenses.Total + y.Deposits.Total, Precision.Amount);
-            if (!good)
-            {
-                Console.WriteLine(y.Incomes);
-                Console.WriteLine(y.Withdrawals);
-
-                Console.WriteLine(y.Taxes);
-                Console.WriteLine(y.Expenses);
-                Console.WriteLine(y.Deposits);
-
-                throw new Exception($"Inflow(Incomes + Withdrawals) doesn't match Outflow(Taxes + Expenses + Deposits)");
-            }
+            if (!good) throw new Exception($"Inflow(Incomes + Withdrawals) doesn't match Outflow(Taxes + Expenses + Deposits)");
 
             // Expenses are met.
             good = (y.Incomes.Total + y.Withdrawals.Total + Precision.Amount) >= (y.Taxes.Total + y.Expenses.Total);

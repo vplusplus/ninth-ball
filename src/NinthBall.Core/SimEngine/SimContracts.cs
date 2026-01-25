@@ -12,6 +12,5 @@ namespace NinthBall.Core
     {
         void Apply(ISimState context);
     }
-
 }
 

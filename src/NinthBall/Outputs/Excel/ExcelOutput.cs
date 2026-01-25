@@ -124,7 +124,7 @@ namespace NinthBall.Outputs.Excel
                 sheet.WriteColumns(20, 120);
 
                 var P = simResult.SimParams;
-                var I = simResult.InitialBalance;
+                var I = simResult.Iterations.First().ByYear.Span[0].Jan; 
 
                 using (var rows = sheet.BeginSheetData())
                 {
@@ -185,7 +185,8 @@ namespace NinthBall.Outputs.Excel
             const double W20 = 20;
 
             var P = simResult.SimParams;
-            var I = simResult.InitialBalance;
+            var I = simResult.Iterations.First().ByYear.Span[0].Jan;
+            //var I = simResult.InitialBalance;
             
             var percentiles = SimOutputDefaults.DefaultPercentiles;
 

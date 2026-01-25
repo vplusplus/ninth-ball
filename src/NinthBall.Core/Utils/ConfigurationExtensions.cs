@@ -32,7 +32,7 @@ namespace NinthBall.Core
                 ?? throw new Exception($"YAML resource not found | Assembly: {resourceAssembly.GetName().Name} | Resource: {resourceNameEndsWith}");
 
             using var resStream = resourceAssembly.GetManifestResourceStream(resourceName)
-                ?? throw new Exception($"YAML rresource stream was NULL | Assembly: {resourceAssembly.GetName().Name} | Resource: {resourceNameEndsWith}");
+                ?? throw new Exception($"YAML resource stream was NULL | Assembly: {resourceAssembly.GetName().Name} | Resource: {resourceNameEndsWith}");
 
             using var reader = new StreamReader(resStream);
             var yamlText = reader.ReadToEnd();
