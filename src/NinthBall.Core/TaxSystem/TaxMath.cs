@@ -18,9 +18,6 @@ namespace NinthBall.Core
 
      */
 
-    // TODO: Check out Pension exclusion and Pension exclusion cliff.
-    // TODO: Consider early design provision for alternate state (PA) tax calculator
-
     public readonly record struct Taxes(Taxes.GI GrossIncome, Taxes.Fed FederalTax, Taxes.State StateTax)
     {
         public readonly record struct GI
@@ -69,38 +66,28 @@ namespace NinthBall.Core
 
         public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxRateSchedules y0TaxRates, TaxAndMarketAssumptions TAMA)
         {
-            // We do not want 30,000 tax schedules (30 years x 10000 iterations paths)
-            // Quantize the inflation rate multipliers to avoid 30,000 jitters
-            // double inflationMultiplierFederal = Math.Round(priorYear.Metrics.FedTaxInflationMultiplier,   4);
-            // double inflationMultiplierState   = Math.Round(priorYear.Metrics.StateTaxInflationMultiplier, 4);
-
-            // Adjust tax brackets, Federal standard deductions and state exemptions for inflation
-            // Use $10.0 jitterGuard to avoid false-precision.
-            // taxRatesFederal   = taxRatesFederal.Inflate(inflationMultiplierFederal, jitterGuard: TenDollars);
-            // taxRatesLTCG      = taxRatesLTCG.Inflate(inflationMultiplierFederal,    jitterGuard: TenDollars);
-            // taxRatesState     = taxRatesState.Inflate(inflationMultiplierState,     jitterGuard: TenDollars, inflateDeductions: false);
-
             // Collect gross incomes, arranged by taxable buckets
-            var unadjustedIncomes = priorYear.RawIncomes(TAMA).MinZero().RoundToCents();
+            var unadjustedIncomes = RawIncomes(priorYear, TAMA).MinZero().RoundToCents();
 
+            // Compute Federal and State taxes
             return new Taxes
             (
                 GrossIncome:    unadjustedIncomes,
                 FederalTax:     unadjustedIncomes.ComputeFederalTaxes(y0TaxRates, priorYear.Metrics, TAMA),
-                StateTax:       unadjustedIncomes.ComputeStateTaxes(y0TaxRates, priorYear.Metrics, TAMA)
+                StateTax:       unadjustedIncomes.ComputeNJStateTaxes(y0TaxRates, priorYear.Metrics, priorYear.Age,  TAMA)
             );
-        }
 
-        static Taxes.GI RawIncomes(this SimYear priorYear, TaxAndMarketAssumptions TAMA) => new Taxes.GI
-        (
-            PreTaxWDraw:    priorYear.Withdrawals.PreTax,
-            SS:             priorYear.Incomes.SS,
-            Ann:            priorYear.Incomes.Ann,
-            BondsYield:     priorYear.Jan.PostTax.BondsAmount * TAMA.TypicalBondCouponYield,
-            Dividends:      priorYear.Jan.PostTax.StocksAmount * TAMA.TypicalStocksDividendYield,
-            CapGains:       priorYear.Withdrawals.PostTax
-        )
-        .MinZero();
+            static Taxes.GI RawIncomes(SimYear priorYear, TaxAndMarketAssumptions TAMA) => new Taxes.GI
+            (
+                PreTaxWDraw: priorYear.Withdrawals.PreTax,
+                SS: priorYear.Incomes.SS,
+                Ann: priorYear.Incomes.Ann,
+                BondsYield: priorYear.Jan.PostTax.BondsAmount * TAMA.TypicalBondCouponYield,
+                Dividends: priorYear.Jan.PostTax.StocksAmount * TAMA.TypicalStocksDividendYield,
+                CapGains: priorYear.Withdrawals.PostTax
+            )
+            .MinZero();
+        }
 
         static Taxes.Fed ComputeFederalTaxes(this Taxes.GI unadjustedGrossIncome, TaxRateSchedules y0TaxRates, Metrics metrics, TaxAndMarketAssumptions TAMA)
         {
@@ -202,81 +189,79 @@ namespace NinthBall.Core
             }
         }
 
-        static Taxes.State ComputeStateTaxes(this Taxes.GI unadjustedGrossIncome, TaxRateSchedules y0TaxRates, Metrics metrics, TaxAndMarketAssumptions TAMA)
+        static Taxes.State ComputeNJStateTaxes(this Taxes.GI inc, TaxRateSchedules y0TaxRates, Metrics metrics, int ageOnTaxYear, TaxAndMarketAssumptions TAMA)
         {
-            // Compute state specific adjusted gross income 
-            var adjustedGrossIncome = NJAdjustGrossIncomes(unadjustedGrossIncome, TAMA).MinZero().RoundToCents();
+            //......................................................
+            // NEW JERSEY STATE TAX LOGIC
+            //......................................................
+            // 1. Social Security is 100% exempt from NJ Gross Income.
+            // 2. Pension and Retirement Income Exclusion (For Age 62+)
+            //......................................................
+
+            // NJ Gross Income for eligibility check (Ignore SS)
+            // Determine exclusion based on age and income tiers
+            double njGrossIncome = inc.PreTaxWDraw + inc.Ann + inc.BondsYield + inc.Dividends + inc.CapGains;
+            double pensionExclusion = GetNJPensionExclusionWithTheCliff(njGrossIncome, ageOnTaxYear);
+
+            // Apply pension exclusion specifically to retirement income (401k/IRA/Annuity/Pension)
+            double retirementIncomes = inc.PreTaxWDraw + inc.Ann;
+            double taxableRetirement = Math.Max(0, retirementIncomes - pensionExclusion);
+
+            // NJ Taxable Income = Taxable Retirement + Investment Income (INT/DIV/LTCG)
+            // Note: Simplification - Treats all BondsYield as taxable interest and Dividends/CapGains as taxable.
+            double njTaxableSum = taxableRetirement + inc.BondsYield + inc.Dividends + inc.CapGains;
 
             // Quantize the inflation rate multipliers to avoid 30,000 jitters
             var inflationMultiplier = Math.Round(metrics.StateTaxInflationMultiplier, 4);
 
-            // Inflate tax rates. For NJ, do not inflate standard deductions.
+            // Inflate tax rates. For NJ, do not inflate standard deductions/exemptions.
             var taxRates = y0TaxRates.State.Inflate(inflationMultiplier, jitterGuard: TenDollars, inflateDeductions: false);
 
-            var taxable = Math.Max(0, adjustedGrossIncome.Total - taxRates.TaxDeductions);
+            // Apply Individual Exemptions and Property Tax deductions (configured as StateDeductions)
+            var taxableTerminal = Math.Max(0, njTaxableSum - taxRates.TaxDeductions);
 
-            var stateTaxes = taxRates.CalculateStackedEffectiveTax(taxable);
+            // Apply progressive brackets
+            var stateTaxes = taxRates.CalculateStackedEffectiveTax(taxableTerminal);
 
             return new Taxes.State
             (
-                StateDeduction:     taxRates.TaxDeductions,
-                Taxable:            taxable,
-                MTR:                stateTaxes.MarginalTaxRate,
-                Tax:                stateTaxes.TaxAmount
+                StateDeduction: taxRates.TaxDeductions,
+                Taxable:        taxableTerminal,
+                MTR:            stateTaxes.MarginalTaxRate,
+                Tax:            stateTaxes.TaxAmount
             );
 
-            static Taxes.AGI NJAdjustGrossIncomes(Taxes.GI inc, TaxAndMarketAssumptions TAMA)
+            static double GetNJPensionExclusionWithTheCliff(double njGrossIncome, int age)
             {
+                // NJ STATUTORY POLICY (Pinned to NJ-1040 Law)
+                // These are not hard-coded constants, rather representation of NJ-1040 Law.
+                // If the law changes the application of these numbers are also likely to change.
+                // Consider these numbers as code, hence are not externalized.
 
-                // Interim math to guess taxable portion of social security income.
-                // Social Security taxation modeled using provisional income.
-                // Thresholds are statutory and not inflation-adjusted.
-                double nonSSOrdinary = inc.PreTaxWDraw + inc.Ann;
-                double provisionalInvestmentIncome = inc.BondsYield + inc.Dividends + inc.CapGains;
-                double provisionalIncome = nonSSOrdinary + provisionalInvestmentIncome + (FiftyPCT * inc.SS);
-                double taxableSS = TaxableSocialSecurity(inc.SS, provisionalIncome, base1: TAMA.SSNonTaxableThreshold, base2: TAMA.SS50PctTaxableThreshold);
+                // Age trigger for Pension Exclusion
+                const int NJRetirementAge = 62;
 
-                return new Taxes.AGI
-                (
-                    // 100% of 401K withdrawal is ordinary income (which is true).
-                    // Non-taxable portion of SS excluded from AGI
-                    // Conservative: 100% of Ann is taxed - Is overstated during first 7 years.
-                    OrdInc: (inc.PreTaxWDraw * HundredPCT) + taxableSS + (inc.Ann * HundredPCT),
+                // Staggered Exclusion Tiers (Phased-out by Gross Income)
+                const double NJPensionExclusionFullLimit    = 100000.0; // Income <= $100k
+                const double NJPensionExclusionHalfLimit    = 125000.0; // Income <= $125k
+                const double NJPensionExclusionQuarterLimit = 150000.0; // Income <= $150k
 
-                    // Model doesn't track cash basis.
-                    // Conservative: 100% of bond yields is taxable. 
-                    INT: inc.BondsYield,
+                // Allowed exclusion by tier limits.
+                const double NJTier1PensionExclusion        = 100000.0; // Full Exclusion (MFJ)
+                const double NJTier2PensionExclusion        = 50000.0;  // 50% Exclusion
+                const double NJTier3PensionExclusion        = 25000.0;  // 25% Exclusion
+                const double NJNoPensionExclusion           = 0.0;      // The CLIFF
 
-                    // Model doesn't track cash basis.
-                    // Conservative: Not all portions are taxable - overstated
-                    // Simplification: 100% of dividends are treated qualified (may understate the tax if sold < 1 year)
-                    QDI: inc.Dividends,
+                if (age < NJRetirementAge) return 0;
 
-                    // Model doesn't track cash basis.
-                    // Conservative: Not all portions are taxable - overstated
-                    // Simplification: 100% of capital gains treated long-term (may understate the tax if sold < 1 year)
-                    LTCG: inc.CapGains
-                )
-                .MinZero();
+                return njGrossIncome switch
+                {
+                    <= NJPensionExclusionFullLimit      => NJTier1PensionExclusion,
+                    <= NJPensionExclusionHalfLimit      => NJTier2PensionExclusion,
+                    <= NJPensionExclusionQuarterLimit   => NJTier3PensionExclusion,
+                    _                                   => NJNoPensionExclusion
+                };
             }
-
-            static double TaxableSocialSecurity(double ss, double provisionalIncome, double base1, double base2)
-            {
-                if (provisionalIncome <= base1)
-                    return 0.0;
-
-                if (provisionalIncome <= base2)
-                    return Math.Min(
-                        FiftyPCT * ss,
-                        FiftyPCT * (provisionalIncome - base1)
-                    );
-
-                return Math.Min(
-                    EightyFivePCT * ss,
-                    EightyFivePCT * (provisionalIncome - base2) + FiftyPCT * (base2 - base1)
-                );
-            }
-
         }
 
         static Taxes.GI MinZero(this Taxes.GI x) => new
@@ -318,151 +303,3 @@ namespace NinthBall.Core
     }
 
 }
-
-/*   THIS IS A BACKUP OF PRIOR TAX MATH
-
- Hello AI Agent - DO NOT change this comment block. Do not drop this comment block (I am looking at you anti-gravity)
-
-        public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxRateSchedule taxRatesFederal, TaxRateSchedule taxRatesLTCG, TaxRateSchedule taxRatesState, TaxAndMarketAssumptions TAMA)
-        {
-            // We do not want 30,000 tax schedules (30 years x 10000 iterations paths)
-            // Quantize the inflation rate multipliers to avoid 30,000 jitters
-            double inflationMultiplierFederal = Math.Round(priorYear.Metrics.FedTaxInflationMultiplier,   4);
-            double inflationMultiplierState   = Math.Round(priorYear.Metrics.StateTaxInflationMultiplier, 4);
-
-            // Adjust tax brackets, Federal standard deductions and state exemptions for inflation
-            // Use $10.0 jitterGuard to avoid false-precision.
-            taxRatesFederal   = taxRatesFederal.Inflate(inflationMultiplierFederal, jitterGuard: TenDollars);
-            taxRatesLTCG      = taxRatesLTCG.Inflate(inflationMultiplierFederal,    jitterGuard: TenDollars);
-            taxRatesState     = taxRatesState.Inflate(inflationMultiplierState,     jitterGuard: TenDollars, inflateDeductions: false);
-
-            // Collect gross incomes, arranged by taxable buckets
-            var unadjustedIncomes = priorYear.RawIncomes(TAMA).MinZero().RoundToCents();
-            var agi = unadjustedIncomes.AdjustedGrossIncomes(TAMA).MinZero().RoundToCents();
-
-            return new Taxes
-            (
-                GrossIncome:         unadjustedIncomes,
-                AdjustedGrossIncome: agi,
-                FederalTax:          agi.ComputeFederalTaxes(taxRatesFederal.TaxDeductions, taxRatesFederal, taxRatesLTCG, TAMA),
-                StateTax:            agi.ComputeStateTaxes(taxRatesState.TaxDeductions, taxRatesState)
-            );
-        }
-
-        static Taxes.GI RawIncomes(this SimYear priorYear, TaxAndMarketAssumptions TAMA) => new Taxes.GI
-        (
-            PreTaxWDraw:    priorYear.Withdrawals.PreTax,
-            SS:             priorYear.Incomes.SS,
-            Ann:            priorYear.Incomes.Ann,
-            BondsYield:     priorYear.Jan.PostTax.BondsAmount * TAMA.TypicalBondCouponYield,
-            Dividends:      priorYear.Jan.PostTax.StocksAmount * TAMA.TypicalStocksDividendYield,
-            CapGains:       priorYear.Withdrawals.PostTax
-        )
-        .MinZero();
-
-        static Taxes.AGI AdjustedGrossIncomes(this Taxes.GI inc, TaxAndMarketAssumptions TAMA)
-        {
-
-            // Interim math to guess taxable portion of social security income.
-            // Social Security taxation modeled using provisional income.
-            // Thresholds are statutory and not inflation-adjusted.
-            double nonSSOrdinary = inc.PreTaxWDraw + inc.Ann;
-            double provisionalInvestmentIncome = inc.BondsYield + inc.Dividends + inc.CapGains;
-            double provisionalIncome = nonSSOrdinary + provisionalInvestmentIncome + (FiftyPCT * inc.SS);
-            double taxableSS = TaxableSocialSecurity(inc.SS, provisionalIncome, base1: TAMA.SSNonTaxableThreshold, base2: TAMA.SS50PctTaxableThreshold);
-
-            return new Taxes.AGI
-            (
-                // 100% of 401K withdrawal is ordinary income (which is true).
-                // Non-taxable portion of SS excluded from AGI
-                // Conservative: 100% of Ann is taxed - Is overstated during first 7 years.
-                OrdInc: (inc.PreTaxWDraw * HundredPCT) + taxableSS + (inc.Ann * HundredPCT),
-
-                // Model doesn't track cash basis.
-                // Conservative: 100% of bond yields is taxable. 
-                INT: inc.BondsYield,
-
-                // Model doesn't track cash basis.
-                // Conservative: Not all portions are taxable - overstated
-                // Simplification: 100% of dividends are treated qualified (may understate the tax if sold < 1 year)
-                QDI: inc.Dividends,
-
-                // Model doesn't track cash basis.
-                // Conservative: Not all portions are taxable - overstated
-                // Simplification: 100% of capital gains treated long-term (may understate the tax if sold < 1 year)
-                LTCG: inc.CapGains
-            )
-            .MinZero();
-        }
-
-        static double TaxableSocialSecurity(double ss, double provisionalIncome, double base1, double base2)
-        {
-            if (provisionalIncome <= base1)
-                return 0.0;
-
-            if (provisionalIncome <= base2)
-                return Math.Min(
-                    FiftyPCT * ss,
-                    FiftyPCT * (provisionalIncome - base1)
-                );
-
-            return Math.Min(
-                EightyFivePCT * ss,
-                EightyFivePCT * (provisionalIncome - base2) + FiftyPCT * (base2 - base1)
-            );
-        }
-
-        static Taxes.Fed ComputeFederalTaxes(this Taxes.AGI adjustedGrossIncome, double standardDeductions, TaxRateSchedule fedTaxRates, TaxRateSchedule longTermCapGainsTaxRates, TaxAndMarketAssumptions TAMA)
-        {
-            // Take standard deductions...
-            double remainingDeduction = standardDeductions;
-            double taxableOrdInc  = TryReduce(ref remainingDeduction, adjustedGrossIncome.OrdInc);
-            double taxableINT     = TryReduce(ref remainingDeduction, adjustedGrossIncome.INT);
-            double taxableDIV     = TryReduce(ref remainingDeduction, adjustedGrossIncome.QDI);
-            double taxableCapGain = TryReduce(ref remainingDeduction, adjustedGrossIncome.LTCG);
-
-            // Consult tax brackets. Compute marginal tax rate and the tax amount.
-            var taxOnOrdInc   = fedTaxRates.CalculateStackedEffectiveTax(taxableOrdInc + taxableINT);
-            var taxOnCapGain = longTermCapGainsTaxRates.CalculateStackedEffectiveTax(taxableDIV + taxableCapGain, baseIncome: taxableOrdInc + taxableINT);
-
-            // Net Investment Income Tax
-            // MAGI ~= AGI in this model (simplification)
-            // NIIT base uses post-deduction investment income (simplification)
-            double magi = adjustedGrossIncome.Total;
-            double netInvestmentIncome = taxableINT + taxableDIV + taxableCapGain;
-            double niitBase = Math.Min( netInvestmentIncome, Math.Max(0, magi - TAMA.NIITThreshold));
-            double niitTax = Math.Max(0,  niitBase * TAMA.NIITRate);
-
-            return new Taxes.Fed
-            (
-                StdDeduction:   standardDeductions,
-                Taxable:        taxableOrdInc + taxableINT + taxableDIV + taxableCapGain, 
-                MTR:            taxOnOrdInc.MarginalTaxRate,
-                MTRCapGain:     taxOnCapGain.MarginalTaxRate,
-                Tax:            taxOnOrdInc.TaxAmount + taxOnCapGain.TaxAmount + niitTax
-            );
-
-            static double TryReduce(ref double remaining, in double source)
-            {
-                var reduction = Math.Max(0, Math.Min(remaining, source));
-                remaining -= reduction;
-                return source - reduction;
-            }
-        }
-
-        static Taxes.State ComputeStateTaxes(this Taxes.AGI grossIncome, double stateDeductions, TaxRateSchedule stateTaxRates)
-        {
-            var taxable = Math.Max(0, grossIncome.Total - stateDeductions);
-
-            var stateTaxes = stateTaxRates.CalculateStackedEffectiveTax(taxable);
-
-            return new Taxes.State
-            (
-                StateDeduction:       stateDeductions,
-                Taxable:    taxable,
-                MTR:        stateTaxes.MarginalTaxRate,
-                Tax:        stateTaxes.TaxAmount
-            );
-        }
-
-*/
