@@ -62,6 +62,7 @@ namespace NinthBall.Core
     public static class TaxMath
     {
         const double EightyFivePCT = 0.85;
+        const double FiftyPCT      = 0.50;
         const double HundredPCT    = 1.00;
         const double TenDollars    = 10.00;
 
@@ -163,13 +164,13 @@ namespace NinthBall.Core
 
             if (provisionalIncome <= base2)
                 return Math.Min(
-                    0.5 * (provisionalIncome - base1),
-                    0.5 * ss
+                    FiftyPCT * ss,
+                    FiftyPCT * (provisionalIncome - base1)
                 );
 
             return Math.Min(
-                0.85 * ss,
-                0.85 * (provisionalIncome - base2) + 0.5 * (base2 - base1)
+                EightyFivePCT * ss,
+                EightyFivePCT * (provisionalIncome - base2) + FiftyPCT * (base2 - base1)
             );
         }
 
