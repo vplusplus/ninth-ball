@@ -2,25 +2,6 @@
 namespace NinthBall.Core
 {
     [StrategyFamily(StrategyFamily.Withdrawals)]
-    sealed class JustEnoughWithdrawalObjective() : ISimObjective
-    {
-        int ISimObjective.Order => 20;
-
-        ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy();
-
-        sealed class Strategy() : ISimStrategy
-        {
-            void ISimStrategy.Apply(ISimState ctx)
-            {
-                // Strategy doesn't stipulate withdrawal amount.
-                // RMD strategy and/or Simulation finalization may decide to withdraw funds.
-            }
-        }
-
-        public override string ToString() => $"Pre-Tax Drawdown | Just enough to meet the expenses and/or RMD.";
-    }
-
-    [StrategyFamily(StrategyFamily.Withdrawals)]
     sealed class FixedWithdrawalObjective(FixedWithdrawal FW) : ISimObjective
     {
         int ISimObjective.Order => 20;

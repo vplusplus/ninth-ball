@@ -36,7 +36,7 @@ namespace NinthBall.Core
 
     [StrategyFamily(StrategyFamily.Growth)] sealed class FlatGrowthObjective(SimParams SimParams, FlatBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
     [StrategyFamily(StrategyFamily.Growth)] sealed class HistoricalGrowthObjective(SimParams SimParams, SequentialBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
-    [StrategyFamily(StrategyFamily.Growth)] sealed class RandomGrowthObjective(SimParams SimParams, MovingBlockBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
+    [StrategyFamily(StrategyFamily.Growth)] sealed class RandomHistoricalGrowthObjective(SimParams SimParams, MovingBlockBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
     [StrategyFamily(StrategyFamily.Growth)] sealed class ParametricGrowthObjective(SimParams SimParams, ParametricBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
 
 }

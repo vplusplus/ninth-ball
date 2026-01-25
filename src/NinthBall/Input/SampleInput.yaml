@@ -3,20 +3,29 @@ SimParams:
   StartAge: 60
   NoOfYears: 35
   Iterations: 10000
-  Strategies: [
+  Objectives: [
 
       AdditionalIncomes,
       LivingExpenses,
       AnnualFees,
       TieredTax,
       VariableWithdrawal,
-      RMD,
-      Rebalance, 
-      RandomGrowth,
+      RequiredMinimumDistribution,
+      RandomHistoricalGrowth,
+      YearlyRebalance
 
-      # FlatGrowth, HistoricalGrowth, RandomGrowth, ParametricGrowth
-      # JustEnoughWithdrawal, FixedWithdrawal, VariableWithdrawal
-      # FlatTax, TieredTax
+      # Available objectives:
+      # AdditionalIncomes,
+      # AnnualFees,
+      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, ParametricGrowth,
+      # LivingExpenses,
+      # FixedWithdrawal, VariableWithdrawal,
+      # RequiredMinimumDistribution,
+      # FlatTax, TieredTax,
+      # YearlyRebalance,
+
+      # NoOp objectives
+      # NoAdditionalIncome, NoLivingExpenses, NoWithdrawal, NoRequiredMinimumDistribution, NoAnnualFees, NoTax, NoGrowth, NoRebalance,
 
     ]
 
@@ -92,7 +101,7 @@ AnnualFees:
 # ............................................................
 # Portfolio adjustment
 # ............................................................
-Rebalance:
+YearlyRebalance:
   MaxDrift: 5%
   ZZZReallocate:
     - AtAge: 70

@@ -13,7 +13,7 @@ namespace NinthBall.Core
         [property: Range(25,  100)]     int StartAge,
         [property: Range(1,   100)]     int NoOfYears,
         [property: Range(1, 50000)]     int Iterations,
-        [property: Required]            IReadOnlyList<string> Strategies
+        [property: Required]            IReadOnlyList<string> Objectives
     );
 
     public sealed record Initial
@@ -31,10 +31,10 @@ namespace NinthBall.Core
         );
     }
 
-    public sealed record Rebalance
+    public sealed record YearlyRebalance
     (
-        [property: Range(0.0, 0.5)]     double MaxDrift,
-        [property: ValidateNested]      IReadOnlyList<Rebalance.AAA> Reallocate = null!
+        [property: Range(0.0, 0.5)]         double MaxDrift,
+        [property: ValidateNested]          IReadOnlyList<YearlyRebalance.AAA> Reallocate = null!
     )
     {
         public readonly record struct AAA
@@ -68,23 +68,15 @@ namespace NinthBall.Core
     {
         public readonly record struct SSIncome
         (
-            [property: Range(1, 100)] 
-            int FromAge,
-
-            [property: Min(0)] 
-            double Amount
+            [property: Range(1, 100)]       int FromAge,
+            [property: Min(0)]              double Amount
         );
 
         public readonly record struct ANNIncome
         (
-            [property: Range(1, 100)]
-            int FromAge,
-
-            [property: Min(0)]
-            double Amount,
-
-            [property: Range(0.0, 0.1)]
-            double Increment
+            [property: Range(1, 100)]       int FromAge,
+            [property: Min(0)]              double Amount,
+            [property: Range(0.0, 0.1)]     double Increment
         );
 
     }

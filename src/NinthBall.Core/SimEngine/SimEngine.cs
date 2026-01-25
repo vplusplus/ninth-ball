@@ -30,7 +30,7 @@ namespace NinthBall.Core
                 .RegisterConfigSection<SimParams>()
 
                 .RegisterConfigSection<Initial>()
-                .RegisterConfigSection<Rebalance>()
+                .RegisterConfigSection<YearlyRebalance>()
                 .RegisterConfigSection<AdditionalIncomes>()
                 .RegisterConfigSection<LivingExpenses>()
 

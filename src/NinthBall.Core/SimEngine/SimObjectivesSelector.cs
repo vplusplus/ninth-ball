@@ -11,12 +11,12 @@ namespace NinthBall.Core
     {
         public IReadOnlyList<ISimObjective> GetOrderedActiveObjectives()
         {
-            if (null == MySimParams.Strategies) throw new FatalWarning($"Invalid input | List of simulation objectives was NULL.");
-            if (0 == MySimParams.Strategies.Count) throw new FatalWarning($"Invalid input | Specify one or more simulation objectives.");
+            if (null == MySimParams.Objectives) throw new FatalWarning($"Invalid input | List of simulation objectives was NULL.");
+            if (0 == MySimParams.Objectives.Count) throw new FatalWarning($"Invalid input | Specify one or more simulation objectives.");
 
             List<ObjectiveInfo> chosenObjectives = new();
 
-            foreach (var name in MySimParams.Strategies.Distinct())
+            foreach (var name in MySimParams.Objectives.Distinct())
             {
                 // Cosmetic: Name as provided in the input can skip the Strategy(s) or Objevctive(s) suffix.
                 var found = TryFindSimulationObjective(name, out var objectiveInfo);
@@ -24,7 +24,7 @@ namespace NinthBall.Core
                 // Remeber chosen objective information
                 chosenObjectives.Add( found 
                     ? objectiveInfo
-                    : throw new FatalWarning($"Invalid input | Unknown simulation objective/strategy | '{name}'")
+                    : throw new FatalWarning($"Invalid input | Unknown simulation objective. | '{name}'")
                 );
             }
 
@@ -73,6 +73,7 @@ namespace NinthBall.Core
                 StrategyFamily.Taxes,
                 StrategyFamily.Withdrawals,
                 StrategyFamily.Growth,
+                StrategyFamily.Rebalance,
             };
 
             foreach (var family in requiredFamilies)
@@ -94,6 +95,7 @@ namespace NinthBall.Core
                 StrategyFamily.Taxes,
                 StrategyFamily.Withdrawals,
                 StrategyFamily.Growth,
+                StrategyFamily.Rebalance,
             };
 
             foreach (var family in exclusiveFamilies)
@@ -102,7 +104,7 @@ namespace NinthBall.Core
                 if (conflicting.Count > 1)
                 {
                     var names = string.Join(", ", conflicting.Select(s => s.Type.Name));
-                    throw new FatalWarning($"Conflicting strategies detected in family '{family}' [{names}] | Only one strategy from this family can be active at a time.");
+                    throw new FatalWarning($"Conflicting objectives: [{names}]");
                 }
             }
         }
