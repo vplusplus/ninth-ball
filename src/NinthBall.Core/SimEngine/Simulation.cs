@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    internal sealed class Simulation(SimParams SimParams, InitialBalance InitBalance, SimObjectivesSelector ActiveObjectives)
+    internal sealed class Simulation(SimParams SimParams, Initial InitBalance, SimObjectivesSelector ActiveObjectives)
     {
         public SimResult RunSimulation()
         {

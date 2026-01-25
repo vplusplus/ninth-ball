@@ -23,13 +23,13 @@ namespace NinthBall.Core
         IReadOnlyList<string> Strategies
     );
 
-    public sealed record InitialBalance
+    public sealed record Initial
     (
         [property: ValidateNested]
-        InitialBalance.AA PreTax,
+        Initial.AA PreTax,
 
         [property: ValidateNested]
-        InitialBalance.AA PostTax,
+        Initial.AA PostTax,
 
         [property: Min(0.01)]
         double YearZeroCashBalance,
@@ -54,7 +54,7 @@ namespace NinthBall.Core
         double MaxDrift,
 
         [property: ValidateNested]
-        IReadOnlyList<Rebalance.AAA> Reallocate
+        IReadOnlyList<Rebalance.AAA> Reallocate = null!
     )
     {
         public readonly record struct AAA
@@ -70,7 +70,7 @@ namespace NinthBall.Core
         );
     }
 
-    public sealed record FeesPCT
+    public sealed record AnnualFees
     (
         [property: Range(0, 1)] double PreTax, 
         [property: Range(0, 1)] double PostTax

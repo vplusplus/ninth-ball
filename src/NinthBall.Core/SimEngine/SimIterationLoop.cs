@@ -6,7 +6,7 @@ namespace NinthBall.Core
     /// </summary>
     internal static class SimIterationLoop
     {
-        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, InitialBalance InitBalance, IReadOnlyList<ISimObjective> simObjectives, Memory<SimYear> iterationStore)
+        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, Initial InitBalance, IReadOnlyList<ISimObjective> simObjectives, Memory<SimYear> iterationStore)
         {
             ArgumentNullException.ThrowIfNull(simParams);
             ArgumentNullException.ThrowIfNull(simObjectives);

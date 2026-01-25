@@ -34,7 +34,7 @@ namespace UnitTests
                 .Build();
 
             appBuilder.Services
-                .RegisterConfigSection<InitialBalance>()
+                .RegisterConfigSection<Initial>()
                 .RegisterConfigSection<MyTaxRateSchedules>("TaxRateSchedules")
                 ;
 

@@ -2,7 +2,7 @@
 namespace NinthBall.Core
 {
     [StrategyFamily(StrategyFamily.Income)]
-    sealed class AdditionalIncomeStrategy(SimParams P, AdditionalIncomes AInc) : ISimObjective
+    sealed class AdditionalIncomesObjective(SimParams P, AdditionalIncomes AInc) : ISimObjective
     {
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) 
         {
@@ -23,15 +23,13 @@ namespace NinthBall.Core
             void ISimStrategy.Apply(ISimState context)
             {
                 // On income start year, use the exact amount specified.
-                // On year #0, do not make any adjustment (User sees exactly the specified amount).
+                // Do not make any adjustment (User sees exactly the specified amount).
                 // Other years, increment by prior year inflation.
+
                 ssAmount = context.Age == AddInc.SS.FromAge ? AddInc.SS.Amount 
                     : 0 == context.YearIndex ? ssAmount 
                     : ssAmount * (1 + context.PriorYear.ROI.InflationRate);
 
-                // On income start year, use the exact amount specified.
-                // On year 0 do not make any adjustment.
-                // Other years, increment by suggested increment (NOT the inflation rate)
                 annAmount = context.Age == AddInc.Ann.FromAge ? AddInc.Ann.Amount
                     : 0 == context.YearIndex ? annAmount
                     : annAmount * (1 + AddInc.Ann.Increment);
@@ -44,6 +42,6 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Additional income | SS: {AInc.SS.Amount:C0} @ age {AInc.SS.FromAge} (COLA/inflation adjusted) | Ann: {AInc.Ann.Amount:C0} @ age {AInc.Ann.FromAge} (+{AInc.Ann.Increment:P1}/yr)";
+        public override string ToString() => $"Additional income | SS: {AInc.SS.Amount:C0} @ age {AInc.SS.FromAge} (COLA adjusted) | Ann: {AInc.Ann.Amount:C0} @ age {AInc.Ann.FromAge} (+{AInc.Ann.Increment:P1}/yr)";
     }
 }

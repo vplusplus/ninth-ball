@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    [StrategyFamily(StrategyFamily.Taxes)] sealed class FlatTaxStrategy( InitialBalance Initial, FlatTax FT) : ISimObjective
+    [StrategyFamily(StrategyFamily.Taxes)] sealed class FlatTaxStrategy( Initial Initial, FlatTax FT) : ISimObjective
     {
         int ISimObjective.Order => 31;
 
@@ -23,7 +23,7 @@ namespace NinthBall.Core
         public override string ToString() => $"Taxes | Fed: {FT.FederalOrdInc:P1} | LTCG: {FT.FederalLTCG:P1} | State: {FT.State:P1} | Standard deduction: {FT.StandardDeduction:C0} | State exemptions: {FT.StateExemption:C0} (indexed)";
     }
 
-    [StrategyFamily(StrategyFamily.Taxes)] sealed class TieredTaxStrategy(InitialBalance Initial, TaxRateSchedules TaxSchedules) : ISimObjective
+    [StrategyFamily(StrategyFamily.Taxes)] sealed class TieredTaxStrategy(Initial Initial, TaxRateSchedules TaxSchedules) : ISimObjective
     {
         int ISimObjective.Order => 31;
 

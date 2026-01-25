@@ -2,13 +2,13 @@
 namespace NinthBall.Core
 {
     [StrategyFamily(StrategyFamily.Rebalance)]
-    sealed class RebalancingAndReallocationStrategy(InitialBalance Initial, Rebalance RBL) : ISimObjective
+    sealed class RebalancingAndReallocationStrategy(Initial Initial, Rebalance RBL) : ISimObjective
     {
         int ISimObjective.Order => 1;
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Initial, RBL);
 
-        private sealed class Strategy(InitialBalance Initial, Rebalance RBL) : ISimStrategy
+        private sealed class Strategy(Initial Initial, Rebalance RBL) : ISimStrategy
         {
             // Start with initial allocation.
             double preTaxAllocation = Initial.PreTax.Allocation;

@@ -4,9 +4,10 @@ SimParams:
   NoOfYears: 35
   Iterations: 10000
   Strategies: [
-      AdditionalIncome,
-      LivingExpenses,
+      AdditionalIncomes,
       AnnualFees,
+      LivingExpenses,
+      
       TieredTax,
       RandomBlocksGrowth,
       VariableWithdrawal,
@@ -19,14 +20,14 @@ SimParams:
 
     ]
 
-InitialBalance:
-  YearZeroCashBalance: 0.01
-  YearZeroTaxAmount:   25,000
+Initial:
+  YearZeroCashBalance: $0.01
+  YearZeroTaxAmount:   $25,000
   PreTax:
-    Amount: 1,000,000
+    Amount: $1,000,000
     Allocation: 60%
   PostTax:
-    Amount: 1,000,000
+    Amount: $1,000,000
     Allocation: 60%
 
 # ............................................................
@@ -79,7 +80,7 @@ VariableWithdrawal:
 # ............................................................
 # Fees and Taxes
 # ............................................................
-FeesPCT:
+AnnualFees:
   PreTax:   0.2%    # Tax deferred account
   PostTax:  0.9%    # Investment account
 
@@ -95,10 +96,10 @@ FlatTax:
 # ............................................................
 Rebalance:
   MaxDrift: 5%
-  Reallocate:
-    - AtAge: 125
+  ZZZReallocate:
+    - AtAge: 70
       PreTaxStocksAllocation:  70%
       PostTaxStocksAllocation: 70%
-    - AtAge: 125
+    - AtAge: 80
       PreTaxStocksAllocation:  80%
       PostTaxStocksAllocation: 80%

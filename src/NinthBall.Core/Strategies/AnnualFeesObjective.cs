@@ -2,7 +2,7 @@
 namespace NinthBall.Core
 {
     [StrategyFamily(StrategyFamily.Fees)]
-    sealed class AnnualFeesStrategy(FeesPCT F) : ISimObjective, ISimStrategy
+    sealed class AnnualFeesObjective(AnnualFees F) : ISimObjective, ISimStrategy
     {
         int ISimObjective.Order => 30;
 
