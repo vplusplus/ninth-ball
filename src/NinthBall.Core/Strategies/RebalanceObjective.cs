@@ -2,7 +2,7 @@
 namespace NinthBall.Core
 {
     [StrategyFamily(StrategyFamily.Rebalance)]
-    sealed class RebalancingAndReallocationStrategy(Initial Initial, Rebalance RBL) : ISimObjective
+    sealed class RebalanceObjective(Initial Initial, Rebalance RBL) : ISimObjective
     {
         int ISimObjective.Order => 1;
 

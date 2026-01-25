@@ -5,31 +5,20 @@ namespace NinthBall.Core
 {
     public sealed record ParametricBootstrapOptions
     (
-        [property: Range(-1.0, 1.0)]
-        double StocksBondCorrelation,
-
-        [property: Range(-1.0, 1.0)]
-        double StocksInflationCorrelation,
-
-        [property: Range(-1.0, 1.0)]
-        double BondsInflationCorrelation,
-
-        [property: ValidateNested]
-        ParametricBootstrapOptions.Dist Stocks,
-
-        [property: ValidateNested]
-        ParametricBootstrapOptions.Dist Bonds,
-
-        [property: ValidateNested]
-        ParametricBootstrapOptions.Dist Inflation)
+        [property: Range(-1.0, 1.0)]        double StocksBondCorrelation,
+        [property: Range(-1.0, 1.0)]        double StocksInflationCorrelation,
+        [property: Range(-1.0, 1.0)]        double BondsInflationCorrelation,
+        [property: ValidateNested]          ParametricBootstrapOptions.Dist Stocks,
+        [property: ValidateNested]          ParametricBootstrapOptions.Dist Bonds,
+        [property: ValidateNested]          ParametricBootstrapOptions.Dist Inflation)
     {
         public readonly record struct Dist
         (
-            [property: Range( -1.0, 1.0  )] double MeanReturn,
-            [property: Range(  0.0, 1.0  )] double Volatility,
+            [property: Range( -1.0,  1.0 )] double MeanReturn,
+            [property: Range(  0.0,  1.0 )] double Volatility,
             [property: Range(-10.0, 10.0 )] double Skewness,
-            [property: Range(  0.0, 100.0)] double Kurtosis,
-            [property: Range( -1.0, 1.0  )] double AutoCorrelation
+            [property: Range(  0.0, 10.0 )] double Kurtosis,
+            [property: Range( -1.0,  1.0 )] double AutoCorrelation
         );
     }
 

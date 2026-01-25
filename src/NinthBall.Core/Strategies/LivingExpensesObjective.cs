@@ -2,7 +2,7 @@
 namespace NinthBall.Core
 {
     [StrategyFamily(StrategyFamily.Expenses)]
-    sealed class LivingExpensesStrategy(SimParams P, LivingExpenses LExp) : ISimObjective
+    sealed class LivingExpensesObjective(SimParams P, LivingExpenses LExp) : ISimObjective
     {
         int ISimObjective.Order => 32;
 

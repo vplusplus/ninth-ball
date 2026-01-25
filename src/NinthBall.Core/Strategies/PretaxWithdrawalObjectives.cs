@@ -1,38 +1,8 @@
 ﻿
 namespace NinthBall.Core
 {
-
-    //[StrategyFamily(StrategyFamily.Withdrawals)]
-    //sealed class FixedWithdrawalStrategy(FixedWithdrawal Options) : ISimObjective
-    //{
-    //    int ISimObjective.Order => 20;
-
-    //    ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Options);
-
-    //    sealed class Strategy(FixedWithdrawal FW) : ISimStrategy
-    //    {
-    //        double from401K = 0;
-
-    //        void ISimStrategy.Apply(ISimState context)
-    //        {
-    //            var take = 0 == context.YearIndex
-    //                ? from401K = FW.FirstYearAmount
-    //                : from401K *= 1 + FW.Increment;
-
-    //            context.Withdrawals = context.Withdrawals with
-    //            {
-    //                // Adjust to multiples of $120 i.e. $10/month
-    //                PreTax = take.RoundToMultiples(120.0)   
-    //            };
-    //        }
-    //    }
-
-    //    public override string ToString() => $"Pre-Tax Drawdown | Fixed {Options.FirstYearAmount:C0} (+{Options.Increment:P1}/yr)";
-    //}
-
-
     [StrategyFamily(StrategyFamily.Withdrawals)]
-    sealed class JustEnoughWithdrawalStrategy() : ISimObjective
+    sealed class JustEnoughWithdrawalObjective() : ISimObjective
     {
         int ISimObjective.Order => 20;
 
@@ -50,9 +20,8 @@ namespace NinthBall.Core
         public override string ToString() => $"Pre-Tax Drawdown | Just enough to meet the expenses and/or RMD.";
     }
 
-
     [StrategyFamily(StrategyFamily.Withdrawals)]
-    sealed class FixedWithdrawalStrategy(FixedWithdrawal FW) : ISimObjective
+    sealed class FixedWithdrawalObjective(FixedWithdrawal FW) : ISimObjective
     {
         int ISimObjective.Order => 20;
 
@@ -90,7 +59,7 @@ namespace NinthBall.Core
     }
 
     [StrategyFamily(StrategyFamily.Withdrawals)]
-    sealed class VariableWithdrawalStrategy(SimParams Params, VariableWithdrawal VW) : ISimObjective
+    sealed class VariableWithdrawalObjective(SimParams Params, VariableWithdrawal VW) : ISimObjective
     {
         int ISimObjective.Order => 20;
 

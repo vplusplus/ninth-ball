@@ -4,18 +4,18 @@ SimParams:
   NoOfYears: 35
   Iterations: 10000
   Strategies: [
-      AdditionalIncomes,
-      AnnualFees,
-      LivingExpenses,
-      
-      TieredTax,
-      RandomBlocksGrowth,
-      VariableWithdrawal,
-      RebalancingAndReallocation,
-      RMD,
 
-      # FlatGrowth, SequentialGrowth, RandomBlocksGrowth, ParametricGrowth, 
-      # FixedWithdrawal, VariableWithdrawal, JustEnoughWithdrawal,
+      AdditionalIncomes,
+      LivingExpenses,
+      AnnualFees,
+      TieredTax,
+      VariableWithdrawal,
+      RMD,
+      Rebalance, 
+      RandomGrowth,
+
+      # FlatGrowth, HistoricalGrowth, RandomGrowth, ParametricGrowth
+      # JustEnoughWithdrawal, FixedWithdrawal, VariableWithdrawal
       # FlatTax, TieredTax
 
     ]
@@ -31,18 +31,7 @@ Initial:
     Allocation: 60%
 
 # ............................................................
-# Expense modelling
-# ............................................................
-LivingExpenses:
-  FirstYearAmount: 120,000
-  StepDown:
-    - AtAge: 65           # Example: Stop paying Life Ins
-      Reduction: 25000
-    - AtAge: 70           # Example: Reduction in Med Ins.
-      Reduction: 5000
-
-# ............................................................
-# Additional known incomes
+# Income(s) and Expense(s)
 # ............................................................
 AdditionalIncomes:
   SS:
@@ -52,6 +41,15 @@ AdditionalIncomes:
     FromAge: 70
     Amount: 25,000
     Increment: 0%
+
+LivingExpenses:
+  FirstYearAmount: 120,000
+  StepDown:
+    - AtAge: 65           # Example: Stop paying Life Ins
+      Reduction: 25000
+    - AtAge: 70           # Example: Reduction in Med Ins.
+      Reduction: 5000
+
 
 # ............................................................
 # Flat Growth strategy
@@ -78,18 +76,18 @@ VariableWithdrawal:
   Ceiling: 150,000
 
 # ............................................................
-# Fees and Taxes
+# Taxes and Fees
 # ............................................................
-AnnualFees:
-  PreTax:   0.2%    # Tax deferred account
-  PostTax:  0.9%    # Investment account
-
 FlatTax:
   StandardDeduction: 31,500
   StateExemption:    12,000
   FederalOrdInc:     17%
   FederalLTCG:       15%
   State:             5%
+
+AnnualFees:
+  PreTax:   0.2%    # Tax deferred account
+  PostTax:  0.9%    # Investment account
 
 # ............................................................
 # Portfolio adjustment

@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    abstract class GrowthStrategyBase(SimParams SimParams, IBootstrapper Bootstrapper) : ISimObjective
+    abstract class GrowthObjective(SimParams SimParams, IBootstrapper Bootstrapper) : ISimObjective
     {
         int ISimObjective.Order => 40;
 
@@ -34,10 +34,9 @@ namespace NinthBall.Core
         public override string ToString() => $"Growth | {Bootstrapper}";
     }
 
-
-    [StrategyFamily(StrategyFamily.Growth)] sealed class FlatGrowthStrategy(SimParams SimParams, FlatBootstrapper Bootstrapper) : GrowthStrategyBase(SimParams, Bootstrapper) { }
-    [StrategyFamily(StrategyFamily.Growth)] sealed class SequentialGrowthStrategy(SimParams SimParams, SequentialBootstrapper Bootstrapper) : GrowthStrategyBase(SimParams, Bootstrapper) { }
-    [StrategyFamily(StrategyFamily.Growth)] sealed class RandomBlocksGrowthStrategy(SimParams SimParams, MovingBlockBootstrapper Bootstrapper) : GrowthStrategyBase(SimParams, Bootstrapper) { }
-    [StrategyFamily(StrategyFamily.Growth)] sealed class ParametricGrowthStrategy(SimParams SimParams, ParametricBootstrapper Bootstrapper) : GrowthStrategyBase(SimParams, Bootstrapper) { }
+    [StrategyFamily(StrategyFamily.Growth)] sealed class FlatGrowthObjective(SimParams SimParams, FlatBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
+    [StrategyFamily(StrategyFamily.Growth)] sealed class HistoricalGrowthObjective(SimParams SimParams, SequentialBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
+    [StrategyFamily(StrategyFamily.Growth)] sealed class RandomGrowthObjective(SimParams SimParams, MovingBlockBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
+    [StrategyFamily(StrategyFamily.Growth)] sealed class ParametricGrowthObjective(SimParams SimParams, ParametricBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
 
 }
