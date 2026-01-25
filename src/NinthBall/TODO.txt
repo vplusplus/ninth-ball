@@ -1,7 +1,10 @@
 ﻿
 
-* Enhance Tax data structure
-  Capture TaxPCT, EffectiveTaxPCT, TaxableDIV, TaxbleINT, TaxableOInc and the taxes
+* Consider moving all Sim options to .Options namespace
+* MBB - Consecutive blocks - 
+     Avoid EXACT same block
+     In case of partial overlap, skip block ONLY if ann-change more than +/-20%
+
 
   
 
