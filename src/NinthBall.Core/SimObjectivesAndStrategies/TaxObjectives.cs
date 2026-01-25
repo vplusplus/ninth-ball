@@ -1,8 +1,12 @@
 ﻿
 namespace NinthBall.Core
 {
-    abstract class TaxObjective(Initial Initial, TaxRateSchedules Y0TaxRates, TaxAndMarketAssumptions TAMA) : ISimObjective, ISimStrategy
+    abstract class TaxObjective(Initial initial, TaxRateSchedules y0TaxRates, TaxAndMarketAssumptions tama) : ISimObjective, ISimStrategy
     {
+        protected Initial Initial { get; } = initial;
+        protected TaxRateSchedules Y0TaxRates { get; } = y0TaxRates;
+        protected TaxAndMarketAssumptions TAMA { get; } = tama;
+
         int ISimObjective.Order => 31;
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => this;
@@ -37,7 +41,7 @@ namespace NinthBall.Core
     }
 
     [StrategyFamily(StrategyFamily.Taxes)] 
-    sealed class TieredTaxObjective(Initial Initial, TaxRateSchedules Y0TaxRates, TaxAndMarketAssumptions TAMA) : TaxObjective( Initial, Y0TaxRates, TAMA)
+    sealed class TieredTaxObjective(Initial initial, TaxRateSchedules y0TaxRates, TaxAndMarketAssumptions TAMA) : TaxObjective( initial, y0TaxRates, TAMA)
     {
         public override string ToString() => $"Taxes | Federal, LTCG and State tax-schedules indexed for inflation | Standard deduction: {Y0TaxRates.Federal.TaxDeductions:C0} | State exemptions: {Y0TaxRates.State.TaxDeductions:C0} (indexed)";
     }
