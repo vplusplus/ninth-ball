@@ -18,10 +18,10 @@ namespace NinthBall.Core
 
             foreach (var name in MySimParams.Objectives.Distinct())
             {
-                // Cosmetic: Name as provided in the input can skip the Strategy(s) or Objevctive(s) suffix.
+                // Cosmetic: Name as provided in the input can skip the Strategy(s) or Objective(s) suffix.
                 var found = TryFindSimulationObjective(name, out var objectiveInfo);
 
-                // Remeber chosen objective information
+                // Remember chosen objective information
                 chosenObjectives.Add( found 
                     ? objectiveInfo
                     : throw new FatalWarning($"Invalid input | Unknown simulation objective. | '{name}'")
@@ -45,7 +45,7 @@ namespace NinthBall.Core
                 ? throw new FatalWarning($"Invalid input | Specify one or more simulation objectives.") 
                 : orderedObjectives.AsReadOnly();
 
-            // Cosmetic: Name as provided in the input can skip the Strategy(s) or Objevctive(s) suffix.
+            // Cosmetic: Name as provided in the input can skip the Strategy(s) or Objective(s) suffix.
             static bool TryFindSimulationObjective(string friendlyName, out ObjectiveInfo objectiveInfo)
             {
                 return KnownObjectives.Value.TryGetValue(friendlyName, out objectiveInfo)
@@ -58,7 +58,7 @@ namespace NinthBall.Core
         }
 
         //......................................................................
-        #region Validate chosen strategies - Requred & Conflicts
+        #region Validate chosen strategies - Required & Conflicts
         //......................................................................
 
         // Some strategies should not be ignored.
@@ -84,7 +84,7 @@ namespace NinthBall.Core
         }
 
         // For some strategy families, only one of its kind is allowed.
-        // Throws an exception if more than one strategy is activated with-in each exclusive-families.
+        // Throws an exception if more than one strategy is activated within each exclusive family.
         static void ValidateConflictingObjectives(IList<ObjectiveInfo> chosenObjectives)
         {
             var exclusiveFamilies = new[]

@@ -27,9 +27,9 @@ namespace NinthBall.Outputs
         MTRCapGain,
         MTRState,
 
-        TaxPCT,                 // For every $ that cam in, what PCT went to taxes
-        TaxPCTFed,              // For every $ that cam in, what PCT went to Federal taxes
-        TaxPCTState,            // For every $ that cam in, what PCT went to State taxes
+        TaxPCT,                 // For every $ that came in, what PCT went to taxes
+        TaxPCTFed,              // For every $ that came in, what PCT went to Federal taxes
+        TaxPCTState,            // For every $ that came in, what PCT went to State taxes
 
         MXInf,
         MXFedInf,
@@ -57,7 +57,7 @@ namespace NinthBall.Outputs
         LikeYear,               // Representative year used for historical ROI data
         ROI,                    // Effective Portfolio ROI (Blended Stock/Bond/Cash)
         AnnROI,                 // Annualized effective Portfolio ROI (Blended Stock/Bond/Cash)
-        ROIAmount,              // Total changes contributed by ROI gorwth or losss
+        ROIAmount,              // Total changes contributed by ROI growth or loss
         ROIStocks,              // Return on Stocks for the year (PCT)
         ROIBonds,               // Return on Bonds for the year (PCT)
         InflationRate,          // Consumer Price Index (CPI-U)

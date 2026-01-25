@@ -1,4 +1,7 @@
 ﻿
+* Fix the --in and --out parameters handling. 
+  --in is config file, --out is output file and not the output config. Remove the impedence mismatch
+
 
 * Consider moving all Sim options to .Options namespace
 * MBB - Consecutive blocks - 

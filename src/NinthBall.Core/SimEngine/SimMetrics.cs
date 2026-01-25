@@ -12,7 +12,7 @@ namespace NinthBall.Core
     */
 
     /// <summary>
-    /// Iteration path specific running inflation miltipliers and cummulative metrics.
+    /// Iteration path specific running inflation multipliers and cumulative metrics.
     /// </summary>
     public readonly record struct Metrics
     (
@@ -22,7 +22,7 @@ namespace NinthBall.Core
         double StateTaxInflationMultiplier, // Cumulative State tax indexing (with lag)
         double GrowthMultiplier,            // Nominal growth multiplier since year #0
 
-        // Cummulative percentage values
+        // Cumulative percentage values
         double PortfolioReturn,             // Portfolio-weighted nominal return for the current year
         double AnnualizedReturn,            // Annualized nominal return (CAGR) since year #0
         double RealAnnualizedReturn         // Inflation-adjusted annualized return since year #0
@@ -39,7 +39,7 @@ namespace NinthBall.Core
             StateTaxInflationMultiplier:    1.0,
             GrowthMultiplier:               1.0,
 
-            // Rest starts with zero 
+            // Rest start with zero 
             PortfolioReturn:                0.0,
             AnnualizedReturn:               0.0,
             RealAnnualizedReturn:           0.0
@@ -50,7 +50,7 @@ namespace NinthBall.Core
     internal static class SimMetrics
     {
         // Small haircut on current year inflation rate to represent Federal C-CPI lag.
-        static double FedTaxInflationLagHairCut => 0.0025;      // TODO: Move to config
+        static double FedTaxInflationLagHaircut => 0.0025;      // TODO: Move to config
 
         // Larger haircut on current year inflation rate to represent State's delayed adjustments and lag.
         static double NJStateTaxInflationLagHaircut => 0.0075;  // TODO: Move to config 
@@ -69,12 +69,12 @@ namespace NinthBall.Core
             );
 
             // The IRS uses the Chained CPI (C-CPI-U) to measure inflation.
-            // C-CPI generally rises slower than the standard CPI (Apply small haitcut)
+            // C-CPI generally rises slower than the standard CPI (Apply small haircut)
             // And, it never goes back (Apply floor)
             // Tracked at full precision (not quantized)
             var fedTaxInflationMultiplier = Math.Max(
                 prior.FedTaxInflationMultiplier,
-                prior.FedTaxInflationMultiplier * (1 + currentYearInflationRate - FedTaxInflationLagHairCut)
+                prior.FedTaxInflationMultiplier * (1 + currentYearInflationRate - FedTaxInflationLagHaircut)
             );
 
             // NJ, for example, doesn't index based on CPI or C-CPI each year.
@@ -86,7 +86,7 @@ namespace NinthBall.Core
                 prior.StateTaxInflationMultiplier * (1 + currentYearInflationRate - NJStateTaxInflationLagHaircut)
             );
 
-            // Running multipler that represents cumulative portfolio growth since year #0
+            // Running multiplier that represents cumulative portfolio growth since year #0
             double cumulativeGrowthMultiplier = prior.GrowthMultiplier * (1 + portfolioReturn);
 
             // Annualized nominal return since year #0

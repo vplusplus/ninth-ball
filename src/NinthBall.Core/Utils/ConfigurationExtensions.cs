@@ -68,7 +68,7 @@ namespace NinthBall.Core
         /// </summary>
         public static IServiceCollection RegisterConfigSection<TSection>(this IServiceCollection services, string? optionalSectionName = null) where TSection : class
         {
-            // Options pattern returns an empty and uninitialied TOption if section not defined.
+            // Options pattern returns an empty and uninitialized TOption if section not defined.
             // This is not our desired behavior.
             // Registers two variants: Lazy<TSection> and TSection singleton providers.
             // Consumers should use Lazy<TSection> for optional configuration and TSection for required configurations.

@@ -27,7 +27,7 @@ namespace NinthBall.Core
             // SimState represents the working memory of the iteration.
             var simState = new SimState(iterationIndex, startAge, initialBalance, iterationStore);
 
-            // Asses each year. Exit if failed.
+            // Assess each year. Exit if failed.
             bool survived = true;
             for(int yearIndex  = 0; yearIndex < numYears && survived; yearIndex++)
             {

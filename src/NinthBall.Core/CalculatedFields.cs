@@ -7,7 +7,7 @@ namespace NinthBall.Core
         extension(in Assets A)
         {
             // Approximate value, less taxes (Indicative value, not exact)
-            // This is not cash in hand, if you try to withdraw all amount, will push to higher tax bracket.
+            // This is not cash in hand, if you try to withdraw all amount, will push you into a higher tax bracket.
             // Ignoring cash basis, and loss-harvesting - Taxes are overstated.
             // PreTax  - 100% taxable at 25%
             // PostTax - Assuming all gains are long term gains, 
@@ -117,7 +117,7 @@ namespace NinthBall.Core
 
 
             /// <summary>
-            /// Returns no of failures by year-range.
+            /// Returns number of failures by year-range.
             /// </summary>
             public IList<FailureBucket> GetFailureBuckets()
             {
@@ -132,7 +132,7 @@ namespace NinthBall.Core
                         End   = Math.Min(numYears, 5 + i * 5)
                     });
 
-                // Count no of failures in each bucket.
+                // Count number of failures in each bucket.
                 // Note: Failed year = One Plus SurvivedYears
                 return fiveYearBuckets
                     .Select(y => new FailureBucket

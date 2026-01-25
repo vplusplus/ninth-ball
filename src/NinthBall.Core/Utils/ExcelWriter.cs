@@ -66,7 +66,7 @@ namespace NinthBall.Core
 
                 sheetName = sheetName.Trim('\'');
                 if (sheetName.Length > 31) throw new FatalWarning("Invalid Excel sheet name | Must be <= 31 chars.");
-                if ("History".Equals(sheetName, StringComparison.OrdinalIgnoreCase)) throw new FatalWarning("Invalid Excel sheet name | 'History' is a reerve name.");
+                if ("History".Equals(sheetName, StringComparison.OrdinalIgnoreCase)) throw new FatalWarning("Invalid Excel sheet name | 'History' is a reserved name.");
                 if (RxInvalidSheetName.IsMatch(sheetName)) throw new FatalWarning("Invalid Excel sheet name | Has invalid chars.");
 
                 return sheetName;
@@ -363,7 +363,7 @@ namespace NinthBall.Core
 
             public void WriteCell(OpenXmlWriter writer, DateTime value, uint styleIndex)
             {
-                // Date values are renered as OADate (numeric) - Must provide a styleIndex.
+                // Date values are rendered as OADate (numeric) - Must provide a styleIndex.
                 CellValue.Text = value.ToOADate().ToString(CultureInfo.InvariantCulture);
                 Cell.StyleIndex = styleIndex;
                 writer.WriteElement(Cell);

@@ -23,7 +23,7 @@ namespace NinthBall.Core
                 .Build();
 
             // Register components for the simulation.
-            // NOTE: Dispose te DI container on return; we will prepare a fresh container for each run.
+            // NOTE: Dispose the DI container on return; we will prepare a fresh container for each run.
             simSessionBuilder.Services
 
                 .RegisterConfigSection<SimulationSeed>()

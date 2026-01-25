@@ -59,13 +59,13 @@ namespace NinthBall.Core
             if (inflationMultiplier > 10.0) throw new ArgumentOutOfRangeException($"Inflation multiplier too large | Check logic and math | Expecting < 10.0 | Received {inflationMultiplier:F2}");
             if (jitterGuard < 10.0 || jitterGuard > 100.0) throw new ArgumentOutOfRangeException($"Invalid jitterGuard | Expecting  between $10.0 and $100.0 | Received {jitterGuard:C2}");
 
-            // Optmization 1: InflationMultiplier 1.0 means no indexing.
+            // Optimization 1: InflationMultiplier 1.0 means no indexing.
             if (1.0 == inflationMultiplier) return TS;
 
-            // Optmization 2: Flat tax rate schedule. Zero to Infinite range. Nothing to index.
+            // Optimization 2: Flat tax rate schedule. Zero to Infinite range. Nothing to index.
             if (1 == TS.Brackets.Count && 0 == TS.Brackets[0].Threshold) return TS;
 
-            // Adjust thresholds for inlfation.
+            // Adjust thresholds for inflation.
             int n = TS.Brackets.Count;
             var inflatedBrackets = new List<TaxRateSchedule.TaxBracket>(n);
 
@@ -94,8 +94,8 @@ namespace NinthBall.Core
             static double InflateAndReduceJitter(double amount, double multiplier, double jitterGuard)
             {
                 var newThreshold = amount * multiplier;
-                var newThrsholdLowJitter = Math.Round(newThreshold / jitterGuard) * jitterGuard;
-                return newThrsholdLowJitter;
+                var newThresholdLowJitter = Math.Round(newThreshold / jitterGuard) * jitterGuard;
+                return newThresholdLowJitter;
             }
         }
     }

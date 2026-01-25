@@ -28,9 +28,6 @@ namespace NinthBall.Core
 
     public readonly record struct Fees(double PreTax, double PostTax);
 
-
-
-
     public readonly record struct Incomes(double SS, double Ann);
 
     public readonly record struct Expenses(double LivExp);
@@ -45,33 +42,3 @@ namespace NinthBall.Core
 
 }
 
-// TODO: Adjust Taxes - Include provision for Federal tax and State tax 
-// TODO: Track adjusted inflation rate for NJ State tax - 70% lag
-// TODO: CHeck if Federal schedule is indexed down on negative inflation years
-// TODO: CHeck how negative inflation should be handled for NJ tax inflation rate
-// TODO: ??? Property tax deductions
-// TODO: Check out Pension exclusion and Pension exclusion cliff.
-// TODO: Split Tax calculators to Federal and State tax calculator
-// TODO: Consider early design provision for alternate state (PA) tax calculator
-// TODO: Anti-gravity made some correction to ChatGPT suggested logic on how tax brackets are applied. Write unit test to validate
-
-
-/*
-     public readonly record struct TaxesOLD(TaxesOLD.GrossInc GrossIncome, TaxesOLD.TD Federal, TaxesOLD.TD State)
-    {
-        public readonly record struct GrossInc(double OrdInc, double INT, double DIV, double LTCG) { public readonly double Total => OrdInc + INT + DIV + LTCG; }
-        public readonly record struct TR(double OrdInc, double LTCG);
-        public readonly record struct TD(double Deduction, double Taxable, TR MarginalRate, double Tax, GrossInc TaxBreakdown) { public readonly double EffectiveRate => Taxable < 0.01 ? 0.0 : Tax / Taxable; }
-        public readonly double Total => Federal.Tax + State.Tax;
-        public readonly double EffectiveRate => GrossIncome.Total < 0.01 ? 0.0 : Total / GrossIncome.Total;
-    }
-
-    //public readonly record struct Taxable(double OrdInc, double DIV, double INT, double LTCG);
-
-    //public readonly record struct Tax(double OrdInc, double DIV, double INT, double LTCG);
-
-    //public readonly record struct TaxRate(double OrdInc, double LTCG);
-
-    //public readonly record struct Taxes(double StandardDeduction, TaxRate TaxRates, Taxable Taxable, Tax Tax);
-
-*/

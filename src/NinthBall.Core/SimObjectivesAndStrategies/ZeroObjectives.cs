@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace NinthBall.Core
 {
-    // SimEngine will excpect one of each objevctive.
+    // SimEngine will expect one of each objective.
     // For what-if simulations, to mute a specific objective, use the NoOp objectives to be explict about the choice.
     abstract class NoOpObjective : ISimObjective, ISimStrategy
     {

@@ -1,22 +1,25 @@
-
+ï»¿
 namespace NinthBall.Core
 {
     /*
-        GI      – Gross Income
-        AGI     – Adjusted Gross Income
+        GI      â€“ Gross Income
+        AGI     â€“ Adjusted Gross Income
 
-        OrdInc  – Ordinary Income (Also OI)
-        INT     – Interest
-        QDI     – Qualified Dividends
-        LTCG    – Long term Capital Gains
+        OrdInc  â€“ Ordinary Income (Also OI)
+        INT     â€“ Interest
+        QDI     â€“ Qualified Dividends
+        LTCG    â€“ Long term Capital Gains
 
-        MTR     – Marginal Tax Rate
-        ETTR    – Effective Tax Rates
-        NIIT    – Net Investment Income Tax 
+        MTR     â€“ Marginal Tax Rate
+        ETTR    â€“ Effective Tax Rates
+        NIIT    â€“ Net Investment Income Tax 
     
-        TaxPCT  = Total Taxes Paid ÷ Every $ of cash inflow (not a standard term; not a statutory tax rate)
+        TaxPCT  = Total Taxes Paid Ã· Every $ of cash inflow (not a standard term; not a statutory tax rate)
 
      */
+
+    // TODO: Check out Pension exclusion and Pension exclusion cliff.
+    // TODO: Consider early design provision for alternate state (PA) tax calculator
 
     public readonly record struct Taxes(Taxes.GI GrossIncome, Taxes.AGI AdjustedGrossIncome, Taxes.Fed FederalTax, Taxes.State StateTax)
     {
@@ -77,8 +80,8 @@ namespace NinthBall.Core
 
         // NIIT thresholds are not indexed for inflation under current law.
         // For planning realism, consider inflating or policy-adjusting this value
-        const double NIITThreshold = 250000.0;          // TODO: MFJ - Move to optional cofiguration
-        const double NIITRate = 0.038;                  // TODO: Move to optional cofiguration
+        const double NIITThreshold = 250000.0;          // TODO: MFJ - Move to optional configuration
+        const double NIITRate = 0.038;                  // TODO: Move to optional configuration
 
         public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxRateSchedule taxRatesFederal, TaxRateSchedule taxRatesLTCG, TaxRateSchedule taxRatesState)
         {
@@ -181,7 +184,7 @@ namespace NinthBall.Core
 
             // Consult tax brackets. Compute marginal tax rate and the tax amount.
             var taxOnOrdInc   = fedTaxRates.CalculateStackedEffectiveTax(taxableOrdInc + taxableINT);
-            var taxcOnCapGain = longTermCapGainsTaxRates.CalculateStackedEffectiveTax(taxableDIV + taxableCapGain, baseIncome: taxableOrdInc + taxableINT);
+            var taxOnCapGain = longTermCapGainsTaxRates.CalculateStackedEffectiveTax(taxableDIV + taxableCapGain, baseIncome: taxableOrdInc + taxableINT);
 
             // Net Investment Income Tax
             // MAGI ~= AGI in this model (simplification)
@@ -196,8 +199,8 @@ namespace NinthBall.Core
                 StdDeduction:   standardDeductions,
                 Taxable:        taxableOrdInc + taxableINT + taxableDIV + taxableCapGain, 
                 MTR:            taxOnOrdInc.MarginalTaxRate,
-                MTRCapGain:     taxcOnCapGain.MarginalTaxRate,
-                Tax:            taxOnOrdInc.TaxAmount + taxcOnCapGain.TaxAmount + niitTax
+                MTRCapGain:     taxOnCapGain.MarginalTaxRate,
+                Tax:            taxOnOrdInc.TaxAmount + taxOnCapGain.TaxAmount + niitTax
             );
 
             static double TryReduce(ref double remaining, in double source)
@@ -262,3 +265,4 @@ namespace NinthBall.Core
     }
 
 }
+
