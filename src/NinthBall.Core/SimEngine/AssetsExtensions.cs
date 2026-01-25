@@ -112,8 +112,5 @@ namespace NinthBall.Core
                 return new(newPreTax, newPostTax, assets.Cash);
             }
         }
-
-        // Drops the fractional cents, the double-precision-dust.
-        private static double RoundToCents(this double amount) => Math.Round(amount, 2);
     }
 }
