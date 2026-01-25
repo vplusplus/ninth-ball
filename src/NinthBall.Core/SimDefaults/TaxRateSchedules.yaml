@@ -12,15 +12,15 @@ TaxRateSchedules:
   Federal:
 
     # Fedeal 2026 MFJ Standard deductions
-    TaxDeductions: $31,500          # IMP: Update to $32,200 after testing
+    TaxDeductions: $32,200          # IMP: Update to $32,200 after testing
     Brackets: [
-      { Threshold:      0,  MTR: 0.10    },
-      { Threshold:  24800,  MTR: 0.12    },
-      { Threshold: 100800,  MTR: 0.22    },
-      { Threshold: 211400,  MTR: 0.24    },
-      { Threshold: 403550,  MTR: 0.32    },
-      { Threshold: 512450,  MTR: 0.35    },
-      { Threshold: 768700,  MTR: 0.37    }
+      { Threshold:      0,  MTR: 10%    },
+      { Threshold:  24800,  MTR: 12%    },
+      { Threshold: 100800,  MTR: 22%    },
+      { Threshold: 211400,  MTR: 24%    },
+      { Threshold: 403550,  MTR: 32%    },
+      { Threshold: 512450,  MTR: 35%    },
+      { Threshold: 768700,  MTR: 37%    }
     ]
 
   # 2026 Federal Long term capital gains brackets for Married Filing Jointly.
@@ -29,9 +29,9 @@ TaxRateSchedules:
   LTCG:
     TaxDeductions: 0,
     Brackets: [
-      { Threshold:      0,  MTR: 0.00    },
-      { Threshold:  98900,  MTR: 0.15    },
-      { Threshold: 613700,  MTR: 0.20    }
+      { Threshold:      0,  MTR:  0%    },
+      { Threshold:  98900,  MTR: 15%    },
+      { Threshold: 613700,  MTR: 20%    }
     ]
 
   # 2026 New Jersey Gross Income Tax Brackets for Married Filing Jointly.
@@ -41,13 +41,13 @@ TaxRateSchedules:
   State:
     TaxDeductions: $12,000
     Brackets: [
-      { Threshold:       0, MTR: 0.01400 },
-      { Threshold:   20000, MTR: 0.01750 },
-      { Threshold:   50000, MTR: 0.02450 },
-      { Threshold:   70000, MTR: 0.03500 },
-      { Threshold:   80000, MTR: 0.05525 },
-      { Threshold:  150000, MTR: 0.06370 },
-      { Threshold:  500000, MTR: 0.08970 },
-      { Threshold: 1000000, MTR: 0.10750 }
+      { Threshold:       0, MTR: 1.4%     },
+      { Threshold:   20000, MTR: 1.75%    },
+      { Threshold:   50000, MTR: 2.45%    },
+      { Threshold:   70000, MTR: 3.5%     },
+      { Threshold:   80000, MTR: 5.525%   },
+      { Threshold:  150000, MTR: 6.37%    },
+      { Threshold:  500000, MTR: 8.97%    },
+      { Threshold: 1000000, MTR: 10.75%   }
     ]
 
