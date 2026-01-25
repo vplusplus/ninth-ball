@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    abstract class TaxObjective(Initial Initial, TaxRateSchedule Fed, TaxRateSchedule LTCG, TaxRateSchedule State) : ISimObjective
+    abstract class TaxObjective(Initial Initial, TaxRateSchedule Fed, TaxRateSchedule LTCG, TaxRateSchedule State, TaxAndMarketAssumptions TAMA) : ISimObjective
     {
         int ISimObjective.Order => 31;
 
@@ -12,11 +12,12 @@ namespace NinthBall.Core
                 YearZeroTaxLiability:   Initial.YearZeroTaxAmount,
                 TaxRatesFederal:        Fed,
                 TaxRatesLTCG:           LTCG,
-                TaxRatesState:          State
+                TaxRatesState:          State,
+                TAMA
             );
         }
 
-        private sealed record Strategy(double YearZeroTaxLiability, TaxRateSchedule TaxRatesFederal, TaxRateSchedule TaxRatesLTCG, TaxRateSchedule TaxRatesState) : ISimStrategy
+        private sealed record Strategy(double YearZeroTaxLiability, TaxRateSchedule TaxRatesFederal, TaxRateSchedule TaxRatesLTCG, TaxRateSchedule TaxRatesState, TaxAndMarketAssumptions TAMA) : ISimStrategy
         {
             void ISimStrategy.Apply(ISimState context)
             {
@@ -30,7 +31,8 @@ namespace NinthBall.Core
                     (
                         taxRatesFederal: TaxRatesFederal,
                         taxRatesLTCG: TaxRatesLTCG,
-                        taxRatesState: TaxRatesState
+                        taxRatesState: TaxRatesState,
+                        TAMA: TAMA
                     );
                 }
             }
@@ -48,22 +50,24 @@ namespace NinthBall.Core
         }
     }
 
-    [StrategyFamily(StrategyFamily.Taxes)] sealed class FlatTaxObjective(Initial Initial, FlatTax FT) : TaxObjective
+    [StrategyFamily(StrategyFamily.Taxes)] sealed class FlatTaxObjective(Initial Initial, FlatTax FT, TaxAndMarketAssumptions TAMA) : TaxObjective
     ( 
         Initial,
         TaxRateSchedules.Flat(marginalTaxRate: FT.FederalOrdInc, taxDeductions: FT.StandardDeduction),
         TaxRateSchedules.Flat(marginalTaxRate: FT.FederalLTCG, taxDeductions: 0),
-        TaxRateSchedules.Flat(marginalTaxRate: FT.State, taxDeductions: FT.StateExemption)
+        TaxRateSchedules.Flat(marginalTaxRate: FT.State, taxDeductions: FT.StateExemption),
+        TAMA
     )
     {
         public override string ToString() => $"Taxes | Fed: {FT.FederalOrdInc:P1} | LTCG: {FT.FederalLTCG:P1} | State: {FT.State:P1} | Standard deduction: {FT.StandardDeduction:C0} | State exemptions: {FT.StateExemption:C0} (indexed)";
     }
 
-    [StrategyFamily(StrategyFamily.Taxes)] sealed class TieredTaxObjective(Initial Initial, TaxRateSchedules TaxSchedules) : TaxObjective(
+    [StrategyFamily(StrategyFamily.Taxes)] sealed class TieredTaxObjective(Initial Initial, TaxRateSchedules TaxSchedules, TaxAndMarketAssumptions TAMA) : TaxObjective(
         Initial,
         TaxSchedules.Federal,
         TaxSchedules.LTCG,
-        TaxSchedules.State
+        TaxSchedules.State,
+        TAMA
     )
     {
         public override string ToString() => $"Taxes | Federal, LTCG and State tax-schedules indexed for inflation | Standard deduction: {TaxSchedules.Federal.TaxDeductions:C0} | State exemptions: {TaxSchedules.State.TaxDeductions:C0} (indexed)";

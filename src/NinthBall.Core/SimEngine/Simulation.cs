@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    internal sealed class Simulation(SimParams SimParams, Initial InitBalance, SimObjectivesSelector ActiveObjectives)
+    internal sealed class Simulation(SimParams SimParams, Initial InitBalance, SimObjectivesSelector ActiveObjectives, TaxAndMarketAssumptions TAMA)
     {
         public SimResult RunSimulation()
         {
@@ -32,7 +32,7 @@ namespace NinthBall.Core
             var iterationResults = Enumerable.Range(0, maxIterations)
                 .AsParallel()
                 .WithDegreeOfParallelism(Environment.ProcessorCount)
-                .Select(iterationIndex => SimIterationLoop.RunOneIteration(iterationIndex, SimParams, InitBalance, orderedObjectives, dataStore.AsMemory(iterationIndex * noOfYears, noOfYears)))
+                .Select(iterationIndex => SimIterationLoop.RunOneIteration(iterationIndex, SimParams, InitBalance, orderedObjectives, TAMA, dataStore.AsMemory(iterationIndex * noOfYears, noOfYears)))
                 .ToList();
 
             // Sort the iteration results worst to best.

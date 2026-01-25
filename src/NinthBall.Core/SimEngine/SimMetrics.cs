@@ -49,13 +49,7 @@ namespace NinthBall.Core
 
     internal static class SimMetrics
     {
-        // Small haircut on current year inflation rate to represent Federal C-CPI lag.
-        static double FedTaxInflationLagHaircut => 0.0025;      // TODO: Move to config
-
-        // Larger haircut on current year inflation rate to represent State's delayed adjustments and lag.
-        static double NJStateTaxInflationLagHaircut => 0.0075;  // TODO: Move to config 
-
-        public static Metrics UpdateRunningMetrics(this Metrics pyMetrics, int yearIndex, double portfolioReturn, double currentYearInflationRate)
+        public static Metrics UpdateRunningMetrics(this Metrics pyMetrics, int yearIndex, double portfolioReturn, double currentYearInflationRate, TaxAndMarketAssumptions TAMA)
         {
             // Not trusting external year #0 initialization...
             Metrics prior = yearIndex > 0 ? pyMetrics : new();
@@ -74,7 +68,7 @@ namespace NinthBall.Core
             // Tracked at full precision (not quantized)
             var fedTaxInflationMultiplier = Math.Max(
                 prior.FedTaxInflationMultiplier,
-                prior.FedTaxInflationMultiplier * (1 + currentYearInflationRate - FedTaxInflationLagHaircut)
+                prior.FedTaxInflationMultiplier * (1 + currentYearInflationRate - TAMA.FedTaxInflationLagHaircut)
             );
 
             // NJ, for example, doesn't index based on CPI or C-CPI each year.
@@ -83,7 +77,7 @@ namespace NinthBall.Core
             // Tracked at full precision (not quantized)
             var stateTaxInflationRateMultiplier = Math.Max(
                 prior.StateTaxInflationMultiplier,
-                prior.StateTaxInflationMultiplier * (1 + currentYearInflationRate - NJStateTaxInflationLagHaircut)
+                prior.StateTaxInflationMultiplier * (1 + currentYearInflationRate - TAMA.NJStateTaxInflationLagHaircut)
             );
 
             // Running multiplier that represents cumulative portfolio growth since year #0

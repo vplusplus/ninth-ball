@@ -40,6 +40,7 @@ namespace NinthBall.Core
                 .RegisterConfigSection<AnnualFees>()
                 .RegisterConfigSection<FlatTax>()
                 .RegisterConfigSection<TaxRateSchedules>()
+                .RegisterConfigSection<TaxAndMarketAssumptions>()
 
                 .RegisterConfigSection<FlatGrowth>()
 

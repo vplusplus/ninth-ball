@@ -6,7 +6,7 @@ namespace NinthBall.Core
     /// </summary>
     internal static class SimIterationLoop
     {
-        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, Initial initial, IReadOnlyList<ISimObjective> simObjectives, Memory<SimYear> iterationStore)
+        public static SimIteration RunOneIteration(int iterationIndex, SimParams simParams, Initial initial, IReadOnlyList<ISimObjective> simObjectives, TaxAndMarketAssumptions TAMA, Memory<SimYear> iterationStore)
         {
             ArgumentNullException.ThrowIfNull(simParams);
             ArgumentNullException.ThrowIfNull(initial);
@@ -46,7 +46,7 @@ namespace NinthBall.Core
                 simState.Withdrawals = simState.Withdrawals.ThrowIfNegative().RoundToCents();
 
                 // Check for survivability, optimize and implement the strategy suggestions.
-                (survived, var simYear) = simState.FinalizeYear();
+                (survived, var simYear) = simState.FinalizeYear(TAMA);
 
                 // Capture the year to the history (even the failed year)
                 simState.EndYear(simYear);
@@ -56,7 +56,7 @@ namespace NinthBall.Core
             return new(iterationIndex, Success: survived, simState.PriorYears);
         }
 
-        static (bool success, SimYear simYear) FinalizeYear(this IReadOnlySimState simState)
+        static (bool success, SimYear simYear) FinalizeYear(this IReadOnlySimState simState, TaxAndMarketAssumptions TAMA)
         {
             // Adjust withdrawals to meet the expenses.
             // See if we survived.
@@ -77,7 +77,8 @@ namespace NinthBall.Core
                 (
                     simState.YearIndex, 
                     portfolioReturn: portfolioReturn, 
-                    currentYearInflationRate: simState.ROI.InflationRate
+                    currentYearInflationRate: simState.ROI.InflationRate,
+                    TAMA
                 );
 
                 // Capture the year performance.

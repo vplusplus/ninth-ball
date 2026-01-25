@@ -116,4 +116,18 @@ namespace NinthBall.Core
         [property: Range(0.0001, 1)] double InflationRate
     );
 
+    // Few lingering constants and assumptions, externalized, optionally configurable.
+    public sealed record TaxAndMarketAssumptions
+    (
+        [property: Min(1000)]           double SSNonTaxableThreshold,
+        [property: Min(1000)]           double SS50PctTaxableThreshold,
+        [property: Min(1000)]           double NIITThreshold,
+        [property: Range(0.001, 1.0)]   double NIITRate,
+        [property: Range(0.001, 1.0)]   double TypicalStocksDividendYield,
+        [property: Range(0.001, 1.0)]   double TypicalBondCouponYield,
+
+        [property: Range(0.0001, 1.0)]  double FedTaxInflationLagHaircut,
+        [property: Range(0.0001, 1.0)]  double NJStateTaxInflationLagHaircut
+    );
+
 }

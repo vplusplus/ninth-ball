@@ -66,25 +66,7 @@ namespace NinthBall.Core
         const double HundredPCT    = 1.00;
         const double TenDollars    = 10.00;
 
-        // Taxable SS thresholds are statutory and not inflation-adjusted.
-        // TODO: Move to external optional configuration.
-        const double SSNonTaxableThresholdMFJ = 32000.0;
-        const double SS50PctTaxableThresholdMFJ = 44000.0;
-
-        // How much a company pays out in dividends relative to its current stock price, expressed as a percentage.
-        // TODO: See if historical data is available, include to Bootstrapper.
-        const double TypicalStocksDividendYield = 2.0 / 100.0;   // 2%
-
-        // Interest payment made by the bond issuer, expressed as a percentage of the bond's face value 
-        const double TypicalBondCouponYield = 2.5 / 100.0;          // 2.5%
-
-
-        // NIIT thresholds are not indexed for inflation under current law.
-        // For planning realism, consider inflating or policy-adjusting this value
-        const double NIITThreshold = 250000.0;          // TODO: MFJ - Move to optional configuration
-        const double NIITRate = 0.038;                  // TODO: Move to optional configuration
-
-        public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxRateSchedule taxRatesFederal, TaxRateSchedule taxRatesLTCG, TaxRateSchedule taxRatesState)
+        public static Taxes ComputePriorYearTaxes(this SimYear priorYear, TaxRateSchedule taxRatesFederal, TaxRateSchedule taxRatesLTCG, TaxRateSchedule taxRatesState, TaxAndMarketAssumptions TAMA)
         {
             // We do not want 30,000 tax schedules (30 years x 10000 iterations paths)
             // Quantize the inflation rate multipliers to avoid 30,000 jitters
@@ -98,31 +80,31 @@ namespace NinthBall.Core
             taxRatesState     = taxRatesState.Inflate(inflationMultiplierState,     jitterGuard: TenDollars);
 
             // Collect gross incomes, arranged by taxable buckets
-            var unadjustedIncomes = priorYear.RawIncomes().MinZero().RoundToCents();
-            var agi = unadjustedIncomes.AdjustedGrossIncomes().MinZero().RoundToCents();
+            var unadjustedIncomes = priorYear.RawIncomes(TAMA).MinZero().RoundToCents();
+            var agi = unadjustedIncomes.AdjustedGrossIncomes(TAMA).MinZero().RoundToCents();
 
             return new Taxes
             (
                 GrossIncome:         unadjustedIncomes,
                 AdjustedGrossIncome: agi,
-                FederalTax:          agi.ComputeFederalTaxes(taxRatesFederal.TaxDeductions, taxRatesFederal, taxRatesLTCG),
+                FederalTax:          agi.ComputeFederalTaxes(taxRatesFederal.TaxDeductions, taxRatesFederal, taxRatesLTCG, TAMA),
                 StateTax:            agi.ComputeStateTaxes(taxRatesState.TaxDeductions, taxRatesState)
             );
         }
 
-        static Taxes.GI RawIncomes(this SimYear priorYear) => new Taxes.GI
+        static Taxes.GI RawIncomes(this SimYear priorYear, TaxAndMarketAssumptions TAMA) => new Taxes.GI
         (
             PreTaxWDraw:    priorYear.Withdrawals.PreTax,
             SS:             priorYear.Incomes.SS,
             Ann:            priorYear.Incomes.Ann,
-            BondsYield:     priorYear.Jan.PostTax.BondsAmount * TypicalBondCouponYield,
-            Dividends:      priorYear.Jan.PostTax.StocksAmount * TypicalStocksDividendYield,
+            BondsYield:     priorYear.Jan.PostTax.BondsAmount * TAMA.TypicalBondCouponYield,
+            Dividends:      priorYear.Jan.PostTax.StocksAmount * TAMA.TypicalStocksDividendYield,
             CapGains:       priorYear.Withdrawals.PostTax
         )
         .MinZero();
 
 
-        static Taxes.AGI AdjustedGrossIncomes(this Taxes.GI inc)
+        static Taxes.AGI AdjustedGrossIncomes(this Taxes.GI inc, TaxAndMarketAssumptions TAMA)
         {
 
             // Interim math to guess taxable portion of social security income.
@@ -130,8 +112,8 @@ namespace NinthBall.Core
             // Thresholds are statutory and not inflation-adjusted.
             double nonSSOrdinary = inc.PreTaxWDraw + inc.Ann;
             double provisionalInvestmentIncome = inc.BondsYield + inc.Dividends + inc.CapGains;
-            double provisionalIncome = nonSSOrdinary + provisionalInvestmentIncome + (0.5 * inc.SS);
-            double taxableSS = TaxableSocialSecurity(inc.SS, provisionalIncome, base1: SSNonTaxableThresholdMFJ, base2: SS50PctTaxableThresholdMFJ);
+            double provisionalIncome = nonSSOrdinary + provisionalInvestmentIncome + (FiftyPCT * inc.SS);
+            double taxableSS = TaxableSocialSecurity(inc.SS, provisionalIncome, base1: TAMA.SSNonTaxableThreshold, base2: TAMA.SS50PctTaxableThreshold);
 
             return new Taxes.AGI
             (
@@ -174,7 +156,7 @@ namespace NinthBall.Core
             );
         }
 
-        static Taxes.Fed ComputeFederalTaxes(this Taxes.AGI adjustedGrossIncome, double standardDeductions, TaxRateSchedule fedTaxRates, TaxRateSchedule longTermCapGainsTaxRates)
+        static Taxes.Fed ComputeFederalTaxes(this Taxes.AGI adjustedGrossIncome, double standardDeductions, TaxRateSchedule fedTaxRates, TaxRateSchedule longTermCapGainsTaxRates, TaxAndMarketAssumptions TAMA)
         {
             // Take standard deductions...
             double remainingDeduction = standardDeductions;
@@ -192,8 +174,8 @@ namespace NinthBall.Core
             // NIIT base uses post-deduction investment income (simplification)
             double magi = adjustedGrossIncome.Total;
             double netInvestmentIncome = taxableINT + taxableDIV + taxableCapGain;
-            double niitBase = Math.Min( netInvestmentIncome, Math.Max(0, magi - NIITThreshold));
-            double niitTax = Math.Max(0,  niitBase * NIITRate);
+            double niitBase = Math.Min( netInvestmentIncome, Math.Max(0, magi - TAMA.NIITThreshold));
+            double niitTax = Math.Max(0,  niitBase * TAMA.NIITRate);
 
             return new Taxes.Fed
             (
