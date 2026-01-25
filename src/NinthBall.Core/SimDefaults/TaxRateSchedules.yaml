@@ -10,9 +10,7 @@ TaxRateSchedules:
   # Values updated per IRS 2026 inflation adjustments.
   # TaxDeductions represents Federal standard deductions
   Federal:
-
-    # Fedeal 2026 MFJ Standard deductions
-    TaxDeductions: $32,200          # IMP: Update to $32,200 after testing
+    TaxDeductions: $32,200
     Brackets: [
       { Threshold:      0,  MTR: 10%    },
       { Threshold:  24800,  MTR: 12%    },
