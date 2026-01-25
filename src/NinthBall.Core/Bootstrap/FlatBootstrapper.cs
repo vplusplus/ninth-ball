@@ -2,15 +2,15 @@
 
 namespace NinthBall.Core
 {
-    internal sealed class FlatBootstrapper(FlatGrowth Options) : IBootstrapper
+    internal sealed class FlatBootstrapper(FlatGrowth TheFlatGrowth) : IBootstrapper
     {
         // We need only one single-instance-sequence since it's flat growth.
         readonly IROISequence FlatSequence = new ROISequence(
             new(
                 Year:          0, 
-                StocksROI:     Options.Stocks, 
-                BondsROI:      Options.Bonds, 
-                InflationRate: Options.InflationRate
+                StocksROI:     TheFlatGrowth.Stocks, 
+                BondsROI:      TheFlatGrowth.Bonds, 
+                InflationRate: TheFlatGrowth.InflationRate
             )
         );
 
@@ -27,7 +27,7 @@ namespace NinthBall.Core
         }
 
         // Describe...
-        public override string ToString() => $"Flat growth and inflation | Stocks: {Options.Stocks:P1} Bonds: {Options.Bonds:P1} Inflation: {Options.InflationRate:P1}";
+        public override string ToString() => $"Flat growth and inflation | Stocks: {TheFlatGrowth.Stocks:P1} Bonds: {TheFlatGrowth.Bonds:P1} Inflation: {TheFlatGrowth.InflationRate:P1}";
     }
 }
 
