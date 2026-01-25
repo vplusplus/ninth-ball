@@ -21,31 +21,34 @@ namespace NinthBall.Core
             public double BondsAmount => asset.Amount * asset.BondsAllocation;
 
             // Applies withdrawal or deposit amount.
-            public Asset Post(double amount) => amount == 0.0 ? asset : amount > 0.0 ? Deposit(asset, amount) : Withdraw(asset, Math.Abs(amount));
+            public Asset Post(double amount) 
+            {
+                return amount == 0.0 ? asset : amount > 0.0 ? Deposit(amount) : Withdraw(Math.Abs(amount));
 
-            // Adds suggested amount to the asset. Allocation remains the same.
-            Asset Deposit(double amount) =>
-                amount < 0.0 ? throw new Exception("Deposit amount must be positive") :
-                new(
-                    (asset.Amount + amount).RoundToCents(),
-                    asset.Allocation
-                );
+                // Adds suggested amount to the asset. Allocation remains the same.
+                Asset Deposit(double amount) =>
+                    amount < 0.0 ? throw new Exception("Deposit amount must be positive") :
+                    new(
+                        (asset.Amount + amount).RoundToCents(),
+                        asset.Allocation
+                    );
 
-            // Reduces suggested amount from the asset. Allocation remains the same.
-            Asset Withdraw(double amount) =>
-                amount < 0.0 ? throw new Exception("Withdrawal amount must be positive") :
-                amount > asset.Amount + Precision.Amount ? throw new Exception($"Can't withdraw more than asset balance. | Available: {asset.Amount:C2} | Requested: {amount:C2}") :
-                new Asset
-                (
-                    (asset.Amount - amount).RoundToCents(),
-                    asset.Allocation
-                );
+                // Reduces suggested amount from the asset. Allocation remains the same.
+                Asset Withdraw(double amount) =>
+                    amount < 0.0 ? throw new Exception("Withdrawal amount must be positive") :
+                    amount > asset.Amount + Precision.Amount ? throw new Exception($"Can't withdraw more than asset balance. | Available: {asset.Amount:C2} | Requested: {amount:C2}") :
+                    new Asset
+                    (
+                        (asset.Amount - amount).RoundToCents(),
+                        asset.Allocation
+                    );
+            }
 
             // Applies suggested ROI to the stocks and bonds. Allocation might change.
             public Asset Grow(double stocksROI, double bondsROI)
             {
                 var stocksNew = Math.Max(0, asset.StocksAmount * (1 + stocksROI)).RoundToCents();
-                var bondsNew  = Math.Max(0, asset.BondsAmount  * (1 + bondsROI)).RoundToCents();
+                var bondsNew  = Math.Max(0, asset.BondsAmount  * (1 + bondsROI )).RoundToCents();
 
                 return new Asset
                 (
@@ -99,10 +102,9 @@ namespace NinthBall.Core
                 var changePostTax = newPostTax.Amount - assets.PostTax.Amount;
 
                 // Change in value of individual assets.
-                change = new(changePreTax, changePostTax);
+                change = new Change(changePreTax, changePostTax);
 
                 // Single consolidated metric that indicates portfolio weighted returns
-                // Combines stock/bonds returns from pre/post-tax investments.
                 var totalInvested = assets.PreTax.Amount + assets.PostTax.Amount;
                 var totalChange   = changePreTax + changePostTax;
                 portfolioReturn   = totalInvested < Precision.Amount ? 0.0 : totalChange / totalInvested;
@@ -111,7 +113,7 @@ namespace NinthBall.Core
             }
         }
 
-        // Drops the fractional cents (double-precision-dust)
+        // Drops the fractional cents, the double-precision-dust.
         private static double RoundToCents(this double amount) => Math.Round(amount, 2);
     }
 }
