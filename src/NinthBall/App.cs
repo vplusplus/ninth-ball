@@ -91,10 +91,16 @@ namespace NinthBall
                 
                 var outputConfig = SimOutputReader.ReadFromYamlFile(LocateOutputConfigFile(InputFileName)).ToSimOutput();
 
+                // Reset moving block bootstrapper stats.
+                MBBStats.Reset();
+
                 // Run simulation
                 var timer = Stopwatch.StartNew();
                 var simResult = SimEngine.Run(InputFileName);
                 timer.Stop();
+
+                // Print MBB sampling stats (if MBB was chosen)
+                if (MBBStats.Samples > 0) Console.WriteLine($" Moving block bootstrapper | Samples: {MBBStats.Samples:#,0} | Overlaps: {MBBStats.Overlaps:#,0} | Resampled: {MBBStats.Resamples:#,0}");
 
                 var htmlFileName = OutputFileName;
                 await HtmlOutput.GenerateAsync(Services, simResult, InputFileName, htmlFileName, outputConfig);

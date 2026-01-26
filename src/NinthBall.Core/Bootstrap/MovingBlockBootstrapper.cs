@@ -1,9 +1,18 @@
 ﻿
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 
 namespace NinthBall.Core
 {
+    public static partial class MBBStats
+    {
+        public static int Samples   = 0;
+        public static int Overlaps  = 0;
+        public static int Resamples = 0;
+        public static void Reset() => Samples = Overlaps = Resamples = 0;
+    }
+
     public sealed record MovingBlockBootstrapOptions
     (
         [property: Required] IReadOnlyList<int> BlockSizes,
@@ -27,7 +36,7 @@ namespace NinthBall.Core
 
             HBlock? prevBlock = null!;
 
-            var allBlocks = LazyBlocks.Value.Blocks;
+            var allBlocks  = LazyBlocks.Value.Blocks;
             var thresholds = LazyBlocks.Value.Score;
 
             // We are collecting random indexes on available blocks.
@@ -35,31 +44,22 @@ namespace NinthBall.Core
             {
                 // Sample next random block with uniform distribution (with replacement).
                 var nextBlock = allBlocks[iterRand.Next(0, allBlocks.Count)];
+                Interlocked.Increment(ref MBBStats.Samples);
 
-                // Optional check to avoid consecutive overlapping blocks.
-                if (Options.NoConsecutiveBlocks && null != prevBlock)
+                // Did we pick overlapping blocks?
+                if (Options.NoConsecutiveBlocks && null != prevBlock && HBlock.Overlaps(prevBlock.Value, nextBlock))
                 {
-                    // REJECT if blocks are identical (to ensure variety)
-                    if (prevBlock.Value == nextBlock) continue;
+                    // Yes, we picked a overlapping block.
+                    Interlocked.Increment(ref MBBStats.Overlaps);
 
-                    // The prev and current blocks have overlapping years (even if partial)
-                    if (HBlock.Overlaps(prevBlock.Value, nextBlock))
+                    // We interfere ONLY if back-to-back overlapping blocks exceed luck-threshold (good or bad)
+                    bool backToBackDisaster = prevBlock.Value.ARRScore <= thresholds.Disaster && nextBlock.ARRScore <= thresholds.Disaster;
+                    bool backToBackJackpot  = prevBlock.Value.ARRScore >= thresholds.Jackpot  && nextBlock.ARRScore >= thresholds.Jackpot;
+
+                    if (backToBackDisaster || backToBackJackpot)
                     {
-                        // Avoid unrealistic left-fat-tail
-                        // REJECT if we have overlapping 'disasters'
-                        bool prevIsDisaster = prevBlock.Value.ARRScore <= thresholds.Disaster;
-                        bool nextIsDisaster = nextBlock.ARRScore <= thresholds.Disaster;
-                        if (prevIsDisaster && nextIsDisaster) continue;
-
-                        // Avoid unrealistic right-fat-tail
-                        // REJECT if we have overlapping 'jackpots'
-                        bool prevIsJackpot = prevBlock.Value.ARRScore >= thresholds.Jackpot;
-                        bool nextIsJackpot = nextBlock.ARRScore >= thresholds.Jackpot;
-                        if (prevIsJackpot && nextIsJackpot) continue;
-
-                        // There is some overlaps.
-                        // However, these blocks are not fat-tailers.
-                        // Do not interfere with random block selection.
+                        Interlocked.Increment(ref MBBStats.Resamples);
+                        continue;
                     }
                 }
 
@@ -76,6 +76,7 @@ namespace NinthBall.Core
             // We prepared random indices into blocks of historical data. 
             // Return an indexed-view into historical data.
             return new ROISequence(History.History, indices);
+        
         }
 
         private readonly record struct ROISequence(ReadOnlyMemory<HROI> MemoryBlock, int[] Indices) : IROISequence
@@ -142,7 +143,7 @@ namespace NinthBall.Core
 
         // Computes a 'ranking-score' for the blocks.
         // It may look and feel like Real annualized return, but it is not.
-        // Other than ranking the bloks, the number doesn't serves any other purpose.
+        // Other than ranking the blocks, the number doesn't serve any other purpose.
         private static double CalculateARRScore(HistoricalReturns History, int startIndex, int blockLength)
         {
             // Opinionated portfolio split for ranking purposes
