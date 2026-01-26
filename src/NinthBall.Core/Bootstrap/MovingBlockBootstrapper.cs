@@ -24,7 +24,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Replays random blocks of historical returns and inflation.
     /// </summary>
-    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, HistoricalBlocks HBlocks, MovingBlockBootstrapOptions Options) : IBootstrapper
+    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalBlocks HBlocks, MovingBlockBootstrapOptions Options) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
@@ -33,7 +33,7 @@ namespace NinthBall.Core
         IROISequence IBootstrapper.GetROISequence(int iterationIndex, int numYears)
         {
             var iterRand = new Random(PredictableHashCode.Combine(SimSeed.Value, iterationIndex));
-            var indices = new int[numYears];
+            var sequence = new HROI[numYears];
             var idx = 0;
 
             HBlock? prevBlock = null!;
@@ -69,7 +69,7 @@ namespace NinthBall.Core
                 prevBlock = nextBlock;
 
                 // Collect indices from the sampled block.
-                for (int j = 0; j < nextBlock.Length && idx < numYears; j++, idx++) indices[idx] = nextBlock.StartIndex + j;
+                for (int j = 0; j < nextBlock.Slice.Length && idx < numYears; j++, idx++) sequence[idx] = nextBlock.Slice.Span[j];
             }
 
             // Logic check...
@@ -77,13 +77,13 @@ namespace NinthBall.Core
 
             // We prepared random indices into blocks of historical data. 
             // Return an indexed-view into historical data.
-            return new ROISequence(History.History, indices);
+            return new ROISequence(sequence.AsMemory());
         
         }
 
-        private readonly record struct ROISequence(ReadOnlyMemory<HROI> MemoryBlock, int[] Indices) : IROISequence
+        private readonly record struct ROISequence(ReadOnlyMemory<HROI> MemoryBlock) : IROISequence
         {
-            readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[Indices[yearIndex]];
+            readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[yearIndex];
         }
 
         //......................................................................
@@ -101,7 +101,7 @@ namespace NinthBall.Core
             double JackpotScore     // Blocks with ARRScore >= JackpotScore represents best performing windows.
         );
 
-        // Prepare disaster and jackpot ARRScore threholds once.
+        // Prepare disaster and jackpot ARRScore thresholds once.
         readonly Lazy<DisasterAndJackpotThresholds> LazyDisasterAndJackpotThresholds = new(() => 
         {
             const double TenthPctl     = 0.1;
@@ -130,7 +130,7 @@ namespace NinthBall.Core
         #endregion
 
         // Describe...
-        public override string ToString() => $"Random historical growth and inflation using {CSVBlockSizes} year blocks from {History.MinYear} to {History.MaxYear} data{TxtNoBackToBack}";
+        public override string ToString() => $"Random historical growth and inflation using {CSVBlockSizes} year blocks from {HBlocks.StartYear} to {HBlocks.EndYear} data{TxtNoBackToBack}";
         string CSVBlockSizes => string.Join("/", Options.BlockSizes);
         string TxtNoBackToBack => Options.NoBackToBackOverlaps ? " (Avoids back-to-back repetition of extreme outcomes)" : string.Empty;
 
