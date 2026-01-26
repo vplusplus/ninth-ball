@@ -1,5 +1,4 @@
 ﻿
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 
@@ -13,6 +12,9 @@ namespace NinthBall.Core
         public static void Reset() => Samples = Overlaps = Resamples = 0;
     }
 
+    /// <summary>
+    /// Optional configuration for MBB internals
+    /// </summary>
     public sealed record MovingBlockBootstrapOptions
     (
         [property: Required] IReadOnlyList<int> BlockSizes,
@@ -20,9 +22,9 @@ namespace NinthBall.Core
     );
 
     /// <summary>
-    /// Replays random blocks (with replacement) of historical returns and inflation.
+    /// Replays random blocks of historical returns and inflation.
     /// </summary>
-    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, MovingBlockBootstrapOptions Options) : IBootstrapper
+    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalReturns History, HistoricalBlocks HBlocks, MovingBlockBootstrapOptions Options) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
@@ -36,8 +38,8 @@ namespace NinthBall.Core
 
             HBlock? prevBlock = null!;
 
-            var allBlocks  = LazyBlocks.Value.Blocks;
-            var thresholds = LazyBlocks.Value.Score;
+            var allBlocks  = HBlocks.Blocks;
+            var thresholds = LazyDisasterAndJackpotThresholds.Value;
 
             // We are collecting random indexes on available blocks.
             while (idx < numYears)
@@ -49,12 +51,12 @@ namespace NinthBall.Core
                 // Did we pick overlapping blocks?
                 if (Options.NoBackToBackOverlaps && null != prevBlock && HBlock.Overlaps(prevBlock.Value, nextBlock))
                 {
-                    // Yes, we picked a overlapping block.
+                    // Yes, we picked an overlapping block.
                     Interlocked.Increment(ref MBBStats.Overlaps);
 
                     // We interfere ONLY if back-to-back overlapping blocks exceed luck-threshold (good or bad)
-                    bool backToBackDisaster = prevBlock.Value.ARRScore <= thresholds.Disaster && nextBlock.ARRScore <= thresholds.Disaster;
-                    bool backToBackJackpot  = prevBlock.Value.ARRScore >= thresholds.Jackpot  && nextBlock.ARRScore >= thresholds.Jackpot;
+                    bool backToBackDisaster = prevBlock.Value.ARRScore <= thresholds.DisasterScore && nextBlock.ARRScore <= thresholds.DisasterScore;
+                    bool backToBackJackpot  = prevBlock.Value.ARRScore >= thresholds.JackpotScore  && nextBlock.ARRScore >= thresholds.JackpotScore;
 
                     if (backToBackDisaster || backToBackJackpot)
                     {
@@ -85,63 +87,52 @@ namespace NinthBall.Core
         }
 
         //......................................................................
-        #region HBlock and AllBlocks
+        #region DisasterAndJackpotThresholds - Discovered once
         //......................................................................
-
-        // Represents a small window into the historical returns.
-        // HBlock(s) are nothing more than an index (and length) into a block-of-memory.
-        // ARRScore is a ranking-score, NOT to be to measure portfolio performance.
-        readonly record struct HBlock(int StartIndex, int Length, double ARRScore)
-        {
-            private readonly int EndIndex => StartIndex + Length - 1;
-            public static bool Overlaps(HBlock prevBlock, HBlock nextBlock) => nextBlock.StartIndex <= prevBlock.EndIndex && nextBlock.EndIndex >= prevBlock.StartIndex;
-        }
-
-        readonly record struct ARRScores(double Disaster, double Jackpot);
-
-        readonly record struct BlocksAndScores(ReadOnlyCollection<HBlock> Blocks, ARRScores Score);
+        readonly record struct DisasterAndJackpotThresholds
+        (
+            double DisasterScore,   // Blocks ARRScore same or below represents worst performing window
+            double JackpotScore     // Blocks ARRScore same or above represents best performing window
+        );
 
         // Prepare all available blocks once.
-        readonly Lazy<BlocksAndScores> LazyBlocks = new(() => 
+        readonly Lazy<DisasterAndJackpotThresholds> LazyDisasterAndJackpotThresholds = new(() => 
         {
-            // All input data are pre-validated elsewhere.
-            // No additional validations needed here.
-            var availableYears = History.History.Length;
-            var blkSizes = Options.BlockSizes;
-
-            // Prepare overlapping blocks of suggested sequence lengths.
-            List<HBlock> availableBlocks = [];
-            
-            foreach (var blockLength in blkSizes)
-            {
-                var maxBlocks = availableYears - blockLength + 1;
-                for (int startIndex = 0; startIndex < maxBlocks; startIndex++)
-                {
-                    double ARRScore = CalculateARRScore(History, startIndex, blockLength);
-                    availableBlocks.Add(new HBlock(startIndex, blockLength, ARRScore));
-                }
-            }
-
-            // The growth strategy uses uniform sampling; therefore, ordering does not affect the outcome.
-            // Sorting is performed solely to ensure repeatability across runs.
-            // Historical data is already sorted by year.
-            // Blocks are arranged chronologically, then by sequence length.
-            availableBlocks = availableBlocks.OrderBy(x => x.StartIndex).ThenBy(x => x.Length).ToList();
-
-            // Discover the score of worst and best performing blocks.
-            const double TenthPctl = 0.1;
+            const double TenthPctl     = 0.1;
             const double NinetiethPctl = 0.9;
-            var arrscores = DiscoverDisasterAndJackpotScores(availableBlocks, disasterPctl: TenthPctl, jackpotPctl: NinetiethPctl);
 
-            // Immutable...
-            return new BlocksAndScores
-            (
-                availableBlocks.AsReadOnly(),
-                arrscores
+            // Read ARRScore of all blocks, sort them worst to best.
+            var sortedScores = HBlocks.Blocks.Select(b => b.ARRScore).OrderBy(s => s).ToArray();
+
+            // Determine indices of disaster and jackpot percentiles.
+            // 10th percentile = index at 10% mark
+            // 90th percentile = index at 90% mark
+            int disasterIdx = (int)(sortedScores.Length  * TenthPctl);
+            int jackpotIdx  = (int)(sortedScores.Length  * NinetiethPctl);
+
+            // Clip the edges
+            disasterIdx = Math.Clamp(disasterIdx, 0, sortedScores.Length - 1);
+            jackpotIdx  = Math.Clamp(jackpotIdx,  0,  sortedScores.Length - 1);
+
+            // Return the ARRScore at the disaster and jackpot percentiles.
+            return new (
+                DisasterScore: sortedScores[disasterIdx],
+                JackpotScore:  sortedScores[jackpotIdx]
             );
         });
 
-        // Computes a 'ranking-score' for the blocks.
+        #endregion
+
+        // Describe...
+        public override string ToString() => $"Random historical growth and inflation using {CSVBlockSizes} year blocks from {History.MinYear} to {History.MaxYear} data{TxtNoBackToBack}";
+        string CSVBlockSizes => string.Join("/", Options.BlockSizes);
+        string TxtNoBackToBack => Options.NoBackToBackOverlaps ? " (Avoids back-to-back repetition of extreme outcomes)" : string.Empty;
+
+    }
+}
+
+/*
+         // Computes a 'ranking-score' for the blocks.
         // It may look and feel like Real annualized return, but it is not.
         // Other than ranking the blocks, the number doesn't serve any other purpose.
         private static double CalculateARRScore(HistoricalReturns History, int startIndex, int blockLength)
@@ -169,34 +160,4 @@ namespace NinthBall.Core
             // This allows ranking a 3-year "good" block against a 5-year "excellent" block fairly.
             return Math.Pow(compoundedRealMultiplier, 1.0 / blockLength) - 1.0;
         }
-
-        static ARRScores DiscoverDisasterAndJackpotScores(IReadOnlyList<HBlock> allBlocks, double disasterPctl, double jackpotPctl)
-        {
-            // Sort the ARRScores of all blocks, worst to best.
-            var sortedScores = allBlocks.Select(b => b.ARRScore).OrderBy(s => s).ToArray();
-
-            // Determine indices (simple nearest-rank approach)
-            // 10th percentile = index at 10% mark
-            // 90th percentile = index at 90% mark
-            int disasterIdx = (int)(sortedScores.Length * disasterPctl);
-            int jackpotIdx  = (int)(sortedScores.Length * jackpotPctl);
-
-            // Defensive clamps. Below will not happen.
-            disasterIdx = Math.Clamp(disasterIdx, 0, sortedScores.Length - 1);
-            jackpotIdx  = Math.Clamp(jackpotIdx, 0, sortedScores.Length - 1);
-
-            return new ARRScores(
-                Disaster: sortedScores[disasterIdx],
-                Jackpot:  sortedScores[jackpotIdx]
-            );
-        }
-
-        #endregion
-
-        // Describe...
-        public override string ToString() => $"Random historical growth and inflation using {CSVBlockSizes} year blocks from {History.MinYear} to {History.MaxYear} data{TxtNoBackToBack}";
-        string CSVBlockSizes => string.Join("/", Options.BlockSizes);
-        string TxtNoBackToBack => Options.NoBackToBackOverlaps ? " (Avoids back-to-back repetition of extreme outcomes)" : string.Empty;
-
-    }
-}
+*/

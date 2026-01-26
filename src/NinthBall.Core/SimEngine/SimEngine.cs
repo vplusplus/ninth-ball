@@ -45,6 +45,7 @@ namespace NinthBall.Core
                 .RegisterConfigSection<FlatGrowth>()
 
                 .AddSingleton<HistoricalReturns>()
+                .AddSingleton<HistoricalBlocks>()
                 .AddSingleton<FlatBootstrapper>()
                 .AddSingleton<SequentialBootstrapper>()
                 .AddSingleton<MovingBlockBootstrapper>()
