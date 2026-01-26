@@ -61,17 +61,12 @@ namespace NinthBall.Core
             StateTax   = x.StateTax.RoundToCents()
         };
 
-        public static Taxes.Fed RoundToCents(this Taxes.Fed x) => x with
+        public static Taxes.Tx RoundToCents(this Taxes.Tx x) => x with
         {
-            Taxable = x.Taxable.RoundToCents(),
-            Tax     = x.Tax.RoundToCents()
+            Gross       = x.Gross.RoundToCents(),
+            Deductions  = x.Deductions.RoundToCents(),
+            Taxable     = x.Taxable.RoundToCents(),
+            Tax         = x.Tax.RoundToCents()
         };
-
-        public static Taxes.State RoundToCents(this Taxes.State x) => x with
-        {
-            Taxable = x.Taxable.RoundToCents(),
-            Tax     = x.Tax.RoundToCents()
-        };
-
     }
 }

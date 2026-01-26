@@ -12,50 +12,11 @@ namespace NinthBall.Core
 
         MTR     – Marginal Tax Rate
         ETTR    – Effective Tax Rates
-        NIIT    – Net Investment Income Tax 
+        NIIT    – Net Investment Income Tax
     
         TaxPCT  = Total Taxes Paid ÷ Every $ of cash inflow (not a standard term; not a statutory tax rate)
 
      */
-
-    public readonly record struct Taxes(Taxes.GI GrossIncome, Taxes.Fed FederalTax, Taxes.State StateTax)
-    {
-        public readonly record struct GI
-        (
-            double PreTaxWDraw,     // Withdrawals from tax deferred account
-            double SS,              // Social security income
-            double Ann,             // Annuity incomes
-            double BondsYield,      // Bonds yield from PostTax accounts
-            double Dividends,       // Dividends from PostTax accounts
-            double CapGains         // Capital gains from PostTax accounts
-        )
-        {
-            public readonly double Total => PreTaxWDraw + SS + Ann + BondsYield + Dividends + CapGains;
-        }
-
-        public readonly record struct AGI(double OrdInc, double INT, double QDI, double LTCG) {
-            public readonly double Total => OrdInc + INT + QDI + LTCG;
-        }
-
-        public readonly record struct Fed(double StdDeduction, double Taxable, double MTR, double MTRCapGain, double Tax);
-        public readonly record struct State(double StateDeduction, double Taxable, double MTR, double Tax);
-
-        // Total taxes.
-        public readonly double Total => FederalTax.Tax + StateTax.Tax;
-
-        // PCT tax paid on adjusted gross income.
-        // But, AGI is different for Fed and state. We do not want to add two.
-        // public readonly double ETTR => AdjustedGrossIncome.Total <= 0.01 ? 0.0 : Total / AdjustedGrossIncome.Total;
-
-        // For every $ that came in, what PCT went to taxes
-        public readonly double TaxPCT => GrossIncome.Total <= 0.01 ? 0.0 : (FederalTax.Tax + StateTax.Tax) / GrossIncome.Total;
-
-        // For every $ that came in, what PCT went to Federal taxes
-        public readonly double TaxPCTFed => GrossIncome.Total <= 0.01 ? 0.0 : FederalTax.Tax / GrossIncome.Total;
-
-        // For every $ that came in, what PCT went to State taxes
-        public readonly double TaxPCTState => GrossIncome.Total <= 0.01 ? 0.0 : StateTax.Tax / GrossIncome.Total;
-    }
 
     public static class TaxMath
     {
@@ -80,16 +41,21 @@ namespace NinthBall.Core
             static Taxes.GI RawIncomes(SimYear priorYear, TaxAndMarketAssumptions TAMA) => new Taxes.GI
             (
                 PreTaxWDraw: priorYear.Withdrawals.PreTax,
-                SS: priorYear.Incomes.SS,
-                Ann: priorYear.Incomes.Ann,
-                BondsYield: priorYear.Jan.PostTax.BondsAmount * TAMA.TypicalBondCouponYield,
-                Dividends: priorYear.Jan.PostTax.StocksAmount * TAMA.TypicalStocksDividendYield,
-                CapGains: priorYear.Withdrawals.PostTax
+                SS:          priorYear.Incomes.SS,
+                Ann:         priorYear.Incomes.Ann,
+                BondsYield:  priorYear.Jan.PostTax.BondsAmount * TAMA.TypicalBondCouponYield,
+                Dividends:   priorYear.Jan.PostTax.StocksAmount * TAMA.TypicalStocksDividendYield,
+                CapGains:    priorYear.Withdrawals.PostTax
             )
             .MinZero();
         }
 
-        static Taxes.Fed ComputeFederalTaxes(this Taxes.GI unadjustedGrossIncome, TaxRateSchedules y0TaxRates, Metrics metrics, TaxAndMarketAssumptions TAMA)
+        private readonly record struct AGI(double OrdInc, double INT, double QDI, double LTCG)
+        {
+            public readonly double Total => OrdInc + INT + QDI + LTCG;
+        }
+
+        static Taxes.Tx ComputeFederalTaxes(this Taxes.GI unadjustedGrossIncome, TaxRateSchedules y0TaxRates, Metrics metrics, TaxAndMarketAssumptions TAMA)
         {
             // Compute federal adjusted gross income 
             var adjustedGrossIncome = FederalAdjustGrossIncomes(unadjustedGrossIncome, TAMA).MinZero().RoundToCents();
@@ -120,9 +86,10 @@ namespace NinthBall.Core
             double niitBase = Math.Min(netInvestmentIncome, Math.Max(0, magi - TAMA.NIITThreshold));
             double niitTax = Math.Max(0, niitBase * TAMA.NIITRate);
 
-            return new Taxes.Fed
+            return new Taxes.Tx
             (
-                StdDeduction:   taxRatesOrdInc.TaxDeductions,
+                Gross:          adjustedGrossIncome.Total,
+                Deductions:     taxRatesOrdInc.TaxDeductions,
                 Taxable:        taxableOrdInc + taxableINT + taxableDIV + taxableCapGain,
                 MTR:            taxOnOrdInc.MarginalTaxRate,
                 MTRCapGain:     taxOnCapGain.MarginalTaxRate,
@@ -136,7 +103,7 @@ namespace NinthBall.Core
                 return source - reduction;
             }
 
-            static Taxes.AGI FederalAdjustGrossIncomes(Taxes.GI inc, TaxAndMarketAssumptions TAMA)
+            static AGI FederalAdjustGrossIncomes(Taxes.GI inc, TaxAndMarketAssumptions TAMA)
             {
 
                 // Interim math to guess taxable portion of social security income.
@@ -147,7 +114,7 @@ namespace NinthBall.Core
                 double provisionalIncome = nonSSOrdinary + provisionalInvestmentIncome + (FiftyPCT * inc.SS);
                 double taxableSS = TaxableSocialSecurity(inc.SS, provisionalIncome, base1: TAMA.SSNonTaxableThreshold, base2: TAMA.SS50PctTaxableThreshold);
 
-                return new Taxes.AGI
+                return new AGI
                 (
                     // 100% of 401K withdrawal is ordinary income (which is true).
                     // Non-taxable portion of SS excluded from AGI
@@ -189,7 +156,7 @@ namespace NinthBall.Core
             }
         }
 
-        static Taxes.State ComputeNJStateTaxes(this Taxes.GI inc, TaxRateSchedules y0TaxRates, Metrics metrics, int ageOnTaxYear, TaxAndMarketAssumptions TAMA)
+        static Taxes.Tx ComputeNJStateTaxes(this Taxes.GI inc, TaxRateSchedules y0TaxRates, Metrics metrics, int ageOnTaxYear, TaxAndMarketAssumptions TAMA)
         {
             //......................................................
             // NEW JERSEY STATE TAX LOGIC
@@ -223,18 +190,20 @@ namespace NinthBall.Core
             // Apply progressive brackets
             var stateTaxes = taxRates.CalculateStackedEffectiveTax(taxableTerminal);
 
-            return new Taxes.State
+            return new Taxes.Tx
             (
-                StateDeduction: taxRates.TaxDeductions,
+                Gross:          njGrossIncome,
+                Deductions:     pensionExclusion + taxRates.TaxDeductions,
                 Taxable:        taxableTerminal,
                 MTR:            stateTaxes.MarginalTaxRate,
+                MTRCapGain:     stateTaxes.MarginalTaxRate,     // Rates are the same for OrdInc and LTCG
                 Tax:            stateTaxes.TaxAmount
             );
 
             static double GetNJPensionExclusionWithTheCliff(double njGrossIncome, int age)
             {
                 // NJ STATUTORY POLICY (Pinned to NJ-1040 Law)
-                // These are not hard-coded constants, rather representation of NJ-1040 Law.
+                // These are not hard-coded constants, ather a representation of NJ-1040 Law.
                 // If the law changes the application of these numbers are also likely to change.
                 // Consider these numbers as code, hence are not externalized.
 
@@ -274,7 +243,7 @@ namespace NinthBall.Core
             CapGains:   Math.Max(0, x.CapGains)
         );
 
-        static Taxes.AGI MinZero(this Taxes.AGI x) => new
+        static AGI MinZero(this AGI x) => new
         (
             OrdInc: Math.Max(0, x.OrdInc),
             INT:    Math.Max(0, x.INT),
@@ -292,7 +261,7 @@ namespace NinthBall.Core
             CapGains:    Math.Round(x.CapGains, 2)
         );
 
-        static Taxes.AGI RoundToCents(this Taxes.AGI x) => new
+        static AGI RoundToCents(this AGI x) => new
         (
             OrdInc: Math.Round(x.OrdInc, 2),
             QDI:    Math.Round(x.QDI, 2),
