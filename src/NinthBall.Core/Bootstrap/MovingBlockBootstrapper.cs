@@ -16,7 +16,7 @@ namespace NinthBall.Core
     public sealed record MovingBlockBootstrapOptions
     (
         [property: Required] IReadOnlyList<int> BlockSizes,
-        [property: Required] bool NoConsecutiveBlocks
+        [property: Required] bool NoBackToBackOverlaps
     );
 
     /// <summary>
@@ -47,7 +47,7 @@ namespace NinthBall.Core
                 Interlocked.Increment(ref MBBStats.Samples);
 
                 // Did we pick overlapping blocks?
-                if (Options.NoConsecutiveBlocks && null != prevBlock && HBlock.Overlaps(prevBlock.Value, nextBlock))
+                if (Options.NoBackToBackOverlaps && null != prevBlock && HBlock.Overlaps(prevBlock.Value, nextBlock))
                 {
                     // Yes, we picked a overlapping block.
                     Interlocked.Increment(ref MBBStats.Overlaps);
@@ -189,14 +189,14 @@ namespace NinthBall.Core
                 Disaster: sortedScores[disasterIdx],
                 Jackpot:  sortedScores[jackpotIdx]
             );
-        } 
+        }
 
         #endregion
 
         // Describe...
-        public override string ToString() => $"Moving Block Bootstrap (MBB) using random blocks [{CSVBlockSizes}] from {History.MinYear} to {History.MaxYear} data.{TxtNoConsecutiveBlocks}";
-        string CSVBlockSizes => string.Join(",", Options.BlockSizes);
-        string TxtNoConsecutiveBlocks => Options.NoConsecutiveBlocks ? " (No back to back repetition)" : string.Empty;
+        public override string ToString() => $"Random historical growth and inflation using {CSVBlockSizes} year blocks from {History.MinYear} to {History.MaxYear} data{TxtNoBackToBack}";
+        string CSVBlockSizes => string.Join("/", Options.BlockSizes);
+        string TxtNoBackToBack => Options.NoBackToBackOverlaps ? " (Avoids back-to-back repetition of extreme outcomes)" : string.Empty;
 
     }
 }

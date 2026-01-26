@@ -4,7 +4,7 @@
 #......................................................................
 MovingBlockBootstrapOptions:
   BlockSizes: [3, 4, 5]       # Catch sequence risk. Really no reason to second guess 3/4/5 years blocks
-  NoConsecutiveBlocks: true   # Avoid back to back identical collapse or runaway growth
+  NoBackToBackOverlaps: true  # Avoids sampling back-to-back overlapping blocks with extreme outcome.
 
 ParametricBootstrapOptions:
   # When Stocks crash (panic), investors often sell stocks and buy Bonds (safe haven). 
