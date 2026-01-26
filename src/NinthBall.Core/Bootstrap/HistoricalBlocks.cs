@@ -9,7 +9,7 @@ namespace NinthBall.Core
     {
         public readonly int StartYear => Slice.Span[0].Year;
         public readonly int EndYear   => Slice.Span[^1].Year;
-        public static bool Overlaps(HBlock prevBlock, HBlock nextBlock) => nextBlock.StartYear <= prevBlock.EndYear && nextBlock.EndYear >= prevBlock.StartYear;
+        public static bool Overlaps(in HBlock prevBlock, in HBlock nextBlock) => nextBlock.StartYear <= prevBlock.EndYear && nextBlock.EndYear >= prevBlock.StartYear;
     }
 
     internal sealed class HistoricalBlocks(HistoricalReturns History, MovingBlockBootstrapOptions Options)
