@@ -117,6 +117,22 @@ namespace NinthBall.Core
 
 
             /// <summary>
+            /// IMP: Iterations are expected to be pre-ordered worst-to-best based on chosen metrics.
+            /// Reverse lookup of percentile-rank of the specific iteration.
+            /// </summary>
+            public double IterationPercentile(int iterationIndex)
+            {
+                // Find the position of this iteration in the ranked list
+                // Calculate the percentile rank based on its relative position.
+                for (int i = 0; i < simResult.Iterations.Count; i++)
+                {
+                    if (simResult.Iterations[i].Index == iterationIndex)
+                        return (double)i / (simResult.Iterations.Count - 1);
+                }
+                return -1.0; // Not found
+            }
+
+            /// <summary>
             /// Returns number of failures by year-range.
             /// </summary>
             public IList<FailureBucket> GetFailureBuckets()

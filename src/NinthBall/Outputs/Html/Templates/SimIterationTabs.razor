@@ -25,9 +25,13 @@
         {
             if (IT < 0 || IT > Model.Iterations.Count - 1) continue;
 
+            // Calculate the rank (0.0 to 1.0) and convert to "20th" style caption
+            var rank = Model.IterationPercentile(IT);
+            var pctlCaption = rank >= 0 ? $" ({rank.PctlName})" : "";
+
             var iter = Model.Iterations.Where(x => x.Index == IT).Single();
             var iterId  = $"I{IT:0000}";
-            var caption = $"#{IT:0000}";
+            var caption = $"#{IT:0000}{pctlCaption}";
 
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="tab" href="#@(iterId)">@caption</a>
@@ -42,7 +46,7 @@
         {
             var iter = Model.Percentile(p);
             var pctlId = PercentileId(p);
-            var caption = $"{p.PctlName} Percentile";
+            var caption = $"{p.PctlName} Percentile [#{iter.Index}]";
             var isActive = p == ActivePctl ? "active" : "";
             <div class="tab-pane @isActive" id="@(pctlId)">
                 <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter OutputConfig=OutputConfig />
@@ -53,11 +57,14 @@
         {
             if (IT < 0 || IT > Model.Iterations.Count - 1) continue;
 
+            var rank = Model.IterationPercentile(IT);
+            var caption = rank >= 0 ? $"Iteration #{IT:0000} ({rank.PctlName} Pctl)" : $"#{IT:0000}";
+
             // We are using un-sorted view of a specific iteration path
             // Iteration is selected using SimIteration.Index, not by array index which will be sorted.
             var iter = Model.Iterations.Where(x => x.Index == IT).Single();
             var iterId  = $"I{IT:0000}";
-            var caption = $"#{IT:0000}";
+            // var caption = $"#{IT:0000} {pctlCaption}";
 
             <div class="tab-pane" id="@(iterId)">
                 <SimIterationDetails Id="@iterId" Caption="@caption" Iteration=iter OutputConfig=OutputConfig />
