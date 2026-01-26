@@ -34,7 +34,7 @@ TaxRateSchedules:
 
   # 2026 New Jersey Gross Income Tax Brackets for Married Filing Jointly.
   # TaxDeductions represents Personal and property tax exemptions.
-  # $1000 Personal Exemptions x 2 + $15,000 Property Tax Credit = $17,000
+  # Example: $1000 Personal Exemptions x 2 + $15,000 Property Tax Credit = $17,000
   # Using conservative amount of $12000 
   State:
     TaxDeductions: $12,000
