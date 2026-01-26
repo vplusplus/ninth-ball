@@ -2,17 +2,15 @@
 namespace NinthBall.Core
 {
     /// <summary>
-    /// Can calculate effective tax rate using tax rate schedule.
+    /// Can calculate marginal tax rate and the tax amount using tax rate schedule.
     /// </summary>
     public static class TaxRateCalculator
     {
         /// <summary>
-        /// Returns effective tax rate (NOT the tax amount).
-        /// Multiply with income to get the tax-amount.
+        /// Returns Marginal tax rate and the tax amount.
         /// </summary>
         public static (double MarginalTaxRate, double TaxAmount) CalculateStackedEffectiveTax(this TaxRateSchedule TS, double incrementalIncome, double baseIncome = 0.0)
         {
-            // if (incrementalIncome <= 0) return (0.0, 0.0, 0.0);
             incrementalIncome = Math.Max(0, incrementalIncome);
 
             double tax = 0;
