@@ -4,25 +4,22 @@ using System.Collections.ObjectModel;
 namespace NinthBall.Core
 {
     // Represents a small window into the historical returns.
-    // HBlock(s) are nothing more than an index (and length) into a block-of-memory.
     // ARRScore is a ranking-score, an 'indicator' of good/bad windows.
     readonly record struct HBlock(ReadOnlyMemory<HROI> Slice, double ARRScore)
     {
         public readonly int StartYear => Slice.Span[0].Year;
-        public readonly int EndYear => Slice.Span[^1].Year;
+        public readonly int EndYear   => Slice.Span[^1].Year;
         public static bool Overlaps(HBlock prevBlock, HBlock nextBlock) => nextBlock.StartYear <= prevBlock.EndYear && nextBlock.EndYear >= prevBlock.StartYear;
     }
 
     internal sealed class HistoricalBlocks(HistoricalReturns History, MovingBlockBootstrapOptions Options)
     {
-        private readonly record struct BlocksAndYears( ReadOnlyCollection<HBlock> Blocks, int StartYear, int EndYear );
-
         public IReadOnlyList<HBlock> Blocks => LazyBlocks.Value.Blocks;
-        public int StartYear => LazyBlocks.Value.StartYear;
-        public int EndYear => LazyBlocks.Value.EndYear;
+        public int MinYear => LazyBlocks.Value.MinYear;
+        public int MaxYear => LazyBlocks.Value.MaxYear;
 
         // Prepare all available blocks once.
-        readonly Lazy<BlocksAndYears> LazyBlocks = new(() =>
+        readonly Lazy<(IReadOnlyList<HBlock> Blocks, int MinYear, int MaxYear)> LazyBlocks = new(() =>
         {
             // Here we are not trusting that history is already sorted by year (which is indeed the case).
             // We depend on chronology, hence we sort the history by year (zero-trust).
@@ -56,11 +53,11 @@ namespace NinthBall.Core
             // The blocks are arranged chronologically, then by sequence length.
             availableBlocks = availableBlocks.OrderBy(x => x.StartYear).ThenBy(x => x.Slice.Length).ToList();
 
-            return new
+            return
             (
-                availableBlocks.AsReadOnly(), 
-                StartYear: fromYear,
-                EndYear: toYear
+                Blocks:  availableBlocks.AsReadOnly(),
+                MinYear: fromYear,
+                MaxYear: toYear
             );
         });
 

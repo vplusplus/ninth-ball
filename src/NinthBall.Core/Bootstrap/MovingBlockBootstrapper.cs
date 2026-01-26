@@ -130,7 +130,7 @@ namespace NinthBall.Core
         #endregion
 
         // Describe...
-        public override string ToString() => $"Random historical growth and inflation using {CSVBlockSizes} year blocks from {HBlocks.StartYear} to {HBlocks.EndYear} data{TxtNoBackToBack}";
+        public override string ToString() => $"Random historical growth and inflation using {CSVBlockSizes} year blocks from {HBlocks.MinYear} to {HBlocks.MaxYear} data{TxtNoBackToBack}";
         string CSVBlockSizes => string.Join("/", Options.BlockSizes);
         string TxtNoBackToBack => Options.NoBackToBackOverlaps ? " (Avoids back-to-back repetition of extreme outcomes)" : string.Empty;
 
