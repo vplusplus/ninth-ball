@@ -130,34 +130,3 @@ namespace NinthBall.Core
 
     }
 }
-
-/*
-         // Computes a 'ranking-score' for the blocks.
-        // It may look and feel like Real annualized return, but it is not.
-        // Other than ranking the blocks, the number doesn't serve any other purpose.
-        private static double CalculateARRScore(HistoricalReturns History, int startIndex, int blockLength)
-        {
-            // Opinionated portfolio split for ranking purposes
-            const double SixtyPct = 0.6;
-            const double FourtyPct = 0.4;
-
-            double compoundedRealMultiplier = 1.0;
-
-            for (int i = startIndex; i < startIndex + blockLength; i++)
-            {
-                var hroi = History.History.Span[i];
-
-                // Calculate nominal multiplier for the 60/40 portfolio
-                // Adjust for inflation (Exact math: (1+n)/(1+i))
-                double nominalMultiplier = 1.0 + (hroi.StocksROI * SixtyPct + hroi.BondsROI * FourtyPct);
-                double realMultiplier = nominalMultiplier / (1.0 + hroi.InflationRate);
-
-                // Accumulate compounding effect
-                compoundedRealMultiplier *= realMultiplier;
-            }
-
-            // Annualize the compounded result (Geometric Mean)
-            // This allows ranking a 3-year "good" block against a 5-year "excellent" block fairly.
-            return Math.Pow(compoundedRealMultiplier, 1.0 / blockLength) - 1.0;
-        }
-*/
