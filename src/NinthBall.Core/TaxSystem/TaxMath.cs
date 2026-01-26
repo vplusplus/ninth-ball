@@ -182,7 +182,7 @@ namespace NinthBall.Core
             var inflationMultiplier = Math.Round(metrics.StateTaxInflationMultiplier, 4);
 
             // Inflate tax rates. For NJ, do not inflate standard deductions/exemptions.
-            var taxRates = y0TaxRates.State.Inflate(inflationMultiplier, jitterGuard: TenDollars, inflateDeductions: false);
+            var taxRates = y0TaxRates.State.Inflate(inflationMultiplier, jitterGuard: TenDollars, alsoInflateTheDeductions: false);
 
             // Apply Individual Exemptions and Property Tax deductions (configured as StateDeductions)
             var taxableTerminal = Math.Max(0, njTaxableSum - taxRates.TaxDeductions);

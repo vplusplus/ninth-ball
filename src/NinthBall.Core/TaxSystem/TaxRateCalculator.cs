@@ -53,7 +53,7 @@ namespace NinthBall.Core
         /// <summary>
         /// Can index the tax schedule using inflation rate multiplier.
         /// </summary>
-        public static TaxRateSchedule Inflate(this TaxRateSchedule TS, double inflationMultiplier, double jitterGuard, bool inflateDeductions = true)
+        public static TaxRateSchedule Inflate(this TaxRateSchedule TS, double inflationMultiplier, double jitterGuard, bool alsoInflateTheDeductions = true)
         {
             if (inflationMultiplier <= 0) throw new ArgumentOutOfRangeException(nameof(inflationMultiplier), "Multiplier must be positive.");
             if (inflationMultiplier > 10.0) throw new ArgumentOutOfRangeException($"Inflation multiplier too large | Check logic and math | Expecting < 10.0 | Received {inflationMultiplier:F2}");
@@ -81,7 +81,7 @@ namespace NinthBall.Core
             }
 
             // Adjust tax deductions for inflation.
-            var inflatedTaxDeductions = inflateDeductions
+            var inflatedTaxDeductions = alsoInflateTheDeductions
                 ? InflateAndReduceJitter(TS.TaxDeductions, multiplier: inflationMultiplier, jitterGuard)
                 : TS.TaxDeductions;
 
