@@ -15,7 +15,7 @@ namespace NinthBall.Core
     }
 
     /// <summary>
-    /// Each strategy can optionally declare its family identifier.
+    /// Each strategy must declare its family identifier.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     internal sealed class StrategyFamilyAttribute(StrategyFamily family) : System.Attribute

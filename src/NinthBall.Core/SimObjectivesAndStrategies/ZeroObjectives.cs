@@ -4,8 +4,8 @@ using System.Text.RegularExpressions;
 
 namespace NinthBall.Core
 {
-    // SimEngine will expect one of each objective.
-    // For what-if simulations, to mute a specific objective, use the NoOp objectives to be explict about the choice.
+    // SimEngine requires a strategy for every StrategyFamily.
+    // For what‑if runs, use a NoOp objective to explicitly mute any objective you want to ignore.
     abstract class NoOpObjective : ISimObjective, ISimStrategy
     {
         int ISimObjective.Order => int.MaxValue;
