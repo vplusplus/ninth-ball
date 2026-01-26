@@ -11,7 +11,9 @@ namespace NinthBall.Core
         /// </summary>
         public static (double MarginalTaxRate, double TaxAmount) CalculateStackedEffectiveTax(this TaxRateSchedule TS, double incrementalIncome, double baseIncome = 0.0)
         {
+            // Safety first...
             incrementalIncome = Math.Max(0, incrementalIncome);
+            baseIncome = Math.Max(0, baseIncome);
 
             double tax = 0;
             double lower = baseIncome;
