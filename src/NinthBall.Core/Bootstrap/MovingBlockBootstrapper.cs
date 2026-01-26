@@ -27,15 +27,43 @@ namespace NinthBall.Core
 
             HBlock? prevBlock = null!;
 
+            var allBlocks = LazyBlocks.Value.Blocks;
+            var thresholds = LazyBlocks.Value.Score;
+
             // We are collecting random indexes on available blocks.
             while (idx < numYears)
             {
                 // Sample next random block with uniform distribution (with replacement).
-                var nextBlock = AllBlocks.Value[iterRand.Next(0, AllBlocks.Value.Count)];
+                var nextBlock = allBlocks[iterRand.Next(0, allBlocks.Count)];
 
                 // Optional check to avoid consecutive overlapping blocks.
+                if (Options.NoConsecutiveBlocks && null != prevBlock)
+                {
+                    // REJECT if blocks are identical (to ensure variety)
+                    if (prevBlock.Value == nextBlock) continue;
+
+                    // The prev and current blocks have overlapping years (even if partial)
+                    if (HBlock.Overlaps(prevBlock.Value, nextBlock))
+                    {
+                        // Avoid unrealistic left-fat-tail
+                        // REJECT if we have overlapping 'disasters'
+                        bool prevIsDisaster = prevBlock.Value.ARRScore <= thresholds.Disaster;
+                        bool nextIsDisaster = nextBlock.ARRScore <= thresholds.Disaster;
+                        if (prevIsDisaster && nextIsDisaster) continue;
+
+                        // Avoid unrealistic right-fat-tail
+                        // REJECT if we have overlapping 'jackpots'
+                        bool prevIsJackpot = prevBlock.Value.ARRScore >= thresholds.Jackpot;
+                        bool nextIsJackpot = nextBlock.ARRScore >= thresholds.Jackpot;
+                        if (prevIsJackpot && nextIsJackpot) continue;
+
+                        // There is some overlaps.
+                        // However, these blocks are not fat-tailers.
+                        // Do not interfere with random block selection.
+                    }
+                }
+
                 // Remember previous block.
-                if (Options.NoConsecutiveBlocks && null != prevBlock && HBlock.Overlaps(prevBlock.Value, nextBlock)) continue;
                 prevBlock = nextBlock;
 
                 // Collect indices from the sampled block.
@@ -58,17 +86,22 @@ namespace NinthBall.Core
         //......................................................................
         #region HBlock and AllBlocks
         //......................................................................
-        
+
         // Represents a small window into the historical returns.
         // HBlock(s) are nothing more than an index (and length) into a block-of-memory.
-        readonly record struct HBlock(int StartIndex, int Length)
+        // ARRScore is a ranking-score, NOT to be to measure portfolio performance.
+        readonly record struct HBlock(int StartIndex, int Length, double ARRScore)
         {
             private readonly int EndIndex => StartIndex + Length - 1;
             public static bool Overlaps(HBlock prevBlock, HBlock nextBlock) => nextBlock.StartIndex <= prevBlock.EndIndex && nextBlock.EndIndex >= prevBlock.StartIndex;
         }
 
+        readonly record struct ARRScores(double Disaster, double Jackpot);
+
+        readonly record struct BlocksAndScores(ReadOnlyCollection<HBlock> Blocks, ARRScores Score);
+
         // Prepare all available blocks once.
-        readonly Lazy<ReadOnlyCollection<HBlock>> AllBlocks = new(() => 
+        readonly Lazy<BlocksAndScores> LazyBlocks = new(() => 
         {
             // All input data are pre-validated elsewhere.
             // No additional validations needed here.
@@ -83,7 +116,8 @@ namespace NinthBall.Core
                 var maxBlocks = availableYears - blockLength + 1;
                 for (int startIndex = 0; startIndex < maxBlocks; startIndex++)
                 {
-                    availableBlocks.Add(new HBlock(startIndex, blockLength));
+                    double ARRScore = CalculateARRScore(History, startIndex, blockLength);
+                    availableBlocks.Add(new HBlock(startIndex, blockLength, ARRScore));
                 }
             }
 
@@ -93,9 +127,68 @@ namespace NinthBall.Core
             // Blocks are arranged chronologically, then by sequence length.
             availableBlocks = availableBlocks.OrderBy(x => x.StartIndex).ThenBy(x => x.Length).ToList();
 
+            // Discover the score of worst and best performing blocks.
+            const double TenthPctl = 0.1;
+            const double NinetiethPctl = 0.9;
+            var arrscores = DiscoverDisasterAndJackpotScores(availableBlocks, disasterPctl: TenthPctl, jackpotPctl: NinetiethPctl);
+
             // Immutable...
-            return availableBlocks.AsReadOnly();
+            return new BlocksAndScores
+            (
+                availableBlocks.AsReadOnly(),
+                arrscores
+            );
         });
+
+        // Computes a 'ranking-score' for the blocks.
+        // It may look and feel like Real annualized return, but it is not.
+        // Other than ranking the bloks, the number doesn't serves any other purpose.
+        private static double CalculateARRScore(HistoricalReturns History, int startIndex, int blockLength)
+        {
+            // Opinionated portfolio split for ranking purposes
+            const double SixtyPct = 0.6;
+            const double FourtyPct = 0.4;
+
+            double compoundedRealMultiplier = 1.0;
+
+            for (int i = startIndex; i < startIndex + blockLength; i++)
+            {
+                var hroi = History.History.Span[i];
+
+                // Calculate nominal multiplier for the 60/40 portfolio
+                // Adjust for inflation (Exact math: (1+n)/(1+i))
+                double nominalMultiplier = 1.0 + (hroi.StocksROI * SixtyPct + hroi.BondsROI * FourtyPct);
+                double realMultiplier = nominalMultiplier / (1.0 + hroi.InflationRate);
+
+                // Accumulate compounding effect
+                compoundedRealMultiplier *= realMultiplier;
+            }
+
+            // Annualize the compounded result (Geometric Mean)
+            // This allows ranking a 3-year "good" block against a 5-year "excellent" block fairly.
+            return Math.Pow(compoundedRealMultiplier, 1.0 / blockLength) - 1.0;
+        }
+
+        static ARRScores DiscoverDisasterAndJackpotScores(IReadOnlyList<HBlock> allBlocks, double disasterPctl, double jackpotPctl)
+        {
+            // Sort the ARRScores of all blocks, worst to best.
+            var sortedScores = allBlocks.Select(b => b.ARRScore).OrderBy(s => s).ToArray();
+
+            // Determine indices (simple nearest-rank approach)
+            // 10th percentile = index at 10% mark
+            // 90th percentile = index at 90% mark
+            int disasterIdx = (int)(sortedScores.Length * disasterPctl);
+            int jackpotIdx  = (int)(sortedScores.Length * jackpotPctl);
+
+            // Defensive clamps. Below will not happen.
+            disasterIdx = Math.Clamp(disasterIdx, 0, sortedScores.Length - 1);
+            jackpotIdx  = Math.Clamp(jackpotIdx, 0, sortedScores.Length - 1);
+
+            return new ARRScores(
+                Disaster: sortedScores[disasterIdx],
+                Jackpot:  sortedScores[jackpotIdx]
+            );
+        } 
 
         #endregion
 
