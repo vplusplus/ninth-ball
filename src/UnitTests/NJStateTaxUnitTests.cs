@@ -55,7 +55,7 @@ namespace UnitTests
             var result = priorYear.ComputePriorYearTaxes(schedules, tama);
             
             // Expected: 100k - 1k(exemption) = 99k taxable. (SS ignored)
-            Assert.AreEqual(99000, result.StateTax.Taxable, "Age 61 should have no pension exclusion.");
+            Assert.AreEqual(99000, result.State.Taxable, "Age 61 should have no pension exclusion.");
         }
 
         [TestMethod]
@@ -76,7 +76,7 @@ namespace UnitTests
             var result = priorYear.ComputePriorYearTaxes(schedules, tama);
             
             // Expected: 90k - 90k(exclusion) - 1k(exemption) = 0 taxable. (SS ignored)
-            Assert.AreEqual(0, result.StateTax.Taxable, "Age 62 with <100k should have full exclusion.");
+            Assert.AreEqual(0, result.State.Taxable, "Age 62 with <100k should have full exclusion.");
         }
 
         [TestMethod]
@@ -95,7 +95,7 @@ namespace UnitTests
             };
             var resultBelow = priorYearBelow.ComputePriorYearTaxes(schedules, tama);
             // $150k - $25k exclusion - $1k exemption = $124k taxable.
-            Assert.AreEqual(124000, resultBelow.StateTax.Taxable, "Income at 150k should have 25k exclusion.");
+            Assert.AreEqual(124000, resultBelow.State.Taxable, "Income at 150k should have 25k exclusion.");
 
             // Scenario B: Income 150,001 (THE CLIFF)
             var priorYearAbove = new SimYear
@@ -107,10 +107,10 @@ namespace UnitTests
             };
             var resultAbove = priorYearAbove.ComputePriorYearTaxes(schedules, tama);
             // $150,001 - $0 exclusion - $1k exemption = $149,001 taxable.
-            Assert.AreEqual(149001, resultAbove.StateTax.Taxable, "Income at 150,001 should hit the CLIFF (zero exclusion).");
+            Assert.AreEqual(149001, resultAbove.State.Taxable, "Income at 150,001 should hit the CLIFF (zero exclusion).");
 
             // Verify the jump
-            var taxDiff = resultAbove.StateTax.Tax - resultBelow.StateTax.Tax;
+            var taxDiff = resultAbove.State.Tax - resultBelow.State.Tax;
             Console.WriteLine($"Tax Jump at $150,001: {taxDiff:C}");
             Assert.IsTrue(taxDiff > 1000, "The Cliff should cause a significant tax jump.");
         }
@@ -133,8 +133,8 @@ namespace UnitTests
             var result = priorYear.ComputePriorYearTaxes(schedules, tama);
             
             // Expected: SS is 100% exempt. Taxable should be 0.
-            Assert.AreEqual(0, result.StateTax.Taxable, "Social Security should be 100% exempt from NJ tax.");
-            Assert.AreEqual(0, result.StateTax.Tax, "Tax on 100k Social Security should be Zero.");
+            Assert.AreEqual(0, result.State.Taxable, "Social Security should be 100% exempt from NJ tax.");
+            Assert.AreEqual(0, result.State.Tax, "Tax on 100k Social Security should be Zero.");
         }
     }
 }

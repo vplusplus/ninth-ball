@@ -4,6 +4,7 @@
 
 
 * Consider moving all Sim options to .Options namespace
+
 * MBB - Consecutive blocks - 
      Avoid EXACT same block
      In case of partial overlap, skip block ONLY if ann-change more than +/-20%

@@ -34,8 +34,8 @@ namespace NinthBall.Core
             return new Taxes
             (
                 GrossIncome:    unadjustedIncomes,
-                FederalTax:     unadjustedIncomes.ComputeFederalTaxes(y0TaxRates, priorYear.Metrics, TAMA),
-                StateTax:       unadjustedIncomes.ComputeNJStateTaxes(y0TaxRates, priorYear.Metrics, priorYear.Age,  TAMA)
+                Federal:     unadjustedIncomes.ComputeFederalTaxes(y0TaxRates, priorYear.Metrics, TAMA),
+                State:       unadjustedIncomes.ComputeNJStateTaxes(y0TaxRates, priorYear.Metrics, priorYear.Age,  TAMA)
             );
 
             static Taxes.GI RawIncomes(SimYear priorYear, TaxAndMarketAssumptions TAMA) => new Taxes.GI

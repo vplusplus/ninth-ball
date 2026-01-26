@@ -2,7 +2,7 @@
 
 namespace NinthBall.Core
 {
-    public readonly record struct Taxes(Taxes.GI GrossIncome, Taxes.Tx FederalTax, Taxes.Tx StateTax)
+    public readonly record struct Taxes(Taxes.GI GrossIncome, Taxes.Tx Federal, Taxes.Tx State)
     {
         public readonly record struct GI
         (
@@ -28,15 +28,15 @@ namespace NinthBall.Core
         );
 
         // Total taxes.
-        public readonly double Total => FederalTax.Tax + StateTax.Tax;
+        public readonly double Total => Federal.Tax + State.Tax;
 
         // For every $ that came in, what PCT went to taxes
-        public readonly double TaxPCT => GrossIncome.Total <= 0.01 ? 0.0 : (FederalTax.Tax + StateTax.Tax) / GrossIncome.Total;
+        public readonly double TaxPCT => GrossIncome.Total <= 0.01 ? 0.0 : (Federal.Tax + State.Tax) / GrossIncome.Total;
 
         // For every $ that came in, what PCT went to Federal taxes
-        public readonly double TaxPCTFed => GrossIncome.Total <= 0.01 ? 0.0 : FederalTax.Tax / GrossIncome.Total;
+        public readonly double TaxPCTFed => GrossIncome.Total <= 0.01 ? 0.0 : Federal.Tax / GrossIncome.Total;
 
         // For every $ that came in, what PCT went to State taxes
-        public readonly double TaxPCTState => GrossIncome.Total <= 0.01 ? 0.0 : StateTax.Tax / GrossIncome.Total;
+        public readonly double TaxPCTState => GrossIncome.Total <= 0.01 ? 0.0 : State.Tax / GrossIncome.Total;
     }
 }

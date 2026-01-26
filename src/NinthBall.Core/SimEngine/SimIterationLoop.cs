@@ -253,7 +253,7 @@ namespace NinthBall.Core
         //......................................................................
         static Assets ThrowIfNegative(this Assets x) { ThrowIfNegative(nameof(Assets), x.PreTax.Amount, x.PostTax.Amount, x.Cash.Amount); return x; }
         static Fees ThrowIfNegative(this Fees x) { ThrowIfNegative(nameof(Fees), x.PreTax, x.PostTax); return x; }
-        static Taxes ThrowIfNegative(this Taxes x) { ThrowIfNegative(nameof(Taxes), x.FederalTax.Tax, x.StateTax.Tax); return x; }
+        static Taxes ThrowIfNegative(this Taxes x) { ThrowIfNegative(nameof(Taxes), x.Federal.Tax, x.State.Tax); return x; }
         static Incomes ThrowIfNegative(this Incomes x) { ThrowIfNegative(nameof(Incomes), x.SS, x.Ann); return x; }
         static Expenses ThrowIfNegative(this Expenses x) { ThrowIfNegative(nameof(Expenses), x.LivExp); return x; }
         static Withdrawals ThrowIfNegative(this Withdrawals x) { ThrowIfNegative(nameof(Withdrawals), x.PreTax, x.PostTax, x.Cash); return x; }

@@ -57,8 +57,8 @@ namespace NinthBall.Core
 
         public static Taxes RoundToCents(this Taxes x) => x with
         {
-            FederalTax = x.FederalTax.RoundToCents(),
-            StateTax   = x.StateTax.RoundToCents()
+            Federal = x.Federal.RoundToCents(),
+            State   = x.State.RoundToCents()
         };
 
         public static Taxes.Tx RoundToCents(this Taxes.Tx x) => x with

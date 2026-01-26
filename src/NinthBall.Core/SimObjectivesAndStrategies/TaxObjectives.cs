@@ -21,7 +21,7 @@ namespace NinthBall.Core
         // We do not have any information before year #0
         // Use exact amount as specified as year #0 tax liability
         // BY-DESIGN: All amounts are captured in Federal Ordinary income. Rest of the attributes are irrelevant.
-        static Taxes YearZeroTaxes(double amount) => new() { FederalTax = new() { Tax = amount, } };
+        static Taxes YearZeroTaxes(double amount) => new() { Federal = new() { Tax = amount, } };
     }
 
     [StrategyFamily(StrategyFamily.Taxes)] 
