@@ -89,13 +89,19 @@ namespace NinthBall.Core
         //......................................................................
         #region DisasterAndJackpotThresholds - Discovered once
         //......................................................................
+
+        /// <summary>
+        /// Each block carries a score that represents performance during that window.
+        /// It may look and feel like 'real annualized return', but it is not.
+        /// Other than ranking the blocks, the number doesn't serve any other purpose.
+        /// </summary>
         readonly record struct DisasterAndJackpotThresholds
         (
-            double DisasterScore,   // Blocks ARRScore same or below represents worst performing window
-            double JackpotScore     // Blocks ARRScore same or above represents best performing window
+            double DisasterScore,   // Blocks with ARRScore <= DisasterScore represents worst performing windows.
+            double JackpotScore     // Blocks with ARRScore >= JackpotScore represents best performing windows.
         );
 
-        // Prepare all available blocks once.
+        // Prepare disaster and jackpot ARRScore threholds once.
         readonly Lazy<DisasterAndJackpotThresholds> LazyDisasterAndJackpotThresholds = new(() => 
         {
             const double TenthPctl     = 0.1;
