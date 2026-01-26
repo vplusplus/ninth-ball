@@ -33,7 +33,7 @@ namespace NinthBall.Core
             // Compute Federal and State taxes
             return new Taxes
             (
-                GrossIncome:    unadjustedIncomes,
+                GrossIncome: unadjustedIncomes,
                 Federal:     unadjustedIncomes.ComputeFederalTaxes(y0TaxRates, priorYear.Metrics, TAMA),
                 State:       unadjustedIncomes.ComputeNJStateTaxes(y0TaxRates, priorYear.Metrics, priorYear.Age,  TAMA)
             );
@@ -203,7 +203,7 @@ namespace NinthBall.Core
             static double GetNJPensionExclusionWithTheCliff(double njGrossIncome, int age)
             {
                 // NJ STATUTORY POLICY (Pinned to NJ-1040 Law)
-                // These are not hard-coded constants, ather a representation of NJ-1040 Law.
+                // These are not hard-coded constants, rather a representation of NJ-1040 Law.
                 // If the law changes the application of these numbers are also likely to change.
                 // Consider these numbers as code, hence are not externalized.
 
