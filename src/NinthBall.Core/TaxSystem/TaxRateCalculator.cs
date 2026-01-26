@@ -63,7 +63,8 @@ namespace NinthBall.Core
             if (1.0 == inflationMultiplier) return TS;
 
             // Optimization 2: Flat tax rate schedule. Zero to Infinite range. Nothing to index.
-            if (1 == TS.Brackets.Count && 0 == TS.Brackets[0].Threshold) return TS;
+            // BUG: Optimzation 2 skips inflating the deductions. Let it fall throough the loop.
+            // UN-BUG: if (1 == TS.Brackets.Count && 0 == TS.Brackets[0].Threshold) return TS;
 
             // Adjust thresholds for inflation.
             int n = TS.Brackets.Count;
