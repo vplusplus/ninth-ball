@@ -41,7 +41,6 @@ namespace NinthBall.Core
             var allBlocks  = HBlocks.Blocks;
             var thresholds = LazyDisasterAndJackpotThresholds.Value;
 
-            // We are collecting random indexes on available blocks.
             while (idx < numYears)
             {
                 // Sample next random block with uniform distribution (with replacement).
@@ -68,15 +67,14 @@ namespace NinthBall.Core
                 // Remember previous block.
                 prevBlock = nextBlock;
 
-                // Collect indices from the sampled block.
+                // Collect HROI from the sampled block.
                 for (int j = 0; j < nextBlock.Slice.Length && idx < numYears; j++, idx++) sequence[idx] = nextBlock.Slice.Span[j];
             }
 
             // Logic check...
             if (idx != numYears) throw new Exception("Internal error | Mismatch in expected number of years collected.");
 
-            // We prepared random indices into blocks of historical data. 
-            // Return an indexed-view into historical data.
+            // Hand it over to ROISequence, it will honor the IROISequence contract.
             return new ROISequence(sequence.AsMemory());
         
         }
@@ -113,14 +111,14 @@ namespace NinthBall.Core
             // Determine indices of disaster and jackpot percentiles.
             // 10th percentile = index at 10% mark
             // 90th percentile = index at 90% mark
-            int disasterIdx = (int)(sortedScores.Length  * TenthPctl);
-            int jackpotIdx  = (int)(sortedScores.Length  * NinetiethPctl);
+            int disasterIdx = (int)(sortedScores.Length * TenthPctl);
+            int jackpotIdx  = (int)(sortedScores.Length * NinetiethPctl);
 
             // Clip the edges
             disasterIdx = Math.Clamp(disasterIdx, 0, sortedScores.Length - 1);
-            jackpotIdx  = Math.Clamp(jackpotIdx,  0,  sortedScores.Length - 1);
+            jackpotIdx  = Math.Clamp(jackpotIdx,  0, sortedScores.Length - 1);
 
-            // Return the ARRScore at the disaster and jackpot percentiles.
+            // Return the ARRScore(s) at the disaster and jackpot percentiles.
             return new (
                 DisasterScore: sortedScores[disasterIdx],
                 JackpotScore:  sortedScores[jackpotIdx]
@@ -130,9 +128,9 @@ namespace NinthBall.Core
         #endregion
 
         // Describe...
-        public override string ToString() => $"Random historical growth and inflation using {CSVBlockSizes} year blocks from {HBlocks.MinYear} to {HBlocks.MaxYear} data{TxtNoBackToBack}";
+        public override string ToString() => $"Random historical growth and inflation using {CSVBlockSizes} year blocks from {HBlocks.MinYear} to {HBlocks.MaxYear} data {TxtNoBackToBack}";
         string CSVBlockSizes => string.Join("/", Options.BlockSizes);
-        string TxtNoBackToBack => Options.NoBackToBackOverlaps ? " (Avoids back-to-back repetition of extreme outcomes)" : string.Empty;
+        string TxtNoBackToBack => Options.NoBackToBackOverlaps ? "(Avoids back-to-back repetition of extreme outcomes)" : string.Empty;
 
     }
 }
