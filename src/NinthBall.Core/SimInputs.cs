@@ -116,7 +116,6 @@ namespace NinthBall.Core
         [property: Range(0.0001, 1)] double InflationRate
     );
 
-    // Few lingering constants and assumptions, externalized, optionally configurable.
     public sealed record TaxAndMarketAssumptions
     (
         [property: Min(1000)]           double SSNonTaxableThreshold,
