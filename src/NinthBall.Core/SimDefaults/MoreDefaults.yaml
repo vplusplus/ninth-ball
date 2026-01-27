@@ -11,4 +11,4 @@ TaxAndMarketAssumptions:
   TypicalStocksDividendYield:     2.0%        # How much a company pays out in dividends relative to its current stock price, expressed as a percentage.
   TypicalBondCouponYield:         2.5%        # Interest payment made by the bond issuer, expressed as a percentage of the bond's face value 
   FedTaxInflationLagHaircut:      0.25%       # Small haircut on inflation rate to represent Federal C-CPI lag.
-  NJStateTaxInflationLagHaircut:  0.75%       # Larger haircut on inflation rate to represent State's delayed adjustments and lag.
+  StateTaxInflationLagHaircut:    0.75%       # Larger haircut on inflation rate to represent State's delayed adjustments and lag.

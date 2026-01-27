@@ -33,7 +33,7 @@ namespace UnitTests
             TypicalStocksDividendYield: 0.02,
             TypicalBondCouponYield: 0.025,
             FedTaxInflationLagHaircut: 0.0025,
-            NJStateTaxInflationLagHaircut: 0.0075
+            StateTaxInflationLagHaircut: 0.0075
         );
 
         [TestMethod]

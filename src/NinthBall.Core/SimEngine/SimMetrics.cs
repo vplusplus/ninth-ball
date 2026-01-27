@@ -77,7 +77,7 @@ namespace NinthBall.Core
             // Tracked at full precision (not quantized)
             var stateTaxInflationRateMultiplier = Math.Max(
                 prior.StateTaxInflationMultiplier,
-                prior.StateTaxInflationMultiplier * (1 + currentYearInflationRate - TAMA.NJStateTaxInflationLagHaircut)
+                prior.StateTaxInflationMultiplier * (1 + currentYearInflationRate - TAMA.StateTaxInflationLagHaircut)
             );
 
             // Running multiplier that represents cumulative portfolio growth since year #0

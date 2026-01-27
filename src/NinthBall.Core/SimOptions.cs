@@ -127,7 +127,7 @@ namespace NinthBall.Core
         [property: Range(0.001, 1.0)]   double TypicalBondCouponYield,
 
         [property: Range(0.0001, 1.0)]  double FedTaxInflationLagHaircut,
-        [property: Range(0.0001, 1.0)]  double NJStateTaxInflationLagHaircut
+        [property: Range(0.0001, 1.0)]  double StateTaxInflationLagHaircut
     );
 
 }
