@@ -17,11 +17,6 @@ namespace NinthBall.Outputs
             string? ExcelView = null
         );
 
-        /// <summary>
-        /// Reads SimOutput.yaml - Locates the file based on conventions.
-        /// </summary>
-        internal static SimOutput TryLoad(string yamlFileName) => ReadFromYamlFile(yamlFileName).ToSimOutput();
-
         public static SimOutputYaml ReadFromYamlFile(string yamlFileName)
         {
             if (!File.Exists(yamlFileName)) return new();
