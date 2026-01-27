@@ -6,8 +6,7 @@ using Microsoft.Extensions.Hosting;
 namespace NinthBall.Core
 {
     /// <summary>
-    /// The Monte Carlo simulation engine.
-    /// Orchestrates the simulation process, runs one simulation.
+    /// Runs one simulation.
     /// </summary>
     public static class SimEngine
     {
@@ -22,8 +21,6 @@ namespace NinthBall.Core
                 .AddYamlFile(simInputFileName)
                 .Build();
 
-            // Register components for the simulation.
-            // NOTE: Dispose the DI container on return; we will prepare a fresh container for each run.
             simSessionBuilder.Services
 
                 .RegisterConfigSection<SimulationSeed>()
@@ -86,7 +83,7 @@ namespace NinthBall.Core
 
         static IServiceCollection AddSimulationObjectives(this IServiceCollection services)
         {
-            foreach ( var (friendlyName, objectiveInfo) in SimObjectivesSelector.KnownObjectives.Value) services.AddSingleton(objectiveInfo.Type);
+            foreach (var objInfo in SimObjectives.AllObjectives.Values) services.AddSingleton(objInfo.Type);
             return services;
         }
     }
