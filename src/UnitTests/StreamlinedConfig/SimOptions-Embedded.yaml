@@ -1,6 +1,7 @@
 ﻿
 TaxRateSchedules:
   Federal:
+    TaxDeductions: 29200
     Brackets: [
       { IncomeThreshold: 0,       MarginalRate: 0.10    },
       { IncomeThreshold: 24800,   MarginalRate: 0.12    },
@@ -12,6 +13,7 @@ TaxRateSchedules:
     ]
 
   LTCG:
+    TaxDeductions: 0
     Brackets: [
       { IncomeThreshold: 0,       MarginalRate: 0.0     },
       { IncomeThreshold: 98900,   MarginalRate: 0.15    },
@@ -19,6 +21,8 @@ TaxRateSchedules:
     ]
 
   State:
+    TaxDeductions: 1000
+    DoNotIndexTaxDeductions: true
     Brackets: [
       { IncomeThreshold: 0,       MarginalRate: 0.014   },
       { IncomeThreshold: 20000,   MarginalRate: 0.0175  },

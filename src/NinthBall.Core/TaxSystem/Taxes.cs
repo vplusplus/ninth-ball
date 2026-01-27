@@ -2,6 +2,29 @@
 
 namespace NinthBall.Core
 {
+    public enum TaxAuthority
+    {
+        Undefined,
+        Federal,
+        State
+    }
+
+    /// <summary>
+    /// Can compute and consolidate tax guesstimation from multiple tax authorities.
+    /// </summary>
+    public interface ITaxSystem
+    {
+        Taxes GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates);
+    }
+
+    /// <summary>
+    /// Can guesstimate taxes for a specific jurisdiction (Federal, State, City, County).
+    /// </summary>
+    public interface ITaxGuesstimator
+    {
+        Taxes.Tx GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates);
+    }
+
     public readonly record struct Taxes(Taxes.GI GrossIncome, Taxes.Tx Federal, Taxes.Tx State)
     {
         public readonly record struct GI

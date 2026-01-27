@@ -53,7 +53,7 @@ namespace NinthBall.Core
         /// <summary>
         /// Can index the tax schedule using inflation rate multiplier.
         /// </summary>
-        public static TaxRateSchedule Inflate(this TaxRateSchedule TS, double inflationMultiplier, double jitterGuard, bool alsoInflateTheDeductions = true)
+        public static TaxRateSchedule Inflate(this TaxRateSchedule TS, double inflationMultiplier, double jitterGuard)
         {
             if (inflationMultiplier <= 0) throw new ArgumentOutOfRangeException(nameof(inflationMultiplier), "Multiplier must be positive.");
             if (inflationMultiplier > 10.0) throw new ArgumentOutOfRangeException($"Inflation multiplier too large | Check logic and math | Expecting < 10.0 | Received {inflationMultiplier:F2}");
@@ -62,39 +62,50 @@ namespace NinthBall.Core
             // Optimization 1: InflationMultiplier 1.0 means no indexing.
             if (1.0 == inflationMultiplier) return TS;
 
-            // Optimization 2: Flat tax rate schedule. Zero to Infinite range. Nothing to index.
-            // BUG: Optimzation 2 skips inflating the deductions. Let it fall throough the loop.
-            // UN-BUG: if (1 == TS.Brackets.Count && 0 == TS.Brackets[0].Threshold) return TS;
+            // Optimization 2: Nothing to index.
+            if (TS.DoNotIndexTaxBrackets && TS.DoNotIndexTaxDeductions) return TS;
 
-            // Adjust thresholds for inflation.
+            // Adjust thresholds for inflation (if allowed).
             int n = TS.Brackets.Count;
-            var inflatedBrackets = new List<TaxRateSchedule.TaxBracket>(n);
+            var inflatedBrackets = TS.DoNotIndexTaxBrackets
+                ? TS.Brackets  // Keep original brackets
+                : InflateBracketsAndReduceJitter(TS.Brackets, inflationMultiplier, jitterGuard);
 
-            for (int i = 0; i < n; i++)
-            {
-                var b = TS.Brackets[i];
-
-                inflatedBrackets.Add(new TaxRateSchedule.TaxBracket
-                (
-                    Threshold: InflateAndReduceJitter(amount: b.Threshold, multiplier: inflationMultiplier, jitterGuard: jitterGuard),
-                    MTR: b.MTR
-                ));
-            }
-
-            // Adjust tax deductions for inflation.
-            var inflatedTaxDeductions = alsoInflateTheDeductions
-                ? InflateAndReduceJitter(TS.TaxDeductions, multiplier: inflationMultiplier, jitterGuard)
-                : TS.TaxDeductions;
+            // Adjust tax deductions for inflation (if allowed).
+            var inflatedTaxDeductions = TS.DoNotIndexTaxDeductions
+                ? TS.TaxDeductions  // Keep original deductions
+                : InflateAmountAndReduceJitter(TS.TaxDeductions, multiplier: inflationMultiplier, jitterGuard);
 
             // Return the inflated tax rate schedule.
-            return new TaxRateSchedule(inflatedTaxDeductions, inflatedBrackets);
+            return TS with
+            {
+                TaxDeductions = inflatedTaxDeductions,
+                Brackets      = inflatedBrackets,
+            };
+
+            // Inflate the tax-bracket thresholds.
+            // Retain the marginal tax rate.
+            static IReadOnlyList<TaxRateSchedule.TaxBracket> InflateBracketsAndReduceJitter(IReadOnlyList<TaxRateSchedule.TaxBracket> brackets, double multiplier, double jitterGuard)
+            {
+                var inflatedBrackets = new List<TaxRateSchedule.TaxBracket>(brackets.Count);
+                for (int i = 0; i < brackets.Count; i++)
+                {
+                    var b = brackets[i];
+                    inflatedBrackets.Add(new TaxRateSchedule.TaxBracket
+                    (
+                        Threshold: InflateAmountAndReduceJitter(amount: b.Threshold, multiplier: multiplier, jitterGuard: jitterGuard),
+                        MTR: b.MTR
+                    ));
+                }
+                return inflatedBrackets;
+            }
 
             // WHY?
             // We do not want 30,000 schedules (30 years x 10,000 iteration-paths)
             // IRS also rounds up the thresholds.
             // Our objective is not to faithfully reproduce IRS behavior.
             // Our objective is to reduce jitter across iteration paths. 
-            static double InflateAndReduceJitter(double amount, double multiplier, double jitterGuard)
+            static double InflateAmountAndReduceJitter(double amount, double multiplier, double jitterGuard)
             {
                 var newThreshold = amount * multiplier;
                 var newThresholdLowJitter = Math.Round(newThreshold / jitterGuard) * jitterGuard;

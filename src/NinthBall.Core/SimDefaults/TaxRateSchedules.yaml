@@ -38,6 +38,7 @@ TaxRateSchedules:
   # Using conservative amount of $12000 
   State:
     TaxDeductions: $12,000
+    DoNotIndexTaxDeductions: true
     Brackets: [
       { Threshold:       0, MTR: 1.4%     },
       { Threshold:   20000, MTR: 1.75%    },
@@ -48,4 +49,3 @@ TaxRateSchedules:
       { Threshold:  500000, MTR: 8.97%    },
       { Threshold: 1000000, MTR: 10.75%   }
     ]
-

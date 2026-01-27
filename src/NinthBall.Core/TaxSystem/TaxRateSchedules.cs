@@ -9,7 +9,10 @@ namespace NinthBall.Core
         double TaxDeductions,
 
         [property: ValidateNested]
-        IReadOnlyList<TaxRateSchedule.TaxBracket> Brackets
+        IReadOnlyList<TaxRateSchedule.TaxBracket> Brackets,
+
+        bool DoNotIndexTaxBrackets = false,
+        bool DoNotIndexTaxDeductions = false
     )
     {
         public readonly record struct TaxBracket

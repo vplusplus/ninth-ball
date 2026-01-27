@@ -53,10 +53,9 @@ namespace UnitTests
 
             foreach (var (income, expectedTax) in TestData)
             {
-                throw new Exception("Stubbed for refactoring");
-                //var (marginalTaxRate, taxAmount) = TaxRateSchedules.FallbackFed2026.CalculateStackedEffectiveTax(income);
+                var (marginalTaxRate, taxAmount) = FallbackFed2026.CalculateStackedEffectiveTax(income);
                 //Console.WriteLine($"{income,12:C0} | {marginalTaxRate,8:P2} | Tax: {taxAmount,10:C0}");
-                //Assert.AreEqual(Math.Round(expectedTax, 2), Math.Round(taxAmount, 2), $"Input: {income:C0} | Expected Tax: {expectedTax:C2} | Actual Tax: {taxAmount:C2} ");
+                Assert.AreEqual(Math.Round(expectedTax, 2), Math.Round(taxAmount, 2), $"Input: {income:C0} | Expected Tax: {expectedTax:C2} | Actual Tax: {taxAmount:C2} ");
             }
         }
 
@@ -89,13 +88,25 @@ namespace UnitTests
 
             foreach (var (baseIncome, incrementalIncome, expectedTax) in TestData)
             {
-                throw new Exception("Stubbed for refactoring");
-
-                //var (marginalTaxRate, taxAmount) = TaxRateSchedules.FallbackFed2026.CalculateStackedEffectiveTax(incrementalIncome, baseIncome: baseIncome);
+                var (marginalTaxRate, taxAmount) = FallbackFed2026.CalculateStackedEffectiveTax(incrementalIncome, baseIncome: baseIncome);
                 //Console.WriteLine($"{baseIncome,12:C0} + {incrementalIncome,-12:C0} | {marginalTaxRate,8:P2} | Tax: {taxAmount,10:C0}");
-                //Assert.AreEqual(Math.Round(expectedTax, 2), Math.Round(taxAmount, 2), $" {baseIncome:C0} + {incrementalIncome:C0} | Expected Tax: {expectedTax:C2} | Actual Tax: {taxAmount:C2} ");
+                Assert.AreEqual(Math.Round(expectedTax, 2), Math.Round(taxAmount, 2), $" {baseIncome:C0} + {incrementalIncome:C0} | Expected Tax: {expectedTax:C2} | Actual Tax: {taxAmount:C2} ");
             }
         }
 
+        static readonly TaxRateSchedule FallbackFed2026 = new
+        (
+            TaxDeductions: 0,
+            Brackets: new[]
+            {
+                new TaxRateSchedule.TaxBracket(0, 0.10),
+                new TaxRateSchedule.TaxBracket(24_800, 0.12),
+                new TaxRateSchedule.TaxBracket(100_800, 0.22),
+                new TaxRateSchedule.TaxBracket(211_400, 0.24),
+                new TaxRateSchedule.TaxBracket(403_550, 0.32),
+                new TaxRateSchedule.TaxBracket(512_450, 0.35),
+                new TaxRateSchedule.TaxBracket(768_700, 0.37),
+            }
+        );
     }
 }

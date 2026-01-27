@@ -39,6 +39,12 @@ namespace NinthBall.Core
                 .RegisterConfigSection<TaxRateSchedules>()
                 .RegisterConfigSection<TaxAndMarketAssumptions>()
 
+                .AddSingleton<ITaxSystem, SamAndHisBrothers>()
+                // .AddSingleton<FederalTaxGuesstimator>()
+                // AddSingleton<NJTaxGuesstimator>()
+                .AddKeyedSingleton<ITaxGuesstimator, FederalTaxGuesstimator>(TaxAuthority.Federal)
+                .AddKeyedSingleton<ITaxGuesstimator, NJTaxGuesstimator>(TaxAuthority.State)
+
                 .RegisterConfigSection<FlatGrowth>()
 
                 .AddSingleton<HistoricalReturns>()

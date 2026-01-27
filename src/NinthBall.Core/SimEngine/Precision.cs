@@ -68,5 +68,31 @@ namespace NinthBall.Core
             Taxable     = x.Taxable.RoundToCents(),
             Tax         = x.Tax.RoundToCents()
         };
+
+    
+        // TODO: TEMP PARKING LOT. Reorganize
+
+        internal static Taxes.GI MinZero(this Taxes.GI x) => new
+        (
+            PreTaxWDraw: Math.Max(0, x.PreTaxWDraw),
+            SS: Math.Max(0, x.SS),
+            Ann: Math.Max(0, x.Ann),
+            BondsYield: Math.Max(0, x.BondsYield),
+            Dividends: Math.Max(0, x.Dividends),
+            CapGains: Math.Max(0, x.CapGains)
+        );
+
+        internal static Taxes.GI RoundToCents(this Taxes.GI x) => new
+        (
+            PreTaxWDraw: Math.Round(x.PreTaxWDraw, 2),
+            SS: Math.Round(x.SS, 2),
+            Ann: Math.Round(x.Ann, 2),
+            BondsYield: Math.Round(x.BondsYield, 2),
+            Dividends: Math.Round(x.Dividends, 2),
+            CapGains: Math.Round(x.CapGains, 2)
+        );
+
     }
+
+
 }
