@@ -14,6 +14,7 @@ Views:
   # High-level summary of the most critical plan metrics
   Essential: [ 
       Year, Age, 
+      RBLStocks, RBLBonds,
       JanPreTax, JanPreTaxAlloc, JanPostTax, JanPostTaxAlloc, JanValue,
       SS, Ann, 
       Fees, PYTaxes, LivExp,

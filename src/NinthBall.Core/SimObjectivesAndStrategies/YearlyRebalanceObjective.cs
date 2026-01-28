@@ -17,6 +17,9 @@ namespace NinthBall.Core
 
             void ISimStrategy.Apply(ISimState context)
             {
+                // Snapshot before rebalancing/reallocation
+                var before = context.Jan;
+
                 // Check if reallocation-steps is specified for this year.
                 var reallocateThisYear = null != RBL.Reallocate && RBL.Reallocate.Count > 0 && RBL.Reallocate.Any(x => x.AtAge == context.Age);
 
@@ -35,6 +38,23 @@ namespace NinthBall.Core
 
                 // Yearly rebalancing (or reallocation).
                 context.Rebalance(preTaxAllocation, postTaxAllocation, maxDrift);
+
+                // Snapshot after rebalancing/reallocation
+                var after = context.Jan;
+
+                // Positive amount represents assets bought.
+                // Negative amount represents assets sold.
+                context.Rebalanced = new
+                (
+                    PreTax: new(
+                        StocksChange: (after.PreTax.StocksAmount - before.PreTax.StocksAmount).RoundToCents(), 
+                        BondsChange:  (after.PreTax.BondsAmount  - before.PreTax.BondsAmount).RoundToCents()
+                    ),
+                    PostTax: new(
+                        StocksChange: (after.PostTax.StocksAmount - before.PostTax.StocksAmount).RoundToCents(),
+                        BondsChange:  (after.PostTax.BondsAmount  - before.PostTax.BondsAmount).RoundToCents()
+                    )
+                );
             }
         }
 

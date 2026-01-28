@@ -17,6 +17,7 @@ namespace NinthBall.Core
 
         // Current year memory
         public Assets Jan { get; private set; } = Initial;
+        public Rebalanced Rebalanced { get; set; }
         public Fees Fees { get; set; }
         public Taxes Taxes { get; set; }
         public Incomes Incomes { get; set; }

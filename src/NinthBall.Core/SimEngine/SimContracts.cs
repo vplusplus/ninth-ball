@@ -36,6 +36,7 @@ namespace NinthBall.Core
         Metrics PriorYearMetrics { get; }
 
         Assets Initial { get; }
+        Rebalanced Rebalanced { get; set; }
         Assets Jan { get; }
         Fees Fees { get; set; }
         Taxes Taxes { get; set; }
@@ -61,6 +62,7 @@ namespace NinthBall.Core
         Metrics PriorYearMetrics { get; }
 
         Assets Initial { get; }
+        Rebalanced Rebalanced { get; }
         Assets Jan { get; }
         Fees Fees { get; }
         Taxes Taxes { get; }

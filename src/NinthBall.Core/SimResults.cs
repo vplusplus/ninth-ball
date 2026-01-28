@@ -9,6 +9,7 @@ namespace NinthBall.Core
     (
         int         Year,
         int         Age,
+        Rebalanced  Rebalanced,
         Assets      Jan,
         Fees        Fees,
         Taxes       Taxes,
@@ -39,6 +40,11 @@ namespace NinthBall.Core
     public readonly record struct ROI(int LikeYear, double StocksROI, double BondsROI, double InflationRate);
 
     public readonly record struct Change(double PreTax, double PostTax);
+
+    public readonly record struct Rebalanced(Rebalanced.SB PreTax, Rebalanced.SB PostTax)
+    {
+        public readonly record struct SB(double StocksChange, double BondsChange);
+    }
 
 }
 

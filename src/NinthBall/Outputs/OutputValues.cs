@@ -85,6 +85,9 @@ namespace NinthBall.Outputs
             [CID.MXFedInf]      = (it, in y) => y.Metrics.FedTaxInflationMultiplier,
             [CID.MXNJInf]       = (it, in y) => y.Metrics.StateTaxInflationMultiplier,
 
+            [CID.RBLStocks]     = (it, in y) => y.Rebalanced.Stocks,
+            [CID.RBLBonds]      = (it, in y) => y.Rebalanced.Bonds,
+
 
         }.AsReadOnly();
 

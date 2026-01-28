@@ -19,11 +19,17 @@ namespace NinthBall.Core
 
         }
 
-        extension (Fees F)
+        extension(Rebalanced R)
+        {
+            public double Stocks => R.PreTax.StocksChange + R.PostTax.StocksChange;     // Total change in stocks asssets due to rebalancing
+            public double Bonds  => R.PreTax.BondsChange  + R.PostTax.BondsChange;      // Total change in stocks asssets due to rebalancing
+        }
+
+
+        extension(Fees F)
         {
             public double Total => F.PreTax + F.PostTax;
         }
-
 
         extension (Incomes I)
         {

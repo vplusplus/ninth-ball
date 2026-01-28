@@ -62,8 +62,11 @@ namespace NinthBall.Outputs
         ROIBonds,               // Return on Bonds for the year (PCT)
         InflationRate,          // Consumer Price Index (CPI-U)
 
-        RealCAGR                // Annualized Real Effective ROI (only 'Real' data in our table)
+        RealCAGR,               // Annualized Real Effective ROI (only 'Real' data in our table)
 
-        
+        RBLStocks,              // Total stock assets change due to rebalancing
+        RBLBonds                // Total bond assets change due to rebalancing
+
+
     }
 }

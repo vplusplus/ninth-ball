@@ -86,6 +86,7 @@ namespace NinthBall.Core
                 (
                     simState.YearIndex,
                     simState.Age,
+                    simState.Rebalanced,
                     simState.Jan,
                     simState.Fees,
                     simState.Taxes,
@@ -110,6 +111,7 @@ namespace NinthBall.Core
                 (
                     simState.YearIndex,         // We know this
                     simState.Age,               // We know this
+                    simState.Rebalanced,        // We know we did this
                     simState.Jan,               // We know the starting balances
                     simState.Fees,              // We know the fees since we know the starting balances
                     simState.Taxes,             // We know prior year taxes
