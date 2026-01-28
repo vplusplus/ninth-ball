@@ -22,7 +22,7 @@ namespace NinthBall.Core
                 Ann: simYear.Incomes.Ann,
                 BondsYield: simYear.Jan.PostTax.BondsAmount * TAMA.TypicalBondCouponYield,
                 Dividends: simYear.Jan.PostTax.StocksAmount * TAMA.TypicalStocksDividendYield,
-                CapGains: simYear.Withdrawals.PostTax
+                CapGains: simYear.Withdrawals.PostTax + Math.Max(0.0, -simYear.Rebalanced.PostTax.StocksChange)
             );
         }
     }
