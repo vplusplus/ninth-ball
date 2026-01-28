@@ -1,12 +1,24 @@
 ﻿
 namespace NinthBall.Core
 {
+    internal enum StrategyFamily
+    {
+        None,
+        Income,
+        Expenses,
+        Fees,
+        Taxes,
+        Withdrawals,
+        Growth,
+        Rebalance,
+        RMD
+    }
+
     /// <summary>
     /// Represents a simulation objective.
     /// </summary>
     internal interface ISimObjective
     {
-        int Order { get => 50; }
         int MaxIterations { get => int.MaxValue; }
         ISimStrategy CreateStrategy(int iterationIndex);
     }
@@ -72,5 +84,13 @@ namespace NinthBall.Core
         ROI ROI { get; }
     }
 
+    /// <summary>
+    /// Each strategy must declare its family identifier.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
+    internal sealed class StrategyFamilyAttribute(StrategyFamily family) : System.Attribute
+    {
+        public readonly StrategyFamily Family = family;
+    }
 }
 

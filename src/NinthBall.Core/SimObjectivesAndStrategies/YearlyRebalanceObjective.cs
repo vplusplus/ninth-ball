@@ -4,8 +4,6 @@ namespace NinthBall.Core
     [StrategyFamily(StrategyFamily.Rebalance)]
     sealed class YearlyRebalanceObjective(Initial Initial, YearlyRebalance RBL) : ISimObjective
     {
-        int ISimObjective.Order => 1;
-
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Initial, RBL);
 
         private sealed class Strategy(Initial Initial, YearlyRebalance RBL) : ISimStrategy

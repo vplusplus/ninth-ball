@@ -3,8 +3,6 @@ namespace NinthBall.Core
 {
     abstract class GrowthObjective(SimParams SimParams, IBootstrapper Bootstrapper) : ISimObjective
     {
-        int ISimObjective.Order => 40;
-
         int ISimObjective.MaxIterations => Bootstrapper.GetMaxIterations(SimParams.NoOfYears);
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex)

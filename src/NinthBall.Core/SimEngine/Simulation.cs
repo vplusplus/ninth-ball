@@ -46,7 +46,9 @@ namespace NinthBall.Core
                 .AsReadOnly();
 
             // Extract strategy descriptions
+            // Cosmetic: Push NoOp objective messages to bottom, like a foot note.
             var strategyDescriptions = orderedObjectives
+                .OrderBy(x => x is NoOpObjective ? 1 : 0)
                 .Select(obj => obj.ToString() ?? "Unknown Strategy")
                 .ToList()
                 .AsReadOnly();

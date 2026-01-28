@@ -6,8 +6,6 @@ namespace NinthBall.Core
     {
         const int RMDStartAge = 73;
 
-        int ISimObjective.Order => 29;
-
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => this;  // Stateless. 
 
         void ISimStrategy.Apply(ISimState context)

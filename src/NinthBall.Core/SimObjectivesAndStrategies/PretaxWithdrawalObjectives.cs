@@ -4,8 +4,6 @@ namespace NinthBall.Core
     [StrategyFamily(StrategyFamily.Withdrawals)]
     sealed class FixedWithdrawalObjective(FixedWithdrawal FW) : ISimObjective
     {
-        int ISimObjective.Order => 20;
-
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(FW);
 
         sealed class Strategy(FixedWithdrawal FW) : ISimStrategy
@@ -35,15 +33,13 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Pre-Tax Drawdown | {FW.FirstYearPct:P1} of PreTax (+{FW.Increment:P1}/yr){ResetYearsToString}";
+        public override string ToString() => $"PreTax Withdrawal | {FW.FirstYearPct:P1} of PreTax (+{FW.Increment:P1}/yr){ResetYearsToString}";
         string ResetYearsToString => (null == FW.ResetAtAge || 0 == FW.ResetAtAge.Count) ? string.Empty : $" | Reset to {FW.FirstYearPct:P1} @ age [{string.Join(',', FW.ResetAtAge)}]";
     }
 
     [StrategyFamily(StrategyFamily.Withdrawals)]
     sealed class VariableWithdrawalObjective(SimParams Params, VariableWithdrawal VW) : ISimObjective
     {
-        int ISimObjective.Order => 20;
-
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex) => new Strategy(Params, VW);
 
         sealed class Strategy(SimParams P, VariableWithdrawal VW) : ISimStrategy
@@ -83,7 +79,7 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Pre-Tax Drawdown | Tax-optimized amortization toward zero balance | Assumptions: {VW.FutureROI:P1} future ROI, {VW.FutureInflation:P1} future inflation{GuardrailsToString}";
+        public override string ToString() => $"PreTax Withdrawal | Tax-optimized amortization toward zero balance | Assumptions: {VW.FutureROI:P1} future ROI, {VW.FutureInflation:P1} future inflation{GuardrailsToString}";
 
         string GuardrailsToString => (VW.Floor.HasValue || VW.Ceiling.HasValue) 
             ? $" | Guardrails: [{VW.Floor?.ToString("C0") ?? "None"} - {VW.Ceiling?.ToString("C0") ?? "None"}] adjusted for inflation" 

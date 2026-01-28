@@ -1,4 +1,4 @@
-﻿
+﻿    
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NinthBall.Core
@@ -31,13 +31,13 @@ namespace NinthBall.Core
             ValidateRequiredObjectives( chosenObjectives );
             ValidateConflictingObjectives( chosenObjectives );
 
+            // IMPORTANT: Sort chosen objectives by the execution order of the family.
             // Resolve (activate) ISimObjective instance.
-            // Sort by the execution order prescribed by the implementation.
             var orderedObjectives = chosenObjectives
-                .Distinct()
-                .Select(x => AvailableServices.GetRequiredService(x.Type))
-                .OfType<ISimObjective>()
-                .OrderBy(x => x.Order)
+                .Distinct()                                                     // Just in case...
+                .OrderBy(x => GetStrategyExecutionOrder(x.Family))              // IMP: Sort by execution order
+                .Select(x => AvailableServices.GetRequiredService(x.Type))      // Activate
+                .Cast<ISimObjective>()                                          // Should not fail here.
                 .ToList();
 
             return 0 == orderedObjectives.Count 
@@ -56,6 +56,23 @@ namespace NinthBall.Core
                     || KnownObjectives.TryGetValue($"{friendlyName}Strategies", out objectiveInfo)
                     ;
             }
+
+            static int GetStrategyExecutionOrder(StrategyFamily family)
+            {
+                return family switch
+                {
+                    StrategyFamily.Rebalance    => 000,     // Changes Jan view of the portfolio
+                    StrategyFamily.Fees         => 111,     // Fees are on Jan balance
+                    StrategyFamily.Taxes        => 222,     // Since taxes work on prior year
+                    StrategyFamily.Income       => 333,     // External source, doesn't depend on CY info
+                    StrategyFamily.Expenses     => 444,     // Useful to know for withdrawal optimizations if any.
+                    StrategyFamily.Withdrawals  => 555,     // CRITICAL: Park this before RMD
+                    StrategyFamily.RMD          => 666,     // CRITICAL: RMD adjustments after planned withdrawals are known.
+                    StrategyFamily.Growth       => 777,     // We know only at the end of the year.
+                    _ => int.MaxValue                       // Doesn't matter
+                };
+            }
+
         }
 
         //......................................................................

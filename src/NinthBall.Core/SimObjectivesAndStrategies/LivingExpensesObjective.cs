@@ -4,8 +4,6 @@ namespace NinthBall.Core
     [StrategyFamily(StrategyFamily.Expenses)]
     sealed class LivingExpensesObjective(SimParams P, LivingExpenses LExp) : ISimObjective
     {
-        int ISimObjective.Order => 32;
-
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex)
         {
             // Fail fast: Year #0 can't use step-down. Adjust Initial amount instead.

@@ -9,8 +9,6 @@ namespace NinthBall.Core
             return new Strategy(P, AInc);
         }
 
-        int ISimObjective.Order => 10;
-
         sealed record Strategy(SimParams P, AdditionalIncomes AddInc) : ISimStrategy
         {
             // If the Simulation start age is past the additional income start age:
