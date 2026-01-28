@@ -1,6 +1,6 @@
 ﻿
 using NinthBall.Core;
-using NF = NinthBall.Core.ExcelStylesheetBuilder.NumberFormats; 
+using NF = NinthBall.ExcelStylesheetBuilder.NumberFormats; 
 using static NinthBall.Outputs.Suggested;
 using System.ComponentModel.DataAnnotations;  // For GetColName, GetFormatHint, GetColorHint ...
 

@@ -1,11 +1,12 @@
 ﻿using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace NinthBall.Core
+using NinthBall.Core;
+
+namespace NinthBall
 {
     /// <summary>
     /// SAX based forward-only Workbook writer with low memory usage and negligible stack allocation.
