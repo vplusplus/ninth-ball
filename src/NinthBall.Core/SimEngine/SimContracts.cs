@@ -3,8 +3,7 @@ namespace NinthBall.Core
 {
     internal enum StrategyFamily
     {
-        None,
-        Income,
+        Income = 1,
         Expenses,
         Fees,
         Taxes,

@@ -78,44 +78,25 @@ namespace NinthBall.Core
         //......................................................................
         // Validate chosen strategies - Required & Conflicts
         //......................................................................
+        private static readonly IReadOnlyList<StrategyFamily> AllFamilies = Enum.GetValues<StrategyFamily>();
+
         // Some strategies should not be ignored.
-        // Throws an exception if a required strategy is not specified.
+        // Throws an exception if a strategy is not specified.
         static void ValidateRequiredObjectives(IList<SimObjectiveInfo> chosenObjectives)
         {
-            var requiredFamilies = new[]
-            {
-                StrategyFamily.Income,
-                StrategyFamily.Expenses,
-                StrategyFamily.Fees,
-                StrategyFamily.Taxes,
-                StrategyFamily.Withdrawals,
-                StrategyFamily.Growth,
-                StrategyFamily.Rebalance,
-            };
-
-            foreach (var family in requiredFamilies)
+            foreach (var family in AllFamilies)
             {
                 var specified = chosenObjectives.Any(x  => x.Family == family);
                 if (!specified) throw new FatalWarning($"Please specify a '{family}' objective.");
             }
         }
 
-        // For some strategy families, only one of its kind is allowed.
-        // Throws an exception if more than one strategy is activated within each exclusive family.
+        // Restricting that only one of a kind is allowed.
+        // No known requirements to allow multiple.
+        // Throws an exception if more than one strategy of same kind is activated.
         static void ValidateConflictingObjectives(IList<SimObjectiveInfo> chosenObjectives)
         {
-            var exclusiveFamilies = new[]
-            {
-                StrategyFamily.Income,
-                StrategyFamily.Expenses,
-                StrategyFamily.Fees,
-                StrategyFamily.Taxes,
-                StrategyFamily.Withdrawals,
-                StrategyFamily.Growth,
-                StrategyFamily.Rebalance,
-            };
-
-            foreach (var family in exclusiveFamilies)
+            foreach (var family in AllFamilies)
             {
                 var conflicting = chosenObjectives.Where(s => s.Family == family).ToList();
                 if (conflicting.Count > 1)
