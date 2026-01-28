@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using System.Text.RegularExpressions;
 
-namespace NinthBall.Core
+using NinthBall.Core;
+
+namespace NinthBall
 {
     /// <summary>
     /// Provides access to CommandLine options before host is built and configured.
