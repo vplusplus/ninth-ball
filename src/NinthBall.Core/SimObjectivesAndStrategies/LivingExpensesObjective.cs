@@ -1,4 +1,5 @@
-﻿
+﻿using NinthBall.Utils;
+
 namespace NinthBall.Core
 {
     [StrategyFamily(StrategyFamily.Expenses)]

@@ -1,6 +1,7 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using NinthBall.Utils;
 
 namespace NinthBall.Core
 {

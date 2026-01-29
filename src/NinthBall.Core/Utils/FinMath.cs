@@ -2,8 +2,16 @@
 
 namespace NinthBall.Core
 {
-    public static partial class Stats
+    static class FinMath
     {
+        /// <summary>
+        /// Cosmetics - Round double value to multiples of given step.
+        /// </summary>
+        public static double RoundToMultiples(this double value, double step, MidpointRounding mode = MidpointRounding.ToEven) =>
+            step <= 0
+                ? throw new ArgumentOutOfRangeException(nameof(step))
+                : Math.Round(value / step, mode) * step;
+
         /// <summary>
         /// Computes the standard deviation (volatility) of a sequence of periodic returns.
         /// </summary>

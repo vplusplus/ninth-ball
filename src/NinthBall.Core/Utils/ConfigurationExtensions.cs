@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NinthBall.Utils;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
@@ -45,7 +46,7 @@ namespace NinthBall.Core
             ArgumentNullException.ThrowIfNull(yamlContent);
 
             // Convert YAML content to JSON text
-            var jsonContent = Yaml2Json.YamlTextToJsonText(yamlContent)
+            var jsonContent = NinthBall.Utils.Yaml2Json.YamlTextToJsonText(yamlContent)
                 .AsJsonObject()
                 .PatchNumbersAndPercentage()
                 .ToJsonString();

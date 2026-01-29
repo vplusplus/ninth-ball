@@ -1,7 +1,7 @@
 
-namespace NinthBall.Core
+namespace NinthBall.Utils
 {
-    public static class MathUtils
+    static class Statistics
     {
         /// <summary>
         /// Acklam's approximation for the inverse normal cumulative distribution function.
@@ -69,7 +69,7 @@ namespace NinthBall.Core
         /// Performs a 2x2 Cholesky correlation to link two independent normal variables.
         /// Given independent Z1, Z2 and correlation rho, returns (X1, X2) where Corr(X1, X2) = rho.
         /// </summary>
-        public static (double X1, double X2) Correlate(double z1, double z2, double rho)
+        public static (double X1, double X2) Correlate2(double z1, double z2, double rho)
         {
             // L = [ 1          0 ]
             //     [ rho  sqrt(1-rho^2) ]
@@ -122,14 +122,5 @@ namespace NinthBall.Core
                 + (z * z * z - 3 * z) * k / 24 
                 - (2 * z * z * z - 5 * z) * s * s / 36;
         }
-
-        /// <summary>
-        /// Cosmetics - Round double value to multiples of given step.
-        /// </summary>
-        public static double RoundToMultiples(this double value, double step, MidpointRounding mode = MidpointRounding.ToEven) =>
-            step <= 0
-                ? throw new ArgumentOutOfRangeException(nameof(step))
-                : Math.Round(value / step, mode) * step;
-
     }
 }

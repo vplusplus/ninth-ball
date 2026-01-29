@@ -3,12 +3,12 @@ using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace NinthBall.Core
+namespace NinthBall.Utils
 {
     /// <summary>
     /// Deterministic, cross-process and cross-platform hash code generation.
     /// </summary>
-    internal static class PredictableHashCode
+    static class PredictableHashCode
     {
         public static int GetPredictableHashCode(this string something)
         {

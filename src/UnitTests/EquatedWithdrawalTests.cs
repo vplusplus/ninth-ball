@@ -11,7 +11,7 @@ namespace UnitTests
         {
             // 100 / 10 years = 10 per year if ROI == Inflation
             double FivePCT = 0.05;
-            double firstYearWithdrawal = Stats.EquatedWithdrawal(currentBalance: 100, estimatedROI: FivePCT, estimatedInflation: FivePCT, remainingYears: 10);
+            double firstYearWithdrawal = FinMath.EquatedWithdrawal(currentBalance: 100, estimatedROI: FivePCT, estimatedInflation: FivePCT, remainingYears: 10);
             Assert.AreEqual(10.0, firstYearWithdrawal, 1e-9);
         }
 
@@ -32,7 +32,7 @@ namespace UnitTests
             const int NumYears = 30;
             const double ROI = 0.07;
             const double Inflation = 0.03;
-            double firstYearWithdrawal = Stats.EquatedWithdrawal(currentBalance: StartingBalance, estimatedROI: ROI, estimatedInflation: Inflation, remainingYears: NumYears);
+            double firstYearWithdrawal = FinMath.EquatedWithdrawal(currentBalance: StartingBalance, estimatedROI: ROI, estimatedInflation: Inflation, remainingYears: NumYears);
 
             Console.WriteLine($"Initial Balance: {StartingBalance:C0}");
             Console.WriteLine($"First year: {firstYearWithdrawal:C2}");
@@ -59,14 +59,14 @@ namespace UnitTests
         [TestMethod]
         public void EquatedWithdrawal_EdgeCase_ZeroInitialBalance()
         {
-            double result = Stats.EquatedWithdrawal(currentBalance: 0, estimatedROI: 0.07, estimatedInflation: 0.03, remainingYears: 30);
+            double result = FinMath.EquatedWithdrawal(currentBalance: 0, estimatedROI: 0.07, estimatedInflation: 0.03, remainingYears: 30);
             Assert.AreEqual(0.0, result);
         }
 
         [TestMethod]
         public void EquatedWithdrawal_EdgeCase_ZeroYears()
         {
-            double result = Stats.EquatedWithdrawal(currentBalance: 1_000_000, estimatedROI: 0.07, estimatedInflation: 0.03, remainingYears: 0);
+            double result = FinMath.EquatedWithdrawal(currentBalance: 1_000_000, estimatedROI: 0.07, estimatedInflation: 0.03, remainingYears: 0);
             Assert.AreEqual(0.0, result);
         }
     }

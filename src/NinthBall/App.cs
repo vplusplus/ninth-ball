@@ -1,6 +1,5 @@
 ﻿
 using NinthBall.Core;
-using NinthBall.Outputs;
 using NinthBall.OutputsV2;
 using NinthBall.Utils;
 using System.Diagnostics;
@@ -18,17 +17,12 @@ namespace NinthBall
 
         bool WatchMode => CmdLine.Switch("watch");
         bool PrintHelp => CmdLine.Switch("help");
-        bool SampleYamls => CmdLine.Switch("sampleyamls");
 
         public async Task RunAsync()
         {
             if (PrintHelp)
             {
                 Print.Help();
-            }
-            else if (SampleYamls)
-            {
-                ExportSampleYamlConfigFiles();
             }
             else
             {
@@ -101,24 +95,7 @@ namespace NinthBall
         
         
         }
-    
-        void ExportSampleYamlConfigFiles()
-        {
-            throw new NotImplementedException("REFACTORED - TODO: Fix the code"); 
 
-
-            static void ExportSampleYaml(string resNameEndsWith, string outputFileName)
-            {
-                var resourceName = typeof(App).Assembly.GetManifestResourceNames().Where(x => x.EndsWith(resNameEndsWith, StringComparison.OrdinalIgnoreCase)).Single();
-                using var resStream = typeof(App).Assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Unexpected | Resource stream was null.");
-                using var reader = new StreamReader(resStream);
-                
-                var sampleYaml = reader.ReadToEnd();
-                File.WriteAllText(outputFileName, sampleYaml);
-
-                Console.WriteLine($" See: {Path.GetFullPath(outputFileName)}");
-            }
-        }
     }
 }
 

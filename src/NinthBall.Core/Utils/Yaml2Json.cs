@@ -1,7 +1,7 @@
 ﻿
-namespace NinthBall.Core
+namespace NinthBall.Utils
 {
-    public static class Yaml2Json
+    static class Yaml2Json
     {
         public static string YamlTextToJsonText(string yamlInput)
         {

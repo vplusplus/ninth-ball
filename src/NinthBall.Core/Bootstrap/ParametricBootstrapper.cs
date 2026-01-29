@@ -1,5 +1,6 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
+using NinthBall.Utils;
 
 namespace NinthBall.Core
 {
@@ -52,13 +53,13 @@ namespace NinthBall.Core
                 double u3 = NextSafeDouble(random);
 
                 // 1.2 Convert into bell-curve centered at zero, using InverseNormalCDF
-                double z1 = MathUtils.InverseNormalCDF(u1);
-                double z2 = MathUtils.InverseNormalCDF(u2);
-                double z3 = MathUtils.InverseNormalCDF(u3);
+                double z1 = Statistics.InverseNormalCDF(u1);
+                double z2 = Statistics.InverseNormalCDF(u2);
+                double z3 = Statistics.InverseNormalCDF(u3);
 
                 // 2. Apply Correlation (Cholesky)
                 // Introduces dependency between stocks, bonds and inflation
-                var (c1, c2, c3) = MathUtils.Correlate3(z1, z2, z3, 
+                var (c1, c2, c3) = Statistics.Correlate3(z1, z2, z3, 
                     Options.StocksBondCorrelation, 
                     Options.StocksInflationCorrelation, 
                     Options.BondsInflationCorrelation);
@@ -80,9 +81,9 @@ namespace NinthBall.Core
                 // Warps the bell curve.
                 // Negative skew ~> deeper crashes.
                 // High kurtosis ~> rare but extreme events.
-                double cfStocks    = MathUtils.CornishFisher(arStocks, Options.Stocks.Skewness, Options.Stocks.Kurtosis);
-                double cfBonds     = MathUtils.CornishFisher(arBonds, Options.Bonds.Skewness, Options.Bonds.Kurtosis);
-                double cfInflation = MathUtils.CornishFisher(arInflation, Options.Inflation.Skewness, Options.Inflation.Kurtosis);
+                double cfStocks    = Statistics.CornishFisher(arStocks, Options.Stocks.Skewness, Options.Stocks.Kurtosis);
+                double cfBonds     = Statistics.CornishFisher(arBonds, Options.Bonds.Skewness, Options.Bonds.Kurtosis);
+                double cfInflation = Statistics.CornishFisher(arInflation, Options.Inflation.Skewness, Options.Inflation.Kurtosis);
 
                 // 5. Scale by Mean and Volatility
                 // Converts abstract scaling factor into percentage returns

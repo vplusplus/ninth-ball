@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text.Json.Nodes;
 
-namespace NinthBall.Core
+namespace NinthBall.Utils
 {
     internal static class JsonNodeExtensions
     {

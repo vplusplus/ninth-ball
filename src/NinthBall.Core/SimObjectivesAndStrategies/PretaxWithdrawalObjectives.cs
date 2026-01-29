@@ -1,4 +1,6 @@
 ﻿
+using NinthBall.Utils;
+
 namespace NinthBall.Core
 {
     [StrategyFamily(StrategyFamily.Withdrawals)]
@@ -49,7 +51,7 @@ namespace NinthBall.Core
                 int remainingYears = P.NoOfYears - ctx.YearIndex;
                 
                 // Calculate the "ideal" withdrawal to hit zero at the end of the horizon.
-                double amount = Stats.EquatedWithdrawal(
+                double amount = FinMath.EquatedWithdrawal(
                     currentBalance:     ctx.Jan.PreTax.Amount, 
                     estimatedROI:       VW.FutureROI, 
                     estimatedInflation: VW.FutureInflation, 
