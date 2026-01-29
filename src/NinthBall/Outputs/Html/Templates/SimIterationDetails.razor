@@ -3,6 +3,7 @@
 @using NinthBall.Outputs;
 @using NinthBall.Outputs.Html;
 
+@inject OutputOptions OutputConfig
 
 <!-- Presents year-by-year details of single iteration -->
 <table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%; table-layout: fixed;">
@@ -120,7 +121,7 @@
     [Parameter] public string Id { get; set; } = null!;
     [Parameter] public string Caption { get; set; } = "";
     [Parameter] public SimIteration Iteration { get; set; } = null!;
-    [Parameter] public SimOutput OutputConfig { get; set; }
+    //[Parameter] public OutputOptions OutputConfig { get; set; } = new([], [], [], []);
 
     private IReadOnlyList<CID> Cols => OutputConfig.HtmlColumns;
 }

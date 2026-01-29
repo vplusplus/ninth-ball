@@ -2,6 +2,8 @@
 @using NinthBall.Core;
 @using NinthBall.Outputs;
 
+@inject OutputOptions OutputConfig
+
 <!-- Summary view of chosen percentiles -->
 <table id="percentiles" class="table table-sm caption-top section" style="table-layout: fixed; width: 100%;">
     <caption>
@@ -83,7 +85,7 @@
 @code
 {
     [Parameter] public SimResult SimResult { get; set; } = null!;
-    [Parameter] public SimOutput OutputConfig { get; set; }
+    // [Parameter] public OutputOptions OutputConfig { get; set; } = new([], [], [], []);
 
     private IReadOnlyList<double> Percentiles => OutputConfig.Percentiles;
 }

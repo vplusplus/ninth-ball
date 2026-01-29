@@ -1,20 +1,21 @@
 ﻿
 using NinthBall.Core;
 using NinthBall.Outputs;
-using NinthBall.Outputs.Html;
-using NinthBall.Outputs.Excel;
+using NinthBall.OutputsV2;
+using NinthBall.Utils;
 using System.Diagnostics;
 
 namespace NinthBall
 {
-    internal sealed class App(IServiceProvider Services)
+    internal sealed class App
     {
         static readonly TimeSpan TwoSeconds  = TimeSpan.FromSeconds(2);
         static readonly TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
         static readonly TimeSpan TenMinutes  = TimeSpan.FromMinutes(10);
 
-        string InputFileName  => Path.GetFullPath(CmdLine.Required("In"));
-        string OutputFileName => Path.GetFullPath(CmdLine.Optional("Out", Path.ChangeExtension(InputFileName, ".html") ));
+        string InputConfigFileName  => Path.GetFullPath(CmdLine.Required("In"));
+        string OutputConfigFileName => Path.GetFullPath(CmdLine.Required("out"));
+
         bool WatchMode => CmdLine.Switch("watch");
         bool PrintHelp => CmdLine.Switch("help");
         bool SampleYamls => CmdLine.Switch("sampleyamls");
@@ -31,18 +32,13 @@ namespace NinthBall
             }
             else
             {
-                // Ensure output directory.
-                var outputDir = Path.GetDirectoryName(OutputFileName) ?? "./";
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
-
-                // Process
                 if (WatchMode) await ProcessForever(); else await ProcessOnce();
             }
         }
 
         async Task ProcessForever()
         {
-            var fileSet = new WatchFileSet(InputFileName);
+            var fileSet = new WatchFileSet(InputConfigFileName, OutputConfigFileName);
 
             int consecutiveErrorCount = 0;
             var elapsed = Stopwatch.StartNew();
@@ -87,37 +83,12 @@ namespace NinthBall
 
             try
             {
-                // Load Config
-                
-                var outputConfig = SimOutputReader.ReadFromYamlFile(LocateOutputConfigFile(InputFileName)).ToSimOutput();
-
-                // Reset moving block bootstrapper stats.
-                MBBStats.Reset();
-
-                // Run simulation
                 var timer = Stopwatch.StartNew();
-                var simResult = SimEngine.Run(InputFileName);
+                var simResult = SimEngine.Run(InputConfigFileName);
                 timer.Stop();
 
-                // Print MBB sampling stats (if MBB was chosen)
-                if (MBBStats.Samples > 0) Console.WriteLine($" Moving block bootstrapper | Samples: {MBBStats.Samples:#,0} | Overlaps: {MBBStats.Overlaps:#,0} | Resampled: {MBBStats.Resamples:#,0}");
+                SimOutputEngine.Generate(simResult, OutputConfigFileName);
 
-                var htmlFileName = OutputFileName;
-                await HtmlOutput.GenerateAsync(Services, simResult, InputFileName, htmlFileName, outputConfig);
-                Console.WriteLine($" Html report  | See {htmlFileName}");
-
-                try
-                {
-                    var excelFileName = Path.ChangeExtension(htmlFileName, ".xlsx");
-                    await ExcelOutput.Generate(simResult, excelFileName, outputConfig);
-                    Console.WriteLine($" Excel report | See {excelFileName}");
-                }
-                catch(System.IO.IOException ioErr)
-                {
-                    // Excel file is probably currently open.
-                    Console.WriteLine(" WARNING: Excel report not generated, if present, may not agree with html report.");
-                    Console.WriteLine($" {ioErr.Message}");
-                }
 
                 // Inform                
                 Print.Done(simResult, timer.Elapsed);
@@ -126,44 +97,15 @@ namespace NinthBall
             {
                 // Print essentials to console
                 Print.ErrorSummary(err);
-
-                // Capture details to output file.
-                await HtmlOutput.GenerateErrorHtmlAsync(Services, err, OutputFileName).ConfigureAwait(false);
             }
         
-            static string LocateOutputConfigFile(string inputFileName)
-            {
-                ArgumentNullException.ThrowIfNull(inputFileName);
-
-                // Use the input file name directory as reasonable starting point
-                var dir = Path.GetDirectoryName(inputFileName) ?? "./";
-
-                // Convention based output configuration file names.
-                string[] possibleSimOutputYamlFileNames =
-                [
-                    Path.Combine(dir, Path.GetFileNameWithoutExtension(inputFileName) + ".output.yaml"),
-                    Path.Combine(dir,  "SimOutput.yaml"),
-                    Path.Combine("./", "SimOutput.yaml"),
-                ];
-
-                foreach (var candidateFileName in possibleSimOutputYamlFileNames)
-                {
-                    if (File.Exists(candidateFileName))
-                    {
-                        Console.WriteLine($"Using {Path.GetFullPath(candidateFileName)}");
-                        return candidateFileName;
-                    }
-                }
-
-                throw new FatalWarning($"Can't locate SimOutput.yaml");
-            }
         
         }
     
         void ExportSampleYamlConfigFiles()
         {
-            ExportSampleYaml("SampleInput.yaml", "./SampleInput.yaml");
-            ExportSampleYaml("SimOutput.yaml",   "./SimOutput.yaml");
+            throw new NotImplementedException("REFACTORED - TODO: Fix the code"); 
+
 
             static void ExportSampleYaml(string resNameEndsWith, string outputFileName)
             {
@@ -179,4 +121,4 @@ namespace NinthBall
         }
     }
 }
- 
+

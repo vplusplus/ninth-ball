@@ -29,6 +29,8 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Help.txt" />
+    <EmbeddedResource Include="Input\SimOutputV2.yaml" />
+    <EmbeddedResource Include="OutputsV2\SimOutputDefaults\DefaultViews.yaml" />
     <EmbeddedResource Include="Input\SimOutput.yaml" />
     <EmbeddedResource Include="Input\SampleInput.yaml" />
   </ItemGroup>

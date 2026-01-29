@@ -2,6 +2,8 @@
 @using NinthBall.Core;
 @using NinthBall.Outputs;
 
+@inject OutputOptions OutputConfig
+
 <!-- TabSet - Details on chosen percentiles -->
 <div>
 
@@ -49,7 +51,7 @@
             var caption = $"{p.PctlName} Percentile [#{iter.Index}]";
             var isActive = p == ActivePctl ? "active" : "";
             <div class="tab-pane @isActive" id="@(pctlId)">
-                <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter OutputConfig=OutputConfig />
+                <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter />
             </div>
         }
 
@@ -67,7 +69,7 @@
             // var caption = $"#{IT:0000} {pctlCaption}";
 
             <div class="tab-pane" id="@(iterId)">
-                <SimIterationDetails Id="@iterId" Caption="@caption" Iteration=iter OutputConfig=OutputConfig />
+                <SimIterationDetails Id="@iterId" Caption="@caption" Iteration=iter />
             </div>
         }
 
@@ -77,12 +79,12 @@
 @code
 {
     [Parameter] public SimResult Model { get; set; } = null!;
-    [Parameter] public SimOutput OutputConfig { get; set; }
+    //[Parameter] public OutputOptions OutputConfig { get; set; } = new([], [], [], []);
 
     private IReadOnlyList<double> Percentiles => OutputConfig.Percentiles;
     private IReadOnlyList<int> Iterations => OutputConfig.Iterations;
 
-    private double? ActivePctl => Percentiles.Count == 0 ? null : Percentiles.OrderBy(p => Math.Abs(p - SimOutputDefaults.TargetPercentile)).First();
+    private double? ActivePctl => Percentiles.Count == 0 ? null : Percentiles.OrderBy(p => Math.Abs(p - 0.2)).First();  // TODO: Rewire target percentile from config
 
     // Computes an unique html-id for the chosen percentile.
     static string PercentileId(double pctl) => $"{pctl * 100:00}";

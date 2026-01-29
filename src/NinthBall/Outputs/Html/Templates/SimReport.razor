@@ -2,6 +2,8 @@
 @using NinthBall.Core;
 @using NinthBall.Outputs;
 
+@inject OutputOptions OutputConfig
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -125,8 +127,8 @@
         <div>
             <SimParameters SimResult=SimResult InputFileName="@InputFileName" />
             <SimSurvival SimResult=SimResult />
-            <SimPercentilesSummary SimResult=SimResult OutputConfig=OutputConfig />
-            <SimIterationTabs Model=SimResult OutputConfig=OutputConfig />
+            <SimPercentilesSummary SimResult=SimResult />
+            <SimIterationTabs Model=SimResult />
         </div>
 
         <span class="mt-4 p-2" >
@@ -145,5 +147,5 @@
 {
     [Parameter] public string InputFileName { get; set; } = null!;
     [Parameter] public SimResult SimResult { get; set; } = null!;
-    [Parameter] public SimOutput OutputConfig { get; set; }
+    // [Parameter] public SimOutput OutputConfig { get; set; } = new( [], [], [], []);
 }

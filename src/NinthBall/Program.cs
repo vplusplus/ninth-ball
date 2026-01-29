@@ -4,6 +4,7 @@ using NinthBall.Hosting;
 using System.ComponentModel.DataAnnotations;
 
 using NinthBall.Core;
+using NinthBall.Utils;
 
 namespace NinthBall
 {

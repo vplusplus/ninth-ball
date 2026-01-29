@@ -1,11 +1,12 @@
 ﻿using NinthBall.Core;
+using NinthBall.Utils;
 using NinthBall.Outputs.Html.Templates;
 
 namespace NinthBall.Outputs.Html
 {
     internal static class HtmlOutput
     {
-        public static async Task GenerateAsync(IServiceProvider services, SimResult simResult, string inputFileName, string outputFileName, SimOutput? outputConfig)
+        public static async Task GenerateAsync(IServiceProvider services, SimResult simResult, string inputFileName, string outputFileName, OutputOptions? outputConfig)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(simResult);
@@ -16,7 +17,7 @@ namespace NinthBall.Outputs.Html
             { 
                 [nameof(SimReport.InputFileName)] = inputFileName,
                 [nameof(SimReport.SimResult)] = simResult,
-                [nameof(SimReport.OutputConfig)] = outputConfig,
+                //[nameof(SimReport.OutputConfig)] = outputConfig,
             };
             var html = await HtmlTemplates.RenderTemplateAsync<SimReport>(services, templateParameters).ConfigureAwait(false);
 

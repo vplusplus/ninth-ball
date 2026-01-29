@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NinthBall
+namespace NinthBall.Utils
 {
     internal static class FileSystem
     {

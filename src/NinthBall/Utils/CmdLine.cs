@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 using NinthBall.Core;
 
-namespace NinthBall
+namespace NinthBall.Utils
 {
     /// <summary>
     /// Provides access to CommandLine options before host is built and configured.

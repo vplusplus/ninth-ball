@@ -4,14 +4,6 @@ using System.Data;
 
 namespace NinthBall.Core
 {
-    public static partial class MBBStats
-    {
-        public static int Samples   = 0;
-        public static int Overlaps  = 0;
-        public static int Resamples = 0;
-        public static void Reset() => Samples = Overlaps = Resamples = 0;
-    }
-
     /// <summary>
     /// Optional configuration for MBB internals
     /// </summary>
@@ -45,23 +37,15 @@ namespace NinthBall.Core
             {
                 // Sample next random block with uniform distribution (with replacement).
                 var nextBlock = allBlocks[iterRand.Next(0, allBlocks.Count)];
-                Interlocked.Increment(ref MBBStats.Samples);
 
                 // Did we pick overlapping blocks?
                 if (Options.NoBackToBackOverlaps && null != prevBlock && HBlock.Overlaps(prevBlock.Value, nextBlock))
                 {
                     // Yes, we picked an overlapping block.
-                    Interlocked.Increment(ref MBBStats.Overlaps);
-
                     // We interfere ONLY if back-to-back overlapping blocks exceed luck-threshold (good or bad)
                     bool backToBackDisaster = prevBlock.Value.ARRScore <= thresholds.DisasterScore && nextBlock.ARRScore <= thresholds.DisasterScore;
                     bool backToBackJackpot  = prevBlock.Value.ARRScore >= thresholds.JackpotScore  && nextBlock.ARRScore >= thresholds.JackpotScore;
-
-                    if (backToBackDisaster || backToBackJackpot)
-                    {
-                        Interlocked.Increment(ref MBBStats.Resamples);
-                        continue;
-                    }
+                    if (backToBackDisaster || backToBackJackpot) continue;
                 }
 
                 // Remember previous block.

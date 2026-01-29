@@ -1,7 +1,7 @@
 ﻿
 using NinthBall.Core;
 
-namespace NinthBall
+namespace NinthBall.Utils
 {
     internal static class Print
     {

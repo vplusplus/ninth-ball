@@ -1,6 +1,7 @@
 ﻿
 using NinthBall.Core;
-using NF = NinthBall.ExcelStylesheetBuilder.NumberFormats; 
+using NinthBall.Utils;
+using NF = NinthBall.Utils.ExcelStylesheetBuilder.NumberFormats; 
 using static NinthBall.Outputs.Suggested;
 using System.ComponentModel.DataAnnotations;  // For GetColName, GetFormatHint, GetColorHint ...
 
@@ -30,7 +31,7 @@ namespace NinthBall.Outputs.Excel
         );
 
 
-        public static async Task Generate(SimResult simResult, string excelFileName, SimOutput outputConfig)
+        public static async Task Generate(SimResult simResult, string excelFileName, OutputOptions outputConfig)
         {
             ArgumentNullException.ThrowIfNull(simResult);
             ArgumentNullException.ThrowIfNull(excelFileName);
@@ -53,7 +54,7 @@ namespace NinthBall.Outputs.Excel
 
                 // Render Summary sheet
                 // NOTE: Still uses bespoke logic as it's a summary table, not a time-series
-                RenderSummary(xl, summaryStyles, simResult);
+                RenderSummary(xl, summaryStyles, simResult, outputConfig);
 
                 // Render one sheet per percentile
                 foreach (var pctl in outputConfig.Percentiles)
@@ -179,16 +180,15 @@ namespace NinthBall.Outputs.Excel
             }
         }
 
-        static void RenderSummary(ExcelWriter xl, SummaryStyles styles, SimResult simResult)
+        static void RenderSummary(ExcelWriter xl, SummaryStyles styles, SimResult simResult, OutputOptions outputConfig)
         {
             const double W10 = 10;
             const double W20 = 20;
 
             var P = simResult.SimParams;
             var I = simResult.Iterations.First().ByYear.Span[0].Jan;
-            //var I = simResult.InitialBalance;
-            
-            var percentiles = SimOutputDefaults.DefaultPercentiles;
+
+            var percentiles = outputConfig.Percentiles;
 
             using (var sheet = xl.BeginSheet("Summary"))
             {
@@ -381,93 +381,3 @@ namespace NinthBall.Outputs.Excel
         static double Mil(this double value) => value / 1000000.0;
     }
 }
-
-
-/*
-         static void RenderPercentile(ExcelWriter xl, ExcelStylesheetBuilder ssb, SimResult simResult, double pctl, IReadOnlyList<CID> columns)
-        {
-            var sheetName = $"{pctl.PctlName}";
-            var p = simResult.Percentile(pctl);
-
-            // Dynamically calculate widths based on Suggested format
-            // Just a rough heuristic for now: 12 for most things, 4 for year/age
-            var widths = columns.Select(c => c == CID.Empty ? 2.0 : (c == CID.Year || c == CID.Age) ? 4.0 : 12.0).Cast<double?>().ToArray();
-            
-            // Base style with safe defaults
-            var baseStyle = new XLStyle() 
-            { 
-                Format = "General", 
-                FName = "Calibri", 
-                FSize = 11, 
-                FColor = MyColors.Black,
-                HAlign = HAlign.Right,
-                VAlign = VAlign.Bottom 
-            };
-
-            // Resolve Header Style
-            var headerStyle = ssb.RegisterStyle(baseStyle with { IsBold = true, HAlign = HAlign.Center });
-
-            using (var sheet = xl.BeginSheet(sheetName))
-            {
-                sheet.WriteColumns(widths.AsSpan());
-
-                using (var rows = sheet.BeginSheetData())
-                {
-                    // Header
-                    using (var row = rows.BeginRow())
-                    {
-                        foreach(var col in columns)
-                        {
-                            if (col == CID.Empty)
-                                row.Append("", headerStyle);
-                            else
-                                row.Append(col.GetColName(), headerStyle);
-                        }
-                    }
-
-                    // Data
-                    foreach(var y in p.ByYear.Span)
-                    {
-                        using (var row = rows.BeginRow())
-                        {
-                            foreach(var col in columns)
-                            {
-                                if (col == CID.Empty)
-                                {
-                                    row.Append("");
-                                    continue;
-                                }
-
-                                var value = y.GetCellValue(col, p);
-                                if (value == null) 
-                                {
-                                    row.Append("");
-                                    continue;
-                                }
-
-                                // Style resolution
-                                var formatHint = col.GetFormatHint();
-                                var colorHint = y.GetCellColorHint(col, p);
-                                
-                                // Map hints to XLStyle props
-                                var fStr = GetFormatString(formatHint);
-                                if (string.IsNullOrWhiteSpace(fStr)) 
-                                {
-                                    fStr = "General";   // Defensive fallback
-                                }
-
-                                var stylePrice = ssb.RegisterStyle(baseStyle with 
-                                {
-                                     Format = fStr,
-                                     FColor = GetColorHex(colorHint),
-                                     HAlign = (col == CID.Year || col == CID.Age || col == CID.LikeYear) ? HAlign.Center : HAlign.Right
-                                });
-
-                                row.Append(value.Value, stylePrice);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-*/

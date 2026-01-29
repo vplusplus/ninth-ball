@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall
+namespace NinthBall.Utils
 {
     /// <summary>
     /// Keeps a tab on LastWriteTime of set of files
