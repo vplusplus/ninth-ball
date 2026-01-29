@@ -66,19 +66,6 @@ namespace NinthBall.Utils
         }
 
         /// <summary>
-        /// Performs a 2x2 Cholesky correlation to link two independent normal variables.
-        /// Given independent Z1, Z2 and correlation rho, returns (X1, X2) where Corr(X1, X2) = rho.
-        /// </summary>
-        public static (double X1, double X2) Correlate2(double z1, double z2, double rho)
-        {
-            // L = [ 1          0 ]
-            //     [ rho  sqrt(1-rho^2) ]
-            double x1 = z1;
-            double x2 = rho * z1 + Math.Sqrt(1 - rho * rho) * z2;
-            return (x1, x2);
-        }
-
-        /// <summary>
         /// Performs a 3x3 Cholesky correlation to link three independent normal variables.
         /// Given independent Z1, Z2, Z3 and correlations (rho12, rho13, rho23), 
         /// returns (X1, X2, X3) where the correlations match the inputs.

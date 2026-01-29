@@ -72,19 +72,17 @@ namespace NinthBall.Core
         //......................................................................
         #region DisasterAndJackpotThresholds - Discovered once
         //......................................................................
-
-        /// <summary>
-        /// Each block carries a score that represents performance during that window.
-        /// It may look and feel like 'real annualized return', but it is not.
-        /// Other than ranking the blocks, the number doesn't serve any other purpose.
-        /// </summary>
+        // Each block carries a score that represents performance during that window.
+        // It may look and feel like 'real annualized return', but it is not.
+        // Other than ranking the blocks, the number doesn't serve any other purpose.
+        //......................................................................
         readonly record struct DisasterAndJackpotThresholds
         (
             double DisasterScore,   // Blocks with ARRScore <= DisasterScore represents worst performing windows.
             double JackpotScore     // Blocks with ARRScore >= JackpotScore represents best performing windows.
         );
 
-        // Prepare disaster and jackpot ARRScore thresholds once.
+        // Discover the 'Disaster' and 'Jackpot' ARR score thresholds from the history.
         readonly Lazy<DisasterAndJackpotThresholds> LazyDisasterAndJackpotThresholds = new(() => 
         {
             const double TenthPctl     = 0.1;
@@ -93,17 +91,15 @@ namespace NinthBall.Core
             // Read ARRScore of all blocks, sort them worst to best.
             var sortedScores = HBlocks.Blocks.Select(b => b.ARRScore).OrderBy(s => s).ToArray();
 
-            // Determine indices of disaster and jackpot percentiles.
-            // 10th percentile = index at 10% mark
-            // 90th percentile = index at 90% mark
+            // Discover indices of disaster and jackpot percentiles.
             int disasterIdx = (int)(sortedScores.Length * TenthPctl);
             int jackpotIdx  = (int)(sortedScores.Length * NinetiethPctl);
 
-            // Clip the edges
+            // Clamp the index-edges, ensure it's with-in array index range.
             disasterIdx = Math.Clamp(disasterIdx, 0, sortedScores.Length - 1);
             jackpotIdx  = Math.Clamp(jackpotIdx,  0, sortedScores.Length - 1);
 
-            // Return the ARRScore(s) at the disaster and jackpot percentiles.
+            // Return the ARRScore(s) at the 'Disaster' and 'Jackpot' boundary.
             return new (
                 DisasterScore: sortedScores[disasterIdx],
                 JackpotScore:  sortedScores[jackpotIdx]
