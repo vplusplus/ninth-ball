@@ -1,101 +1,88 @@
 ﻿
 using NinthBall.Core;
-using NinthBall.OutputsV2;
+using NinthBall.Outputs;
 using NinthBall.Utils;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
 namespace NinthBall
 {
-    internal sealed class App
+    internal static class App
     {
         static readonly TimeSpan TwoSeconds  = TimeSpan.FromSeconds(2);
         static readonly TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
         static readonly TimeSpan TenMinutes  = TimeSpan.FromMinutes(10);
 
-        string InputConfigFileName  => Path.GetFullPath(CmdLine.Required("In"));
-        string OutputConfigFileName => Path.GetFullPath(CmdLine.Required("out"));
+        static string InputConfigFileName  => Path.GetFullPath(CmdLine.Required("In"));
+        static string OutputConfigFileName => Path.GetFullPath(CmdLine.Required("out"));
+        static bool WatchMode => CmdLine.Switch("watch");
+        static bool PrintHelp => CmdLine.Switch("help");
 
-        bool WatchMode => CmdLine.Switch("watch");
-        bool PrintHelp => CmdLine.Switch("help");
-
-        public async Task RunAsync()
+        public static async Task RunAsync()
         {
-            if (PrintHelp)
-            {
-                Print.Help();
-            }
-            else
-            {
-                if (WatchMode) await ProcessForever(); else await ProcessOnce();
-            }
+            if (PrintHelp) Print.Help();
+                else if (WatchMode) await ProcessForever(); 
+                    else await ProcessOnce();
         }
 
-        async Task ProcessForever()
+        static async Task ProcessForever()
         {
             var fileSet = new WatchFileSet(InputConfigFileName, OutputConfigFileName);
-
-            int consecutiveErrorCount = 0;
             var elapsed = Stopwatch.StartNew();
 
-            while (true)
+            while (elapsed.Elapsed < TenMinutes)
             {
                 try
                 {
-                    // Stop watching if input file not changed for more than 10 minutes.
-                    if (elapsed.Elapsed > TenMinutes)
-                    {
-                        Console.WriteLine($" No changes detected for {TenMinutes.TotalMinutes:#,0} minutes. Looks like you forgot to stop me.");
-                        Console.WriteLine($" Sorry... STOPPING.");
-                        return;
-                    }
-
                     // Check if input files had changed
-                    bool somethingChanged = fileSet.CheckForChangesAndRememberTimestamp();
-                    if (somethingChanged)
+                    if (fileSet.CheckForChangesAndRememberTimestamp())
                     {
-                        // File has changed, Process the file.
-                        await ProcessOnce();
-                        consecutiveErrorCount = 0;
+                        // Reset the inactivity window
                         elapsed.Restart();
+
+                        // Process once.
+                        await ProcessOnce();
                     }
 
                     // Wait for some time...
                     await Task.Delay(TwoSeconds).ConfigureAwait(false);
                 }
-                catch
+                catch (Exception warning) when (warning is FatalWarning or ValidationException)
                 {
-                    // If too many unhandled exceptions stop processing. 
-                    // Or else, give some additional time and try again.
-                    if (++consecutiveErrorCount > 5) return; else await Task.Delay(FiveSeconds).ConfigureAwait(false);
+                    // Inform. Wait a bit longer
+                    Console.WriteLine(warning.Message);
+                    await Task.Delay(FiveSeconds).ConfigureAwait(false);
+                }
+                catch (Exception unhandledException)
+                {
+                    // Inform. Wait a bit longer
+                    Print.ErrorSummaryAndDetails(unhandledException);
+                    await Task.Delay(FiveSeconds).ConfigureAwait(false);
                 }
             }
+
+            // We stopped because of no activity.
+            if (elapsed.Elapsed >= TenMinutes)
+            {
+                Console.WriteLine($" No changes detected for {TenMinutes.TotalMinutes:#,0} minutes. Looks like you forgot to stop me.");
+                Console.WriteLine($" Sorry... STOPPING.");
+            }
         }
 
-        async Task ProcessOnce()
+        static async Task ProcessOnce()
         {
-            Console.WriteLine();
+            // Run simulation
+            var timer = Stopwatch.StartNew();
+            var simResult = await SimEngine.RunAsync(InputConfigFileName);
+            timer.Stop();
+            Print.SimulationComplete(simResult, timer.Elapsed);
 
-            try
-            {
-                var timer = Stopwatch.StartNew();
-                var simResult = SimEngine.Run(InputConfigFileName);
-                timer.Stop();
-
-                SimOutputEngine.Generate(simResult, OutputConfigFileName);
-
-
-                // Inform                
-                Print.Done(simResult, timer.Elapsed);
-            }
-            catch (Exception err)
-            {
-                // Print essentials to console
-                Print.ErrorSummary(err);
-            }
-        
-        
+            // Generate reports
+            timer.Restart();
+            await SimOutputEngine.GenerateAsync(simResult, OutputConfigFileName);
+            timer.Stop();
+            Print.ReportsComplete(timer.Elapsed);
         }
-
     }
 }
 

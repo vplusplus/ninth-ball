@@ -10,7 +10,7 @@ namespace NinthBall.Core
     /// </summary>
     public static class SimEngine
     {
-        public static SimResult Run(string simInputFileName)
+        public static async Task<SimResult> RunAsync(string simInputFileName)
         {
             ArgumentNullException.ThrowIfNull(simInputFileName);
 
@@ -40,8 +40,6 @@ namespace NinthBall.Core
                 .RegisterConfigSection<TaxAndMarketAssumptions>()
 
                 .AddSingleton<ITaxSystem, SamAndHisBrothers>()
-                // .AddSingleton<FederalTaxGuesstimator>()
-                // AddSingleton<NJTaxGuesstimator>()
                 .AddKeyedSingleton<ITaxGuesstimator, FederalTaxGuesstimator>(TaxAuthority.Federal)
                 .AddKeyedSingleton<ITaxGuesstimator, NJTaxGuesstimator>(TaxAuthority.State)
 

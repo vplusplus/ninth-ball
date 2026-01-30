@@ -1,0 +1,21 @@
+
+
+
+Outputs:
+  Html: 
+    File: D:/Junk/SimOutV3.html
+    View: Essential
+    Percentiles: [ 0%, 1%, 50%, 80% ]
+    Iterations:  [ 0, 1, 2, 3] 
+
+  Excel: 
+    File: D:/Junk/SimOutV3.xlsx
+    View: Essential
+    Percentiles: [ 0%, 1%, 25%, 80% ]
+    Iterations:  [ 0, 1] 
+
+Views:
+  # High-level summary of the most critical plan metrics
+  Simple: [ Year, Age, JanValue, DecValue ]
+
+

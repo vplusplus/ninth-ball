@@ -2,8 +2,6 @@
 @using NinthBall.Core;
 @using NinthBall.Outputs;
 
-@inject OutputOptions OutputConfig
-
 <!-- TabSet - Details on chosen percentiles -->
 <div>
 
@@ -25,13 +23,13 @@
 
         @foreach (var IT in Iterations)
         {
-            if (IT < 0 || IT > Model.Iterations.Count - 1) continue;
+            if (IT < 0 || IT > SimResult.Iterations.Count - 1) continue;
 
             // Calculate the rank (0.0 to 1.0) and convert to "20th" style caption
-            var rank = Model.IterationPercentile(IT);
+            var rank = SimResult.IterationPercentile(IT);
             var pctlCaption = rank >= 0 ? $" ({rank.PctlName})" : "";
 
-            var iter = Model.Iterations.Where(x => x.Index == IT).Single();
+            var iter = SimResult.Iterations.Where(x => x.Index == IT).Single();
             var iterId  = $"I{IT:0000}";
             var caption = $"#{IT:0000}{pctlCaption}";
 
@@ -46,30 +44,30 @@
 
         @foreach (var p in Percentiles)
         {
-            var iter = Model.Percentile(p);
+            var iter = SimResult.Percentile(p);
             var pctlId = PercentileId(p);
             var caption = $"{p.PctlName} Percentile [#{iter.Index}]";
             var isActive = p == ActivePctl ? "active" : "";
             <div class="tab-pane @isActive" id="@(pctlId)">
-                <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter />
+                <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter Columns=Columns Percentiles=Percentiles />
             </div>
         }
 
         @foreach (var IT in Iterations)
         {
-            if (IT < 0 || IT > Model.Iterations.Count - 1) continue;
+            if (IT < 0 || IT > SimResult.Iterations.Count - 1) continue;
 
-            var rank = Model.IterationPercentile(IT);
+            var rank = SimResult.IterationPercentile(IT);
             var caption = rank >= 0 ? $"Iteration #{IT:0000} ({rank.PctlName} Pctl)" : $"#{IT:0000}";
 
             // We are using un-sorted view of a specific iteration path
             // Iteration is selected using SimIteration.Index, not by array index which will be sorted.
-            var iter = Model.Iterations.Where(x => x.Index == IT).Single();
+            var iter = SimResult.Iterations.Where(x => x.Index == IT).Single();
             var iterId  = $"I{IT:0000}";
             // var caption = $"#{IT:0000} {pctlCaption}";
 
             <div class="tab-pane" id="@(iterId)">
-                <SimIterationDetails Id="@iterId" Caption="@caption" Iteration=iter />
+                <SimIterationDetails Id="@iterId" Caption="@caption" Iteration=iter Columns=Columns Percentiles=Percentiles />
             </div>
         }
 
@@ -78,11 +76,10 @@
 
 @code
 {
-    [Parameter] public SimResult Model { get; set; } = null!;
-    //[Parameter] public OutputOptions OutputConfig { get; set; } = new([], [], [], []);
-
-    private IReadOnlyList<double> Percentiles => OutputConfig.Percentiles;
-    private IReadOnlyList<int> Iterations => OutputConfig.Iterations;
+    [Parameter] public SimResult SimResult { get; set; } = null!;
+    [Parameter] public IReadOnlyList<CID> Columns { get; set; } = [];
+    [Parameter] public IReadOnlyList<double> Percentiles { get; set; } = [];
+    [Parameter] public IReadOnlyList<int> Iterations { get; set; } = [];
 
     private double? ActivePctl => Percentiles.Count == 0 ? null : Percentiles.OrderBy(p => Math.Abs(p - 0.2)).First();  // TODO: Rewire target percentile from config
 

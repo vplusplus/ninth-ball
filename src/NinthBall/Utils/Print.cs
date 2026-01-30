@@ -38,7 +38,7 @@ namespace NinthBall.Utils
 
             if (null != err.InnerException)
             {
-                Console.WriteLine("Additional details:");
+                Console.WriteLine("Reason:");
                 while(null != err)
                 {
                     Console.WriteLine(err.Message);
@@ -58,12 +58,42 @@ namespace NinthBall.Utils
             }
         }
 
-        public static void Done(SimResult simResult, TimeSpan elapsed) 
+        public static void ErrorSummaryAndDetails(Exception err)
+        {
+            if (null == err) return;
+
+            Print.ErrorSummary(err);
+
+            Console.WriteLine();
+            Console.WriteLine(DASHES);
+            Console.WriteLine("More details");
+            Console.WriteLine(DASHES);
+            Console.WriteLine(err.StackTrace);
+            Console.WriteLine();
+        }
+
+        public static void SimulationComplete(SimResult simResult, TimeSpan elapsed) 
         {
             var survivalRate = simResult.SurvivalRate;
             var txtSurvivalRate = survivalRate > 0.99 ? $"{survivalRate:P1}" : $"{survivalRate:P0}";
 
-            Console.WriteLine($" Done | {txtSurvivalRate} survival | {elapsed.TotalMilliseconds:#,0} mSec.");
+            Console.WriteLine($" Survival rate {txtSurvivalRate} | {elapsed.TotalMilliseconds:#,0} mSec.");
         }
+
+        public static void HtmlReportReady(string fileName)
+        {
+            Console.WriteLine($" Html report   | See {fileName}");
+        }
+
+        public static void ExcelReportReady(string fileName)
+        {
+            Console.WriteLine($" Excel report  | See {fileName}");
+        }
+
+        public static void ReportsComplete(TimeSpan elapsed)
+        {
+            Console.WriteLine($" Reports ready | {elapsed.TotalMilliseconds:#,0} mSec.");
+        }
+
     }
 }

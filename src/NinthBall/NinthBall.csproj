@@ -29,10 +29,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Help.txt" />
-    <EmbeddedResource Include="Input\SimOutputV2.yaml" />
-    <EmbeddedResource Include="OutputsV2\SimOutputDefaults\DefaultViews.yaml" />
-    <EmbeddedResource Include="Input\SimOutput.yaml" />
-    <EmbeddedResource Include="Input\SampleInput.yaml" />
+    <EmbeddedResource Include="Config\SampleOutput.yaml" />
+    <EmbeddedResource Include="OutputDefaults\OutputDefaults.yaml" />
+    <EmbeddedResource Include="Config\ZZZ-SimOutput.yaml" />
+    <EmbeddedResource Include="Config\SampleInput.yaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,7 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Input\**">
+    <None Update="Config\**">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
   </ItemGroup>

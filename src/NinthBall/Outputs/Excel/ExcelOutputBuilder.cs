@@ -2,13 +2,17 @@
 using NinthBall.Core;
 using NinthBall.Utils;
 using NF = NinthBall.Utils.ExcelStylesheetBuilder.NumberFormats; 
-using static NinthBall.Outputs.Suggested;
-using System.ComponentModel.DataAnnotations;  // For GetColName, GetFormatHint, GetColorHint ...
+// using static NinthBall.Outputs.Suggested;
+// using System.ComponentModel.DataAnnotations;  // For GetColName, GetFormatHint, GetColorHint ...
 
 namespace NinthBall.Outputs.Excel
 {
-    internal static class ExcelOutput
+    internal sealed class ExcelOutputBuilder(OutputDefaults Defaults, ViewRegistry Views, OutputOptions Options)
     {
+        readonly IReadOnlyList<double> Percentiles = Options.Excel.Percentiles ?? Defaults.Percentiles;
+        readonly IReadOnlyList<CID> Columns = Views.ResolveView(Options.Excel.View);
+        readonly IReadOnlyList<int> Iterations = Options.Excel.Iterations ?? [];
+
         // Colors & Styles for bespoke tabs (Strategy, Summary)
         static class MyColors
         {
@@ -30,13 +34,11 @@ namespace NinthBall.Outputs.Excel
             uint YYYY, uint YYYYRed
         );
 
-
-        public static async Task Generate(SimResult simResult, string excelFileName, OutputOptions outputConfig)
+        public async Task GenerateAsync(SimResult simResult)
         {
             ArgumentNullException.ThrowIfNull(simResult);
-            ArgumentNullException.ThrowIfNull(excelFileName);
 
-            var columns = outputConfig.ExcelColumns;
+            string excelFileName = Path.GetFullPath(Options.Excel.File);
             var ssb = new ExcelStylesheetBuilder();
 
             // Register specific styles for Summary/Strategy tabs
@@ -54,19 +56,19 @@ namespace NinthBall.Outputs.Excel
 
                 // Render Summary sheet
                 // NOTE: Still uses bespoke logic as it's a summary table, not a time-series
-                RenderSummary(xl, summaryStyles, simResult, outputConfig);
+                RenderSummary(xl, summaryStyles, simResult);
 
                 // Render one sheet per percentile
-                foreach (var pctl in outputConfig.Percentiles)
+                foreach (var pctl in Percentiles)
                 {
                     var iter = simResult.Percentile(pctl);
                     var sheetName = $"{pctl.PctlName}";
                     
-                    RenderIteration(xl, ssb, iter, sheetName, columns);
+                    RenderIteration(xl, ssb, iter, sheetName);
                 }
 
                 // Render one sheet per suggested un-ordered iteration
-                foreach (var IT in outputConfig.Iterations)
+                foreach (var IT in Iterations)
                 {
                     if (IT < 0 || IT > simResult.Iterations.Count - 1) continue;
 
@@ -75,17 +77,18 @@ namespace NinthBall.Outputs.Excel
                     var iter = simResult.Iterations.Where(x => x.Index == IT).Single();
                     var sheetName = $"#{iter.Index:0000}";
                     
-                    RenderIteration(xl, ssb, iter, sheetName, columns);
+                    RenderIteration(xl, ssb, iter, sheetName);
                 }
 
                 // NOTE: Dispose will not save. We have to save.
                 // Build stylesheet at the very end
-                var stylesheet = ssb.Build();
-                    xl.Save(stylesheet);
+                xl.Save(ssb.Build());
+
+                Print.ExcelReportReady(excelFileName);
             }
         }
 
-        static SummaryStyles RegisterSummaryStyles(ExcelStylesheetBuilder ssb)
+        SummaryStyles RegisterSummaryStyles(ExcelStylesheetBuilder ssb)
         {
             var BASE = new XLStyle()
             {
@@ -118,7 +121,7 @@ namespace NinthBall.Outputs.Excel
             );
         }
 
-        static void RenderStrategy(ExcelWriter xl, SummaryStyles styles, SimResult simResult)
+        void RenderStrategy(ExcelWriter xl, SummaryStyles styles, SimResult simResult)
         {
             using (var sheet = xl.BeginSheet("Strategy"))
             {
@@ -180,15 +183,13 @@ namespace NinthBall.Outputs.Excel
             }
         }
 
-        static void RenderSummary(ExcelWriter xl, SummaryStyles styles, SimResult simResult, OutputOptions outputConfig)
+        void RenderSummary(ExcelWriter xl, SummaryStyles styles, SimResult simResult)
         {
             const double W10 = 10;
             const double W20 = 20;
 
             var P = simResult.SimParams;
             var I = simResult.Iterations.First().ByYear.Span[0].Jan;
-
-            var percentiles = outputConfig.Percentiles;
 
             using (var sheet = xl.BeginSheet("Summary"))
             {
@@ -210,17 +211,17 @@ namespace NinthBall.Outputs.Excel
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Percentiles");
-                        foreach (var pctl in percentiles) row.Append(pctl.PctlName, styles.SumTxt);
+                        foreach (var pctl in Percentiles) row.Append(pctl.PctlName, styles.SumTxt);
                         row.Append(" percentile");
                     }
 
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Start (Real)");
-                        foreach (var pctl in percentiles)
+                        foreach (var pctl in Percentiles)
                         {
                             var iter = simResult.Percentile(pctl);
-                            var m = iter.ByYear.Span[0].Jan.Total.Mil();
+                            var m = Mil(iter.ByYear.Span[0].Jan.Total);
                             row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");
@@ -230,10 +231,10 @@ namespace NinthBall.Outputs.Excel
                     using (var row = rows.BeginRow())
                     {
                         row.Append("End (Real)");
-                        foreach (var pctl in percentiles)
+                        foreach (var pctl in Percentiles)
                         {
                             var p = simResult.Percentile(pctl);
-                            var m = (p.LastGoodYear.Dec.Total / p.LastGoodYear.Metrics.InflationMultiplier).Mil();
+                            var m = Mil(p.LastGoodYear.Dec.Total / p.LastGoodYear.Metrics.InflationMultiplier);
                             row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");
@@ -242,10 +243,10 @@ namespace NinthBall.Outputs.Excel
                     using (var row = rows.BeginRow())
                     {
                         row.Append("End (Nominal)");
-                        foreach (var pctl in percentiles)
+                        foreach (var pctl in Percentiles)
                         {
                             var p = simResult.Percentile(pctl);
-                            var m = p.LastGoodYear.Dec.Total.Mil();
+                            var m = Mil(p.LastGoodYear.Dec.Total);
                             row.Append(m, styles.SumC);
                         }
                         row.Append(" millions");
@@ -254,7 +255,7 @@ namespace NinthBall.Outputs.Excel
                     using (var row = rows.BeginRow())
                     {
                         row.Append("Change (Annualized)");
-                        foreach (var pctl in percentiles)
+                        foreach (var pctl in Percentiles)
                         {
                             var p = simResult.Percentile(pctl);
                             var chng = p.LastGoodYear.Metrics.AnnualizedReturn;  // Nominal CAGR
@@ -266,15 +267,14 @@ namespace NinthBall.Outputs.Excel
             }
         }
 
-
-        static void RenderIteration(ExcelWriter xl, ExcelStylesheetBuilder ssb, SimIteration iteration, string sheetName, IReadOnlyList<CID> columns)
+        void RenderIteration(ExcelWriter xl, ExcelStylesheetBuilder ssb, SimIteration iteration, string sheetName)
         {
             //var sheetName = $"{pctl.PctlName}";
             var p = iteration;
 
             // Dynamically calculate widths based on Suggested format
             // Just a rough heuristic for now: 12 for most things, 4 for year/age
-            var widths = columns.Select(c => c == CID.Empty ? 2.0 : (c == CID.Year || c == CID.Age) ? 4.0 : 12.0).Cast<double?>().ToArray();
+            var widths = Columns.Select(c => c == CID.Empty ? 2.0 : (c == CID.Year || c == CID.Age) ? 4.0 : 12.0).Cast<double?>().ToArray();
 
             // Base style with safe defaults
             var baseStyle = new XLStyle()
@@ -299,7 +299,7 @@ namespace NinthBall.Outputs.Excel
                     // Header
                     using (var row = rows.BeginRow())
                     {
-                        foreach (var col in columns)
+                        foreach (var col in Columns)
                         {
                             if (col == CID.Empty)
                                 row.Append("", headerStyle);
@@ -313,7 +313,7 @@ namespace NinthBall.Outputs.Excel
                     {
                         using (var row = rows.BeginRow())
                         {
-                            foreach (var col in columns)
+                            foreach (var col in Columns)
                             {
                                 if (col == CID.Empty)
                                 {
@@ -377,7 +377,6 @@ namespace NinthBall.Outputs.Excel
             _ => MyColors.Black
         };
 
-
-        static double Mil(this double value) => value / 1000000.0;
+        static double Mil(double value) => value / 1000000.0;
     }
 }

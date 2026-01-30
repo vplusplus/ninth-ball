@@ -16,7 +16,7 @@ namespace NinthBall.Outputs.Html
         internal static double[] ToRelativeWidths(this WidthHint[] widthHints)
         {
             ArgumentNullException.ThrowIfNull(widthHints);
-            if (0 == widthHints.Length) throw new ArgumentNullException(nameof(widthHints));
+            if (0 == widthHints.Length) throw new ArgumentException("widthHints was an EMPTY array.");
 
             var totalUnits = widthHints.Sum(x => ToWidthUnit(x));
             return widthHints.Select(x => ToWidthUnit(x) / totalUnits).ToArray();

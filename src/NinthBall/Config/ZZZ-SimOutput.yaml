@@ -1,12 +1,12 @@
 
-HtmlView:  Essential
-ExcelView: ALL
+ZZHtmlView:  Essential
+ZZExcelView: ALL
 
 ZZZ-Percentiles: [ 0%, 1%, 5%, 10%, 20%, 50%, 80% ]
 
-Iterations: [ 0, 2500, 5000, 7500, 9999] 
+ZZIterations: [ 0, 2500, 5000, 7500, 9999] 
 
-Views:
+ZZViews:
 
   # High-level summary of the most critical plan metrics
   Simple: [ Year, Age, JanValue, SS, Ann, Fees, PYTaxes, LivExp, XPreTax, XPostTax, DecValue ]

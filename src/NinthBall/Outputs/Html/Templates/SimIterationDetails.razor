@@ -3,8 +3,6 @@
 @using NinthBall.Outputs;
 @using NinthBall.Outputs.Html;
 
-@inject OutputOptions OutputConfig
-
 <!-- Presents year-by-year details of single iteration -->
 <table id="@Id" class="table table-sm caption-top page-break mb-0" style="width: 100%; table-layout: fixed;">
 
@@ -19,9 +17,9 @@
 
         @{
             // Compute relative with in percentage.
-            var relativeWidths = Cols.Select(x => x.GetWidthHint()).ToArray().ToRelativeWidths().ToArray();
+            var relativeWidths = Columns.Select(x => x.GetWidthHint()).ToArray().ToRelativeWidths().ToArray();
 
-            for(int i=0; i<Cols.Count; i++)
+            for (int i = 0; i < Columns.Count; i++)
             {
                 var colStyle = $"width:{relativeWidths[i]:P2}";
 
@@ -37,7 +35,7 @@
         <!-- Labels are printed at the top of thead -->
         <tr class="text-end">
 
-            @foreach (var cid in Cols)
+            @foreach (var cid in Columns)
             {
                 var colName = cid.GetColName();
                 var title = cid.GetColTitle();
@@ -59,7 +57,7 @@
             
             <td colspan="2" class="text-start text-warning">Bottom Line</td>
 
-            @foreach(var cid in Cols.Skip(2))
+            @foreach (var cid in Columns.Skip(2))
             {
                 var aggValue   = Iteration.GetAggregateValue(cid);
                 var formatHint = cid.GetFormatHint();
@@ -91,7 +89,7 @@
         @foreach (var y in Iteration.ByYear.Span)
         {
             <tr class="text-end">
-            @foreach (var cid in Cols)
+                @foreach (var cid in Columns)
             {
                 var cellValue  = y.GetCellValue(cid, Iteration).GetValueOrDefault(0.0);
                 var formatHint = cid.GetFormatHint();
@@ -120,8 +118,7 @@
 {
     [Parameter] public string Id { get; set; } = null!;
     [Parameter] public string Caption { get; set; } = "";
+    [Parameter] public IReadOnlyList<CID> Columns { get; set; } = [];
+    [Parameter] public IReadOnlyList<double> Percentiles { get; set; } = [];
     [Parameter] public SimIteration Iteration { get; set; } = null!;
-    //[Parameter] public OutputOptions OutputConfig { get; set; } = new([], [], [], []);
-
-    private IReadOnlyList<CID> Cols => OutputConfig.HtmlColumns;
 }

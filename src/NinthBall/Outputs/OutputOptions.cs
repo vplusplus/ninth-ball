@@ -1,14 +1,35 @@
 
+using NinthBall.Utils;
+using System.ComponentModel.DataAnnotations;
+
 namespace NinthBall.Outputs
 {
-    /// <summary>
-    /// Immutable structure that describes output configurations.
-    /// </summary>
     public sealed record OutputOptions
     (
-        IReadOnlyList<double>   Percentiles,
-        IReadOnlyList<int>      Iterations,
-        IReadOnlyList<CID>      HtmlColumns,
-        IReadOnlyList<CID>      ExcelColumns
+        [property: Required, ValidateNested] HtmlOutputOptions  Html,
+        [property: Required, ValidateNested] ExcelOutputOptions Excel
     );
+
+    public readonly record struct HtmlOutputOptions
+    (
+        [property: Required] string File,
+        [property: Required] string View,
+        IReadOnlyList<double>? Percentiles,
+        IReadOnlyList<int>?    Iterations
+    );
+
+    public readonly record struct ExcelOutputOptions
+    (
+        [property: Required] string File,
+        [property: Required] string View,
+        IReadOnlyList<double>? Percentiles,
+        IReadOnlyList<int>? Iterations
+    );
+
+    public sealed record OutputDefaults
+    (
+        [property: Required] IReadOnlyList<double> Percentiles,
+        [property: Required] IReadOnlyDictionary<string, IReadOnlyList<CID>> Views
+    );
+
 }

@@ -1,8 +1,5 @@
 ﻿
-using Microsoft.Extensions.DependencyInjection;
-using NinthBall.Hosting;
 using System.ComponentModel.DataAnnotations;
-
 using NinthBall.Core;
 using NinthBall.Utils;
 
@@ -13,22 +10,17 @@ namespace NinthBall
         static async Task Main(string[] args)
         {
             Print.Header();
-
             try
             {
-                await MyHost.DefineMyApp().Services.GetRequiredService<App>().RunAsync();
+                await App.RunAsync();
             }
-            catch(FatalWarning warn)
+            catch (Exception warning) when (warning is FatalWarning or ValidationException)
             {
-                Console.WriteLine(warn.Message);
+                Console.WriteLine(warning.Message);
             }
-            catch (ValidationException validationErr)
+            catch (Exception unhandledException)
             {
-                Console.WriteLine(validationErr.Message);
-            }
-            catch (Exception err)
-            {
-                Console.WriteLine(err.ToString());
+                Print.ErrorSummaryAndDetails(unhandledException);
             }
         }
     }
