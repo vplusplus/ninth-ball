@@ -1,10 +1,10 @@
 ﻿
 using NinthBall.Core;
-using NinthBall.Outputs;
-using NinthBall.Outputs.Excel;
-using NinthBall.Outputs.Html;
+using NinthBall.Reports;
+using NinthBall.Reports.Excel;
+using NinthBall.Reports.Html;
 
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     public interface ISimulationReports
     {

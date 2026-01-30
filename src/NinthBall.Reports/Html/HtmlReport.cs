@@ -1,8 +1,8 @@
 ﻿using NinthBall.Core;
 using NinthBall.Utils;
-using NinthBall.Outputs.Html.Templates;
+using NinthBall.Reports.Html.Templates;
 
-namespace NinthBall.Outputs.Html
+namespace NinthBall.Reports.Html
 {
     internal sealed class HtmlReport(IServiceProvider services, OutputDefaults Defaults, OutputViews Views, OutputOptions Options)
     {
@@ -17,7 +17,7 @@ namespace NinthBall.Outputs.Html
             // Prepare model, and render html
             Dictionary<string, object?> templateParameters = new() 
             { 
-                [nameof(SimReport.InputFileName)] = CmdLine.Required("in"),     // Indicated in html
+                [nameof(SimReport.InputFileName)] = "STUBBED",      // IMP: TODO: We do not have access to CmdLine from here. CmdLine.Required("in"),     // Indicated in html
                 [nameof(SimReport.SimResult)] = simResult,
 
                 [nameof(SimReport.Columns)] = columns,

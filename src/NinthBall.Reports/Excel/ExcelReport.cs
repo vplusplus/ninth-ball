@@ -1,9 +1,9 @@
 ﻿
 using NinthBall.Core;
-using NinthBall.Utils;
-using NF = NinthBall.Utils.ExcelStylesheetBuilder.NumberFormats; 
+using NinthBall.Reports;
+using NF = NinthBall.Reports.ExcelStylesheetBuilder.NumberFormats; 
 
-namespace NinthBall.Outputs.Excel
+namespace NinthBall.Reports.Excel
 {
     internal sealed class ExcelReport(OutputDefaults Defaults, OutputViews Views, OutputOptions Options)
     {

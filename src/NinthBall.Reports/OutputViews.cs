@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using NinthBall.Core;
 
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     internal sealed class OutputViews(IConfiguration Config, OutputDefaults Defaults)
     {

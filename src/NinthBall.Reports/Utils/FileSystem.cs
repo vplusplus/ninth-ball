@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall.Utils
+namespace NinthBall.Reports
 {
     static class FileSystem
     {

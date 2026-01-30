@@ -1,7 +1,7 @@
 ﻿
 using NinthBall.Core;
 
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     internal enum ColorHint { None, Success, Warning, Danger, Primary, Muted }
 

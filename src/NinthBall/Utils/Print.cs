@@ -72,11 +72,6 @@ namespace NinthBall.Utils
             Console.WriteLine();
         }
 
-        public static void See(string substance, string fileName)
-        {
-            Console.WriteLine($" {substance,-20} | See {fileName}");
-        }
-
         public static void Milestone(string action, TimeSpan duration)
         {
             Console.WriteLine($" {action,-20} | {duration.TotalMilliseconds:#,0} mSec.");

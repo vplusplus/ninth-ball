@@ -1,7 +1,7 @@
 ﻿
-using static NinthBall.Outputs.FormatHint;
+using static NinthBall.Reports.FormatHint;
 
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     internal enum FormatHint { F0, F1, F2, C0, C1, C2, P0, P1, P2 }
 

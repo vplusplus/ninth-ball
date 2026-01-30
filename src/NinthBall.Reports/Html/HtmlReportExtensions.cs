@@ -1,12 +1,9 @@
 ﻿
 
-namespace NinthBall.Outputs.Html
+namespace NinthBall.Reports.Html
 {
-    internal static class HtmlOutputExtensions
+    internal static class HtmlReportExtensions
     {
-        // Cosmetics - Formats given number as Millions of $s (culture sensitive).
-        internal static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
-
         internal static string ToTextFormat(this FormatHint hint)
         {
             // Since our Format enum maps 1:1 to .NET number formats...

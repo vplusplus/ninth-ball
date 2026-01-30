@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="NinthBall.Core/NinthBall.Core.csproj" Id="628ae6ad-189a-48f8-8ae4-2d34766c682d" />
+  <Project Path="NinthBall.Reports/NinthBall.Reports.csproj" Id="50dea5db-f919-4b04-8013-0a136c1ea1bc" />
   <Project Path="NinthBall/NinthBall.csproj" />
   <Project Path="UnitTests/UnitTests.csproj" />
 </Solution>

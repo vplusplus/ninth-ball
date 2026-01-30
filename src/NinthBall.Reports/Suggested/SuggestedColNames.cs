@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     internal static partial class Suggested
     {

@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NinthBall.Core;
-using NinthBall.Outputs;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Reflection;

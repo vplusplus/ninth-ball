@@ -1,7 +1,7 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Spreadsheet;
 
-namespace NinthBall.Utils
+namespace NinthBall.Reports
 {
     enum HAlign { Left, Center, Right }
     

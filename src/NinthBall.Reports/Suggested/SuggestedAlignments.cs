@@ -1,7 +1,7 @@
 ﻿
-using static NinthBall.Outputs.AlignHint;
+using static NinthBall.Reports.AlignHint;
 
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     internal enum AlignHint { Left, Center, Right }
 

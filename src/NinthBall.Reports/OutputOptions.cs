@@ -2,7 +2,7 @@
 using NinthBall.Utils;
 using System.ComponentModel.DataAnnotations;
 
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     public sealed record OutputOptions
     (

@@ -1,18 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
+    <ImplicitUsings>enable</ImplicitUsings>
+    
     <!-- Because we are using Microsoft.NET.Sdk.Razor, but this is not a web app -->
     <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
-    
-    <AssemblyName>NinthBall</AssemblyName>
-    <Authors>Venkatesh Ramakrishnan</Authors>
-    <Description>Beyond the 8-Ball – A Monte Carlo framework grounded in math and probability.</Description>
-    <AssemblyVersion>1.0.4</AssemblyVersion>
     <ErrorReport>none</ErrorReport>
   </PropertyGroup>
 
@@ -24,11 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Help.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Help.txt" />
+    <EmbeddedResource Include="OutputDefaults\OutputDefaults.yaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,22 +26,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NinthBall.Core\NinthBall.Core.csproj" />
-    <ProjectReference Include="..\NinthBall.Reports\NinthBall.Reports.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Config\**">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

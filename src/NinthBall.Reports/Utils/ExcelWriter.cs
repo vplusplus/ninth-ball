@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 using NinthBall.Core;
 
-namespace NinthBall.Utils
+namespace NinthBall.Reports
 {
     /// <summary>
     /// SAX based forward-only Workbook writer with low memory usage and negligible stack allocation.

@@ -1,7 +1,7 @@
 ﻿
-using static NinthBall.Outputs.WidthHint;
+using static NinthBall.Reports.WidthHint;
 
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     internal enum WidthHint { W1x, W2x, W3x, W4x }
 

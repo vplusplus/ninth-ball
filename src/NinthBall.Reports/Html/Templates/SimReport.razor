@@ -1,6 +1,6 @@
 ﻿@using System;
 @using NinthBall.Core;
-@using NinthBall.Outputs;
+@using NinthBall.Reports;
 
 <!doctype html>
 <html lang="en">
@@ -129,9 +129,10 @@
             <SimIterationTabs       SimResult=SimResult Columns=Columns Percentiles=Percentiles Iterations=Iterations />
         </div>
 
+        <!-- IMPORTANT: TODO: Fix the application version below. We do not have access to Program from here -->
         <span class="mt-4 p-2" >
             <small class="text-secondary">
-                Ver: @(typeof(Program).Assembly.GetName().Version?.ToString() ?? string.Empty)
+                Ver: @(this.GetType().Assembly.GetName().Version?.ToString() ?? string.Empty)
             </small>
         </span>
 

@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     /// <summary>
     /// Column identifiers for reportable-columns

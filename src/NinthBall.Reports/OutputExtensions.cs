@@ -1,5 +1,5 @@
 ﻿
-namespace NinthBall.Outputs
+namespace NinthBall.Reports
 {
     internal static class OutputExtensions
     {
@@ -15,5 +15,9 @@ namespace NinthBall.Outputs
                 }
             }
         }
+
+        // Cosmetics - Formats given number as Millions of $s (culture sensitive).
+        public static string Millions(this double value, int decimalPlaces = 1) => $"{(value / 1000000).ToString($"C{decimalPlaces}")} M";
+
     }
 }
