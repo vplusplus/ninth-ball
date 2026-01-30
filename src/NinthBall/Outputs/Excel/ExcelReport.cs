@@ -2,8 +2,6 @@
 using NinthBall.Core;
 using NinthBall.Utils;
 using NF = NinthBall.Utils.ExcelStylesheetBuilder.NumberFormats; 
-// using static NinthBall.Outputs.Suggested;
-// using System.ComponentModel.DataAnnotations;  // For GetColName, GetFormatHint, GetColorHint ...
 
 namespace NinthBall.Outputs.Excel
 {
@@ -44,11 +42,7 @@ namespace NinthBall.Outputs.Excel
             // Register specific styles for Summary/Strategy tabs
             var summaryStyles = RegisterSummaryStyles(ssb);
 
-            // Register dynamic styles for Percentile tabs need to be resolved on the fly
-            // We use a caching convention inside RenderPercentile, or just rely on ssb caching?
-            // ssb has internal caching, so we can just call ssb.RegisterStyle(spec) repeatedly.
-            // It is efficient enough.
-
+            // Register dynamic styles 
             using(var xl = new ExcelWriter(excelFileName))
             {
                 // Render chosen strategies and related assumptions.
@@ -67,7 +61,7 @@ namespace NinthBall.Outputs.Excel
                     RenderIteration(xl, ssb, iter, sheetName);
                 }
 
-                // Render one sheet per suggested un-ordered iteration
+                // Render one sheet for each iteration (if requested)
                 foreach (var IT in Iterations)
                 {
                     if (IT < 0 || IT > simResult.Iterations.Count - 1) continue;
@@ -269,7 +263,6 @@ namespace NinthBall.Outputs.Excel
 
         void RenderIteration(ExcelWriter xl, ExcelStylesheetBuilder ssb, SimIteration iteration, string sheetName)
         {
-            //var sheetName = $"{pctl.PctlName}";
             var p = iteration;
 
             // Dynamically calculate widths based on Suggested format

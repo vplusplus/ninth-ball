@@ -74,7 +74,7 @@ namespace NinthBall
         static async Task ProcessOnce()
         {
             // WHY?
-            // Input and output configurtions can change between runs.
+            // Input and output configurations can change between runs.
             // We create and destroy DI container for each run of output generation.
 
             var simOutputSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
