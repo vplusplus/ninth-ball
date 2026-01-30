@@ -9,8 +9,8 @@ namespace NinthBall.Outputs
         {
             [CID.Year]            = "Yr",
 
-            [CID.JanValue]        = "~Value",
-            [CID.DecValue]        = "~Value",
+            [CID.JanValue]        = "~Jan",
+            [CID.DecValue]        = "~Dec",
 
             [CID.JanPreTax]       = "Jan 401K",
             [CID.JanPostTax]      = "Jan Inv",

@@ -93,34 +93,34 @@ namespace NinthBall.Outputs
 
         static readonly IReadOnlyDictionary<CID, SumValueSelector> FxAggregates = new Dictionary<CID, SumValueSelector>()
         {
-            [CID.Year]         = (it) => it. SurvivedYears,
+            [CID.Year]         = (it) => it.SurvivedYears,
 
             // Aggregated version presents the last good year info
-            [CID.JanTotal]     = (it) => it. LastGoodYear.Jan.Total,
-            [CID.JanValue]     = (it) => it. LastGoodYear.Jan.ApproxValue,
-            [CID.JanPreTax]    = (it) => it. LastGoodYear.Jan.PreTax.Amount,
-            [CID.JanPostTax]   = (it) => it. LastGoodYear.Jan.PostTax.Amount,
-            [CID.JanCash]      = (it) => it. LastGoodYear.Jan.Cash.Amount,
+            [CID.JanTotal]     = (it) => it.LastGoodYear.Jan.Total,
+            [CID.JanValue]     = (it) => it.LastGoodYear.Jan.ApproxValue,
+            [CID.JanPreTax]    = (it) => it.LastGoodYear.Jan.PreTax.Amount,
+            [CID.JanPostTax]   = (it) => it.LastGoodYear.Jan.PostTax.Amount,
+            [CID.JanCash]      = (it) => it.LastGoodYear.Jan.Cash.Amount,
 
-            [CID.Fees]         = (it) => it. Sum(y => y.Fees.Total),
-            [CID.PYTaxes]      = (it) => it. Sum(y => y.Taxes.Total),
+            [CID.Fees]         = (it) => it.Sum(y => y.Fees.Total),
+            [CID.PYTaxes]      = (it) => it.Sum(y => y.Taxes.Total),
 
-            [CID.LivExp]       = (it) => it. Sum(y => y.Expenses.LivExp),
+            [CID.LivExp]       = (it) => it.Sum(y => y.Expenses.LivExp),
 
-            [CID.Incomes]      = (it) => it. Sum(y => y.Incomes.Total),
-            [CID.SS]           = (it) => it. Sum(y => y.Incomes.SS),
-            [CID.Ann]          = (it) => it. Sum(y => y.Incomes.Ann),
-            [CID.XPreTax]      = (it) => it. Sum(y => y.XPreTax),
-            [CID.XPostTax]     = (it) => it. Sum(y => y.XPostTax),
-            [CID.XCash]        = (it) => it. Sum(y => y.XCash),
-            [CID.ROIAmount]    = (it) => it. Sum(y => y.Change.Total),
+            [CID.Incomes]      = (it) => it.Sum(y => y.Incomes.Total),
+            [CID.SS]           = (it) => it.Sum(y => y.Incomes.SS),
+            [CID.Ann]          = (it) => it.Sum(y => y.Incomes.Ann),
+            [CID.XPreTax]      = (it) => it.Sum(y => y.XPreTax),
+            [CID.XPostTax]     = (it) => it.Sum(y => y.XPostTax),
+            [CID.XCash]        = (it) => it.Sum(y => y.XCash),
+            [CID.ROIAmount]    = (it) => it.Sum(y => y.Change.Total),
 
             // Bottom-line: Data is nominal. Show nominal value of last good year.
-            [CID.DecTotal]     = (it) => it. LastGoodYear.Dec.Total,
-            [CID.DecValue]     = (it) => it. LastGoodYear.Dec.ApproxValue,
-            [CID.DecPreTax]    = (it) => it. LastGoodYear.Dec.PreTax.Amount,
-            [CID.DecPostTax]   = (it) => it. LastGoodYear.Dec.PostTax.Amount,
-            [CID.DecCash]      = (it) => it. LastGoodYear.Dec.Cash.Amount,
+            [CID.DecTotal]     = (it) => it.LastGoodYear.Dec.Total,
+            [CID.DecValue]     = (it) => it.LastGoodYear.Dec.ApproxValue,
+            [CID.DecPreTax]    = (it) => it.LastGoodYear.Dec.PreTax.Amount,
+            [CID.DecPostTax]   = (it) => it.LastGoodYear.Dec.PostTax.Amount,
+            [CID.DecCash]      = (it) => it.LastGoodYear.Dec.Cash.Amount,
 
             // Bottom-line: Show annualized-effective-roi at last good year for both ROI and AnnROI
             // Do not try to summarize the market noise: StocksROI & BondROI - They are just bootstrapper data.

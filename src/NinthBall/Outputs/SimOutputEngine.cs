@@ -15,7 +15,7 @@ namespace NinthBall.Outputs
             ArgumentNullException.ThrowIfNull(simOutputConfigFileName);
 
             // WHY?
-            // Output configurtio can change between runs.
+            // Output configurtion can change between runs.
             // We create and destroy DI container for each run of output generation.
 
             var simOutputSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
