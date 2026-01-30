@@ -19,7 +19,7 @@ namespace NinthBall.Core
             simSessionBuilder.Services
                 .RegisterSimulationOptions()
                 .AddSimulationComponents()
-                .AddSingleton<ISimSession, SimSession>()
+                .AddSingleton<ISimulation, Simulation>()
                 ;
 
             return simSessionBuilder;

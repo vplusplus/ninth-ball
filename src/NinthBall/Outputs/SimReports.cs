@@ -6,7 +6,12 @@ using NinthBall.Outputs.Html;
 
 namespace NinthBall.Outputs
 {
-    internal sealed class SimReports(HtmlReport HtmlReport, ExcelReport ExcelReport)
+    public interface ISimulationReports
+    {
+        Task GenerateAsync(SimResult simResult);
+    }
+
+    internal sealed class SimReports(HtmlReport HtmlReport, ExcelReport ExcelReport) : ISimulationReports
     {
         public async Task GenerateAsync(SimResult simResult)
         {

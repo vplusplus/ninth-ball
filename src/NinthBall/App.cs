@@ -88,13 +88,13 @@ namespace NinthBall
             {
                 // Run simulation
                 var timer = Stopwatch.StartNew();
-                var simResults = await session.Services.GetRequiredService<ISimSession>().RunAsync();
+                var simResults = await session.Services.GetRequiredService<ISimulation>().RunAsync();
                 timer.Stop();
                 Print.Milestone("Simulation complete", timer.Elapsed);
 
                 // Generate reports
                 timer.Restart();
-                await session.Services.GetRequiredService<ISimOutputSession>().GenerateAsync(simResults);
+                await session.Services.GetRequiredService<ISimulationReports>().GenerateAsync(simResults);
                 timer.Stop();
                 Print.Milestone("Reports ready", timer.Elapsed);
 

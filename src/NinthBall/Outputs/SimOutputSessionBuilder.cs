@@ -20,7 +20,7 @@ namespace NinthBall.Outputs
             simSessionBuilder.Services
                 .RegisterSimOutputOptions()
                 .AddSimOutputComponents()
-                .AddSingleton<ISimOutputSession, SimOutputSession>()
+                .AddSingleton<ISimulationReports, SimReports>()
                 ;
 
             return simSessionBuilder;

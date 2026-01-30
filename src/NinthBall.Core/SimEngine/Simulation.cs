@@ -1,9 +1,14 @@
 ﻿
 namespace NinthBall.Core
 {
-    sealed class Simulation(SimParams SimParams, Initial InitBalance, SimObjectivesSelector ActiveObjectives, TaxAndMarketAssumptions TAMA)
+    public interface ISimulation
     {
-        public SimResult RunSimulation()
+        Task<SimResult> RunAsync();
+    }
+
+    internal sealed class Simulation(SimParams SimParams, Initial InitBalance, SimObjectivesSelector ActiveObjectives, TaxAndMarketAssumptions TAMA) : ISimulation
+    {
+        async Task<SimResult> ISimulation.RunAsync()
         {
             ArgumentNullException.ThrowIfNull(SimParams);
             ArgumentNullException.ThrowIfNull(InitBalance);
