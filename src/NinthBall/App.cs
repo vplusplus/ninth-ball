@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace NinthBall
 {
-    internal static class App
+    static class App
     {
         static readonly TimeSpan TwoSeconds  = TimeSpan.FromSeconds(2);
         static readonly TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
