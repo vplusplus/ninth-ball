@@ -5,7 +5,7 @@ using NinthBall.Outputs.Html;
 
 namespace NinthBall.Outputs
 {
-    internal sealed class SimReports(HtmlOutputBuilder HtmlOutput, ExcelOutputBuilder ExcelOutput)
+    internal sealed class OutputBuilder(HtmlOutputBuilder HtmlOutput, ExcelOutputBuilder ExcelOutput)
     {
         public async Task Generate(SimResult simResult)
         {

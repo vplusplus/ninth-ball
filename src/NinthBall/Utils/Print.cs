@@ -3,7 +3,7 @@ using NinthBall.Core;
 
 namespace NinthBall.Utils
 {
-    internal static class Print
+    static class Print
     {
         static readonly string DASHES = new('-', 90);
 

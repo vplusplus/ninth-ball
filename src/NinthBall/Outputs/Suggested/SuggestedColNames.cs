@@ -26,10 +26,10 @@ namespace NinthBall.Outputs
             [CID.AnnROI]          = "AnnROI",
             [CID.RealCAGR]        = "RealCAGR",
 
-            [CID.JanPreTaxAlloc]  = "S%",
-            [CID.JanPostTaxAlloc] = "S%",
-            [CID.DecPreTaxAlloc]  = "S%",
-            [CID.DecPostTaxAlloc] = "S%",
+            [CID.JanPreTaxAlloc]  = "STK%",
+            [CID.JanPostTaxAlloc] = "STK%",
+            [CID.DecPreTaxAlloc]  = "STK%",
+            [CID.DecPostTaxAlloc] = "STK%",
 
 
         }.AsReadOnly();

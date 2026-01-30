@@ -9,7 +9,7 @@ namespace NinthBall.Utils
     /// <summary>
     /// Provides access to CommandLine options before host is built and configured.
     /// </summary>
-    public static class CmdLine
+    static class CmdLine
     {
         static readonly Lazy<IConfiguration> LazyCommandLine = new(() =>
             new ConfigurationBuilder()

@@ -7,7 +7,7 @@ using NF = NinthBall.Utils.ExcelStylesheetBuilder.NumberFormats;
 
 namespace NinthBall.Outputs.Excel
 {
-    internal sealed class ExcelOutputBuilder(OutputDefaults Defaults, ViewRegistry Views, OutputOptions Options)
+    internal sealed class ExcelOutputBuilder(OutputDefaults Defaults, OutputViews Views, OutputOptions Options)
     {
         readonly IReadOnlyList<double> Percentiles = Options.Excel.Percentiles ?? Defaults.Percentiles;
         readonly IReadOnlyList<CID> Columns = Views.ResolveView(Options.Excel.View);

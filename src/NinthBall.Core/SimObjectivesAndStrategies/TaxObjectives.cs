@@ -20,7 +20,7 @@ namespace NinthBall.Core
                 : TheTaxSystem.GuesstimateTaxes(context.PriorYear, Year0TaxRates);
         }
 
-        public override string ToString() => $"Prior year taxes | Fed: {FT.FederalOrdInc:P1} | LTCG: {FT.FederalLTCG:P1} | State: {FT.State:P1} | Standard deduction: {FT.StandardDeduction:C0} | State exemptions: {FT.StateExemption:C0} (indexed)";
+        public override string ToString() => $"Taxes | Fed: {FT.FederalOrdInc:P1} | LTCG: {FT.FederalLTCG:P1} | State: {FT.State:P1} | Standard deduction: {FT.StandardDeduction:C0} | State exemptions: {FT.StateExemption:C0} (indexed)";
 
     }
 
@@ -38,7 +38,7 @@ namespace NinthBall.Core
                 : TheTaxSystem.GuesstimateTaxes(context.PriorYear, Year0TaxRates);
         }
 
-        public override string ToString() => $"Prior year taxes | Federal, LTCG and State tax-schedules indexed for inflation | Standard deduction: {Year0TaxRates.Federal.TaxDeductions:C0} | State exemptions: {Year0TaxRates.State.TaxDeductions:C0} (indexed)";
+        public override string ToString() => $"Taxes | Federal, LTCG and State tax-schedules indexed for inflation | Standard deduction: {Year0TaxRates.Federal.TaxDeductions:C0} | State exemptions: {Year0TaxRates.State.TaxDeductions:C0} (indexed)";
     }
 
 }

@@ -1,11 +1,7 @@
-﻿using DocumentFormat.OpenXml.Math;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace NinthBall.Utils
 {
-    internal static class FileSystem
+    static class FileSystem
     {
         public static void EnsureDirectoryForFile(string filePath)
         {

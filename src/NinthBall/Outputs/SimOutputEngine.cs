@@ -28,9 +28,8 @@ namespace NinthBall.Outputs
             simOutputSessionBuilder.Services
                 .RegisterConfigSection<OutputDefaults>()
                 .RegisterConfigSection<OutputOptions>("Outputs")
-                .RegisterConfigSection<IReadOnlyDictionary<string, IReadOnlyList<CID>>>("Views")
-                .AddSingleton<ViewRegistry>()
-                .AddSingleton<SimReports>()
+                .AddSingleton<OutputViews>()
+                .AddSingleton<OutputBuilder>()
                 .AddSingleton<HtmlOutputBuilder>()
                 .AddSingleton<ExcelOutputBuilder>()
                 .BuildServiceProvider()
@@ -40,7 +39,7 @@ namespace NinthBall.Outputs
             {
                 await simOutputSessionHost
                     .Services
-                    .GetRequiredService<SimReports>()
+                    .GetRequiredService<OutputBuilder>()
                     .Generate(simResult);
             }
         }

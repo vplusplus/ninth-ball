@@ -4,7 +4,7 @@ using NinthBall.Outputs.Html.Templates;
 
 namespace NinthBall.Outputs.Html
 {
-    internal sealed class HtmlOutputBuilder(IServiceProvider services, OutputDefaults Defaults, ViewRegistry Views, OutputOptions Options)
+    internal sealed class HtmlOutputBuilder(IServiceProvider services, OutputDefaults Defaults, OutputViews Views, OutputOptions Options)
     {
         public async Task GenerateAsync(SimResult simResult)
         {

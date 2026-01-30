@@ -8,7 +8,7 @@ OutputDefaults:
   # Predefines views
   Views:
 
-    # High-level summary of the most critical plan metrics
+    # Bottomline
     Simple: [ Year, Age, JanValue, SS, Ann, Fees, PYTaxes, LivExp, XPreTax, XPostTax, DecValue ]
 
     # High-level summary of the most critical plan metrics

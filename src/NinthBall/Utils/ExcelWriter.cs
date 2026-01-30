@@ -12,7 +12,7 @@ namespace NinthBall.Utils
     /// SAX based forward-only Workbook writer with low memory usage and negligible stack allocation.
     /// DOESN'T support SharedStringTable. All strings are written inline.
     /// </summary>
-    public sealed class ExcelWriter : IDisposable
+    sealed class ExcelWriter : IDisposable
     {
         static readonly Regex RxInvalidSheetName = new(@"[\\\\[\\]\\*\\?:\\/]", RegexOptions.Compiled);
 

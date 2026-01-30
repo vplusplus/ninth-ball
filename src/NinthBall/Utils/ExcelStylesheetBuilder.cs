@@ -3,11 +3,11 @@ using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace NinthBall.Utils
 {
-    public enum HAlign { Left, Center, Right }
+    enum HAlign { Left, Center, Right }
     
-    public enum VAlign { Top, Middle, Bottom }
+    enum VAlign { Top, Middle, Bottom }
 
-    public readonly record struct XLStyle
+    readonly record struct XLStyle
     (
         string Format = "General",
         string FName  = "Aptos Narrow",
@@ -18,7 +18,7 @@ namespace NinthBall.Utils
         VAlign VAlign = VAlign.Top
     );
 
-    public sealed class ExcelStylesheetBuilder
+    sealed class ExcelStylesheetBuilder
     {
         //......................................................................
         #region ctor(), RegisterStyle() and Build()
