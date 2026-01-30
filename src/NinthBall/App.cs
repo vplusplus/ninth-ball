@@ -80,8 +80,8 @@ namespace NinthBall
             var simOutputSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
 
             simOutputSessionBuilder
-                .ComposeSimulationSession(InputConfigFileName)
-                .ComposeSimOutputSession(OutputConfigFileName)
+                .ComposeSimulation(InputConfigFileName)
+                .ComposeReports(OutputConfigFileName)
                 ;
 
             using (var session = simOutputSessionBuilder.Build())

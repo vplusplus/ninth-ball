@@ -11,7 +11,7 @@ namespace NinthBall.Reports
 {
     public static class SimulationReportsExtensions
     {
-        public static IHostApplicationBuilder ComposeSimOutputSession(this IHostApplicationBuilder simSessionBuilder, string simOutputConfigFileName)
+        public static IHostApplicationBuilder ComposeReports(this IHostApplicationBuilder simSessionBuilder, string simOutputConfigFileName)
         {
             simSessionBuilder.Configuration
                 .AddSimOutputConfigurations(simOutputConfigFileName)

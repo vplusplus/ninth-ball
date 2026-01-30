@@ -7,7 +7,7 @@ namespace NinthBall.Core
 {
     public static class SimulationExtensions
     {
-        public static IHostApplicationBuilder ComposeSimulationSession(this IHostApplicationBuilder simSessionBuilder, string simInputConfigFileName)
+        public static IHostApplicationBuilder ComposeSimulation(this IHostApplicationBuilder simSessionBuilder, string simInputConfigFileName)
         {
             ArgumentNullException.ThrowIfNull(simSessionBuilder);
             ArgumentNullException.ThrowIfNull(simInputConfigFileName);
