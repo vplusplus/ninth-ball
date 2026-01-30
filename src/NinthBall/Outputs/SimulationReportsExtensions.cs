@@ -9,7 +9,7 @@ using NinthBall.Outputs.Html;
 
 namespace NinthBall.Outputs
 {
-    internal static class SimOutputSessionBuilder
+    internal static class SimulationReportsExtensions
     {
         public static IHostApplicationBuilder ComposeSimOutputSession(this IHostApplicationBuilder simSessionBuilder, string simOutputConfigFileName)
         {
@@ -20,7 +20,7 @@ namespace NinthBall.Outputs
             simSessionBuilder.Services
                 .RegisterSimOutputOptions()
                 .AddSimOutputComponents()
-                .AddSingleton<ISimulationReports, SimReports>()
+                .AddSingleton<ISimulationReports, SimulationReports>()
                 ;
 
             return simSessionBuilder;
@@ -28,7 +28,7 @@ namespace NinthBall.Outputs
 
         static IConfigurationBuilder AddSimOutputConfigurations(this IConfigurationBuilder builder, string simOutputConfigFileName)
         {
-            var myAssembly = typeof(SimOutputSessionBuilder).Assembly;
+            var myAssembly = typeof(SimulationReportsExtensions).Assembly;
 
             var simOutputDefaultsResourceNames = myAssembly
                 .GetManifestResourceNames()
@@ -58,7 +58,7 @@ namespace NinthBall.Outputs
                 .AddSingleton<OutputViews>()
                 .AddSingleton<HtmlReport>()
                 .AddSingleton<ExcelReport>()
-                .AddSingleton<SimReports>()
+                .AddSingleton<SimulationReports>()
                 ;
         }
 

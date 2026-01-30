@@ -11,7 +11,7 @@ namespace NinthBall.Outputs
         Task GenerateAsync(SimResult simResult);
     }
 
-    internal sealed class SimReports(HtmlReport HtmlReport, ExcelReport ExcelReport) : ISimulationReports
+    internal sealed class SimulationReports(HtmlReport HtmlReport, ExcelReport ExcelReport) : ISimulationReports
     {
         public async Task GenerateAsync(SimResult simResult)
         {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace NinthBall.Core
 {
-    public static class SimSessionBuilder
+    public static class SimulationExtensions
     {
         public static IHostApplicationBuilder ComposeSimulationSession(this IHostApplicationBuilder simSessionBuilder, string simInputConfigFileName)
         {
@@ -27,7 +27,7 @@ namespace NinthBall.Core
 
         static IConfigurationBuilder AddSimulationConfigurations(this IConfigurationBuilder builder, string simInputConfigFileName)
         {
-            var simAssembly = typeof(SimSessionBuilder).Assembly;
+            var simAssembly = typeof(Simulation).Assembly;
 
             var simDefaultsResourceNames = simAssembly
                 .GetManifestResourceNames()
