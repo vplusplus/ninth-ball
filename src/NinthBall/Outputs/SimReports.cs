@@ -1,27 +1,27 @@
 ﻿
 using NinthBall.Core;
+using NinthBall.Outputs;
 using NinthBall.Outputs.Excel;
 using NinthBall.Outputs.Html;
 
 namespace NinthBall.Outputs
 {
-    internal sealed class OutputBuilder(HtmlOutputBuilder HtmlOutput, ExcelOutputBuilder ExcelOutput)
+    internal sealed class SimReports(HtmlReport HtmlReport, ExcelReport ExcelReport)
     {
-        public async Task Generate(SimResult simResult)
+        public async Task GenerateAsync(SimResult simResult)
         {
             try
             {
                 await Task.WhenAll
                 (
-                    HtmlOutput.GenerateAsync(simResult), 
-                    ExcelOutput.GenerateAsync(simResult)
+                    HtmlReport.GenerateAsync(simResult),
+                    ExcelReport.GenerateAsync(simResult)
                 );
             }
             catch (Exception err)
             {
                 var errHtmlFileName = Path.GetFullPath("./SimError.html");
-                await HtmlOutput.GenerateErrorHtmlAsync(err, errHtmlFileName);
-
+                await HtmlReport.GenerateErrorHtmlAsync(err, errHtmlFileName);
                 throw new FatalWarning($"Report generation failed | See {errHtmlFileName}");
             }
         }

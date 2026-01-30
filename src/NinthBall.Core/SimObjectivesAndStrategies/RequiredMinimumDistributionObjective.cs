@@ -15,7 +15,7 @@ namespace NinthBall.Core
             double factor = GetRMDFactor(context.Age);
                 
             // Validation: If we are at or past StartAge but have no table data, we must fail.
-            if (factor <= 0) throw new InvalidOperationException($"RMD table data missing for age {context.Age}. Please update the IRS Uniform Lifetime Table in {typeof(SimEngine).Assembly.GetName().Name}.");
+            if (factor <= 0) throw new InvalidOperationException($"RMD table data missing for age {context.Age}. Please update the IRS Uniform Lifetime Table in {typeof(Simulation).Assembly.GetName().Name}.");
 
             // Calculate required minimum distribution. Drop fraction (if any). Use Ceiling.
             double requiredMinimumDistributionAmount = Math.Ceiling(context.Jan.PreTax.Amount / factor);

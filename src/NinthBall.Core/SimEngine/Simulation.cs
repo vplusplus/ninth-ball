@@ -1,7 +1,7 @@
 ﻿
 namespace NinthBall.Core
 {
-    internal sealed class Simulation(SimParams SimParams, Initial InitBalance, SimObjectivesSelector ActiveObjectives, TaxAndMarketAssumptions TAMA)
+    sealed class Simulation(SimParams SimParams, Initial InitBalance, SimObjectivesSelector ActiveObjectives, TaxAndMarketAssumptions TAMA)
     {
         public SimResult RunSimulation()
         {

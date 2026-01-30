@@ -5,73 +5,29 @@ using Microsoft.Extensions.Hosting;
 
 namespace NinthBall.Core
 {
-    /// <summary>
-    /// Runs one simulation.
-    /// </summary>
-    public static class SimEngine
+    public static class SimSessionBuilder
     {
-        public static async Task<SimResult> RunAsync(string simInputFileName)
+        public static IHostApplicationBuilder ComposeSimulationSession(this IHostApplicationBuilder simSessionBuilder, string simInputConfigFileName)
         {
-            ArgumentNullException.ThrowIfNull(simInputFileName);
-
-            var simSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
+            ArgumentNullException.ThrowIfNull(simSessionBuilder);
+            ArgumentNullException.ThrowIfNull(simInputConfigFileName);
 
             simSessionBuilder.Configuration
-                .AddSimDefaults()
-                .AddYamlFile(simInputFileName)
-                .Build();
+                .AddSimulationConfigurations(simInputConfigFileName)
+                ;
 
             simSessionBuilder.Services
+                .RegisterSimulationOptions()
+                .AddSimulationComponents()
+                .AddSingleton<ISimSession, SimSession>()
+                ;
 
-                .RegisterConfigSection<SimulationSeed>()
-                .RegisterConfigSection<SimParams>()
-
-                .RegisterConfigSection<Initial>()
-                .RegisterConfigSection<YearlyRebalance>()
-                .RegisterConfigSection<AdditionalIncomes>()
-                .RegisterConfigSection<LivingExpenses>()
-
-                .RegisterConfigSection<FixedWithdrawal>()
-                .RegisterConfigSection<VariableWithdrawal>()
-
-                .RegisterConfigSection<AnnualFees>()
-                .RegisterConfigSection<FlatTax>()
-                .RegisterConfigSection<TaxRateSchedules>()
-                .RegisterConfigSection<TaxAndMarketAssumptions>()
-
-                .AddSingleton<ITaxSystem, SamAndHisBrothers>()
-                .AddKeyedSingleton<ITaxGuesstimator, FederalTaxGuesstimator>(TaxAuthority.Federal)
-                .AddKeyedSingleton<ITaxGuesstimator, NJTaxGuesstimator>(TaxAuthority.State)
-
-                .RegisterConfigSection<FlatGrowth>()
-
-                .AddSingleton<HistoricalReturns>()
-                .AddSingleton<HistoricalBlocks>()
-                .AddSingleton<FlatBootstrapper>()
-                .AddSingleton<SequentialBootstrapper>()
-                .AddSingleton<MovingBlockBootstrapper>()
-                .AddSingleton<ParametricBootstrapper>()
-                .RegisterConfigSection<MovingBlockBootstrapOptions>()
-                .RegisterConfigSection<ParametricBootstrapOptions>()
-
-                .AddSimulationObjectives()
-                .AddSingleton<SimObjectivesSelector>()
-                .AddSingleton<Simulation>()
-
-                .BuildServiceProvider();
-
-            using (var simSession = simSessionBuilder.Build())
-            {
-                return simSession
-                    .Services
-                    .GetRequiredService<Simulation>()
-                    .RunSimulation();
-            }
+            return simSessionBuilder;
         }
 
-        static IConfigurationBuilder AddSimDefaults(this IConfigurationBuilder builder)
+        static IConfigurationBuilder AddSimulationConfigurations(this IConfigurationBuilder builder, string simInputConfigFileName)
         {
-            var simAssembly = typeof(SimEngine).Assembly;
+            var simAssembly = typeof(SimSessionBuilder).Assembly;
 
             var simDefaultsResourceNames = simAssembly
                 .GetManifestResourceNames()
@@ -82,7 +38,49 @@ namespace NinthBall.Core
 
             foreach(var res in simDefaultsResourceNames) builder.AddYamlResource(simAssembly, res);
 
+            builder.AddYamlFile(simInputConfigFileName);
+
             return builder;
+        }
+
+        static IServiceCollection RegisterSimulationOptions(this IServiceCollection services)
+        {
+            return services
+
+                .RegisterConfigSection<SimulationSeed>()
+                .RegisterConfigSection<SimParams>()
+                .RegisterConfigSection<Initial>()
+                .RegisterConfigSection<YearlyRebalance>()
+                .RegisterConfigSection<AdditionalIncomes>()
+                .RegisterConfigSection<LivingExpenses>()
+                .RegisterConfigSection<FixedWithdrawal>()
+                .RegisterConfigSection<VariableWithdrawal>()
+                .RegisterConfigSection<AnnualFees>()
+                .RegisterConfigSection<FlatTax>()
+                .RegisterConfigSection<TaxRateSchedules>()
+                .RegisterConfigSection<TaxAndMarketAssumptions>()
+                .RegisterConfigSection<FlatGrowth>()
+                .RegisterConfigSection<MovingBlockBootstrapOptions>()
+                .RegisterConfigSection<ParametricBootstrapOptions>()
+                ;
+        }
+
+        static IServiceCollection AddSimulationComponents(this IServiceCollection services)
+        {
+            return services
+                .AddSingleton<ITaxSystem, SamAndHisBrothers>()
+                .AddKeyedSingleton<ITaxGuesstimator, FederalTaxGuesstimator>(TaxAuthority.Federal)
+                .AddKeyedSingleton<ITaxGuesstimator, NJTaxGuesstimator>(TaxAuthority.State)
+                .AddSingleton<HistoricalReturns>()
+                .AddSingleton<HistoricalBlocks>()
+                .AddSingleton<FlatBootstrapper>()
+                .AddSingleton<SequentialBootstrapper>()
+                .AddSingleton<MovingBlockBootstrapper>()
+                .AddSingleton<ParametricBootstrapper>()
+                .AddSimulationObjectives()
+                .AddSingleton<SimObjectivesSelector>()
+                .AddSingleton<Simulation>()
+                ;
         }
 
         static IServiceCollection AddSimulationObjectives(this IServiceCollection services)
@@ -91,4 +89,5 @@ namespace NinthBall.Core
             return services;
         }
     }
+
 }

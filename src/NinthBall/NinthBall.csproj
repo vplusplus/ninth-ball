@@ -30,6 +30,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Help.txt" />
     <EmbeddedResource Include="OutputDefaults\OutputDefaults.yaml" />
+    <EmbeddedResource Include="Outputs\OutputDefaults.yaml" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NinthBall.Core;
 using NinthBall.Outputs;
 using NinthBall.Utils;
@@ -71,17 +73,36 @@ namespace NinthBall
 
         static async Task ProcessOnce()
         {
-            // Run simulation
-            var timer = Stopwatch.StartNew();
-            var simResult = await SimEngine.RunAsync(InputConfigFileName);
-            timer.Stop();
-            Print.SimulationComplete(simResult, timer.Elapsed);
+            // WHY?
+            // Input and output configurtions can change between runs.
+            // We create and destroy DI container for each run of output generation.
 
-            // Generate reports
-            timer.Restart();
-            await SimOutputEngine.GenerateAsync(simResult, OutputConfigFileName);
-            timer.Stop();
-            Print.ReportsComplete(timer.Elapsed);
+            var simOutputSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
+
+            simOutputSessionBuilder
+                .ComposeSimulationSession(InputConfigFileName)
+                .ComposeSimOutputSession(OutputConfigFileName)
+                ;
+
+            using (var session = simOutputSessionBuilder.Build())
+            {
+                // Run simulation
+                var timer = Stopwatch.StartNew();
+                var simResults = await session.Services.GetRequiredService<ISimSession>().RunAsync();
+                timer.Stop();
+                Print.Milestone("Simulation complete", timer.Elapsed);
+
+                // Generate reports
+                timer.Restart();
+                await session.Services.GetRequiredService<ISimOutputSession>().GenerateAsync(simResults);
+                timer.Stop();
+                Print.Milestone("Reports ready", timer.Elapsed);
+
+                var sr = simResults.SurvivalRate;
+                var txtSurvivalRate = sr > 0.99 ? $"{sr:P1}" : $"{sr:P0}";
+                Console.WriteLine($" Survival rate: {txtSurvivalRate}");
+
+            }
         }
     }
 }

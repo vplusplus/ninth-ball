@@ -4,7 +4,7 @@ using NinthBall.Outputs.Html.Templates;
 
 namespace NinthBall.Outputs.Html
 {
-    internal sealed class HtmlOutputBuilder(IServiceProvider services, OutputDefaults Defaults, OutputViews Views, OutputOptions Options)
+    internal sealed class HtmlReport(IServiceProvider services, OutputDefaults Defaults, OutputViews Views, OutputOptions Options)
     {
         public async Task GenerateAsync(SimResult simResult)
         {
@@ -32,7 +32,7 @@ namespace NinthBall.Outputs.Html
             FileSystem.EnsureDirectoryForFile(htmlFileName);
             await File.WriteAllTextAsync(htmlFileName, html);
 
-            Print.HtmlReportReady(htmlFileName);
+            Print.See("Html report", htmlFileName);
         }
 
         public async Task GenerateErrorHtmlAsync(Exception err, string errorHtmlFileName)

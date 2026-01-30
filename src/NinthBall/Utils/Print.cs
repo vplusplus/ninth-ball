@@ -72,28 +72,14 @@ namespace NinthBall.Utils
             Console.WriteLine();
         }
 
-        public static void SimulationComplete(SimResult simResult, TimeSpan elapsed) 
+        public static void See(string substance, string fileName)
         {
-            var survivalRate = simResult.SurvivalRate;
-            var txtSurvivalRate = survivalRate > 0.99 ? $"{survivalRate:P1}" : $"{survivalRate:P0}";
-
-            Console.WriteLine($" Survival rate {txtSurvivalRate} | {elapsed.TotalMilliseconds:#,0} mSec.");
+            Console.WriteLine($" {substance,-20} | See {fileName}");
         }
 
-        public static void HtmlReportReady(string fileName)
+        public static void Milestone(string action, TimeSpan duration)
         {
-            Console.WriteLine($" Html report   | See {fileName}");
+            Console.WriteLine($" {action,-20} | {duration.TotalMilliseconds:#,0} mSec.");
         }
-
-        public static void ExcelReportReady(string fileName)
-        {
-            Console.WriteLine($" Excel report  | See {fileName}");
-        }
-
-        public static void ReportsComplete(TimeSpan elapsed)
-        {
-            Console.WriteLine($" Reports ready | {elapsed.TotalMilliseconds:#,0} mSec.");
-        }
-
     }
 }
