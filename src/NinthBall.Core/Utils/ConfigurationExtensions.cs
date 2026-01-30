@@ -63,25 +63,19 @@ namespace NinthBall.Core
         #region RegisterConfigSection() - Opinionated alternate for Options pattern
         //......................................................................
         /// <summary>
-        /// Registers a Lazy_T and T variants of the suggested config section.
-        /// Lazy option serves NULL if section not defined. 
-        /// Both choices will validate the TSection on first use.
+        /// Registers a required config section.
         /// </summary>
         public static IServiceCollection RegisterConfigSection<TSection>(this IServiceCollection services, string? optionalSectionName = null) where TSection : class
         {
             // Options pattern returns an empty and uninitialized TOption if section not defined.
             // This is not our desired behavior.
-            // Registers two variants: Lazy<TSection> and TSection singleton providers.
-            // Consumers should use Lazy<TSection> for optional configuration and TSection for required configurations.
-            // Lazy<TSection>.Value will be null if section not defined.
-            // TSection will throw an exception if section not defined.
-            // In either case, the TSection is validated, will throw exception on first use.
+            // Resolving TSection will throw an exception if section not defined or section is invalid.
 
             // Type name is the section name if not provided.
             var sectionName = string.IsNullOrWhiteSpace(optionalSectionName) ? typeof(TSection).Name : optionalSectionName.Trim();
 
-            // Register Lazy<TSection>
-            services.AddSingleton<Lazy<TSection>>(sp => new Lazy<TSection>(() =>
+            // Register TSection
+            services.AddSingleton<TSection>(sp =>
             {
                 // Look for requested config section
                 var configSection = sp.GetRequiredService<IConfiguration>().GetSection(sectionName);
@@ -89,19 +83,8 @@ namespace NinthBall.Core
                 // Parse TSection if config section is present, use null if not present
                 var options = configSection.Exists() ? configSection.Get<TSection>() : null;
 
-                // If available, ensure its valid before serving the instance.
-                return null != options ? Validate(options, sectionName) : null!;
-            }));
-
-            // Register TSection
-            services.AddSingleton<TSection>(sp =>
-            {
-                // Resolve the Lazy<TSection> we registered earlier.
-                var lazyOptions = sp.GetRequiredService<Lazy<TSection>>();
-
-                // lazyOptions.Value is pre-validated (if present). See above registration.
-                // Throw if section not defined.
-                return lazyOptions.Value ?? throw new Exception($"Missing config section | '{sectionName}'");
+                // If available, ensure it is valid before serving the instance.
+                return null != options ? Validate(options, sectionName) : throw new Exception($"Missing config section | '{sectionName}'");
             });
 
             // Done.

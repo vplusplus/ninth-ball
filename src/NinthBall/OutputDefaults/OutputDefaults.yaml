@@ -1,11 +1,13 @@
 
 
 OutputDefaults:
+
   # Default percentiles presented if not specified
   Percentiles: [ 0%, 1%, 5%, 10%, 20%, 50%, 80% ]
 
   # Predefines views
   Views:
+
     # High-level summary of the most critical plan metrics
     Simple: [ Year, Age, JanValue, SS, Ann, Fees, PYTaxes, LivExp, XPreTax, XPostTax, DecValue ]
 
@@ -56,7 +58,6 @@ OutputDefaults:
 
     TaxView: [
       Year, Age, JanPreTax, JanPostTax, 
-
     
       MTROrdInc, MTRCapGain, MTRState,
       TaxPCT, TaxPCTFed, TaxPCTState,

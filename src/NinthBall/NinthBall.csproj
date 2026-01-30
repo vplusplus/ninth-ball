@@ -29,10 +29,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Help.txt" />
-    <EmbeddedResource Include="Config\SampleOutput.yaml" />
     <EmbeddedResource Include="OutputDefaults\OutputDefaults.yaml" />
-    <EmbeddedResource Include="Config\ZZZ-SimOutput.yaml" />
-    <EmbeddedResource Include="Config\SampleInput.yaml" />
   </ItemGroup>
 
   <ItemGroup>
