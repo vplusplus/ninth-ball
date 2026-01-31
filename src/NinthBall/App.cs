@@ -31,7 +31,7 @@ namespace NinthBall
             TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
             TimeSpan TenMinutes  = TimeSpan.FromMinutes(10);
 
-            var fileSet  = new WatchFileSet(InputConfigFileName, OptionalOutputConfigFileName ?? string.Empty);
+            var fileSet  = new WatchFileSet(InputConfigFileName, OptionalOutputConfigFileName);
             var inactive = Stopwatch.StartNew();
             var consecutiveErrors = 0;
 
