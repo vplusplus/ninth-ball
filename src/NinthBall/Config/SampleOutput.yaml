@@ -3,7 +3,7 @@ Outputs:
   Html: 
     File: D:/Junk/SimOutV3.html
     View: Essential
-    Iterations:  [ 0, 2500, 5000, 7500, 9999] 
+    Iterations: [0, 5000, 9999] 
 
   Excel: 
     File: D:/Junk/SimOutV3.xlsx
