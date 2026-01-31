@@ -30,20 +30,41 @@ namespace NinthBall.Utils
             Console.WriteLine(helpText);
         }
 
-        public static void ErrorSummary(Exception err)
+        public static void Error(Exception err, bool includeStakcTrace = false)
         {
             if (null == err) return;
 
+            // Flattern aggregate exceptions.
+            err = err is AggregateException aggErr ? aggErr.Flatten() : err;
+
+            // The root cause...
             Console.WriteLine(RootCause(err));
 
+            // If more than one error...
             if (null != err.InnerException)
             {
+                Console.WriteLine();
                 Console.WriteLine("Reason:");
-                while(null != err)
+                PrintErrorMessages(err);
+            }
+
+            if (includeStakcTrace)
+            {
+                Console.WriteLine();
+                Console.WriteLine(DASHES);
+                Console.WriteLine("More details");
+                Console.WriteLine(DASHES);
+                Console.WriteLine(err.StackTrace);
+                Console.WriteLine();
+            }
+
+            static void PrintErrorMessages(Exception err)
+            {
+                while (null != err)
                 {
                     Console.WriteLine(err.Message);
                     err = err.InnerException!;
-                } 
+                }
             }
 
             static string RootCause(Exception ex)
@@ -56,20 +77,6 @@ namespace NinthBall.Utils
                 }
                 return rootCause;
             }
-        }
-
-        public static void ErrorSummaryAndDetails(Exception err)
-        {
-            if (null == err) return;
-
-            Print.ErrorSummary(err);
-
-            Console.WriteLine();
-            Console.WriteLine(DASHES);
-            Console.WriteLine("More details");
-            Console.WriteLine(DASHES);
-            Console.WriteLine(err.StackTrace);
-            Console.WriteLine();
         }
 
         public static void Milestone(string action, TimeSpan duration)

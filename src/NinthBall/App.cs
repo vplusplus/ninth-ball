@@ -53,7 +53,7 @@ namespace NinthBall
                 }
                 catch (Exception err)
                 {
-                    Print.ErrorSummary(err);
+                    Print.Error(err);
 
                     consecutiveErrors += 1;
                     await Task.Delay(FiveSeconds).ConfigureAwait(false);
