@@ -66,7 +66,6 @@ namespace NinthBall.Core
             if (TS.DoNotIndexTaxBrackets && TS.DoNotIndexTaxDeductions) return TS;
 
             // Adjust thresholds for inflation (if allowed).
-            int n = TS.Brackets.Count;
             var inflatedBrackets = TS.DoNotIndexTaxBrackets
                 ? TS.Brackets  // Keep original brackets
                 : InflateBracketsAndReduceJitter(TS.Brackets, inflationMultiplier, jitterGuard);
@@ -102,14 +101,14 @@ namespace NinthBall.Core
 
             // WHY?
             // We do not want 30,000 schedules (30 years x 10,000 iteration-paths)
-            // IRS also rounds up the thresholds.
-            // Our objective is not to faithfully reproduce IRS behavior.
+            // Just so you know, IRS also rounds up the thresholds.
+            // Faithfully reproducing IRS behavior is NOT our intention.
             // Our objective is to reduce jitter across iteration paths. 
             static double InflateAmountAndReduceJitter(double amount, double multiplier, double jitterGuard)
             {
-                var newThreshold = amount * multiplier;
-                var newThresholdLowJitter = Math.Round(newThreshold / jitterGuard) * jitterGuard;
-                return newThresholdLowJitter;
+                var inflatedAmount = amount * multiplier;
+                var inflatedAmountLowJitter = Math.Round(inflatedAmount / jitterGuard) * jitterGuard;
+                return inflatedAmountLowJitter;
             }
         }
     }
