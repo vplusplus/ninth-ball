@@ -84,10 +84,20 @@ namespace NinthBall.Core
                 double cfBonds     = Statistics.CornishFisher(arBonds, Options.Bonds.Skewness, Options.Bonds.Kurtosis);
                 double cfInflation = Statistics.CornishFisher(arInflation, Options.Inflation.Skewness, Options.Inflation.Kurtosis);
 
-                // Scale by Mean and Volatility
+                // Scale by Mean and Volatility.
                 // Converts abstract scaling factor into percentage returns.
                 // Stats has no limits; but market does; clamp the extremes.
+                // The hard-coded clamps define the behavioral contract (i.e., “personality”) of the parametric bootstrapper.
+                // These values are not configuration knobs and must not be treated as tunable parameters.
+                double rStocks    = Math.Clamp(Options.Stocks.MeanReturn    + cfStocks    * Options.Stocks.Volatility,    -0.60, +0.60);
+                double rBonds     = Math.Clamp(Options.Bonds.MeanReturn     + cfBonds     * Options.Bonds.Volatility,     -0.15, +0.25);
+                double rInflation = Math.Clamp(Options.Inflation.MeanReturn + cfInflation * Options.Inflation.Volatility, -0.10, +0.30);
+
+                sequence[i] = new HROI(0, rStocks, rBonds, rInflation);
+
+                //..............................................................
                 // Some data points:
+                //..............................................................
                 // S&P 500
                 // 1931         : -43.34%   (our clamp -60%)
                 // 1933         : +53.99%   (our clamp +60%)
@@ -99,17 +109,8 @@ namespace NinthBall.Core
                 // March 1980   :  14.8%    (Modern Era High: Post-1950)
                 // 1949         :  -2.1%    (Modern Era Low Post-1950)
                 // 1032         : -10.3%    (Great Depression)
-                // Our inflation rate range
-                // -10% (Deflation) and +30% (Hyperinflation)
-                // NOTE:
-                // The hard-coded clamps define the behavioral contract (i.e., “personality”) of the parametric bootstrapper.
-                // These values are not configuration knobs and must not be treated as tunable parameters.
+                //..............................................................
 
-                double rStocks    = Math.Clamp(Options.Stocks.MeanReturn    + cfStocks    * Options.Stocks.Volatility,    -0.60, +0.60);
-                double rBonds     = Math.Clamp(Options.Bonds.MeanReturn     + cfBonds     * Options.Bonds.Volatility,     -0.15, +0.25);
-                double rInflation = Math.Clamp(Options.Inflation.MeanReturn + cfInflation * Options.Inflation.Volatility, -0.10, +0.30);
-
-                sequence[i] = new HROI(0, rStocks, rBonds, rInflation);
             }
 
             return new ROISequence(sequence.AsMemory());
