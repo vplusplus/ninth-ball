@@ -41,10 +41,10 @@ namespace NinthBall
                 {
                     if (fileSet.CheckForChangesAndRememberTimestamp())
                     {
+                        inactive.Restart();
                         Console.WriteLine();
                         Console.WriteLine($"{DateTime.Now:T}");
-
-                        inactive.Restart();
+                        
                         await ProcessOnce();
                     }
 
