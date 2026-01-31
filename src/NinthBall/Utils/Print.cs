@@ -30,7 +30,7 @@ namespace NinthBall.Utils
             Console.WriteLine(helpText);
         }
 
-        public static void Error(Exception err, bool includeStakcTrace = false)
+        public static void Error(Exception err, bool includeStackTrace = false)
         {
             if (null == err) return;
 
@@ -48,7 +48,7 @@ namespace NinthBall.Utils
                 PrintErrorMessages(err);
             }
 
-            if (includeStakcTrace)
+            if (includeStackTrace)
             {
                 Console.WriteLine();
                 Console.WriteLine(DASHES);

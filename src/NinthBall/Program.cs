@@ -23,7 +23,7 @@ namespace NinthBall
             catch (Exception unhandledException)
             {
                 // User should never see this. If it happens, they see an ugly dump.
-                Print.Error(unhandledException, includeStakcTrace: true);
+                Print.Error(unhandledException, includeStackTrace: true);
             }
         }
     }
