@@ -1,12 +1,12 @@
 
 Outputs:
   Html: 
-    File: D:/Junk/SimOutV3.html
+    File: D:/Junk/SimReport.html
     View: Essential
     Iterations: [0, 5000, 9999] 
 
   Excel: 
-    File: D:/Junk/SimOutV3.xlsx
+    File: D:/Junk/SimReport.xlsx
     View: Essential
 
 Views:

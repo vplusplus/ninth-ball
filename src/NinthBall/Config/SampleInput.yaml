@@ -30,7 +30,7 @@ SimParams:
     ]
 
 Initial:
-  YearZeroCashBalance: $0.01
+  YearZeroCashBalance: $12,000
   YearZeroTaxAmount:   $25,000
   PreTax:
     Amount: $1,000,000
@@ -45,19 +45,19 @@ Initial:
 AdditionalIncomes:
   SS:
     FromAge: 70
-    Amount: 50,000
+    Amount: 48,000
   Ann:
     FromAge: 70
-    Amount: 25,000
+    Amount: 24,000
     Increment: 0%
 
 LivingExpenses:
   FirstYearAmount: 120,000
   StepDown:
     - AtAge: 65           # Example: Stop paying Life Ins
-      Reduction: 25000
+      Reduction: 24000
     - AtAge: 70           # Example: Reduction in Med Ins.
-      Reduction: 5000
+      Reduction: 6000
 
 
 # ............................................................

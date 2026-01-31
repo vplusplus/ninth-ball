@@ -12,8 +12,11 @@ namespace NinthBall.Reports.Html
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(templateParameters);
 
-            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
-            await using var htmlRenderer = new HtmlRenderer(services, loggerFactory);
+            // NOTE: Uses IAsyncDisposable, not the IDisposable
+            await using var htmlRenderer = new HtmlRenderer(
+                services, 
+                services.GetRequiredService<ILoggerFactory>()
+            );
 
             // Entire rendering flow stays within the htmlRenderer.Dispatcher
             return await htmlRenderer.Dispatcher.InvokeAsync(async () =>
