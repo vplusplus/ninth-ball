@@ -28,6 +28,8 @@ namespace NinthBall.Reports
             }
             catch (Exception err)
             {
+                err = err is AggregateException aggErr ? aggErr.Flatten() : err;
+
                 FileSystem.EnsureDirectoryForFile(ErrorHtmlFileName);
                 await HtmlReport.GenerateErrorHtmlAsync(err, ErrorHtmlFileName);
                 throw new FatalWarning($"Report generation failed | See {ErrorHtmlFileName}");
