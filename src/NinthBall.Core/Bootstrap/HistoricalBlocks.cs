@@ -1,4 +1,4 @@
-﻿
+﻿ 
 using System.Collections.ObjectModel;
 
 namespace NinthBall.Core
@@ -67,20 +67,20 @@ namespace NinthBall.Core
         static double CalculateARRScore(ReadOnlyMemory<HROI> window)
         {
             // Opinionated portfolio split for ranking purposes
-            const double SixtyPct = 0.6;
-            const double FourtyPct = 0.4;
+            const double SixtyPct  = 0.6;
+            const double FourtyPct = 1 - SixtyPct;
 
             double compoundedRealMultiplier = 1.0;
 
-            for (int i = 0; i < window.Length; i++)
+            for (int y = 0; y < window.Length; y++)
             {
                 // Lookup the ROI and Inflation information
-                var hroi = window.Span[i];
+                var hroi = window.Span[y];
 
                 // Calculate nominal multiplier for an imaginary 60/40 portfolio
                 // Adjust for inflation (Exact math: (1+n)/(1+i))
                 double nominalMultiplier = 1.0 + (hroi.StocksROI * SixtyPct + hroi.BondsROI * FourtyPct);
-                double realMultiplier = nominalMultiplier / (1.0 + hroi.InflationRate);
+                double realMultiplier    = nominalMultiplier / (1.0 + hroi.InflationRate);
 
                 // Accumulate compounding effect
                 compoundedRealMultiplier *= realMultiplier;
