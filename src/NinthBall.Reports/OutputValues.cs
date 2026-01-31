@@ -6,12 +6,11 @@ namespace NinthBall.Reports
     internal static class OutputValues
     {
         private delegate double ValueSelector(SimIteration iteration, in SimYear simYear);
-
         private delegate double SumValueSelector(SimIteration simIteration);
 
         /// <summary>
         /// Retrieves the value of a specific cell for a given year and column.
-        /// The cell value as a double, or null if the column is not defined or applicable.
+        /// Returns the cell value as a double, or null if the column is not defined or applicable.
         /// </summary>
         internal static double? GetCellValue(this SimYear simYear, CID cid, SimIteration iter) => 
             FxValues.TryGetValue(cid, out var fxValue) && null != fxValue 
@@ -21,7 +20,7 @@ namespace NinthBall.Reports
         /// <summary>
         /// Retrieves an aggregated value (e.g., Sum, Max) for a specific column across the entire iteration.
         /// The aggregation method (Sum, Max, etc.) is predefined for each column ID.
-        /// The aggregated value as a double, or null if no aggregation is defined for this column.
+        /// Returns the aggregated value as a double, or null if no aggregation is defined for this column.
         /// </summary>
         internal static double? GetAggregateValue(this SimIteration iter, CID cid) =>
             FxAggregates.TryGetValue(cid, out var fxValue) && null != fxValue

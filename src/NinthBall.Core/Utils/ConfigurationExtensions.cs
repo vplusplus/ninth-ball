@@ -23,6 +23,26 @@ namespace NinthBall.Core
                 : throw new FatalWarning($"Yaml config file not found | {Path.GetFullPath(yamlFileName)}");
         }
 
+        public static IConfigurationBuilder AddYamlResources(this IConfigurationBuilder builder, Assembly resourceAssembly, string resourcePathSelector)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(resourceAssembly);
+            ArgumentNullException.ThrowIfNull(resourcePathSelector);
+
+            var simOutputDefaultsResourceNames = resourceAssembly
+                .GetManifestResourceNames()
+                .Where(name => null != name)
+                .Where(name => name.Contains(resourcePathSelector, StringComparison.OrdinalIgnoreCase))
+                .Where(name => name.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (0 == simOutputDefaultsResourceNames.Count) throw new FatalWarning($"Zero resources found | Assembly: {resourceAssembly.GetName().Name} | **{resourcePathSelector}**.yaml");
+
+            foreach (var res in simOutputDefaultsResourceNames) builder.AddYamlResource(resourceAssembly, res);
+
+            return builder;
+        }
+
         public static IConfigurationBuilder AddYamlResource(this IConfigurationBuilder builder, Assembly resourceAssembly, string resourceNameEndsWith)
         {
             ArgumentNullException.ThrowIfNull(builder);

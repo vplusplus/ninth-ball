@@ -11,8 +11,11 @@ namespace NinthBall.Reports
         Task GenerateAsync(SimResult simResult);
     }
 
-    internal sealed class SimulationReports(HtmlReport HtmlReport, ExcelReport ExcelReport) : ISimulationReports
+    internal sealed class SimulationReports(HtmlReport HtmlReport, ExcelReport ExcelReport, OutputOptions Options) : ISimulationReports
     {
+        // BY-DESIGN: Error is saved to html-report. Reason: User will be watching that file.
+        string ErrorHtmlFileName => Options.Html.File ?? "./SimError.html";
+
         public async Task GenerateAsync(SimResult simResult)
         {
             try
@@ -25,9 +28,9 @@ namespace NinthBall.Reports
             }
             catch (Exception err)
             {
-                var errHtmlFileName = Path.GetFullPath("./SimError.html");
-                await HtmlReport.GenerateErrorHtmlAsync(err, errHtmlFileName);
-                throw new FatalWarning($"Report generation failed | See {errHtmlFileName}");
+                FileSystem.EnsureDirectoryForFile(ErrorHtmlFileName);
+                await HtmlReport.GenerateErrorHtmlAsync(err, ErrorHtmlFileName);
+                throw new FatalWarning($"Report generation failed | See {ErrorHtmlFileName}");
             }
         }
     }

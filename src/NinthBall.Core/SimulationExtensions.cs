@@ -1,5 +1,4 @@
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -13,40 +12,10 @@ namespace NinthBall.Core
             ArgumentNullException.ThrowIfNull(simInputConfigFileName);
 
             builder.Configuration
-                .AddSimulationConfigurations(simInputConfigFileName)
-                ;
+                .AddYamlResources(typeof(Simulation).Assembly, ".SimDefaults.")
+                .AddYamlFile(simInputConfigFileName);
 
             builder.Services
-                .RegisterSimulationOptions()
-                .AddSimulationComponents()
-                .AddSingleton<ISimulation, Simulation>()
-                ;
-
-            return builder;
-        }
-
-        static IConfigurationBuilder AddSimulationConfigurations(this IConfigurationBuilder builder, string simInputConfigFileName)
-        {
-            var simAssembly = typeof(Simulation).Assembly;
-
-            var simDefaultsResourceNames = simAssembly
-                .GetManifestResourceNames()
-                .Where(name => null != name)
-                .Where(name => name.Contains(".SimDefaults.", StringComparison.OrdinalIgnoreCase))
-                .Where(name => name.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            foreach(var res in simDefaultsResourceNames) builder.AddYamlResource(simAssembly, res);
-
-            builder.AddYamlFile(simInputConfigFileName);
-
-            return builder;
-        }
-
-        static IServiceCollection RegisterSimulationOptions(this IServiceCollection services)
-        {
-            return services
-
                 .RegisterConfigSection<SimulationSeed>()
                 .RegisterConfigSection<SimParams>()
                 .RegisterConfigSection<Initial>()
@@ -62,12 +31,7 @@ namespace NinthBall.Core
                 .RegisterConfigSection<FlatGrowth>()
                 .RegisterConfigSection<MovingBlockBootstrapOptions>()
                 .RegisterConfigSection<ParametricBootstrapOptions>()
-                ;
-        }
 
-        static IServiceCollection AddSimulationComponents(this IServiceCollection services)
-        {
-            return services
                 .AddSingleton<ITaxSystem, SamAndHisBrothers>()
                 .AddKeyedSingleton<ITaxGuesstimator, FederalTaxGuesstimator>(TaxAuthority.Federal)
                 .AddKeyedSingleton<ITaxGuesstimator, NJTaxGuesstimator>(TaxAuthority.State)
@@ -77,10 +41,12 @@ namespace NinthBall.Core
                 .AddSingleton<SequentialBootstrapper>()
                 .AddSingleton<MovingBlockBootstrapper>()
                 .AddSingleton<ParametricBootstrapper>()
-                .AddSimulationObjectives()
                 .AddSingleton<SimObjectivesSelector>()
-                .AddSingleton<Simulation>()
+                .AddSimulationObjectives()
+                .AddSingleton<ISimulation, Simulation>()
                 ;
+
+            return builder;
         }
 
         static IServiceCollection AddSimulationObjectives(this IServiceCollection services)
@@ -89,5 +55,4 @@ namespace NinthBall.Core
             return services;
         }
     }
-
 }
