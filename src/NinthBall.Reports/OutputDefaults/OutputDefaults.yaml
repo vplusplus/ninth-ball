@@ -5,6 +5,9 @@ OutputDefaults:
   # Default percentiles presented if not specified
   Percentiles: [ 0%, 1%, 5%, 10%, 20%, 50%, 80% ]
 
+  # The percentile tab presented by default
+  TargetPercentile: 20%
+
   # Predefined views
   Views:
 

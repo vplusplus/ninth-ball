@@ -11,6 +11,10 @@
         </li>
         @foreach (var p in Percentiles)
         {
+            // TODO: Avoid duplication below.
+            // TODO: Consider preparing list of (caption, percentile) and render in one loop
+            // TODO: Or consider factoring out the tab rendering block
+
             var pctlId = PercentileId(p);
             var pctlCaption = p.PctlName;
 
@@ -44,12 +48,16 @@
 
         @foreach (var p in Percentiles)
         {
+            // TODO: Avoid duplication below.
+            // TODO: Consider preparing list of (caption, percentile) and render in one loop
+            // TODO: Or consider factoring out the tab rendering block
+
             var iter = SimResult.Percentile(p);
             var pctlId = PercentileId(p);
             var caption = $"{p.PctlName} Percentile [#{iter.Index}]";
             var isActive = p == ActivePctl ? "active" : "";
             <div class="tab-pane @isActive" id="@(pctlId)">
-                <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter Columns=Columns Percentiles=Percentiles />
+                <SimIterationDetails Id="@pctlId" Caption="@caption" Iteration=iter />
             </div>
         }
 
@@ -67,7 +75,7 @@
             // var caption = $"#{IT:0000} {pctlCaption}";
 
             <div class="tab-pane" id="@(iterId)">
-                <SimIterationDetails Id="@iterId" Caption="@caption" Iteration=iter Columns=Columns Percentiles=Percentiles />
+                <SimIterationDetails Id="@iterId" Caption="@caption" Iteration=iter />
             </div>
         }
 
@@ -76,12 +84,24 @@
 
 @code
 {
-    [Parameter] public SimResult SimResult { get; set; } = null!;
-    [Parameter] public IReadOnlyList<CID> Columns { get; set; } = [];
-    [Parameter] public IReadOnlyList<double> Percentiles { get; set; } = [];
-    [Parameter] public IReadOnlyList<int> Iterations { get; set; } = [];
+    [CascadingParameter]
+    public SimResult SimResult { get; set; } = null!;
 
-    private double? ActivePctl => Percentiles.Count == 0 ? null : Percentiles.OrderBy(p => Math.Abs(p - 0.2)).First();  // TODO: Rewire target percentile from config
+    [CascadingParameter(Name = "Columns")]
+    public IReadOnlyList<CID> Columns { get; set; } = [];
+
+    [CascadingParameter(Name = "Percentiles")]
+    public IReadOnlyList<double> Percentiles { get; set; } = [];
+
+    [CascadingParameter(Name = "Iterations")]
+    public IReadOnlyList<int> Iterations { get; set; } = [];
+
+    [Parameter]
+    public double TargetPercentile { get; set; } = 0.2;
+
+    // Use TargetPercentile as the guide. 
+    // Find the displayed percentile nearest to the target.
+    double? ActivePctl => Percentiles.Count == 0 ? null : Percentiles.OrderBy(p => Math.Abs(p - TargetPercentile)).First(); 
 
     // Computes an unique html-id for the chosen percentile.
     static string PercentileId(double pctl) => $"{pctl * 100:00}";

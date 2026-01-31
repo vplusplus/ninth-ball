@@ -82,8 +82,15 @@
 
 @code
 {
-    [Parameter] public SimResult SimResult { get; set; } = null!;
-    [Parameter] public IReadOnlyList<CID> Columns { get; set; } = [];
-    [Parameter] public IReadOnlyList<double> Percentiles { get; set; } = [];
-    [Parameter] public IReadOnlyList<int> Iterations { get; set; } = [];
+    [CascadingParameter]
+    public SimResult SimResult { get; set; } = null!;
+    
+    [CascadingParameter(Name = "Columns")]
+    public IReadOnlyList<CID> Columns { get; set; } = [];
+    
+    [CascadingParameter(Name = "Percentiles")]
+    public IReadOnlyList<double> Percentiles { get; set; } = [];
+    
+    [CascadingParameter(Name = "Iterations")]
+    public IReadOnlyList<int> Iterations { get; set; } = [];
 }

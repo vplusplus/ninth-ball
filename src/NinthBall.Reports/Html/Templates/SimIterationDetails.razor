@@ -116,9 +116,16 @@
 
 @code
 {
-    [Parameter] public string Id { get; set; } = null!;
-    [Parameter] public string Caption { get; set; } = "";
-    [Parameter] public IReadOnlyList<CID> Columns { get; set; } = [];
-    [Parameter] public IReadOnlyList<double> Percentiles { get; set; } = [];
-    [Parameter] public SimIteration Iteration { get; set; } = null!;
+    [Parameter] 
+    public string Id { get; set; } = null!;
+
+    [Parameter] 
+    public string Caption { get; set; } = "";
+
+    [Parameter]
+    public SimIteration Iteration { get; set; } = default!;
+
+    [CascadingParameter(Name = "Columns")]
+    public IReadOnlyList<CID> Columns { get; set; } = [];
+
 }

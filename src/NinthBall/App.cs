@@ -75,26 +75,30 @@ namespace NinthBall
         {
             // WHY?
             // Input and output configurations can change between runs.
-            // We create and destroy DI container for each run of output generation.
+            // We create and destroy DI container for each simulation session.
 
-            var simOutputSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
+            var simSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
 
-            simOutputSessionBuilder
+            simSessionBuilder
                 .ComposeSimulation(InputConfigFileName)
                 .ComposeReports(OutputConfigFileName)
                 ;
 
-            using (var session = simOutputSessionBuilder.Build())
+            using (var simSession = simSessionBuilder.Build())
             {
+                // Resolve both (required) services...
+                ISimulation simulation = simSession.Services.GetRequiredService<ISimulation>();
+                ISimulationReports simReports = simSession.Services.GetRequiredService<ISimulationReports>();
+
                 // Run simulation
                 var timer = Stopwatch.StartNew();
-                var simResults = session.Services.GetRequiredService<ISimulation>().Run();
+                var simResults = simulation.Run();
                 timer.Stop();
                 Print.Milestone("Simulation complete", timer.Elapsed);
 
                 // Generate reports
                 timer.Restart();
-                await session.Services.GetRequiredService<ISimulationReports>().GenerateAsync(simResults);
+                await simReports.GenerateAsync(simResults);
                 timer.Stop();
                 Print.Milestone("Reports ready", timer.Elapsed);
 

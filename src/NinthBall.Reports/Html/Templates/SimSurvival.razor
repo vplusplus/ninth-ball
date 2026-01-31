@@ -52,5 +52,6 @@
 
 @code
 {
-    [Parameter] public SimResult SimResult { get; set; } = null!;
+    [CascadingParameter]
+    public SimResult SimResult { get; set; } = null!;
 }

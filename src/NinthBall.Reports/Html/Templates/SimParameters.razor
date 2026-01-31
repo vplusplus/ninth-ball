@@ -27,13 +27,6 @@
             <div id="accAssumptionsBlock" class="accordion-collapse collapse" aria-labelledby="accAssumptionsTitle" data-bs-parent="#accAssumptions">
                 <div class="accordion-body">
                     <ul>
-                        @if(!string.IsNullOrWhiteSpace(InputFileName))
-                        {
-                            <li>
-                                Input | @(Path.GetFileName(InputFileName))
-                            </li>
-                        }
-                    
                         @foreach (var strategy in SimResult.Strategies)
                         {
                             <li>@strategy</li>
@@ -48,6 +41,6 @@
 
 @code
 {
-    [Parameter] public string InputFileName { get; set; } = string.Empty;
-    [Parameter] public SimResult SimResult { get; set; } = null!;
+    [CascadingParameter]
+    public SimResult SimResult { get; set; } = null!;
 }

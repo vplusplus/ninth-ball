@@ -1,6 +1,7 @@
 ﻿@using System;
 @using NinthBall.Core;
 @using NinthBall.Reports;
+@using System.Reflection
 
 <!doctype html>
 <html lang="en">
@@ -122,17 +123,25 @@
 <body>
     <div class="container-fluid">
 
-        <div>
-            <SimParameters          SimResult=SimResult InputFileName="@InputFileName" />
-            <SimSurvival            SimResult=SimResult />
-            <SimPercentilesSummary  SimResult=SimResult Columns=Columns Percentiles=Percentiles Iterations=Iterations />
-            <SimIterationTabs       SimResult=SimResult Columns=Columns Percentiles=Percentiles Iterations=Iterations />
-        </div>
+        <CascadingValue Value="@SimResult">
+        <CascadingValue Value="@Columns" Name="Columns">
+        <CascadingValue Value="@Percentiles" Name="Percentiles">
+        <CascadingValue Value="@Iterations" Name="Iterations">
+            <div>
+                <SimParameters />
+                <SimSurvival />
+                <SimPercentilesSummary />
+                <SimIterationTabs TargetPercentile=TargetPercentile />
+            </div>
+        </CascadingValue>
+        </CascadingValue>
+        </CascadingValue>
+        </CascadingValue>
 
-        <!-- IMPORTANT: TODO: Fix the application version below. We do not have access to Program from here -->
+
         <span class="mt-4 p-2" >
             <small class="text-secondary">
-                Ver: @(this.GetType().Assembly.GetName().Version?.ToString() ?? string.Empty)
+                Ver: @(AppVersion?.ToString() ?? "N/A")
             </small>
         </span>
 
@@ -144,9 +153,11 @@
 
 @code
 {
-    [Parameter] public string InputFileName { get; set; } = null!;
     [Parameter] public SimResult SimResult { get; set; } = null!;
     [Parameter] public IReadOnlyList<CID> Columns { get; set; } = [];
     [Parameter] public IReadOnlyList<double> Percentiles { get; set; } = [];
     [Parameter] public IReadOnlyList<int> Iterations { get; set; } = [];
+    [Parameter] public double TargetPercentile { get; set; } = 0.2;
+
+    System.Version? AppVersion => Assembly.GetEntryAssembly()?.GetName()?.Version;
 }

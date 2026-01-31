@@ -7,22 +7,22 @@ namespace NinthBall.Core
 {
     public static class SimulationExtensions
     {
-        public static IHostApplicationBuilder ComposeSimulation(this IHostApplicationBuilder simSessionBuilder, string simInputConfigFileName)
+        public static IHostApplicationBuilder ComposeSimulation(this IHostApplicationBuilder builder, string simInputConfigFileName)
         {
-            ArgumentNullException.ThrowIfNull(simSessionBuilder);
+            ArgumentNullException.ThrowIfNull(builder);
             ArgumentNullException.ThrowIfNull(simInputConfigFileName);
 
-            simSessionBuilder.Configuration
+            builder.Configuration
                 .AddSimulationConfigurations(simInputConfigFileName)
                 ;
 
-            simSessionBuilder.Services
+            builder.Services
                 .RegisterSimulationOptions()
                 .AddSimulationComponents()
                 .AddSingleton<ISimulation, Simulation>()
                 ;
 
-            return simSessionBuilder;
+            return builder;
         }
 
         static IConfigurationBuilder AddSimulationConfigurations(this IConfigurationBuilder builder, string simInputConfigFileName)

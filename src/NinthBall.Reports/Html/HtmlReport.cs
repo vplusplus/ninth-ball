@@ -4,7 +4,7 @@ using NinthBall.Reports.Html.Templates;
 
 namespace NinthBall.Reports.Html
 {
-    internal sealed class HtmlReport(IServiceProvider services, OutputDefaults Defaults, OutputViews Views, OutputOptions Options)
+    internal sealed class HtmlReport(IServiceProvider Services, OutputDefaults Defaults, OutputViews Views, OutputOptions Options)
     {
         public async Task GenerateAsync(SimResult simResult)
         {
@@ -17,15 +17,13 @@ namespace NinthBall.Reports.Html
             // Prepare model, and render html
             Dictionary<string, object?> templateParameters = new() 
             { 
-                [nameof(SimReport.InputFileName)] = "STUBBED",      // IMP: TODO: We do not have access to CmdLine from here. CmdLine.Required("in"),     // Indicated in html
                 [nameof(SimReport.SimResult)] = simResult,
-
                 [nameof(SimReport.Columns)] = columns,
                 [nameof(SimReport.Percentiles)] = percentiles,
-                [nameof(SimReport.Iterations)] = iterations
-
+                [nameof(SimReport.Iterations)] = iterations,
+                [nameof(SimReport.TargetPercentile)] = Defaults.TargetPercentile,
             };
-            var html = await HtmlTemplates.RenderTemplateAsync<SimReport>(services, templateParameters).ConfigureAwait(false);
+            var html = await HtmlTemplates.RenderTemplateAsync<SimReport>(Services, templateParameters).ConfigureAwait(false);
 
             // Save
             var htmlFileName = Path.GetFullPath(Options.Html.File);
@@ -37,13 +35,13 @@ namespace NinthBall.Reports.Html
 
         public async Task GenerateErrorHtmlAsync(Exception err, string errorHtmlFileName)
         {
-            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(Services);
 
             err = err ?? new Exception("Sorry, error object itself was null.");
 
             // Prepare model, and render html
             Dictionary<string, object?> templateParameters = new() { [nameof(SimErrors.Ex)] = err };
-            var html = await HtmlTemplates.RenderTemplateAsync<SimErrors>(services, templateParameters).ConfigureAwait(false);
+            var html = await HtmlTemplates.RenderTemplateAsync<SimErrors>(Services, templateParameters).ConfigureAwait(false);
 
             // Save
             FileSystem.EnsureDirectoryForFile(errorHtmlFileName);
