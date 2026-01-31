@@ -1,6 +1,5 @@
 ﻿
-using System.ComponentModel.DataAnnotations;
-using NinthBall.Core;
+
 using NinthBall.Utils;
 
 namespace NinthBall
@@ -13,10 +12,6 @@ namespace NinthBall
             try
             {
                 await App.RunAsync();
-            }
-            catch (Exception warning) when (warning is FatalWarning or ValidationException)
-            {
-                Console.WriteLine(warning.Message);
             }
             catch (Exception unhandledException)
             {

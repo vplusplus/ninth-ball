@@ -11,10 +11,6 @@ namespace NinthBall
 {
     static class App
     {
-        static readonly TimeSpan TwoSeconds  = TimeSpan.FromSeconds(2);
-        static readonly TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
-        static readonly TimeSpan TenMinutes  = TimeSpan.FromMinutes(10);
-
         static string InputConfigFileName  => CmdLine.Required("In");
         static string? OptionalOutputConfigFileName => CmdLine.Optional("out", null!);
         static bool WatchMode => CmdLine.Switch("watch");
@@ -29,91 +25,95 @@ namespace NinthBall
 
         static async Task ProcessForever()
         {
-            var fileSet = new WatchFileSet(InputConfigFileName);
-            if (null != OptionalOutputConfigFileName) fileSet.AlsoWatch(OptionalOutputConfigFileName);
+            const int TenConsecutiveErrors = 10;
 
-            var elapsed = Stopwatch.StartNew();
+            TimeSpan TwoSeconds  = TimeSpan.FromSeconds(2);
+            TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
+            TimeSpan TenMinutes  = TimeSpan.FromMinutes(10);
 
-            while (elapsed.Elapsed < TenMinutes)
+            var fileSet  = new WatchFileSet(InputConfigFileName, OptionalOutputConfigFileName ?? string.Empty);
+            var inactive = Stopwatch.StartNew();
+            var consecutiveErrors = 0;
+
+            while (inactive.Elapsed < TenMinutes && consecutiveErrors < TenConsecutiveErrors)
             {
                 try
                 {
-                    // Check if input files had changed
                     if (fileSet.CheckForChangesAndRememberTimestamp())
                     {
-                        // Reset the inactivity window
-                        elapsed.Restart();
+                        Console.WriteLine();
+                        Console.WriteLine($"{DateTime.Now:T}");
 
-                        // Process once.
+                        inactive.Restart();
                         await ProcessOnce();
                     }
 
-                    // Wait for some time...
+                    consecutiveErrors = 0;
                     await Task.Delay(TwoSeconds).ConfigureAwait(false);
                 }
-                catch (Exception warning) when (warning is FatalWarning or ValidationException)
+                catch (Exception err)
                 {
-                    // Inform. Wait a bit longer
-                    Console.WriteLine(warning.Message);
-                    await Task.Delay(FiveSeconds).ConfigureAwait(false);
-                }
-                catch (Exception unhandledException)
-                {
-                    // Inform. Wait a bit longer
-                    Print.ErrorSummaryAndDetails(unhandledException);
+                    Print.ErrorSummary(err);
+
+                    consecutiveErrors += 1;
                     await Task.Delay(FiveSeconds).ConfigureAwait(false);
                 }
             }
 
-            // We stopped because of no activity.
-            if (elapsed.Elapsed >= TenMinutes)
-            {
-                Console.WriteLine($" No changes detected for {TenMinutes.TotalMinutes:#,0} minutes. Looks like you forgot to stop me.");
-                Console.WriteLine($" Sorry... STOPPING.");
-            }
+            // Warn user that we stopped watching.
+            var reason = consecutiveErrors >= TenConsecutiveErrors ? $" There were {TenConsecutiveErrors} consecutive errors." : $" No changes detected for {TenMinutes.TotalMinutes:#,0} minutes.";
+            Console.WriteLine($" STOPPING | {reason}");
         }
 
         static async Task ProcessOnce()
         {
-            // WHY?
-            // Input and output configurations can change between runs.
-            // We create and destroy DI container for each simulation session.
-
-            var simSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
-
-            simSessionBuilder.Configuration
-                .AddSimulationDefaults()
-                .AddReportDefaults()
-                .AddRequiredYamlFile(InputConfigFileName)
-                .AddOptionalYamlFile(OptionalOutputConfigFileName);
-
-            simSessionBuilder.Services
-                .AddSimulationComponents()
-                .AddReportComponents()
-                ;
-
-            using (var simSession = simSessionBuilder.Build())
+            try
             {
-                // Resolve both (required) services...
-                ISimulation simulation = simSession.Services.GetRequiredService<ISimulation>();
-                ISimulationReports simReports = simSession.Services.GetRequiredService<ISimulationReports>();
+                // WHY?
+                // Input and output configurations can change between runs.
+                // We create and destroy DI container for each simulation session.
+                var simSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
 
-                // Run simulation
-                var timer = Stopwatch.StartNew();
-                var simResults = simulation.Run();
-                timer.Stop();
-                Print.Milestone("Simulation complete", timer.Elapsed);
+                // Apply default choices and user overrides.
+                simSessionBuilder.Configuration
+                    .AddSimulationDefaults()
+                    .AddReportDefaults()
+                    .AddRequiredYamlFile(InputConfigFileName)
+                    .AddOptionalYamlFile(OptionalOutputConfigFileName);
 
-                // Generate reports
-                timer.Restart();
-                await simReports.GenerateAsync(simResults);
-                timer.Stop();
-                Print.Milestone("Reports ready", timer.Elapsed);
+                // Assemble simulation and reporting components.
+                simSessionBuilder.Services
+                    .AddSimulationComponents()
+                    .AddReportComponents()
+                    ;
 
-                var sr = simResults.SurvivalRate;
-                var txtSurvivalRate = sr > 0.99 ? $"{sr:P1}" : $"{sr:P0}";
-                Console.WriteLine($" Survival rate: {txtSurvivalRate}");
+                using (var simSession = simSessionBuilder.Build())
+                {
+                    // Resolve required services
+                    ISimulation simulation = simSession.Services.GetRequiredService<ISimulation>();
+                    ISimulationReports simReports = simSession.Services.GetRequiredService<ISimulationReports>();
 
+                    // Run simulation
+                    var timer = Stopwatch.StartNew();
+                    var simResults = simulation.Run();
+                    timer.Stop();
+                    Print.Milestone("Simulation complete", timer.Elapsed);
+
+                    // Generate reports
+                    timer.Restart();
+                    await simReports.GenerateAsync(simResults);
+                    timer.Stop();
+                    Print.Milestone("Reports ready", timer.Elapsed);
+
+                    var sr = simResults.SurvivalRate;
+                    var txtSurvivalRate = sr > 0.99 ? $"{sr:P1}" : $"{sr:P0}";
+                    Console.WriteLine($" Survival rate: {txtSurvivalRate}");
+                }
+            }
+            catch (Exception warning) when (warning is FatalWarning or ValidationException)
+            {
+                // WHY: FatalWarning and ValidationException are information, not errors.
+                Console.WriteLine(warning.Message);
             }
         }
     }
