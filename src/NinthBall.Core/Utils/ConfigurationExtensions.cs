@@ -29,31 +29,28 @@ namespace NinthBall.Core
             ArgumentNullException.ThrowIfNull(resourceAssembly);
             ArgumentNullException.ThrowIfNull(resourcePathSelector);
 
-            var simOutputDefaultsResourceNames = resourceAssembly
+            var chosenResourceNames = resourceAssembly
                 .GetManifestResourceNames()
                 .Where(name => null != name)
                 .Where(name => name.Contains(resourcePathSelector, StringComparison.OrdinalIgnoreCase))
                 .Where(name => name.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            if (0 == simOutputDefaultsResourceNames.Count) throw new FatalWarning($"Zero resources found | Assembly: {resourceAssembly.GetName().Name} | **{resourcePathSelector}**.yaml");
+            if (0 == chosenResourceNames.Count) throw new FatalWarning($"Zero resources found | Assembly: {resourceAssembly.GetName().Name} | **{resourcePathSelector}**.yaml");
 
-            foreach (var res in simOutputDefaultsResourceNames) builder.AddYamlResource(resourceAssembly, res);
+            foreach (var resourceName in chosenResourceNames) builder.AddYamlResource(resourceAssembly, resourceName);
 
             return builder;
         }
 
-        public static IConfigurationBuilder AddYamlResource(this IConfigurationBuilder builder, Assembly resourceAssembly, string resourceNameEndsWith)
+        static IConfigurationBuilder AddYamlResource(this IConfigurationBuilder builder, Assembly resourceAssembly, string exactResourceName)
         {
             ArgumentNullException.ThrowIfNull(builder);
             ArgumentNullException.ThrowIfNull(resourceAssembly);
-            ArgumentNullException.ThrowIfNull(resourceNameEndsWith);
+            ArgumentNullException.ThrowIfNull(exactResourceName);
 
-            var resourceName = resourceAssembly.GetManifestResourceNames().SingleOrDefault(x => x.EndsWith(resourceNameEndsWith, StringComparison.OrdinalIgnoreCase))
-                ?? throw new Exception($"YAML resource not found | Assembly: {resourceAssembly.GetName().Name} | Resource: {resourceNameEndsWith}");
-
-            using var resStream = resourceAssembly.GetManifestResourceStream(resourceName)
-                ?? throw new Exception($"YAML resource stream was NULL | Assembly: {resourceAssembly.GetName().Name} | Resource: {resourceNameEndsWith}");
+            using var resStream = resourceAssembly.GetManifestResourceStream(exactResourceName)
+                ?? throw new Exception($"Missing or invalid YAML resource | Assembly: {resourceAssembly.GetName().Name} | '{exactResourceName}'");
 
             using var reader = new StreamReader(resStream);
             var yamlText = reader.ReadToEnd();
@@ -66,6 +63,7 @@ namespace NinthBall.Core
             ArgumentNullException.ThrowIfNull(yamlContent);
 
             // Convert YAML content to JSON text
+            // Patch string formatted numbers and string formatted percentage values.
             var jsonContent = NinthBall.Utils.Yaml2Json.YamlTextToJsonText(yamlContent)
                 .AsJsonObject()
                 .PatchNumbersAndPercentage()
