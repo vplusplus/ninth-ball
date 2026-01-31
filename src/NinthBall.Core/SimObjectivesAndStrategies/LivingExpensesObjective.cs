@@ -60,7 +60,7 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Living expenses | {LExp.FirstYearAmount:C0} first year (COLA/inflation adjusted){CSVStepDown}";
+        public override string ToString() => $"Living expenses | {LExp.FirstYearAmount:C0} first year (+Inflation){CSVStepDown}";
 
         string CSVStepDown => null != LExp.StepDown && LExp.StepDown.Count > 0
             ? $" | Stepdown: {string.Join(", ", LExp.StepDown.Select(x => $"[-{x.Reduction:C0} @ {x.AtAge}]"))}"

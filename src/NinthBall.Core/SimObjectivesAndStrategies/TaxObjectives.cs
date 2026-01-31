@@ -38,7 +38,7 @@ namespace NinthBall.Core
                 : TheTaxSystem.GuesstimateTaxes(context.PriorYear, Year0TaxRates);
         }
 
-        public override string ToString() => $"Taxes | Federal, LTCG and State tax-schedules indexed for inflation | Standard deduction: {Year0TaxRates.Federal.TaxDeductions:C0} | State exemptions: {Year0TaxRates.State.TaxDeductions:C0} (indexed)";
+        public override string ToString() => $"Taxes | Federal, LTCG and State tax brackets indexed for inflation | Standard deduction: {Year0TaxRates.Federal.TaxDeductions:C0} | State exemptions: {Year0TaxRates.State.TaxDeductions:C0} (indexed)";
     }
 
 }
