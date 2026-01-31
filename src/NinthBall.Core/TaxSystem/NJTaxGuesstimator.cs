@@ -12,7 +12,7 @@ namespace NinthBall.Core
         public Taxes.Tx GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates)
         {
             // Extract gross income from SimYear
-            var inc = priorYear.DeriveGrossIncome(TAMA);
+            var inc = priorYear.DeriveGrossIncome(TAMA).MinZero().RoundToCents();
 
             //......................................................
             // NEW JERSEY STATE TAX LOGIC
@@ -47,12 +47,12 @@ namespace NinthBall.Core
 
             return new Taxes.Tx
             (
-                Gross: njGrossIncome,
+                Gross:      njGrossIncome,
                 Deductions: pensionExclusion + taxRates.TaxDeductions,
-                Taxable: taxableTerminal,
-                MTR: stateTaxes.MarginalTaxRate,
+                Taxable:    taxableTerminal,
+                MTR:        stateTaxes.MarginalTaxRate,
                 MTRCapGain: stateTaxes.MarginalTaxRate,     // Rates are the same for OrdInc and LTCG
-                Tax: stateTaxes.TaxAmount
+                Tax:        stateTaxes.TaxAmount
             );
         }
 
@@ -67,15 +67,15 @@ namespace NinthBall.Core
             const int NJRetirementAge = 62;
 
             // Staggered Exclusion Tiers (Phased-out by Gross Income)
-            const double NJPensionExclusionFullLimit = 100000.0; // Income <= $100k
-            const double NJPensionExclusionHalfLimit = 125000.0; // Income <= $125k
+            const double NJPensionExclusionFullLimit    = 100000.0; // Income <= $100k 
+            const double NJPensionExclusionHalfLimit    = 125000.0; // Income <= $125k
             const double NJPensionExclusionQuarterLimit = 150000.0; // Income <= $150k
 
             // Allowed exclusion by tier limits.
             const double NJTier1PensionExclusion = 100000.0; // Full Exclusion (MFJ)
-            const double NJTier2PensionExclusion = 50000.0;  // 50% Exclusion
-            const double NJTier3PensionExclusion = 25000.0;  // 25% Exclusion
-            const double NJNoPensionExclusion = 0.0;      // The CLIFF
+            const double NJTier2PensionExclusion =  50000.0; // 50% Exclusion
+            const double NJTier3PensionExclusion =  25000.0; // 25% Exclusion
+            const double NJNoPensionExclusion    =      0.0; // The CLIFF
 
             if (age < NJRetirementAge) return 0;
 

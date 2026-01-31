@@ -46,12 +46,12 @@ namespace NinthBall.Core
 
             return new Taxes.Tx
             (
-                Gross: adjustedGrossIncome.Total,
+                Gross:      adjustedGrossIncome.Total,
                 Deductions: taxRatesOrdInc.TaxDeductions,
-                Taxable: taxableOrdInc + taxableINT + taxableDIV + taxableCapGain,
-                MTR: taxOnOrdInc.MarginalTaxRate,
+                Taxable:    taxableOrdInc + taxableINT + taxableDIV + taxableCapGain,
+                MTR:        taxOnOrdInc.MarginalTaxRate,
                 MTRCapGain: taxOnCapGain.MarginalTaxRate,
-                Tax: taxOnOrdInc.TaxAmount + taxOnCapGain.TaxAmount + niitTax
+                Tax:        taxOnOrdInc.TaxAmount + taxOnCapGain.TaxAmount + niitTax
             );
 
             static double TryReduce(ref double remaining, in double source)
@@ -121,17 +121,17 @@ namespace NinthBall.Core
         static AGI MinZero(AGI x) => new
         (
             OrdInc: Math.Max(0, x.OrdInc),
-            INT: Math.Max(0, x.INT),
-            QDI: Math.Max(0, x.QDI),
-            LTCG: Math.Max(0, x.LTCG)
+            INT:    Math.Max(0, x.INT),
+            QDI:    Math.Max(0, x.QDI),
+            LTCG:   Math.Max(0, x.LTCG)
         );
 
         static AGI RoundToCents(AGI x) => new
         (
             OrdInc: Math.Round(x.OrdInc, 2),
-            QDI: Math.Round(x.QDI, 2),
-            INT: Math.Round(x.INT, 2),
-            LTCG: Math.Round(x.LTCG, 2)
+            QDI:    Math.Round(x.QDI, 2),
+            INT:    Math.Round(x.INT, 2),
+            LTCG:   Math.Round(x.LTCG, 2)
         );
     }
 
