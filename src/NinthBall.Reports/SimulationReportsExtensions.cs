@@ -1,6 +1,6 @@
 ﻿
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using NinthBall.Core;
 using NinthBall.Reports;
 using NinthBall.Reports.Excel;
@@ -10,14 +10,12 @@ namespace NinthBall.Reports
 {
     public static class SimulationReportsExtensions
     {
-        public static IHostApplicationBuilder ComposeReports(this IHostApplicationBuilder builder, string simOutputConfigFileName)
-        {
-            builder.Configuration
-                .AddYamlResources(typeof(SimulationReports).Assembly, ".OutputDefaults.")
-                .AddYamlFile(simOutputConfigFileName)
-                ;
+        public static IConfigurationBuilder AddReportDefaults(this IConfigurationBuilder builder) => builder
+            .AddYamlResources(typeof(SimulationReports).Assembly, ".ReportDefaults.");
 
-            builder.Services
+        public static IServiceCollection AddReportComponents(this IServiceCollection services)
+        {
+            services
                 .RegisterConfigSection<OutputDefaults>()
                 .RegisterConfigSection<OutputOptions>("Outputs")
                 .AddSingleton<OutputViews>()
@@ -25,7 +23,7 @@ namespace NinthBall.Reports
                 .AddSingleton<ExcelReport>()
                 .AddSingleton<ISimulationReports, SimulationReports>();
 
-            return builder;
+            return services;
         }
     }
 }

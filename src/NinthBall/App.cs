@@ -15,8 +15,8 @@ namespace NinthBall
         static readonly TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
         static readonly TimeSpan TenMinutes  = TimeSpan.FromMinutes(10);
 
-        static string InputConfigFileName  => Path.GetFullPath(CmdLine.Required("In"));
-        static string OutputConfigFileName => Path.GetFullPath(CmdLine.Required("out"));
+        static string InputConfigFileName  => CmdLine.Required("In");
+        static string? OptionalOutputConfigFileName => CmdLine.Optional("out", null!);
         static bool WatchMode => CmdLine.Switch("watch");
         static bool PrintHelp => CmdLine.Switch("help");
 
@@ -29,7 +29,9 @@ namespace NinthBall
 
         static async Task ProcessForever()
         {
-            var fileSet = new WatchFileSet(InputConfigFileName, OutputConfigFileName);
+            var fileSet = new WatchFileSet(InputConfigFileName);
+            if (null != OptionalOutputConfigFileName) fileSet.AlsoWatch(OptionalOutputConfigFileName);
+
             var elapsed = Stopwatch.StartNew();
 
             while (elapsed.Elapsed < TenMinutes)
@@ -79,9 +81,15 @@ namespace NinthBall
 
             var simSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
 
-            simSessionBuilder
-                .ComposeSimulation(InputConfigFileName)
-                .ComposeReports(OutputConfigFileName)
+            simSessionBuilder.Configuration
+                .AddSimulationDefaults()
+                .AddReportDefaults()
+                .AddRequiredYamlFile(InputConfigFileName)
+                .AddOptionalYamlFile(OptionalOutputConfigFileName);
+
+            simSessionBuilder.Services
+                .AddSimulationComponents()
+                .AddReportComponents()
                 ;
 
             using (var simSession = simSessionBuilder.Build())

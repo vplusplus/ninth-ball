@@ -1,4 +1,5 @@
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -6,16 +7,17 @@ namespace NinthBall.Core
 {
     public static class SimulationExtensions
     {
-        public static IHostApplicationBuilder ComposeSimulation(this IHostApplicationBuilder builder, string simInputConfigFileName)
+        public static IConfigurationBuilder AddSimulationDefaults(this IConfigurationBuilder builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
-            ArgumentNullException.ThrowIfNull(simInputConfigFileName);
+            return builder.AddYamlResources(typeof(Simulation).Assembly, ".SimDefaults.");
+        }
 
-            builder.Configuration
-                .AddYamlResources(typeof(Simulation).Assembly, ".SimDefaults.")
-                .AddYamlFile(simInputConfigFileName);
+        public static IServiceCollection AddSimulationComponents(this IServiceCollection services)
+        {
+            ArgumentNullException.ThrowIfNull(services);
 
-            builder.Services
+            services
                 .RegisterConfigSection<SimulationSeed>()
                 .RegisterConfigSection<SimParams>()
                 .RegisterConfigSection<Initial>()
@@ -46,7 +48,7 @@ namespace NinthBall.Core
                 .AddSingleton<ISimulation, Simulation>()
                 ;
 
-            return builder;
+            return services;
         }
 
         static IServiceCollection AddSimulationObjectives(this IServiceCollection services)

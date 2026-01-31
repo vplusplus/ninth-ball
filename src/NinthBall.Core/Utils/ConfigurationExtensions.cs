@@ -13,15 +13,15 @@ namespace NinthBall.Core
         //......................................................................
         #region Can register YAML file or YAML text fragment to IConfiguration
         //......................................................................
-        public static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string yamlFileName)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-            ArgumentNullException.ThrowIfNull(yamlFileName);
-
-            return File.Exists(yamlFileName)
+        public static IConfigurationBuilder AddRequiredYamlFile(this IConfigurationBuilder builder, string yamlFileName) => 
+            File.Exists(yamlFileName)
                 ? builder.AddYamlContent(File.ReadAllText(yamlFileName)) 
                 : throw new FatalWarning($"Yaml config file not found | {Path.GetFullPath(yamlFileName)}");
-        }
+
+        public static IConfigurationBuilder AddOptionalYamlFile(this IConfigurationBuilder builder, string? yamlFileName) =>
+            !string.IsNullOrWhiteSpace(yamlFileName) && File.Exists(yamlFileName)
+                ? builder.AddYamlContent(File.ReadAllText(yamlFileName))
+                : builder;
 
         public static IConfigurationBuilder AddYamlResources(this IConfigurationBuilder builder, Assembly resourceAssembly, string resourcePathSelector)
         {
