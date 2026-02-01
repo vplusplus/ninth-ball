@@ -1,0 +1,8 @@
+
+#......................................................................
+# BlockBootstraps default options
+#......................................................................
+MovingBlockBootstrapOptions:
+  BlockSizes: [3, 4, 5]       # Catch sequence risk. Really no reason to second guess 3/4/5 years blocks
+  NoBackToBackOverlaps: false  # Avoids sampling back-to-back overlapping blocks with extreme outcome.
+

@@ -24,7 +24,6 @@ namespace NinthBall.Core
 {
     public sealed record ParametricProfiles
     (
-        [property: ValidateNested] ParametricProfiles.Parameters Original,
         [property: ValidateNested] ParametricProfiles.Parameters Expected,
         [property: ValidateNested] ParametricProfiles.Parameters Conservative,
         [property: ValidateNested] ParametricProfiles.Parameters HighRisk
