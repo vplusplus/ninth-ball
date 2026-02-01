@@ -24,6 +24,9 @@ ParametricProfiles:
     # Let's use a conservative negative correlation to model "bad times happen together".
     BondsInflationCorrelation: -0.1
 
+    # Optional mean reversion for inflation rate
+    InflationMeanRevStrength: 0.00
+
     Stocks:
       Mean: 10%
       Volatility: 18%
@@ -59,9 +62,10 @@ ParametricProfiles:
     # Inflation Mean 3% aligns with long-term structural inflation norms for a neutral forward-looking view.
     # --------------------------------------------------------
 
-    StocksBondCorrelation: -0.15
+    StocksBondCorrelation:      -0.15
     StocksInflationCorrelation: -0.2
-    BondsInflationCorrelation: -0.1
+    BondsInflationCorrelation:  -0.1
+    InflationMeanRevStrength:    0.10   # U.S. regime: inflation can drift, but the Fed eventually pulls it back.
 
     Stocks:
       Mean: 9.5%
@@ -99,9 +103,10 @@ ParametricProfiles:
     # Inflation Mean 3.5% and AutoCorrelation 0.8 models a persistent and higher inflation environment.
     # --------------------------------------------------------
 
-    StocksBondCorrelation: -0.05
+    StocksBondCorrelation:      -0.05
     StocksInflationCorrelation: -0.3
-    BondsInflationCorrelation: -0.25
+    BondsInflationCorrelation:  -0.25
+    InflationMeanRevStrength:    0.15   # Inflation is sticky (high ρ). But the Fed is not dead — eventually they grind inflation back down
 
     Stocks:
       Mean: 8.5%
@@ -139,9 +144,10 @@ ParametricProfiles:
     # StocksBondCorrelation negative 0.1 assumes less reliable hedging than the Expected baseline.
     # --------------------------------------------------------
 
-    StocksBondCorrelation: -0.1
+    StocksBondCorrelation:      -0.1
     StocksInflationCorrelation: -0.25
-    BondsInflationCorrelation: -0.2
+    BondsInflationCorrelation:  -0.2
+    InflationMeanRevStrength:    0.08   # Slightly weaker reversion than Expected: inflation can stay off‑target longer
 
     Stocks:
       Mean: 10%

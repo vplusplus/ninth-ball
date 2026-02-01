@@ -32,9 +32,10 @@ namespace NinthBall.Core
     {
         public readonly record struct Parameters
         (
-            [property: Range(-1.0, 1.0)] double StocksBondCorrelation,
-            [property: Range(-1.0, 1.0)] double StocksInflationCorrelation,
-            [property: Range(-1.0, 1.0)] double BondsInflationCorrelation,
+            [property: Range(-1.0,  1.0 )] double StocksBondCorrelation,
+            [property: Range(-1.0,  1.0 )] double StocksInflationCorrelation,
+            [property: Range(-1.0,  1.0 )] double BondsInflationCorrelation,
+            [property: Range( 0.00, 0.25)] double InflationMeanRevStrength,
             [property: ValidateNested] Dist Stocks,
             [property: ValidateNested] Dist Bonds,
             [property: ValidateNested] Dist Inflation
@@ -96,20 +97,28 @@ namespace NinthBall.Core
                 // Current year depends partly on previous year
                 // Z_t = rho * Z_{t-1} + sqrt(1 - rho^2) * epsilon_t
                 // Formula ensures the process remains standard normal (mean 0, var 1) if rho < 1.
-                double arStocks    = ApplyAR1(c1, prevZStocks, Options.Stocks.AutoCorrelation);
-                double arBonds     = ApplyAR1(c2, prevZBonds, Options.Bonds.AutoCorrelation);
+                double arStocks    = ApplyAR1(c1, prevZStocks,    Options.Stocks.AutoCorrelation);
+                double arBonds     = ApplyAR1(c2, prevZBonds,     Options.Bonds.AutoCorrelation);
                 double arInflation = ApplyAR1(c3, prevZInflation, Options.Inflation.AutoCorrelation);
-                prevZStocks        = arStocks;
-                prevZBonds         = arBonds;
-                prevZInflation     = arInflation;
+
+                // Apply mean reversion, nudge toward long-run mean (0 in Z-space)
+                // Note: Mean reversion applied only to inflation rate.
+                double mrStocks    = arStocks;
+                double mrBonds     = arBonds;
+                double mrInflation = ApplyOptionalMeanReversion(arInflation, Options.InflationMeanRevStrength);
+
+                // Carry forward the optionally-mean-reversed values
+                prevZStocks        = mrStocks;
+                prevZBonds         = mrBonds;
+                prevZInflation     = mrInflation;       
 
                 // Apply Cornish-Fisher (Skewness/Kurtosis)
                 // Warps the bell curve.
                 // Negative skew ~> deeper crashes.
                 // High kurtosis ~> rare but extreme events.
-                double cfStocks    = Statistics.CornishFisher(arStocks, Options.Stocks.Skewness, Options.Stocks.Kurtosis);
-                double cfBonds     = Statistics.CornishFisher(arBonds, Options.Bonds.Skewness, Options.Bonds.Kurtosis);
-                double cfInflation = Statistics.CornishFisher(arInflation, Options.Inflation.Skewness, Options.Inflation.Kurtosis);
+                double cfStocks    = Statistics.CornishFisher(mrStocks,    Options.Stocks.Skewness, Options.Stocks.Kurtosis);
+                double cfBonds     = Statistics.CornishFisher(mrBonds,     Options.Bonds.Skewness, Options.Bonds.Kurtosis);
+                double cfInflation = Statistics.CornishFisher(mrInflation, Options.Inflation.Skewness, Options.Inflation.Kurtosis);
 
                 // Scale by Mean and Volatility.
                 // Converts abstract scaling factor into percentage returns.
@@ -124,7 +133,14 @@ namespace NinthBall.Core
             }
 
             return new ROISequence(sequence.AsMemory());
-        }   
+
+        }
+
+        private static double ApplyOptionalMeanReversion(double z, double lambda)
+        {
+            if (lambda <= 0) return z; // disabled
+            return (1 - lambda) * z;   // pulls toward long-run mean (0 in Z-space)
+        }
 
         private static double NextSafeDouble(Random random)
         {
@@ -145,12 +161,13 @@ namespace NinthBall.Core
             readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[yearIndex];
         }
 
-        public override string ToString() => $"[S,B,I] = {StrMean} {StrVolatility} {StrSkewness} {StrKurtosis} {StrAutoCorr} | {StrCorr} | Cap: ±60%";
+        public override string ToString() => $"[S,B,I] = {StrMean} {StrVolatility} {StrSkewness} {StrKurtosis} {StrAutoCorr} {StrMeanRev} | {StrCorr} | Cap: ±60%";
         string StrMean       => $"μ[{Options.Stocks.Mean:P1}, {Options.Bonds.Mean:P1}, {Options.Inflation.Mean:P1}]";
         string StrVolatility => $"σ[{Options.Stocks.Volatility:P1}, {Options.Bonds.Volatility:P1}, {Options.Inflation.Volatility:P1}]";
         string StrSkewness   => $"γ1[{Options.Stocks.Skewness:F1}, {Options.Bonds.Skewness:F1}, {Options.Inflation.Skewness:F1}]";
         string StrKurtosis   => $"γ2[{Options.Stocks.Kurtosis:F1}, {Options.Bonds.Kurtosis:F1}, {Options.Inflation.Kurtosis:F1}]";
         string StrAutoCorr   => $"ρ1[{Options.Stocks.AutoCorrelation:F2}, {Options.Bonds.AutoCorrelation:F2}, {Options.Inflation.AutoCorrelation:F2}]";
+        string StrMeanRev    => $"λ[na, na, {Options.InflationMeanRevStrength:F2}]";
         string StrCorr       => $"ρ[SB, IS, IB] = [{Options.StocksBondCorrelation:F1}, {Options.StocksInflationCorrelation:F1}, {Options.BondsInflationCorrelation:F1}]";
 
     }
