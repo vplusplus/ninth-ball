@@ -1,4 +1,15 @@
 
+Outputs:
+  Html: 
+    File: D:/Junk/SimReport.html
+    View: Essential
+    Iterations: [0, 5000, 9999] 
+
+  Excel: 
+    File: D:/Junk/SimReport.xlsx
+    View: Essential
+
+
 SimParams:
   StartAge: 60
   NoOfYears: 35
@@ -11,13 +22,13 @@ SimParams:
       TieredTax,
       VariableWithdrawal,
       RequiredMinimumDistribution,
-      RandomHistoricalGrowth,
+      HighRiskGrowth,
       YearlyRebalance
 
       # Available objectives:
       # AdditionalIncomes,
       # AnnualFees,
-      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, ParametricGrowth,
+      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, ExpectedGrowth, ConservativeGrowth, HighRiskGrowth
       # LivingExpenses,
       # FixedWithdrawal, VariableWithdrawal,
       # RequiredMinimumDistribution,

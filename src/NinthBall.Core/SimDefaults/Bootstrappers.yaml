@@ -6,7 +6,7 @@ MovingBlockBootstrapOptions:
   BlockSizes: [3, 4, 5]       # Catch sequence risk. Really no reason to second guess 3/4/5 years blocks
   NoBackToBackOverlaps: true  # Avoids sampling back-to-back overlapping blocks with extreme outcome.
 
-ParametricBootstrapOptions:
+ZZZ-SeeProfiles-ParametricBootstrapOptions:
   # When Stocks crash (panic), investors often sell stocks and buy Bonds (safe haven). 
   # This drives Stock prices down and Bond prices up, creating a negative correlation.
   # While this varies by decade (it was positive in the 1980s/90s), 
@@ -26,21 +26,21 @@ ParametricBootstrapOptions:
   BondsInflationCorrelation: -0.1
 
   Stocks:
-    MeanReturn: 10%
+    Mean: 10%
     Volatility: 18%
     Skewness: -0.5          # Prudent Stress: Slightly negative to capture downside bias without extreme "wipeouts"
     Kurtosis: 4             # Prudent Stress: "Fat tails" (Normal=3). 4.0 models a 2008-style crisis every ~25 years.
     AutoCorrelation: 0.05   # Momentum: Slight positive correlation to model market regimes.
 
   Bonds:
-    MeanReturn: 5%
+    Mean: 5%
     Volatility: 8%
     Skewness: 0             # Bonds are generally more symmetric in their annual return distribution.
     Kurtosis: 3             # Normal distribution for bonds.
     AutoCorrelation: 0
 
   Inflation:
-    MeanReturn: 3%
+    Mean: 3%
     Volatility: 2%
     Skewness: 0.5           # Inflation shocks are often skewed to the upside
     Kurtosis: 3

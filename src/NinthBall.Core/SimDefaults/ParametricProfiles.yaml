@@ -1,0 +1,166 @@
+﻿
+ParametricProfiles:
+
+  Original:
+    # TODO: Drop this profile after integrating multiple profiles and baselining against the original
+    # We started with below values.
+    # This profile will be dropped soon after initial testing.
+    # Reasoning:
+    # When Stocks crash (panic), investors often sell stocks and buy Bonds (safe haven). 
+    # This drives Stock prices down and Bond prices up, creating a negative correlation.
+    # While this varies by decade (it was positive in the 1980s/90s), 
+    # it has been structurally negative for most of the 21st century. 
+    # -0.15 is a prudent estimate that acknowledges this benefit without overstating it.
+    StocksBondCorrelation: -0.15
+
+    # Stocks tend to struggle slightly when inflation rises unexpectedly (valuation compression).
+    StocksInflationCorrelation: -0.2
+
+    # Bonds hate inflation (yields rise, prices fall). This linkage is weak but generally positive
+    # in terms of yields (negative for prices). 
+    # However, for annual real returns, bonds often struggle during inflation spikes.
+    # A slight negative or near-zero correlation is safer for stress testing. 
+    # But technically, high inflation usually hurts nominal bond returns -> prices drop.
+    # Let's use a conservative negative correlation to model "bad times happen together".
+    BondsInflationCorrelation: -0.1
+
+    Stocks:
+      Mean: 10%
+      Volatility: 18%
+      Skewness: -0.5          # Prudent Stress: Slightly negative to capture downside bias without extreme "wipeouts"
+      Kurtosis: 4             # Prudent Stress: "Fat tails" (Normal=3). 4.0 models a 2008-style crisis every ~25 years.
+      AutoCorrelation: 0.05   # Momentum: Slight positive correlation to model market regimes.
+
+    Bonds:
+      Mean: 5%
+      Volatility: 8%
+      Skewness: 0             # Bonds are generally more symmetric in their annual return distribution.
+      Kurtosis: 3             # Normal distribution for bonds.
+      AutoCorrelation: 0
+
+    Inflation:
+      Mean: 3%
+      Volatility: 2%
+      Skewness: 0.5           # Inflation shocks are often skewed to the upside
+      Kurtosis: 3
+      AutoCorrelation: 0.7    # Inflation tends to be "sticky" (high autocorrelation)
+  
+  Expected:
+    # --------------------------------------------------------
+    # Profile intent: Empirically realistic forward-looking model
+    # --------------------------------------------------------
+    # Goal: best-effort approximation of long-run structural reality
+    # No stress padding, no optimism padding, no catastrophe modeling
+    # Chosen values:
+    # Stocks Mean 9.5% represents historical average equity growth for a best-effort approximation of long-run reality.
+    # Stocks Volatility 18% sets the standard market turbulence level without adding stress padding or optimism bias.
+    # StocksBondCorrelation negative 0.15 models a realistic environment where bonds act as a moderate diversifier to equities.
+    # Stocks Skewness negative 0.3 and Kurtosis 3.5 captures empirically realistic tail risk without catastrophe modeling.
+    # Inflation Mean 3% aligns with long-term structural inflation norms for a neutral forward-looking view.
+    # --------------------------------------------------------
+
+    StocksBondCorrelation: -0.15
+    StocksInflationCorrelation: -0.2
+    BondsInflationCorrelation: -0.1
+
+    Stocks:
+      Mean: 9.5%
+      Volatility: 18%
+      Skewness: -0.3
+      Kurtosis: 3.5
+      AutoCorrelation: 0.05
+
+    Bonds:
+      Mean: 4.5%
+      Volatility: 8%
+      Skewness: -0.1
+      Kurtosis: 3.2
+      AutoCorrelation: 0.05
+
+    Inflation:
+      Mean: 3%
+      Volatility: 2.2%
+      Skewness: 0.4
+      Kurtosis: 3.2
+      AutoCorrelation: 0.7
+
+  Conservative:
+    # --------------------------------------------------------
+    # Profile intent: Structurally harder-than-history future
+    # --------------------------------------------------------
+    # Goal: stress planning, capital preservation, downside realism
+    # No collapse modeling, no apocalypse, no economic extinction assumptions
+    # Chosen values:
+    # Stocks Mean 8.5% reduces growth expectations for a structurally harder economic future. 
+    # Stocks Volatility 21% increases swings to test the portfolio floor and capital preservation. 
+    # StocksBondCorrelation negative 0.05 simulates a future where bonds provide less protection during crashes. 
+    # Stocks Skewness negative 0.6 reflects more frequent and severe downside surprises. 
+    # Stocks Kurtosis 4.5 is a fat tail adjustment to account for more extreme outlier events. 
+    # Inflation Mean 3.5% and AutoCorrelation 0.8 models a persistent and higher inflation environment.
+    # --------------------------------------------------------
+
+    StocksBondCorrelation: -0.05
+    StocksInflationCorrelation: -0.3
+    BondsInflationCorrelation: -0.25
+
+    Stocks:
+      Mean: 8.5%
+      Volatility: 21%
+      Skewness: -0.6
+      Kurtosis: 4.5
+      AutoCorrelation: 0.1
+
+    Bonds:
+      Mean: 3.5%
+      Volatility: 9.5%
+      Skewness: -0.3
+      Kurtosis: 3.8
+      AutoCorrelation: 0.1
+
+    Inflation:
+      Mean: 3.5%
+      Volatility: 2.8%
+      Skewness: 0.6
+      Kurtosis: 3.6
+      AutoCorrelation: 0.8
+
+  HighRisk:
+    # --------------------------------------------------------
+    # Profile intent: Structurally more unstable future
+    # --------------------------------------------------------
+    # Goal: higher volatility, higher dispersion, higher uncertainty
+    # Economics-grounded instability, not mathematical extremity
+    # Chosen values:
+    # Stocks Volatility 25% is the primary driver for maximum dispersion of outcomes and market instability. 
+    # Stocks Mean 10% reflects the higher risk premium required for enduring extreme volatility.
+    # Stocks AutoCorrelation 0.15 models persistent market trends where shocks linger. 
+    # Bond Volatility 12% increases fixed-income risk to simulate unstable debt markets. 
+    # Inflation Volatility 3.5% pushes price uncertainty to its peak for a high-uncertainty environment. 
+    # StocksBondCorrelation negative 0.1 assumes less reliable hedging than the Expected baseline.
+    # --------------------------------------------------------
+
+    StocksBondCorrelation: -0.1
+    StocksInflationCorrelation: -0.25
+    BondsInflationCorrelation: -0.2
+
+    Stocks:
+      Mean: 10%
+      Volatility: 25%
+      Skewness: -0.2
+      Kurtosis: 4.2
+      AutoCorrelation: 0.15
+
+    Bonds:
+      Mean: 4.5%
+      Volatility: 12%
+      Skewness: -0.2
+      Kurtosis: 3.6
+      AutoCorrelation: 0.1
+
+    Inflation:
+      Mean: 3.2%
+      Volatility: 3.5%
+      Skewness: 0.5
+      Kurtosis: 3.5
+      AutoCorrelation: 0.75
+

@@ -29,12 +29,45 @@ namespace NinthBall.Core
             }
         }
 
-        public override string ToString() => $"Growth | {Bootstrapper}";
+        public override string ToString() => $"{MyShortName} | {Bootstrapper}";
+
+        string MyShortName => this.GetType().Name.Replace("Objective", string.Empty);
     }
 
-    [StrategyFamily(StrategyFamily.Growth)] sealed class FlatGrowthObjective(SimParams SimParams, FlatBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
-    [StrategyFamily(StrategyFamily.Growth)] sealed class HistoricalGrowthObjective(SimParams SimParams, SequentialBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
-    [StrategyFamily(StrategyFamily.Growth)] sealed class RandomHistoricalGrowthObjective(SimParams SimParams, MovingBlockBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
-    [StrategyFamily(StrategyFamily.Growth)] sealed class ParametricGrowthObjective(SimParams SimParams, ParametricBootstrapper Bootstrapper) : GrowthObjective(SimParams, Bootstrapper) { }
+    [StrategyFamily(StrategyFamily.Growth)] 
+    sealed class FlatGrowthObjective(SimParams SimParams, FlatGrowth Options) 
+        : GrowthObjective( SimParams, new FlatBootstrapper(Options) )
+    { 
+    }
+
+    [StrategyFamily(StrategyFamily.Growth)] 
+    sealed class HistoricalGrowthObjective(SimParams SimParams, HistoricalReturns History) 
+        : GrowthObjective( SimParams, new SequentialBootstrapper(History) ) 
+    { 
+    }
+
+    [StrategyFamily(StrategyFamily.Growth)] 
+    sealed class RandomHistoricalGrowthObjective(SimParams SimParams, SimulationSeed SimSeed, HistoricalBlocks HBlocks, MovingBlockBootstrapOptions Options) 
+        : GrowthObjective( SimParams, new MovingBlockBootstrapper(SimSeed, HBlocks, Options) ) 
+    { 
+    }
+
+    [StrategyFamily(StrategyFamily.Growth)] 
+    sealed class ExpectedGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles) 
+        : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.Expected) )
+    { 
+    }
+
+    [StrategyFamily(StrategyFamily.Growth)]
+    sealed class ConservativeGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles)
+        : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.Conservative) )
+    {
+    }
+
+    [StrategyFamily(StrategyFamily.Growth)]
+    sealed class HighRiskGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles)
+        : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.HighRisk) )
+    {
+    }
 
 }

@@ -56,7 +56,7 @@ namespace NinthBall.Core
         public static TaxRateSchedule Inflate(this TaxRateSchedule TS, double inflationMultiplier, double jitterGuard)
         {
             if (inflationMultiplier <= 0) throw new ArgumentOutOfRangeException(nameof(inflationMultiplier), "Multiplier must be positive.");
-            if (inflationMultiplier > 10.0) throw new ArgumentOutOfRangeException($"Inflation multiplier too large | Check logic and math | Expecting < 10.0 | Received {inflationMultiplier:F2}");
+            if (inflationMultiplier > 20.0) throw new ArgumentOutOfRangeException($"Inflation multiplier too large | Check logic and math | Expecting < 20.0 | Received {inflationMultiplier:F2}");
             if (jitterGuard < 10.0 || jitterGuard > 100.0) throw new ArgumentOutOfRangeException($"Invalid jitterGuard | Expecting  between $10.0 and $100.0 | Received {jitterGuard:C2}");
 
             // Optimization 1: InflationMultiplier 1.0 means no indexing.

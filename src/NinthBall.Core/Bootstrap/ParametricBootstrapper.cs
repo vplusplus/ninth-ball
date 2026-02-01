@@ -4,29 +4,38 @@ using NinthBall.Utils;
 
 namespace NinthBall.Core
 {
-    public sealed record ParametricBootstrapOptions
+    public sealed record ParametricProfiles
     (
-        [property: Range(-1.0, 1.0)]        double StocksBondCorrelation,
-        [property: Range(-1.0, 1.0)]        double StocksInflationCorrelation,
-        [property: Range(-1.0, 1.0)]        double BondsInflationCorrelation,
-        [property: ValidateNested]          ParametricBootstrapOptions.Dist Stocks,
-        [property: ValidateNested]          ParametricBootstrapOptions.Dist Bonds,
-        [property: ValidateNested]          ParametricBootstrapOptions.Dist Inflation)
+        [property: ValidateNested] ParametricProfiles.Parameters Original,
+        [property: ValidateNested] ParametricProfiles.Parameters Expected,
+        [property: ValidateNested] ParametricProfiles.Parameters Conservative,
+        [property: ValidateNested] ParametricProfiles.Parameters HighRisk
+    )
     {
+        public readonly record struct Parameters
+        (
+            [property: Range(-1.0, 1.0)] double StocksBondCorrelation,
+            [property: Range(-1.0, 1.0)] double StocksInflationCorrelation,
+            [property: Range(-1.0, 1.0)] double BondsInflationCorrelation,
+            [property: ValidateNested] Dist Stocks,
+            [property: ValidateNested] Dist Bonds,
+            [property: ValidateNested] Dist Inflation
+        );
+
         public readonly record struct Dist
         (
-            [property: Range( -1.0,  1.0 )] double MeanReturn,
-            [property: Range(  0.0,  1.0 )] double Volatility,
-            [property: Range(-10.0, 10.0 )] double Skewness,
-            [property: Range(  0.0, 10.0 )] double Kurtosis,
-            [property: Range( -1.0,  1.0 )] double AutoCorrelation
+            [property: Range(  0.01,   0.50)] double Mean,
+            [property: Range(  0.01,   0.50)] double Volatility,
+            [property: Range(-10.00,  10.00)] double Skewness,
+            [property: Range(  0.00,  10.00)] double Kurtosis,
+            [property: Range( -1.00,   1.00)] double AutoCorrelation
         );
     }
 
     /// <summary>
     /// Generates repeatable synthetic sequence of returns using statistical parameters.
     /// </summary>
-    internal sealed class ParametricBootstrapper(SimulationSeed SimSeed, ParametricBootstrapOptions Options) : IBootstrapper
+    sealed class ParametricBootstrapper(SimulationSeed SimSeed, ParametricProfiles.Parameters Options) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
@@ -89,9 +98,9 @@ namespace NinthBall.Core
                 // Stats has no limits; but market does; clamp the extremes.
                 // The hard-coded clamps define the behavioral contract (i.e., “personality”) of the parametric bootstrapper.
                 // These values are not configuration knobs and must not be treated as tunable parameters.
-                double rStocks    = Math.Clamp(Options.Stocks.MeanReturn    + cfStocks    * Options.Stocks.Volatility,    -0.60, +0.60);
-                double rBonds     = Math.Clamp(Options.Bonds.MeanReturn     + cfBonds     * Options.Bonds.Volatility,     -0.15, +0.25);
-                double rInflation = Math.Clamp(Options.Inflation.MeanReturn + cfInflation * Options.Inflation.Volatility, -0.10, +0.30);
+                double rStocks    = Math.Clamp(Options.Stocks.Mean    + cfStocks    * Options.Stocks.Volatility,    -0.60, +0.60);
+                double rBonds     = Math.Clamp(Options.Bonds.Mean     + cfBonds     * Options.Bonds.Volatility,     -0.15, +0.25);
+                double rInflation = Math.Clamp(Options.Inflation.Mean + cfInflation * Options.Inflation.Volatility, -0.10, +0.30);
 
                 sequence[i] = new HROI(0, rStocks, rBonds, rInflation);
 
@@ -136,7 +145,8 @@ namespace NinthBall.Core
         }
 
         // Describe...
-        public override string ToString() => $"Parametric Bootstrap | Stocks - Mean: {Options.Stocks.MeanReturn:P1} Volatility: {Options.Stocks.Volatility:P1} | Bonds - Mean: {Options.Bonds.MeanReturn:P1} Volatility: {Options.Bonds.Volatility:P1} | Cap: +/- 60%";
+        public override string ToString() => $"Parametric Bootstrap | Stocks - Mean: {Options.Stocks.Mean:P1} Volatility: {Options.Stocks.Volatility:P1} | Bonds - Mean: {Options.Bonds.Mean:P1} Volatility: {Options.Bonds.Volatility:P1} | Cap: +/- 60%";
 
     }
+    
 }
