@@ -5,9 +5,7 @@ using NinthBall.Utils;
 
 namespace NinthBall.Core
 {
-    /// <summary>
-    /// Optional configuration for MBB internals
-    /// </summary>
+    // Configuration options for the MBB internals
     public sealed record MovingBlockBootstrapOptions
     (
         [property: Required] IReadOnlyList<int> BlockSizes,
@@ -111,7 +109,6 @@ namespace NinthBall.Core
         // Describe...
         public override string ToString() => $"Random historical sequence using {CSVBlockSizes}-year moving blocks from {HBlocks.MinYear} to {HBlocks.MaxYear} data {TxtNoBackToBack}";
         string CSVBlockSizes => string.Join("/", Options.BlockSizes);
-        //string TxtNoBackToBack => Options.NoBackToBackOverlaps ? "(Avoids back-to-back repetition of extreme outcomes)" : string.Empty;
         string TxtNoBackToBack => Options.NoBackToBackOverlaps ? "(Avoids back-to-back overlapping years of extreme outcomes)" : string.Empty;
 
     }
