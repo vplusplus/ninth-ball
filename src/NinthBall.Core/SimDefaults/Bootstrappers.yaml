@@ -4,7 +4,7 @@
 #......................................................................
 MovingBlockBootstrapOptions:
   BlockSizes: [3, 4, 5]       # Catch sequence risk. Really no reason to second guess 3/4/5 years blocks
-  NoBackToBackOverlaps: true  # Avoids sampling back-to-back overlapping blocks with extreme outcome.
+  NoBackToBackOverlaps: false  # Avoids sampling back-to-back overlapping blocks with extreme outcome.
 
 ZZZ-SeeProfiles-ParametricBootstrapOptions:
   # When Stocks crash (panic), investors often sell stocks and buy Bonds (safe haven). 

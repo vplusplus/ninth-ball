@@ -1,8 +1,10 @@
 ﻿
 namespace NinthBall.Core
 {
-    abstract class GrowthObjective(SimParams SimParams, IBootstrapper Bootstrapper) : ISimObjective
+    abstract class GrowthObjective(SimParams SimParams, IBootstrapper bootstrapper) : ISimObjective
     {
+        protected readonly IBootstrapper Bootstrapper = bootstrapper;
+
         int ISimObjective.MaxIterations => Bootstrapper.GetMaxIterations(SimParams.NoOfYears);
 
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex)
@@ -35,39 +37,40 @@ namespace NinthBall.Core
     }
 
     [StrategyFamily(StrategyFamily.Growth)] 
-    sealed class FlatGrowthObjective(SimParams SimParams, FlatGrowth Options) 
-        : GrowthObjective( SimParams, new FlatBootstrapper(Options) )
-    { 
+    sealed class FlatGrowthObjective(SimParams SimParams, FlatGrowth Options) : GrowthObjective( SimParams, new FlatBootstrapper(Options) )
+    {
+        public override string ToString() => $"Inflation & growth | {Bootstrapper}";
     }
 
     [StrategyFamily(StrategyFamily.Growth)] 
-    sealed class HistoricalGrowthObjective(SimParams SimParams, HistoricalReturns History) 
-        : GrowthObjective( SimParams, new SequentialBootstrapper(History) ) 
-    { 
+    sealed class HistoricalGrowthObjective(SimParams SimParams, HistoricalReturns History) : GrowthObjective( SimParams, new SequentialBootstrapper(History) ) 
+    {
+        public override string ToString() => $"Inflation & growth | {Bootstrapper}";
     }
 
     [StrategyFamily(StrategyFamily.Growth)] 
     sealed class RandomHistoricalGrowthObjective(SimParams SimParams, SimulationSeed SimSeed, HistoricalBlocks HBlocks, MovingBlockBootstrapOptions Options) 
         : GrowthObjective( SimParams, new MovingBlockBootstrapper(SimSeed, HBlocks, Options) ) 
-    { 
+    {
+        public override string ToString() => $"Inflation & growth | {Bootstrapper}";
     }
 
     [StrategyFamily(StrategyFamily.Growth)] 
-    sealed class ExpectedGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles) 
-        : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.Expected) )
-    { 
+    sealed class ExpectedGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles) : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.Expected) )
+    {
+        public override string ToString() => $"Inflation & growth | Expected: {Bootstrapper}";
     }
 
     [StrategyFamily(StrategyFamily.Growth)]
-    sealed class ConservativeGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles)
-        : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.Conservative) )
+    sealed class ConservativeGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles) : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.Conservative) )
     {
+        public override string ToString() => $"Inflation & growth | Conservative: {Bootstrapper}";
     }
 
     [StrategyFamily(StrategyFamily.Growth)]
-    sealed class HighRiskGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles)
-        : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.HighRisk) )
+    sealed class HighRiskGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles) : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.HighRisk) )
     {
+        public override string ToString() => $"Inflation & growth | HighRisk: {Bootstrapper}";
     }
 
 }

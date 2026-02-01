@@ -2,6 +2,24 @@
 using System.ComponentModel.DataAnnotations;
 using NinthBall.Utils;
 
+//..............................................................
+#region Some data points:
+//..............................................................
+// S&P 500
+// 1931         : -43.34%   (our clamp -60%)
+// 1933         : +53.99%   (our clamp +60%)
+// Treasury bonds:
+// 2022         : -13.10%   (our clamp -15%)
+// 2008         : +20.10%   (our clamp +25%) 
+// Inflation rate
+// 1917         :  17.8%    (World War I)
+// March 1980   :  14.8%    (Modern Era High: Post-1950)
+// 1949         :  -2.1%    (Modern Era Low Post-1950)
+// 1032         : -10.3%    (Great Depression)
+//..............................................................
+
+#endregion
+
 namespace NinthBall.Core
 {
     public sealed record ParametricProfiles
@@ -103,23 +121,6 @@ namespace NinthBall.Core
                 double rInflation = Math.Clamp(Options.Inflation.Mean + cfInflation * Options.Inflation.Volatility, -0.10, +0.30);
 
                 sequence[i] = new HROI(0, rStocks, rBonds, rInflation);
-
-                //..............................................................
-                // Some data points:
-                //..............................................................
-                // S&P 500
-                // 1931         : -43.34%   (our clamp -60%)
-                // 1933         : +53.99%   (our clamp +60%)
-                // Treasury bonds:
-                // 2022         : -13.10%   (our clamp -15%)
-                // 2008         : +20.10%   (our clamp +25%) 
-                // Inflation rate
-                // 1917         :  17.8%    (World War I)
-                // March 1980   :  14.8%    (Modern Era High: Post-1950)
-                // 1949         :  -2.1%    (Modern Era Low Post-1950)
-                // 1032         : -10.3%    (Great Depression)
-                //..............................................................
-
             }
 
             return new ROISequence(sequence.AsMemory());
@@ -144,9 +145,19 @@ namespace NinthBall.Core
             readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[yearIndex];
         }
 
-        // Describe...
-        public override string ToString() => $"Parametric Bootstrap | Stocks - Mean: {Options.Stocks.Mean:P1} Volatility: {Options.Stocks.Volatility:P1} | Bonds - Mean: {Options.Bonds.Mean:P1} Volatility: {Options.Bonds.Volatility:P1} | Cap: +/- 60%";
+        public override string ToString() => $"[S,B,I] = {StrMean} {StrVolatility} {StrSkewness} {StrKurtosis} {StrAutoCorr} | {StrCorr} | Cap: ±60%";
+        string StrMean       => $"μ[{Options.Stocks.Mean:P1}, {Options.Bonds.Mean:P1}, {Options.Inflation.Mean:P1}]";
+        string StrVolatility => $"σ[{Options.Stocks.Volatility:P1}, {Options.Bonds.Volatility:P1}, {Options.Inflation.Volatility:P1}]";
+        string StrSkewness   => $"γ1[{Options.Stocks.Skewness:F1}, {Options.Bonds.Skewness:F1}, {Options.Inflation.Skewness:F1}]";
+        string StrKurtosis   => $"γ2[{Options.Stocks.Kurtosis:F1}, {Options.Bonds.Kurtosis:F1}, {Options.Inflation.Kurtosis:F1}]";
+        string StrAutoCorr   => $"ρ1[{Options.Stocks.AutoCorrelation:F2}, {Options.Bonds.AutoCorrelation:F2}, {Options.Inflation.AutoCorrelation:F2}]";
+        string StrCorr       => $"ρ[SB, IS, IB] = [{Options.StocksBondCorrelation:F1}, {Options.StocksInflationCorrelation:F1}, {Options.BondsInflationCorrelation:F1}]";
 
     }
-    
+
 }
+
+// Sample output messages:
+// Inflation & growth | Expected: [S,B,I] = μ[9.5%, 4.5%, 3.0%] σ[18.0%, 8.0%, 2.2%] γ1[-0.3, -0.1, 0.4] γ2[3.5, 3.2, 3.2] ρ1[0.1, 0.1, 0.7] | ρ[SB, IS, IB] = [-0.1, -0.2, -0.1] | Cap: ±60%
+// Inflation & growth | Conservative: [S,B,I] = μ[8.5%, 3.5%, 3.5%] σ[21.0%, 9.5%, 2.8%] γ1[-0.6, -0.3, 0.6] γ2[4.5, 3.8, 3.6] ρ1[0.1, 0.1, 0.8] | ρ[SB, IS, IB] = [-0.1, -0.3, -0.2] | Cap: ±60%
+// Inflation & growth | HighRisk: [S,B,I] = μ[10.0%, 4.5%, 3.2%] σ[25.0%, 12.0%, 3.5%] γ1[-0.2, -0.2, 0.5] γ2[4.2, 3.6, 3.5] ρ1[0.1, 0.1, 0.8] | ρ[SB, IS, IB] = [-0.1, -0.2, -0.2] | Cap: ±60%

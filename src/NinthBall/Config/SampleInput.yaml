@@ -16,6 +16,7 @@ SimParams:
   Iterations: 10000
   Objectives: [
 
+      YearlyRebalance,
       AdditionalIncomes,
       LivingExpenses,
       AnnualFees,
@@ -23,7 +24,7 @@ SimParams:
       VariableWithdrawal,
       RequiredMinimumDistribution,
       HighRiskGrowth,
-      YearlyRebalance
+      
 
       # Available objectives:
       # AdditionalIncomes,

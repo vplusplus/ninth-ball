@@ -158,7 +158,7 @@ ParametricProfiles:
       AutoCorrelation: 0.1
 
     Inflation:
-      Mean: 3.2%
+      Mean: 3.7%
       Volatility: 3.5%
       Skewness: 0.5
       Kurtosis: 3.5
