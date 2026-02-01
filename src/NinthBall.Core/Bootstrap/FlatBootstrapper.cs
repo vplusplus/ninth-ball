@@ -22,6 +22,6 @@ namespace NinthBall.Core
         HROI IROISequence.this[int yearIndex] => SameROI;
 
         // Describe...
-        public override string ToString() => $"Stocks: {SameROI.StocksROI:P1} Bonds: {SameROI.BondsROI:P1} Inflation: {SameROI.InflationRate:P1}";
+        public override string ToString() => $"Stocks: {SameROI.StocksROI:P2} Bonds: {SameROI.BondsROI:P2} Inflation: {SameROI.InflationRate:P2}";
     }
 }
