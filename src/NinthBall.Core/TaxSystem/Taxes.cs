@@ -10,6 +10,24 @@ namespace NinthBall.Core
     }
 
     /// <summary>
+    /// Represents prior year earnings, the unadjusted gross incomes from prior year.
+    /// </summary>
+    public readonly record struct PYEarnings
+    (
+        int    Age,             // WHY: Earning on 55 is not same as earning at 73
+        double PreTaxWDraw,     // Withdrawals from tax deferred account
+        double SS,              // Social security income
+        double Ann,             // Annuity incomes
+        double BondsYield,      // Bonds yield from PostTax accounts
+        double Dividends,       // Dividends from PostTax accounts
+        double CapGains         // Capital gains from PostTax accounts
+    )
+    {
+        public readonly double Total => PreTaxWDraw + SS + Ann + BondsYield + Dividends + CapGains;
+    }
+
+
+    /// <summary>
     /// Can compute and consolidate tax guesstimation from multiple tax authorities.
     /// </summary>
     public interface ITaxSystem

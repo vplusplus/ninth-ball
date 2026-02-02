@@ -1,22 +1,37 @@
 
 Outputs:
   Html: 
-    File: D:/Junk/SimReport.html
-    View: FedTax
+    File: D:/Junk/SimReport-BEFORE-Decoupling.html
+    View: Debug
     ZZIterations: [0, 5000, 9999] 
 
   Excel: 
-    File: D:/Junk/SimReport.xlsx
+    File: D:/Junk/SimReport-BEFORE-Decoupling.xlsx
     View: Essential
 
 Views:
   
   Debug: [
-    Year, Age, JanPreTax, JanPostTax, 
-    MTROrdInc, MTRCapGain, MTRState,
-    TaxPCT, TaxPCTFed, TaxPCTState,
-    PYTaxes,
-    MXInf, MXFedInf, MXNJInf,
-    InflationRate
+
+        Year,             
+        Age,              
+
+        JanNet,           
+        DecNet,           
+
+        FedAGI,           
+        FedTax,           
+        StaAGI,           
+        StaTax,           
+        Taxes,            
+
+        Infl,
+        MXInf,            
+        MXInfFed,         
+        MXInfSta,         
+
+        ROI,              
+        AnnROI,           
+        RealCAGR,         
     ]
 
