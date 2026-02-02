@@ -5,8 +5,8 @@ SimulationSeed:
 # Few lingering contants, optionally configurable
 TaxAndMarketAssumptions: 
 
-  SSFederalNonTaxableThreshold:   $32000.0    # Federal SS non-taable threshold,  statutory and not inflation-adjusted.
-  SSFederal50PctTaxableThreshold: $44000.0    # Federal SS 50% taxable threshold, statutory and not inflation-adjusted.
+  SSFederalNonTaxableThreshold:   $32000.0    # MFJ 2026 - Federal SS non-taable threshold,  statutory and not inflation-adjusted.
+  SSFederal50PctTaxableThreshold: $44000.0    # MFJ 2026 - Federal SS 50% taxable threshold, statutory and not inflation-adjusted.
 
   NIITThreshold:                  $250000.0   # NIIT thresholds are not indexed for inflation under current law.
   NIITRate:                       3.8%        # NIIT tax rate
