@@ -66,6 +66,10 @@ namespace NinthBall.Reports
         MTRCapGain,             // Marginal tax rate - Federal long term cap gains
         MTRState,               // Marginal tax rate - State
 
+        MTTOrdInc,              // Indexed marginal tax threshold - Federal Ord Income
+        MTTCapGain,             // Indexed marginal tax threshold - Federal long term cap gains
+        MTTState,               // Indexed marginal tax threshold - State
+
         FedAGI,                 // Federal - Adjusted gross income
         FedDeduct,              // Standard deductions
         FedTaxable,             // Federal taxable income

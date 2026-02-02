@@ -47,12 +47,14 @@ namespace NinthBall.Core
 
             return new Taxes.Tx
             (
-                Gross:      njGrossIncome,
-                Deductions: pensionExclusion + taxRates.TaxDeductions,
-                Taxable:    taxableTerminal,
-                MTR:        stateTaxes.MarginalTaxRate,
-                MTRCapGain: stateTaxes.MarginalTaxRate,     // Rates are the same for OrdInc and LTCG
-                Tax:        stateTaxes.TaxAmount
+                Gross:          njGrossIncome,
+                Deductions:     pensionExclusion + taxRates.TaxDeductions,
+                Taxable:        taxableTerminal,
+                MTR:            stateTaxes.MarginalTaxRate,
+                MTT:            stateTaxes.MarginalTaxThreshold,
+                MTRCapGain:     stateTaxes.MarginalTaxRate,         // Rates are the same for OrdInc and LTCG
+                MTTCapGain:     stateTaxes.MarginalTaxThreshold,    // Thesholds are the same for OrdInc and LTCG
+                Tax:            stateTaxes.TaxAmount
             );
         }
 

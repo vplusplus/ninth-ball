@@ -42,12 +42,14 @@ namespace NinthBall.Core
 
         public readonly record struct Tx
         (
-            double Gross,        // The Statutory Inclusion Base (Fed AGI or State Gross)
-            double Deductions,   // Total subtractors (Exclusions + Exemptions + Deductions)
-            double Taxable,      // The amount subject to the rates
-            double MTR,          // Marginal rate on ordinary income
-            double MTRCapGain,   // Marginal rate on long-term gains
-            double Tax           // Total liability in dollars            
+            double Gross,           // The Statutory Inclusion Base (Fed AGI or State Gross)
+            double Deductions,      // Total subtractors (Exclusions + Exemptions + Deductions)
+            double Taxable,         // The amount subject to the rates
+            double MTR,             // Marginal rate on ordinary income
+            double MTT,             // Indexed marginal rate threshold amount on ordinary income (since we will be indexing)
+            double MTRCapGain,      // Marginal rate on long-term gains
+            double MTTCapGain,      // Indexed marginal rate threshold amount on long-term gains (since we will be indexing)
+            double Tax              // Total liability in dollars            
         );
 
         // Total taxes.

@@ -7,9 +7,9 @@ namespace NinthBall.Core
     public static class TaxRateCalculator
     {
         /// <summary>
-        /// Returns Marginal tax rate and the tax amount.
+        /// Returns the marginal tax rate, indexed marginal tax rate threshold and the tax amount.
         /// </summary>
-        public static (double MarginalTaxRate, double TaxAmount) CalculateStackedEffectiveTax(this TaxRateSchedule TS, double incrementalIncome, double baseIncome = 0.0)
+        public static (double MarginalTaxRate, double MarginalTaxThreshold, double TaxAmount) CalculateStackedEffectiveTax(this TaxRateSchedule TS, double incrementalIncome, double baseIncome = 0.0)
         {
             // Safety first...
             incrementalIncome = Math.Max(0, incrementalIncome);
@@ -18,11 +18,13 @@ namespace NinthBall.Core
             double tax = 0;
             double lower = baseIncome;
             double upper = baseIncome + incrementalIncome;
+
             double marginalRate = 0.0;
+            double marginalRateThreshold = 0.0;
 
             for (int i = 0; i < TS.Brackets.Count; i++)
             {
-                double currentThreshold = TS.Brackets[i].Threshold;
+                double currentThreshold = marginalRateThreshold = TS.Brackets[i].Threshold;
                 double currentRate = marginalRate = TS.Brackets[i].MTR;
 
                 // Next threshold defines the boundary; last bracket goes to infinity
@@ -45,8 +47,9 @@ namespace NinthBall.Core
 
             return 
             (
-                MarginalTaxRate: marginalRate,
-                TaxAmount:       tax
+                MarginalTaxRate:        marginalRate,
+                MarginalTaxThreshold:   marginalRateThreshold,
+                TaxAmount:              tax
             );
         }
 

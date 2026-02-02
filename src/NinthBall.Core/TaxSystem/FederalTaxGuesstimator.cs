@@ -46,12 +46,14 @@ namespace NinthBall.Core
 
             return new Taxes.Tx
             (
-                Gross:      adjustedGrossIncome.Total,
-                Deductions: taxRatesOrdInc.TaxDeductions,
-                Taxable:    taxableOrdInc + taxableINT + taxableDIV + taxableCapGain,
-                MTR:        taxOnOrdInc.MarginalTaxRate,
-                MTRCapGain: taxOnCapGain.MarginalTaxRate,
-                Tax:        taxOnOrdInc.TaxAmount + taxOnCapGain.TaxAmount + niitTax
+                Gross:          adjustedGrossIncome.Total,
+                Deductions:     taxRatesOrdInc.TaxDeductions,
+                Taxable:        taxableOrdInc + taxableINT + taxableDIV + taxableCapGain,
+                MTR:            taxOnOrdInc.MarginalTaxRate,
+                MTT:            taxOnOrdInc.MarginalTaxThreshold,  
+                MTRCapGain:     taxOnCapGain.MarginalTaxRate,
+                MTTCapGain:     taxOnCapGain.MarginalTaxThreshold,
+                Tax:            taxOnOrdInc.TaxAmount + taxOnCapGain.TaxAmount + niitTax
             );
 
             static double TryReduce(ref double remaining, in double source)

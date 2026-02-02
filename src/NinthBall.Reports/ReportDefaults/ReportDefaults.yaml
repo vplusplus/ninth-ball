@@ -79,8 +79,10 @@ OutputDefaults:
         FedAGI,    
         FedDeduct, 
         FedTaxable,
-        MTROrdInc, 
+        MTROrdInc,
+        MTTOrdInc,
         MTRCapGain,
+        MTTCapGain,
         FedTax,    
      
         Taxes,     
@@ -108,6 +110,7 @@ OutputDefaults:
         StaDeduct,
         StaTaxable,
         MTRState,
+        MTTState,
         StaTax,
      
         Taxes,     

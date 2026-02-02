@@ -53,7 +53,7 @@ namespace UnitTests
 
             foreach (var (income, expectedTax) in TestData)
             {
-                var (marginalTaxRate, taxAmount) = FallbackFed2026.CalculateStackedEffectiveTax(income);
+                var (marginalTaxRate, marginalTaxThreshold, taxAmount) = FallbackFed2026.CalculateStackedEffectiveTax(income);
                 //Console.WriteLine($"{income,12:C0} | {marginalTaxRate,8:P2} | Tax: {taxAmount,10:C0}");
                 Assert.AreEqual(Math.Round(expectedTax, 2), Math.Round(taxAmount, 2), $"Input: {income:C0} | Expected Tax: {expectedTax:C2} | Actual Tax: {taxAmount:C2} ");
             }
@@ -88,7 +88,7 @@ namespace UnitTests
 
             foreach (var (baseIncome, incrementalIncome, expectedTax) in TestData)
             {
-                var (marginalTaxRate, taxAmount) = FallbackFed2026.CalculateStackedEffectiveTax(incrementalIncome, baseIncome: baseIncome);
+                var (marginalTaxRate, marginalTaxThreshold, taxAmount) = FallbackFed2026.CalculateStackedEffectiveTax(incrementalIncome, baseIncome: baseIncome);
                 //Console.WriteLine($"{baseIncome,12:C0} + {incrementalIncome,-12:C0} | {marginalTaxRate,8:P2} | Tax: {taxAmount,10:C0}");
                 Assert.AreEqual(Math.Round(expectedTax, 2), Math.Round(taxAmount, 2), $" {baseIncome:C0} + {incrementalIncome:C0} | Expected Tax: {expectedTax:C2} | Actual Tax: {taxAmount:C2} ");
             }

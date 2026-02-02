@@ -91,10 +91,13 @@ namespace NinthBall.Reports
             [CID.Taxes]             = (it, in y) => y.Taxes.Total,
             [CID.TaxPCT]            = (it, in y) => y.Taxes.TaxPCT,
 
-            // Marginal tax rates
+            // Marginal tax rates and indexed marginal tax rate thresholds
             [CID.MTROrdInc]         = (it, in y) => y.Taxes.Federal.MTR,
             [CID.MTRCapGain]        = (it, in y) => y.Taxes.Federal.MTRCapGain,
             [CID.MTRState]          = (it, in y) => y.Taxes.State.MTR,
+            [CID.MTTOrdInc]         = (it, in y) => y.Taxes.Federal.MTT,
+            [CID.MTTCapGain]        = (it, in y) => y.Taxes.Federal.MTTCapGain,
+            [CID.MTTState]          = (it, in y) => y.Taxes.State.MTT,
 
             // All about uncle Sam
             [CID.FedAGI]            = (it, in y) => y.Taxes.Federal.Gross,
