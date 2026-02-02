@@ -4,7 +4,7 @@ namespace NinthBall.Core
     /// <summary>
     /// New Jersey state tax guesstimator - applies NJ-specific rules.
     /// </summary>
-    public sealed class NJTaxGuesstimator(TaxAndMarketAssumptions TAMA) : ITaxGuesstimator
+    public sealed class NJTaxGuesstimator(TaxAndMarketAssumptions TAMA) : ITaxAuthority
     {
         const double HundredPCT = 1.00;
         const double TenDollars = 10.00;

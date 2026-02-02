@@ -8,8 +8,8 @@ namespace NinthBall.Core
     /// </summary>
     public sealed class SamAndHisBrothers
     (
-        [FromKeyedServices(TaxAuthority.Federal)] ITaxGuesstimator federalGuesstimator,
-        [FromKeyedServices(TaxAuthority.State)] ITaxGuesstimator stateGuesstimator,
+        [FromKeyedServices(TaxAuthority.Federal)] ITaxAuthority federalGuesstimator,
+        [FromKeyedServices(TaxAuthority.State)] ITaxAuthority stateGuesstimator,
         TaxAndMarketAssumptions TAMA
     ) : ITaxSystem
     {

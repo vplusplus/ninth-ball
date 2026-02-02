@@ -35,8 +35,8 @@ namespace NinthBall.Core
                 .RegisterConfigSection<ParametricProfiles>()
 
                 .AddSingleton<ITaxSystem, SamAndHisBrothers>()
-                .AddKeyedSingleton<ITaxGuesstimator, FederalTaxGuesstimator>(TaxAuthority.Federal)
-                .AddKeyedSingleton<ITaxGuesstimator, NJTaxGuesstimator>(TaxAuthority.State)
+                .AddKeyedSingleton<ITaxAuthority, FederalTaxGuesstimator>(TaxAuthority.Federal)
+                .AddKeyedSingleton<ITaxAuthority, NJTaxGuesstimator>(TaxAuthority.State)
                 .AddSingleton<HistoricalReturns>()
                 .AddSingleton<HistoricalBlocks>()
                 .AddSingleton<SimObjectivesSelector>()

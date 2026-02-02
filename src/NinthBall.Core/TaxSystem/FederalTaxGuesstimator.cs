@@ -4,7 +4,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Federal tax guesstimator - applies IRS rules for income tax calculation.
     /// </summary>
-    public sealed class FederalTaxGuesstimator(TaxAndMarketAssumptions TAMA) : ITaxGuesstimator
+    public sealed class FederalTaxGuesstimator(TaxAndMarketAssumptions TAMA) : ITaxAuthority
     {
         const double EightyFivePCT = 0.85;
         const double FiftyPCT = 0.50;

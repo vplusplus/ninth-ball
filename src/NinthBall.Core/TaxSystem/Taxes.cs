@@ -20,7 +20,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Can guesstimate taxes for a specific jurisdiction (Federal, State, City, County).
     /// </summary>
-    public interface ITaxGuesstimator
+    public interface ITaxAuthority
     {
         Taxes.Tx GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates);
     }
