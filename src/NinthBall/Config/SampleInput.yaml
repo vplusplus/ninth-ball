@@ -2,7 +2,7 @@
 Outputs:
   Html: 
     File: D:/Junk/SimReport.html
-    View: Essential
+    View: TaxView
     Iterations: [0, 5000, 9999] 
 
   Excel: 

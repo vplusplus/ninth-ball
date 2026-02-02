@@ -12,61 +12,84 @@ namespace NinthBall.Reports
         Year,                   // Year index (0-based)
         Age,                    // Completed age at the start of the year.
 
-        JanTotal,               // Total asset value in January (start of year)
-        JanValue,               // Approximate indicative value (JanTotal), less taxes and fees
+        RBL,                    // Total stock assets change due to rebalancing (Bonds is mirror image)
+        RBLPreTax,              // PreTax stock assets change due to rebalancing (Bonds is mirror image)
+        RBLPostTax,             // PostTax stock assets change due to rebalancing (Bonds is mirror image)
+
+
+        Jan,                    // Total asset value in January (start of year)
+        JanNet,                 // Approximate indicative value (JanTotal), less taxes and fees
+        Dec,                    // Total Assets (PreTax + PostTax + Cash) in Dec
+        DecNet,                 // Approximate indicative value (Dec), less taxes and fees
+
         JanPreTax,              // PreTax (401k/IRA) balance in January
-        JanPreTaxAlloc,         // Stock allocation % for PreTax assets in JanTotal
         JanPostTax,             // PostTax (Brokerage) balance in January
-        JanPostTaxAlloc,        // Stock allocation % for PostTax assets in JanTotal
         JanCash,                // Cash balance in January
+        JanPreTaxAlloc,         // Stock allocation % for PreTax assets in JanTotal
+        JanPostTaxAlloc,        // Stock allocation % for PostTax assets in JanTotal
+        DecPreTax,              // PreTax (401k/IRA) balance in December
+        DecPostTax,             // PostTax (Brokerage) balance in December
+        DecCash,                // Cash balance in December
+        DecPreTaxAlloc,         // Stock allocation % for PreTax assets in Dec
+        DecPostTaxAlloc,        // Stock allocation % for PostTax assets in Dec
 
-        Fees,                   // Total investment/advisory fees for the year
-        PYTaxes,                // Total taxes paid (Sum of Ord, Div, Int, CapGains)
-
-        MTROrdInc,
-        MTRCapGain,
-        MTRState,
-
-        TaxPCT,                 // For every $ that came in, what PCT went to taxes
-        TaxPCTFed,              // For every $ that came in, what PCT went to Federal taxes
-        TaxPCTState,            // For every $ that came in, what PCT went to State taxes
-
-        MXInf,
-        MXFedInf,
-        MXNJInf,
-
+        Incomes,                // Total Income (SS + Annuity)
+        SS,                     // Social Security income received
+        Ann,                    // Annuity income received
 
         LivExp,                 // Current Year Expenses (Inflation adjusted)
 
-        SS,                     // Social Security income received
-        Ann,                    // Annuity income received
-        Incomes,                // Total Income (SS + Annuity)
+        Fees,                   // Total investment/advisory fees for the year
+        FeesPreTax,
+        FeesPostTax,
 
         XPreTax,                // Net change in PreTax account (withdrawals as negative)
         XPostTax,               // Net change in PostTax account (deposits - withdrawals)
         XCash,                  // Net change in Cash account (deposits - withdrawals)
 
-        DecTotal,               // Total Assets (PreTax + PostTax + Cash) in Dec
-        DecValue,               // Approximate indicative value (Dec), less taxes and fees
-        DecPreTax,              // PreTax (401k/IRA) balance in December
-        DecPreTaxAlloc,         // Stock allocation % for PreTax assets in Dec
-        DecPostTax,             // PostTax (Brokerage) balance in December
-        DecPostTaxAlloc,        // Stock allocation % for PostTax assets in Dec
-        DecCash,                // Cash balance in December
+        Change,                 // Total change in assets contributed by ROI on investments
+        ChangePreTax,           // PreTax change in assets contributed by ROI on investments
+        ChangePostTax,          // PostTax change in assets contributed by ROI on investments
 
         LikeYear,               // Representative year used for historical ROI data
-        ROI,                    // Effective Portfolio ROI (Blended Stock/Bond/Cash)
-        AnnROI,                 // Annualized effective Portfolio ROI (Blended Stock/Bond/Cash)
-        ROIAmount,              // Total changes contributed by ROI growth or loss
+        Infl,                   // Consumer Price Index (CPI-U)
         ROIStocks,              // Return on Stocks for the year (PCT)
         ROIBonds,               // Return on Bonds for the year (PCT)
-        InflationRate,          // Consumer Price Index (CPI-U)
-
+        ROI,                    // Effective Portfolio ROI (Blended Stock/Bond/Cash)
+        AnnROI,                 // Annualized effective Portfolio ROI (Blended Stock/Bond/Cash)
         RealCAGR,               // Annualized Real Effective ROI (only 'Real' data in our table)
 
-        RBLStocks,              // Total stock assets change due to rebalancing
-        RBLBonds                // Total bond assets change due to rebalancing
+        Taxes,                  // Total taxes paid (Sum of Ord, Div, Int, CapGains)    
+        TaxPCT,                 // For every $ that came in, what PCT went to taxes
 
+        MTROrdInc,              // Marginal tax rate - Federal Ord Income
+        MTRCapGain,             // Marginal tax rate - Federal long term cap gains
+        MTRState,               // Marginal tax rate - State
+
+        FedAGI,                 // Federal - Adjusted gross income
+        FedDeduct,              // Standard deductions
+        FedTaxable,             // Federal taxable income
+        FedTax,                 // Total taxes payable to Federal
+        FedTaxPCT,              // For every $ that came in, what PCT went to Federal taxes
+
+        StaAGI,                 // State - Adjusted gross income
+        StaDeduct,              // State exemptions (and may be Property tax deductions)
+        StaTaxable,             // State taxable income
+        StaTax,                 // Total taxes payable to State
+        StaTaxPCT,              // For every $ that came in, what PCT went to State taxes
+
+        GI,                     // Unadjusted gross income from all income sources (zero deductions)
+        GIPreTax,
+        GISS,
+        GIAnn,
+        GIBonds,
+        GIDiv,
+        GICapGain,
+
+        MXInf,                  // Running inflation multiplier
+        MXInfFedTax,            // Running Federal tax adjustment inflation multiplier
+        MXInfStaTax,            // Running State tax adjustment inflation multiplier
+        MXGrowth                // Running portfolio growth multiplier
 
     }
 }

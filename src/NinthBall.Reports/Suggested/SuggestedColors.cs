@@ -23,8 +23,8 @@ namespace NinthBall.Reports
             // Anchor information:
             // Neither good or bad on their own.
             // Can reach zero, can't go negative. Single color.
-            [CID.JanValue]  = (SimIteration it, in SimYear y) => ColorHint.Primary,
-            [CID.DecValue]  = (SimIteration it, in SimYear y) => ColorHint.Primary,
+            [CID.JanNet]  = (SimIteration it, in SimYear y) => ColorHint.Primary,
+            [CID.DecNet]  = (SimIteration it, in SimYear y) => ColorHint.Primary,
 
             // Market noise: 
             // Individual asset returns are uncolored to focus the user's attention 
@@ -49,7 +49,7 @@ namespace NinthBall.Reports
             // Environmental Signal (Terrain)
             // Indicates when the environment is Friendly (Green), Normal (Grey), or Hostile (Red).
             // This provides the context for WHY the ROI might be lagging or succeeding.
-            [CID.InflationRate] = (it, in y) => InflationHostilityRedGreyGreen(y.ROI.InflationRate),
+            [CID.Infl] = (it, in y) => InflationHostilityRedGreyGreen(y.ROI.InflationRate),
 
             // Cashflow and Portfolio Changes (Polarity Signals)
             // Simple Red/Green banding based on the "Direction" of the money.
@@ -57,7 +57,6 @@ namespace NinthBall.Reports
             [CID.LivExp]    = (it, in y) => ColorHint.None,
             [CID.XPreTax]   = (it, in y) => PolarityRedGreen(y.XPreTax),
             [CID.XPostTax]  = (it, in y) => PolarityRedGreen(y.XPostTax),
-            [CID.ROIAmount] = (it, in y) => PolarityRedGreen(y.Change.Total),
 
         }.AsReadOnly();
 

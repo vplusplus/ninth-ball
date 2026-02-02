@@ -9,27 +9,30 @@ namespace NinthBall.Reports
         {
             [CID.Year]            = "Yr",
 
-            [CID.JanValue]        = "~Jan",
-            [CID.DecValue]        = "~Dec",
+            //[CID.JanNet]        = "~Jan",
+            //[CID.DecNet]        = "~Dec",
 
-            [CID.JanPreTax]       = "Jan 401K",
-            [CID.JanPostTax]      = "Jan Inv",
+            //[CID.JanPreTax]       = "Jan 401K",
+            //[CID.JanPostTax]      = "Jan Inv",
 
-            [CID.DecPreTax]       = "Dec 401K",
-            [CID.DecPostTax]      = "Dec Inv",
+            //[CID.DecPreTax]       = "Dec 401K",
+            //[CID.DecPostTax]      = "Dec Inv",
 
-            [CID.LikeYear]        = "Like",
-            [CID.ROI]             = "ROI",
-            [CID.ROIStocks]       = "Stocks",
-            [CID.ROIBonds]        = "Bonds",
-            [CID.InflationRate]   = "Inf",
-            [CID.AnnROI]          = "AnnROI",
-            [CID.RealCAGR]        = "RealCAGR",
+            //[CID.LikeYear]        = "Like",
+            //[CID.ROI]             = "ROI",
+            //[CID.ROIStocks]       = "Stocks",
+            //[CID.ROIBonds]        = "Bonds",
+            //[CID.Infl]   = "Inf",
+            //[CID.AnnROI]          = "AnnROI",
 
-            [CID.JanPreTaxAlloc]  = "STK%",
-            [CID.JanPostTaxAlloc] = "STK%",
-            [CID.DecPreTaxAlloc]  = "STK%",
-            [CID.DecPostTaxAlloc] = "STK%",
+
+            //[CID.JanPreTaxAlloc]  = "STK%",
+            //[CID.JanPostTaxAlloc] = "STK%",
+            //[CID.DecPreTaxAlloc]  = "STK%",
+            //[CID.DecPostTaxAlloc] = "STK%",
+
+
+            [CID.RealCAGR]        = "CAGR(r)",
 
 
         }.AsReadOnly();

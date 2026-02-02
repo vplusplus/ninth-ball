@@ -6,23 +6,20 @@ namespace NinthBall.Core
     {
         extension(in Assets A)
         {
-            // Approximate value, less taxes (Indicative value, not exact)
-            // This is not cash in hand, if you try to withdraw all amount, will push you into a higher tax bracket.
-            // Ignoring cash basis, and loss-harvesting - Taxes are overstated.
-            // PreTax  - 100% taxable at 25%
-            // PostTax - Assuming all gains are long term gains, 
-            public double ApproxValue => (A.PreTax.Amount * 0.75) + (A.PostTax.Amount * 0.85) + A.Cash.Amount;
-
-            public static string ApproxValueDesc => "Approx value (401K x 75% + Inv x 85%)";
-
+            // Total asset value.
             public double Total => A.PreTax.Amount + A.PostTax.Amount + A.Cash.Amount;
+
+            // Approximate Tax-adjusted portfolio value (indicative value)
+            // This is not cash in hand, if you try to withdraw all amount, will push you into a higher tax bracket.
+            // BY-DESIGN: Ignoring cash basis, loss-harvesting (Taxes are overstated), all are qualified or long term gains (Taxes are understated).
+            public double AfterTaxNetWorth => (A.PreTax.Amount * 0.75) + (A.PostTax.Amount * 0.85) + A.Cash.Amount;
 
         }
 
         extension(Rebalanced R)
         {
-            public double Stocks => R.PreTax.StocksChange + R.PostTax.StocksChange;     // Total change in stocks asssets due to rebalancing
-            public double Bonds  => R.PreTax.BondsChange  + R.PostTax.BondsChange;      // Total change in stocks asssets due to rebalancing
+            public double StocksChange => R.PreTax.StocksChange + R.PostTax.StocksChange;     // Total change in stocks assets due to rebalancing
+            public double BondsChange  => R.PreTax.BondsChange  + R.PostTax.BondsChange;      // Total change in stocks assets due to rebalancing
         }
 
 

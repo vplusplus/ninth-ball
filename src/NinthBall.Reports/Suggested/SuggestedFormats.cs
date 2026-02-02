@@ -1,4 +1,7 @@
 ﻿
+using DocumentFormat.OpenXml.Office.Y2022.FeaturePropertyBag;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using static NinthBall.Reports.FormatHint;
 
 namespace NinthBall.Reports
@@ -15,37 +18,43 @@ namespace NinthBall.Reports
 
 
         static readonly IReadOnlyDictionary<CID, FormatHint> Formats = new Dictionary<CID, FormatHint>()
+            .WithColumnFormats(FormatHint.F0,
+                CID.Year,
+                CID.Age,
+                CID.LikeYear
+            )
+            .WithColumnFormats( FormatHint.F2, 
+                CID.MXInf, 
+                CID.MXInfFedTax, 
+                CID.MXInfStaTax, 
+                CID.MXGrowth
+            )
+            .WithColumnFormats( FormatHint.P0,
+                CID.JanPreTaxAlloc,
+                CID.JanPostTaxAlloc,
+                CID.DecPreTaxAlloc,
+                CID.DecPostTaxAlloc
+            )
+            .WithColumnFormats( FormatHint.P1,
+                CID.Infl,
+                CID.ROIStocks,
+                CID.ROIBonds,
+                CID.ROI,
+                CID.AnnROI,
+                CID.RealCAGR,
+                CID.TaxPCT,
+                CID.FedTaxPCT,
+                CID.StaTaxPCT,
+                CID.MTROrdInc,
+                CID.MTRCapGain,
+                CID.MTRState
+            )
+            .AsReadOnly();
+
+        private static Dictionary<CID, FormatHint> WithColumnFormats(this Dictionary<CID, FormatHint> dict, FormatHint formatHint, params CID[] columnIds)
         {
-            [CID.Year]  = F0,
-            [CID.Age]   = F0,
-
-            [CID.JanPreTaxAlloc]    = P0,
-            [CID.JanPostTaxAlloc]   = P0,
-            [CID.DecPreTaxAlloc]    = P0,
-            [CID.DecPostTaxAlloc]   = P0,
-
-            [CID.LikeYear]      = F0,
-            [CID.ROIStocks]     = P1,
-            [CID.ROIBonds]      = P1,
-            [CID.InflationRate] = P1,
-            [CID.ROI]           = P1,
-            [CID.AnnROI]        = P1,
-            [CID.RealCAGR]      = P1,
-
-
-            [CID.MTROrdInc]     = P1,
-            [CID.MTRCapGain]    = P1,
-            [CID.MTRState]      = P1,
-            [CID.TaxPCT]        = P1,
-            [CID.TaxPCTFed]     = P1,
-            [CID.TaxPCTState]   = P1,
-
-            [CID.MXInf]    = F2,
-            [CID.MXFedInf] = F2,
-            [CID.MXNJInf]  = F2,
-
-
-        }.AsReadOnly();
-
+            foreach (var columnId in columnIds) dict[columnId] = formatHint;
+            return dict;
+        }
     }
 }
