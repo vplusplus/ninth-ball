@@ -87,8 +87,8 @@ namespace NinthBall.Reports
         GICapGain,
 
         MXInf,                  // Running inflation multiplier
-        MXInfFedTax,            // Running Federal tax adjustment inflation multiplier
-        MXInfStaTax,            // Running State tax adjustment inflation multiplier
+        MXInfFed,               // Running Federal tax adjustment inflation multiplier
+        MXInfSta,               // Running State tax adjustment inflation multiplier
         MXGrowth                // Running portfolio growth multiplier
 
     }

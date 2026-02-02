@@ -28,11 +28,22 @@ namespace NinthBall.Reports
             }
             catch (Exception err)
             {
-                err = err is AggregateException aggErr ? aggErr.Flatten() : err;
+                try
+                {
+                    err = err is AggregateException aggErr ? aggErr.Flatten() : err;
 
-                FileSystem.EnsureDirectoryForFile(ErrorHtmlFileName);
-                await HtmlReport.GenerateErrorHtmlAsync(err, ErrorHtmlFileName);
-                throw new FatalWarning($"Report generation failed | See {ErrorHtmlFileName}");
+                    FileSystem.EnsureDirectoryForFile(ErrorHtmlFileName);
+                    await HtmlReport.GenerateErrorHtmlAsync(err, ErrorHtmlFileName);
+                    Console.WriteLine($"Report generation failed | See {ErrorHtmlFileName}");
+                }
+                catch 
+                {
+                    // WHY:
+                    // Exception ignored by design
+                    // We are already in an error condition.
+                }
+
+                throw;
             }
         }
     }

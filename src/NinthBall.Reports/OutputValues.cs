@@ -121,8 +121,8 @@ namespace NinthBall.Reports
 
             // Running multipliers
             [CID.MXInf]             = (it, in y) => y.Metrics.InflationMultiplier,
-            [CID.MXInfFedTax]       = (it, in y) => y.Metrics.FedTaxInflationMultiplier,
-            [CID.MXInfStaTax]       = (it, in y) => y.Metrics.StateTaxInflationMultiplier,
+            [CID.MXInfFed]       = (it, in y) => y.Metrics.FedTaxInflationMultiplier,
+            [CID.MXInfSta]       = (it, in y) => y.Metrics.StateTaxInflationMultiplier,
             [CID.MXGrowth]          = (it, in y) => y.Metrics.GrowthMultiplier,
 
 

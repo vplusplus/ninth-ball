@@ -7,32 +7,24 @@ namespace NinthBall.Reports
 
         static readonly IReadOnlyDictionary<CID, string> ColumnNames = new Dictionary<CID, string>()
         {
-            [CID.Year]            = "Yr",
+            [CID.Year]              = "Yr",
+            [CID.LikeYear]          = "Like",
 
-            //[CID.JanNet]        = "~Jan",
-            //[CID.DecNet]        = "~Dec",
-
-            //[CID.JanPreTax]       = "Jan 401K",
-            //[CID.JanPostTax]      = "Jan Inv",
-
-            //[CID.DecPreTax]       = "Dec 401K",
-            //[CID.DecPostTax]      = "Dec Inv",
-
-            //[CID.LikeYear]        = "Like",
-            //[CID.ROI]             = "ROI",
-            //[CID.ROIStocks]       = "Stocks",
-            //[CID.ROIBonds]        = "Bonds",
-            //[CID.Infl]   = "Inf",
-            //[CID.AnnROI]          = "AnnROI",
+            [CID.JanPreTax]         = "Jan-401K",
+            [CID.JanPostTax]        = "Jan-Inv",
+            [CID.DecPreTax]         = "Dec-401K",
+            [CID.DecPostTax]        = "Dec-Inv",
+            [CID.JanPreTaxAlloc]    = "401K[S%]",
+            [CID.JanPostTaxAlloc]   = "INV[S%]",
+            [CID.DecPreTaxAlloc]    = "401K[S%]",
+            [CID.DecPostTaxAlloc]   = "INV[S%]",
 
 
-            //[CID.JanPreTaxAlloc]  = "STK%",
-            //[CID.JanPostTaxAlloc] = "STK%",
-            //[CID.DecPreTaxAlloc]  = "STK%",
-            //[CID.DecPostTaxAlloc] = "STK%",
+            [CID.Change]            = "(±)",
+            [CID.ChangePreTax]      = "PreTax(±)",
+            [CID.ChangePostTax]     = "PostTax(±)",
 
-
-            [CID.RealCAGR]        = "CAGR(r)",
+            [CID.RealCAGR]          = "CAGR(r)",
 
 
         }.AsReadOnly();

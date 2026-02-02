@@ -37,28 +37,110 @@ OutputDefaults:
 
     # Taable incomes, taxes, MTR snd effective tax
     TaxView: [
-        Year, Age, 
-      
-        Taxes,     
-        TaxPCT,    
+        Year, 
+        Age, 
 
-        MTROrdInc, 
-        MTRCapGain,
-        MTRState,  
+        GI,
 
         FedAGI,    
         FedDeduct, 
         FedTaxable,
+        MTROrdInc, 
+        MTRCapGain,
         FedTax,    
-        FedTaxPCT, 
 
         StaAGI,    
         StaDeduct, 
         StaTaxable,
+        MTRState,  
         StaTax,    
+     
+        Taxes,     
+        FedTaxPCT, 
         StaTaxPCT, 
-
+        TaxPCT,    
       ]
+
+    # Federal taxes
+    FedTax: [
+        Year, 
+        Age, 
+        MXInf,
+        MXInfFed,
+
+        GI,
+        GIPreTax,
+        GISS,
+        GIAnn,
+        GIBonds,
+        GIDiv,
+        GICapGain,
+
+        FedAGI,    
+        FedDeduct, 
+        FedTaxable,
+        MTROrdInc, 
+        MTRCapGain,
+        FedTax,    
+     
+        Taxes,     
+        FedTaxPCT, 
+        StaTaxPCT, 
+        TaxPCT,    
+      ]
+
+    # Federal taxes
+    StateTax: [
+        Year, 
+        Age, 
+        MXInf,
+        MXInfFed,
+
+        GI,
+        GIPreTax,
+        GISS,
+        GIAnn,
+        GIBonds,
+        GIDiv,
+        GICapGain,
+
+        StaAGI,
+        StaDeduct,
+        StaTaxable,
+        MTRState,
+        StaTax,
+     
+        Taxes,     
+        FedTaxPCT, 
+        StaTaxPCT, 
+        TaxPCT,    
+      ]
+
+
+
+    # Returns
+    ROIView: [
+        Year, 
+        Age, 
+
+        JanPreTax,
+        JanPreTaxAlloc,
+        JanPostTax,
+        JanPostTaxAlloc,
+
+        LikeYear,      
+        Infl,
+        ROIStocks,     
+        ROIBonds,      
+
+        ChangePreTax,  
+        ChangePostTax, 
+
+        ROI,           
+        AnnROI,        
+        RealCAGR,      
+      ]
+
 
     # List of all available columns.
     ALL: [
@@ -69,7 +151,6 @@ OutputDefaults:
         RBL,                    # Total stock assets change due to rebalancing (Bonds is mirror image)
         RBLPreTax,              # PreTax stock assets change due to rebalancing (Bonds is mirror image)
         RBLPostTax,             # PostTax stock assets change due to rebalancing (Bonds is mirror image)
-
 
         Jan,                    # Total asset value in January (start of year)
         JanNet,                 # Approximate indicative value (JanTotal), less taxes and fees
@@ -142,8 +223,8 @@ OutputDefaults:
         GICapGain,
 
         MXInf,                  # Running inflation multiplier
-        MXInfFedTax,            # Running Federal tax adjustment inflation multiplier
-        MXInfStaTax,            # Running State tax adjustment inflation multiplier
+        MXInfFed,            # Running Federal tax adjustment inflation multiplier
+        MXInfSta,            # Running State tax adjustment inflation multiplier
         MXGrowth                # Running portfolio growth multiplier
 
       ]

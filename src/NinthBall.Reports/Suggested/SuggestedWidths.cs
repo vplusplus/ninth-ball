@@ -14,25 +14,40 @@ namespace NinthBall.Reports
         internal static WidthHint GetWidthHint(this CID cid) => Widths.TryGetValue(cid, out var widthHint) ? widthHint : W2x;
 
         static readonly IReadOnlyDictionary<CID, WidthHint> Widths = new Dictionary<CID, WidthHint>()
+
+            // Narrow columns
+            .WithColumnWidths( WidthHint.W1x,
+
+                CID.Year,
+                CID.Age,
+                CID.LikeYear
+
+                //CID.JanPreTaxAlloc,
+                //CID.JanPostTaxAlloc,
+                //CID.DecPreTaxAlloc,
+                //CID.DecPostTaxAlloc,
+
+
+                //CID.Infl,
+                //CID.ROIStocks,
+                //CID.ROIBonds,
+                //CID.ROI,
+                //CID.AnnROI,
+                //CID.RealCAGR,
+                //CID.TaxPCT,
+                //CID.FedTaxPCT,
+                //CID.StaTaxPCT,
+                //CID.MTROrdInc,
+                //CID.MTRCapGain,
+                //CID.MTRState
+            )
+            .AsReadOnly();
+
+        private static Dictionary<CID, WidthHint> WithColumnWidths(this Dictionary<CID, WidthHint> dict, WidthHint hint, params CID[] columnIds)
         {
-            [CID.Year] = W1x,
-            [CID.Age] = W1x,
-
-            [CID.LikeYear] = W1x,
-            [CID.ROI] = W1x,
-            [CID.AnnROI] = W1x,
-            [CID.ROIStocks] = W1x,
-            [CID.ROIBonds] = W1x,
-            [CID.Infl] = W1x,
-            [CID.RealCAGR]      = W1x,
-
-            [CID.JanPreTaxAlloc] = W1x,
-            [CID.JanPostTaxAlloc] = W1x,
-            [CID.DecPreTaxAlloc] = W1x,
-            [CID.DecPostTaxAlloc] = W1x,
-
-
-        }.AsReadOnly();
+            foreach (var columnId in columnIds) dict[columnId] = hint;
+            return dict;
+        }
 
     }
 }

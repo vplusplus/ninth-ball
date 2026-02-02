@@ -25,8 +25,8 @@ namespace NinthBall.Reports
             )
             .WithColumnFormats( FormatHint.F2, 
                 CID.MXInf, 
-                CID.MXInfFedTax, 
-                CID.MXInfStaTax, 
+                CID.MXInfFed, 
+                CID.MXInfSta, 
                 CID.MXGrowth
             )
             .WithColumnFormats( FormatHint.P0,

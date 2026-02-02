@@ -1,9 +1,9 @@
 
-ZZZ-SeeInput-Outputs:
+Outputs:
   Html: 
     File: D:/Junk/SimReport.html
-    View: ALL
-    Iterations: [0, 5000, 9999] 
+    View: StateTax
+    ZZIterations: [0, 5000, 9999] 
 
   Excel: 
     File: D:/Junk/SimReport.xlsx
