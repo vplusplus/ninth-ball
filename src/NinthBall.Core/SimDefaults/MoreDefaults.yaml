@@ -4,10 +4,13 @@ SimulationSeed:
 
 # Few lingering contants, optionally configurable
 TaxAndMarketAssumptions: 
-  SSNonTaxableThreshold:          $32000.0    # Taxable SS threshold, statutory and not inflation-adjusted.
-  SS50PctTaxableThreshold:        $44000.0    # Taxable SS threshold, statutory and not inflation-adjusted.
+
+  SSFederalNonTaxableThreshold:   $32000.0    # Federal SS non-taable threshold,  statutory and not inflation-adjusted.
+  SSFederal50PctTaxableThreshold: $44000.0    # Federal SS 50% taxable threshold, statutory and not inflation-adjusted.
+
   NIITThreshold:                  $250000.0   # NIIT thresholds are not indexed for inflation under current law.
   NIITRate:                       3.8%        # NIIT tax rate
+
   TypicalStocksDividendYield:     2.0%        # How much a company pays out in dividends relative to its current stock price, expressed as a percentage.
   TypicalBondCouponYield:         2.5%        # Interest payment made by the bond issuer, expressed as a percentage of the bond's face value 
   FedTaxInflationLagHaircut:      0.25%       # Small haircut on inflation rate to represent Federal C-CPI lag.

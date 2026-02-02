@@ -119,8 +119,9 @@ namespace NinthBall.Core
 
     public sealed record TaxAndMarketAssumptions
     (
-        [property: Min(1000)]           double SSNonTaxableThreshold,
-        [property: Min(1000)]           double SS50PctTaxableThreshold,
+        [property: Min(1000)]           double SSFederalNonTaxableThreshold,
+        [property: Min(1000)]           double SSFederal50PctTaxableThreshold,
+
         [property: Min(1000)]           double NIITThreshold,
         [property: Range(0.001, 1.0)]   double NIITRate,
         [property: Range(0.001, 1.0)]   double TypicalStocksDividendYield,

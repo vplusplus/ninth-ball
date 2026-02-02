@@ -14,7 +14,7 @@ namespace NinthBall.Core
         public Taxes.Tx GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates)
         {
             // Extract unadjusted gross income from SimYear
-            var unadjustedGrossIncome = priorYear.DeriveGrossIncome(TAMA).MinZero().RoundToCents();
+            var unadjustedGrossIncome = priorYear.UnadjustedGrossIncomes(TAMA).MinZero().RoundToCents();
 
             // Compute federal adjusted gross income 
             var adjustedGrossIncome = RoundToCents(MinZero(FederalAdjustGrossIncomes(unadjustedGrossIncome, TAMA)));
@@ -69,14 +69,8 @@ namespace NinthBall.Core
 
         static AGI FederalAdjustGrossIncomes(Taxes.GI inc, TaxAndMarketAssumptions TAMA)
         {
-
-            // Interim math to guess taxable portion of social security income.
-            // Social Security taxation modeled using provisional income.
-            // Thresholds are statutory and not inflation-adjusted.
-            double nonSSOrdinary = inc.PreTaxWDraw + inc.Ann;
-            double provisionalInvestmentIncome = inc.BondsYield + inc.Dividends + inc.CapGains;
-            double provisionalIncome = nonSSOrdinary + provisionalInvestmentIncome + (FiftyPCT * inc.SS);
-            double taxableSS = TaxableSocialSecurity(inc.SS, provisionalIncome, base1: TAMA.SSNonTaxableThreshold, base2: TAMA.SS50PctTaxableThreshold);
+            // Compute federal-taxable portion of SS income.
+            double taxableSS = TaxableSocialSecurity(inc, TAMA);
 
             return MinZero(new AGI
             (
@@ -101,19 +95,29 @@ namespace NinthBall.Core
             ));
         }
 
-        static double TaxableSocialSecurity(double ss, double provisionalIncome, double base1, double base2)
+        static double TaxableSocialSecurity(Taxes.GI unadjustedGrossIncome, TaxAndMarketAssumptions TAMA)
         {
+            // Provisional income...
+            double nonSSOrdinary = unadjustedGrossIncome.PreTaxWDraw + unadjustedGrossIncome.Ann;
+            double provisionalInvestmentIncome = unadjustedGrossIncome.BondsYield + unadjustedGrossIncome.Dividends + unadjustedGrossIncome.CapGains;
+            double provisionalIncome = nonSSOrdinary + provisionalInvestmentIncome + (FiftyPCT * unadjustedGrossIncome.SS);
+
+            // SS and taxable portion thresholds (Statutory and not inflation-adjusted)
+            double ssIncome = unadjustedGrossIncome.SS;
+            double base1 = TAMA.SSFederalNonTaxableThreshold;
+            double base2 = TAMA.SSFederal50PctTaxableThreshold;
+
             if (provisionalIncome <= base1)
                 return 0.0;
 
             if (provisionalIncome <= base2)
                 return Math.Min(
-                    FiftyPCT * ss,
+                    FiftyPCT * ssIncome,
                     FiftyPCT * (provisionalIncome - base1)
                 );
 
             return Math.Min(
-                EightyFivePCT * ss,
+                EightyFivePCT * ssIncome,
                 EightyFivePCT * (provisionalIncome - base2) + FiftyPCT * (base2 - base1)
             );
         }

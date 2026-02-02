@@ -16,7 +16,7 @@ namespace NinthBall.Core
         public Taxes GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates)
         {
             // Calculate total cash inflow for TaxPCT reporting
-            var grossIncome = priorYear.DeriveGrossIncome(TAMA);
+            var grossIncome = priorYear.UnadjustedGrossIncomes(TAMA);
 
             // Each guesstimator extracts what it needs from SimYear
             var federal = federalGuesstimator.GuesstimateTaxes(priorYear, Year0TaxRates);

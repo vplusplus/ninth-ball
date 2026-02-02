@@ -2,7 +2,7 @@
 Outputs:
   Html: 
     File: D:/Junk/SimReport.html
-    View: StateTax
+    View: FedTax
     ZZIterations: [0, 5000, 9999] 
 
   Excel: 

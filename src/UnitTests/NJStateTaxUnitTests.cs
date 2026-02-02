@@ -26,8 +26,8 @@ namespace UnitTests
         }
 
         private static TaxAndMarketAssumptions GetDefaultTAMA() => new(
-            SSNonTaxableThreshold: 32000,
-            SS50PctTaxableThreshold: 44000,
+            SSFederalNonTaxableThreshold:   32000,
+            SSFederal50PctTaxableThreshold: 44000,
             NIITThreshold: 250000,
             NIITRate: 0.038,
             TypicalStocksDividendYield: 0.02,

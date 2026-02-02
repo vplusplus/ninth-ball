@@ -13,7 +13,7 @@ namespace NinthBall.Core
             } 
         };
 
-        public static Taxes.GI DeriveGrossIncome(this SimYear simYear, TaxAndMarketAssumptions TAMA)
+        public static Taxes.GI UnadjustedGrossIncomes(this SimYear simYear, TaxAndMarketAssumptions TAMA)
         {
             return new Taxes.GI
             (

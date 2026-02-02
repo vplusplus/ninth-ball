@@ -12,7 +12,7 @@ namespace NinthBall.Core
         public Taxes.Tx GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates)
         {
             // Extract gross income from SimYear
-            var inc = priorYear.DeriveGrossIncome(TAMA).MinZero().RoundToCents();
+            var inc = priorYear.UnadjustedGrossIncomes(TAMA).MinZero().RoundToCents();
 
             //......................................................
             // NEW JERSEY STATE TAX LOGIC
