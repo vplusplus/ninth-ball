@@ -18,7 +18,7 @@ namespace NinthBall.Core
                 .Where(t => !t.IsAbstract)                                  // We can create instances
                 ;
 
-            var map = new Dictionary<string, SimObjectiveInfo>();
+            var map = new Dictionary<string, SimObjectiveInfo>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var type in allObjectives)
             {
