@@ -105,7 +105,6 @@ namespace NinthBall.Core
                     Withdrawals:    adjustedWithdrawals,
                     Deposits:       adjustedDeposits,
                     Change:         changes,
-
                     Dec:            dec,
 
                     Growth:         cyGrowth,
