@@ -37,7 +37,6 @@ namespace NinthBall.Core
                 // Sample next random block with uniform distribution (with replacement).
                 var nextBlock = allBlocks[iterRand.Next(0, allBlocks.Count)];
 
-                // TODO: Drop this feature. Not a needle mover. 
                 // Did we pick overlapping blocks?
                 if (Options.NoBackToBackOverlaps && null != prevBlock && HBlock.Overlaps(prevBlock.Value, nextBlock))
                 {
