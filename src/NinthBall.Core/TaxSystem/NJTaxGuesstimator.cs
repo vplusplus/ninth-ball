@@ -4,16 +4,13 @@ namespace NinthBall.Core
     /// <summary>
     /// New Jersey state tax guesstimator - applies NJ-specific rules.
     /// </summary>
-    public sealed class NJTaxGuesstimator(TaxAndMarketAssumptions TAMA) : ITaxAuthority
+    public sealed class NJTaxGuesstimator() : ITaxAuthority
     {
         const double HundredPCT = 1.00;
         const double TenDollars = 10.00;
 
-        public Taxes.Tx GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates)
+        public Taxes.Tx GuesstimateTaxes(PYEarnings pyEarnings, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates)
         {
-            // Extract gross income from SimYear
-            var inc = priorYear.UnadjustedGrossIncomes(TAMA).MinZero().RoundToCents();
-
             //......................................................
             // NEW JERSEY STATE TAX LOGIC
             //......................................................
@@ -23,20 +20,20 @@ namespace NinthBall.Core
 
             // NJ Gross Income for eligibility check (Ignore SS)
             // Determine exclusion based on age and income tiers
-            double njGrossIncome = inc.PreTaxWDraw + inc.Ann + inc.BondsYield + inc.Dividends + inc.CapGains;
-            double pensionExclusion = GetNJPensionExclusionWithTheCliff(njGrossIncome, priorYear.Age);
+            double njGrossIncome = pyEarnings.PreTaxWDraw + pyEarnings.Ann + pyEarnings.BondsYield + pyEarnings.Dividends + pyEarnings.CapGains;
+            double pensionExclusion = GetNJPensionExclusionWithTheCliff(njGrossIncome, pyEarnings.Age);
 
             // Apply pension exclusion specifically to retirement income (401k/IRA/Annuity/Pension)
-            double retirementIncomes = inc.PreTaxWDraw + inc.Ann;
+            double retirementIncomes = pyEarnings.PreTaxWDraw + pyEarnings.Ann;
             double taxableRetirement = Math.Max(0, retirementIncomes - pensionExclusion);
 
             // NJ Taxable Income = Taxable Retirement + Investment Income (INT/DIV/LTCG)
             // Note: Simplification - Treats all BondsYield as taxable interest and Dividends/CapGains as taxable.
-            double njTaxableSum = taxableRetirement + inc.BondsYield + inc.Dividends + inc.CapGains;
+            double njTaxableSum = taxableRetirement + pyEarnings.BondsYield + pyEarnings.Dividends + pyEarnings.CapGains;
 
             // Quantize the inflation rate multipliers to avoid 30,000 jitters
             // Inflate tax rates. For NJ, exemptions are not to be indexed (see configuration)
-            var inflationMultiplier = Math.Round(priorYear.Metrics.StateTaxInflationMultiplier, 4);
+            var inflationMultiplier = Math.Round(inflationIndex.State, 4);
             var taxRates = Year0TaxRates.State.Inflate(inflationMultiplier, jitterGuard: TenDollars);
 
             // Apply Individual Exemptions and Property Tax deductions (configured as StateDeductions)

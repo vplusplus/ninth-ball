@@ -9,21 +9,6 @@ namespace UnitTests
     public class MathUtilsTests
     {
         [TestMethod]
-        public void MetricsDefaultValuesAreValid()
-        {
-            var metrics = new Metrics();
-
-            Console.WriteLine(metrics);
-
-            Assert.AreEqual(1.0, metrics.InflationMultiplier);
-            Assert.AreEqual(1.0, metrics.InflationMultiplier);
-
-            Assert.AreEqual(0.0, metrics.PortfolioReturn);
-            Assert.AreEqual(0.0, metrics.AnnualizedReturn);
-            Assert.AreEqual(0.0, metrics.RealAnnualizedReturn);
-        }
-
-        [TestMethod]
         public void InverseNormalCDF_Values()
         {
             Assert.AreEqual(0.0, Statistics.InverseNormalCDF(0.5), 1e-7);

@@ -44,7 +44,6 @@ namespace NinthBall.Core
         int Age { get; }
 
         SimYear PriorYear { get; }
-        Metrics PriorYearMetrics { get; }
 
         Assets Initial { get; }
         Rebalanced Rebalanced { get; set; }
@@ -70,7 +69,6 @@ namespace NinthBall.Core
         int Age { get; }
 
         SimYear PriorYear { get; }
-        Metrics PriorYearMetrics { get; }
 
         Assets Initial { get; }
         Rebalanced Rebalanced { get; }

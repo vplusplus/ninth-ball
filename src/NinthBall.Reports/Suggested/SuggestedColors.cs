@@ -64,10 +64,10 @@ namespace NinthBall.Reports
 
         static ColorHint RealROIRedGreyGreen(in SimYear y) 
         {
-            if (double.IsNaN(y.Metrics.PortfolioReturn)) return ColorHint.None;
+            if (double.IsNaN(y.Growth.PortfolioReturn)) return ColorHint.None;
 
             // Purchasing Power Parity (Standard financial term: Nominal ROI - Inflation = Real Return)
-            var realReturn = y.Metrics.PortfolioReturn - y.ROI.InflationRate;  
+            var realReturn = y.Growth.PortfolioReturn - y.ROI.InflationRate;  
 
             const double GreyBand = 0.015;
             return realReturn > GreyBand ? ColorHint.Success : realReturn < -GreyBand ? ColorHint.Danger : ColorHint.Muted;
@@ -76,9 +76,9 @@ namespace NinthBall.Reports
 
         static ColorHint RealAnnROIRedGreyGreen(SimIteration it, in SimYear y)
         {
-            if (double.IsNaN(y.Metrics.RealAnnualizedReturn)) return ColorHint.None;
+            if (double.IsNaN(y.Growth.RealAnnualizedReturn)) return ColorHint.None;
 
-            var realReturn = y.Metrics.RealAnnualizedReturn;
+            var realReturn = y.Growth.RealAnnualizedReturn;
 
             // Survival Benchmarks (Domain Specific):
             // Red:   < 1.9% (Falling behind the "4% Rule" benchmark).
@@ -94,8 +94,8 @@ namespace NinthBall.Reports
 
         static ColorHint EffectiveROIRedGreyGreen(in SimYear y)
         {
-            if (double.IsNaN(y.Metrics.PortfolioReturn)) return ColorHint.None;
-            var roi = y.Metrics.PortfolioReturn;
+            if (double.IsNaN(y.Growth.PortfolioReturn)) return ColorHint.None;
+            var roi = y.Growth.PortfolioReturn;
             return roi > 0.04 ? ColorHint.Success : roi < -0.04 ? ColorHint.Danger : ColorHint.Muted;
         }
 

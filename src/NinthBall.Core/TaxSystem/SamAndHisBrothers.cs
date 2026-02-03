@@ -9,20 +9,18 @@ namespace NinthBall.Core
     public sealed class SamAndHisBrothers
     (
         [FromKeyedServices(TaxAuthority.Federal)] ITaxAuthority federalGuesstimator,
-        [FromKeyedServices(TaxAuthority.State)] ITaxAuthority stateGuesstimator,
-        TaxAndMarketAssumptions TAMA
+        [FromKeyedServices(TaxAuthority.State)] ITaxAuthority stateGuesstimator
     ) : ITaxSystem
     {
-        public Taxes GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates)
+        public Taxes GuesstimateTaxes(PYEarnings pyEarnings, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates)
         {
-            // Calculate total cash inflow for TaxPCT reporting
-            var grossIncome = priorYear.UnadjustedGrossIncomes(TAMA);
-
-            // Each guesstimator extracts what it needs from SimYear
-            var federal = federalGuesstimator.GuesstimateTaxes(priorYear, Year0TaxRates);
-            var state = stateGuesstimator.GuesstimateTaxes(priorYear, Year0TaxRates);
-
-            return new Taxes(grossIncome, federal, state);
+            // Consult tax authorities, guesstimate tax liabilities.
+            return new Taxes
+            (
+                PYEarnings: pyEarnings, 
+                Federal:    federalGuesstimator.GuesstimateTaxes(pyEarnings, inflationIndex, Year0TaxRates),
+                State:      stateGuesstimator.GuesstimateTaxes(pyEarnings, inflationIndex, Year0TaxRates)
+            );
         }
     }
 }

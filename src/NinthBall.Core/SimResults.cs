@@ -7,21 +7,32 @@ namespace NinthBall.Core
 
     public readonly record struct SimYear
     (
-        int         Year,
-        int         Age,
-        Rebalanced  Rebalanced,
-        Assets      Jan,
-        Fees        Fees,
-        Taxes       Taxes,
-        Incomes     Incomes,
-        Expenses    Expenses,
-        ROI         ROI,
-        Withdrawals Withdrawals,
-        Deposits    Deposits,
-        Change      Change,
-        Assets      Dec,
-        Metrics     Metrics
+        int             Year,
+        int             Age,
+        Rebalanced      Rebalanced,
+        Assets          Jan,
+        Fees            Fees,
+        Taxes           Taxes,
+        Incomes         Incomes,
+        Expenses        Expenses,
+        ROI             ROI,
+        Withdrawals     Withdrawals,
+        Deposits        Deposits,
+        Change          Change,
+        Assets          Dec,
+        Growth          Growth,
+        InflationIndex  InflationIndex
     );
+
+    //{
+    //    public SimYear() : this(default, default, default, default, default, default, default, default, default, default, default, default, default, Growth: new(), InflationIndex: new())
+    //    {
+    //        // CRITICAL:
+    //        // InflationIndex and Growth has running multipliers, must start with 1.0
+    //        // new SimYear() must initialize InflationIndex and Growth with new() and not default.
+    //    }
+    //}
+
 
     public readonly record struct Asset(double Amount, double Allocation);
 
@@ -45,6 +56,5 @@ namespace NinthBall.Core
     {
         public readonly record struct SB(double StocksChange, double BondsChange);
     }
-
 }
 

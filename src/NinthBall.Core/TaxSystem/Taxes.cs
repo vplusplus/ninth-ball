@@ -32,7 +32,7 @@ namespace NinthBall.Core
     /// </summary>
     public interface ITaxSystem
     {
-        Taxes GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates);
+        Taxes GuesstimateTaxes(PYEarnings pyEarnings, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates);
     }
 
     /// <summary>
@@ -40,24 +40,11 @@ namespace NinthBall.Core
     /// </summary>
     public interface ITaxAuthority
     {
-        Taxes.Tx GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates);
+        Taxes.Tx GuesstimateTaxes(PYEarnings pyEarnings, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates);
     }
 
-    public readonly record struct Taxes(Taxes.GI GrossIncome, Taxes.Tx Federal, Taxes.Tx State)
+    public readonly record struct Taxes(PYEarnings PYEarnings, Taxes.Tx Federal, Taxes.Tx State)
     {
-        public readonly record struct GI
-        (
-            double PreTaxWDraw,     // Withdrawals from tax deferred account
-            double SS,              // Social security income
-            double Ann,             // Annuity incomes
-            double BondsYield,      // Bonds yield from PostTax accounts
-            double Dividends,       // Dividends from PostTax accounts
-            double CapGains         // Capital gains from PostTax accounts
-        )
-        {
-            public readonly double Total => PreTaxWDraw + SS + Ann + BondsYield + Dividends + CapGains;
-        }
-
         public readonly record struct Tx
         (
             double Gross,           // The Statutory Inclusion Base (Fed AGI or State Gross)
@@ -74,12 +61,12 @@ namespace NinthBall.Core
         public readonly double Total => Federal.Tax + State.Tax;
 
         // For every $ that came in, what PCT went to taxes
-        public readonly double TaxPCT => GrossIncome.Total <= 0.01 ? 0.0 : (Federal.Tax + State.Tax) / GrossIncome.Total;
+        public readonly double TaxPCT => PYEarnings.Total <= 0.01 ? 0.0 : (Federal.Tax + State.Tax) / PYEarnings.Total;
 
         // For every $ that came in, what PCT went to Federal taxes
-        public readonly double TaxPCTFed => GrossIncome.Total <= 0.01 ? 0.0 : Federal.Tax / GrossIncome.Total;
+        public readonly double TaxPCTFed => PYEarnings.Total <= 0.01 ? 0.0 : Federal.Tax / PYEarnings.Total;
 
         // For every $ that came in, what PCT went to State taxes
-        public readonly double TaxPCTState => GrossIncome.Total <= 0.01 ? 0.0 : State.Tax / GrossIncome.Total;
+        public readonly double TaxPCTState => PYEarnings.Total <= 0.01 ? 0.0 : State.Tax / PYEarnings.Total;
     }
 }

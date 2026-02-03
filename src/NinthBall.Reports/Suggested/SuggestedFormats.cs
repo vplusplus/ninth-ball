@@ -1,9 +1,4 @@
 ﻿
-using DocumentFormat.OpenXml.Office.Y2022.FeaturePropertyBag;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using static NinthBall.Reports.FormatHint;
-
 namespace NinthBall.Reports
 {
     internal enum FormatHint { F0, F1, F2, C0, C1, C2, P0, P1, P2 }
@@ -26,8 +21,7 @@ namespace NinthBall.Reports
             .WithColumnFormats( FormatHint.F2, 
                 CID.MXInf, 
                 CID.MXInfFed, 
-                CID.MXInfSta, 
-                CID.MXGrowth
+                CID.MXInfSta
             )
             .WithColumnFormats( FormatHint.P0,
                 CID.JanPreTaxAlloc,

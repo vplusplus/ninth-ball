@@ -13,17 +13,20 @@ namespace NinthBall.Core
             } 
         };
 
-        public static Taxes.GI UnadjustedGrossIncomes(this SimYear simYear, TaxAndMarketAssumptions TAMA)
+        public static PYEarnings UnadjustedEarnings(this SimYear simYear, TaxAndMarketAssumptions TAMA)
         {
-            return new Taxes.GI
+            return new PYEarnings
             (
-                PreTaxWDraw: simYear.Withdrawals.PreTax,
-                SS: simYear.Incomes.SS,
-                Ann: simYear.Incomes.Ann,
-                BondsYield: simYear.Jan.PostTax.BondsAmount * TAMA.TypicalBondCouponYield,
-                Dividends: simYear.Jan.PostTax.StocksAmount * TAMA.TypicalStocksDividendYield,
-                CapGains: simYear.Withdrawals.PostTax + Math.Max(0.0, -simYear.Rebalanced.PostTax.StocksChange)
-            );
+                Age:            simYear.Age,
+                PreTaxWDraw:    simYear.Withdrawals.PreTax,
+                SS:             simYear.Incomes.SS,
+                Ann:            simYear.Incomes.Ann,
+                BondsYield:     simYear.Jan.PostTax.BondsAmount * TAMA.TypicalBondCouponYield,
+                Dividends:      simYear.Jan.PostTax.StocksAmount * TAMA.TypicalStocksDividendYield,
+                CapGains:       simYear.Withdrawals.PostTax + Math.Max(0.0, -simYear.Rebalanced.PostTax.StocksChange)
+            )
+            .RoundToCents();
         }
+
     }
 }

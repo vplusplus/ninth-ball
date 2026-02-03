@@ -79,7 +79,7 @@ namespace NinthBall.Core
             /// <summary>
             /// Ending balance of last survived year, adjusted for inflation.
             /// </summary>
-            public double EndingBalanceReal => iteration.LastGoodYear.Dec.Total / Math.Max(iteration.LastGoodYear.Metrics.InflationMultiplier, Precision.Rate);
+            public double EndingBalanceReal => iteration.LastGoodYear.Dec.Total / Math.Max(iteration.LastGoodYear.InflationIndex.Consumer, Precision.Rate);
 
             /// <summary>
             /// Zero-copy extension to calculate the sum of a selected field across all years in the iteration 

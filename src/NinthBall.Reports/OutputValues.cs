@@ -83,9 +83,9 @@ namespace NinthBall.Reports
             [CID.Infl]              = (it, in y) => y.ROI.InflationRate,
             [CID.ROIStocks]         = (it, in y) => y.ROI.StocksROI,
             [CID.ROIBonds]          = (it, in y) => y.ROI.BondsROI,
-            [CID.ROI]               = (it, in y) => y.Metrics.PortfolioReturn,
-            [CID.AnnROI]            = (it, in y) => y.Metrics.AnnualizedReturn,
-            [CID.RealCAGR]          = (it, in y) => y.Metrics.RealAnnualizedReturn,
+            [CID.ROI]               = (it, in y) => y.Growth.PortfolioReturn,
+            [CID.AnnROI]            = (it, in y) => y.Growth.AnnualizedReturn,
+            [CID.RealCAGR]          = (it, in y) => y.Growth.RealAnnualizedReturn,
 
             // Tax $$$s, MTR and effective tax rate
             [CID.Taxes]             = (it, in y) => y.Taxes.Total,
@@ -114,19 +114,18 @@ namespace NinthBall.Reports
             [CID.StaTaxPCT]         = (it, in y) => y.Taxes.TaxPCTState,
 
             // Unadjusted gross income from all sources
-            [CID.GI]                = (it, in y) => y.Taxes.GrossIncome.Total,
-            [CID.GIPreTax]          = (it, in y) => y.Taxes.GrossIncome.PreTaxWDraw,
-            [CID.GISS]              = (it, in y) => y.Taxes.GrossIncome.SS,
-            [CID.GIAnn]             = (it, in y) => y.Taxes.GrossIncome.Ann,
-            [CID.GIBonds]           = (it, in y) => y.Taxes.GrossIncome.BondsYield,
-            [CID.GIDiv]             = (it, in y) => y.Taxes.GrossIncome.Dividends,
-            [CID.GICapGain]         = (it, in y) => y.Taxes.GrossIncome.CapGains,
+            [CID.GI]                = (it, in y) => y.Taxes.PYEarnings.Total,
+            [CID.GIPreTax]          = (it, in y) => y.Taxes.PYEarnings.PreTaxWDraw,
+            [CID.GISS]              = (it, in y) => y.Taxes.PYEarnings.SS,
+            [CID.GIAnn]             = (it, in y) => y.Taxes.PYEarnings.Ann,
+            [CID.GIBonds]           = (it, in y) => y.Taxes.PYEarnings.BondsYield,
+            [CID.GIDiv]             = (it, in y) => y.Taxes.PYEarnings.Dividends,
+            [CID.GICapGain]         = (it, in y) => y.Taxes.PYEarnings.CapGains,
 
             // Running multipliers
-            [CID.MXInf]             = (it, in y) => y.Metrics.InflationMultiplier,
-            [CID.MXInfFed]       = (it, in y) => y.Metrics.FedTaxInflationMultiplier,
-            [CID.MXInfSta]       = (it, in y) => y.Metrics.StateTaxInflationMultiplier,
-            [CID.MXGrowth]          = (it, in y) => y.Metrics.GrowthMultiplier,
+            [CID.MXInf]             = (it, in y) => y.InflationIndex.Consumer,
+            [CID.MXInfFed]          = (it, in y) => y.InflationIndex.Federal,
+            [CID.MXInfSta]          = (it, in y) => y.InflationIndex.State,
 
 
         }.AsReadOnly();
@@ -164,9 +163,9 @@ namespace NinthBall.Reports
 
             // Bottom-line: Show annualized-effective-roi at last good year for both ROI and AnnROI
             // Do not try to summarize the market noise: StocksROI & BondROI - They are just bootstrapper data.
-            [CID.ROI]          = (it) => it.LastGoodYear.Metrics.PortfolioReturn,
-            [CID.AnnROI]       = (it) => it.LastGoodYear.Metrics.AnnualizedReturn,
-            [CID.RealCAGR]     = (it) => it.LastGoodYear.Metrics.RealAnnualizedReturn,
+            [CID.ROI]          = (it) => it.LastGoodYear.Growth.PortfolioReturn,
+            [CID.AnnROI]       = (it) => it.LastGoodYear.Growth.AnnualizedReturn,
+            [CID.RealCAGR]     = (it) => it.LastGoodYear.Growth.RealAnnualizedReturn,
 
 
         }.AsReadOnly();

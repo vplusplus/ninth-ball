@@ -72,13 +72,21 @@ namespace NinthBall.Core
                     .Deposit(adjustedDeposits)
                     ;
 
-                // Update running metrics.
-                Metrics updatedMetrics = simState.PriorYearMetrics.UpdateRunningMetrics
+                // Update the inflation index first.
+                // Growth calculation requires current year updated inflation index.
+                InflationIndex cyInflationIndex = simState.PriorYear.InflationIndex.Update
                 (
-                    simState.YearIndex, 
-                    portfolioReturn: portfolioReturn, 
-                    currentYearInflationRate: simState.ROI.InflationRate,
-                    TAMA
+                    cyInflationRate: simState.ROI.InflationRate,
+                    federalTaxInflationLagHaircut: TAMA.FedTaxInflationLagHaircut,
+                    stateTaxInflationLagHaircut: TAMA.StateTaxInflationLagHaircut
+                );
+
+                // Update the running annualized growth and real annualized growth.
+                Growth cyGrowth = simState.PriorYear.Growth.Update
+                (
+                    simState.YearIndex,
+                    portfolioReturn,
+                    cyInflationIndex 
                 );
 
                 // Capture the year performance.
@@ -94,12 +102,14 @@ namespace NinthBall.Core
                     simState.Expenses,
                     simState.ROI,
 
-                    Withdrawals: adjustedWithdrawals,
-                    Deposits:    adjustedDeposits,
-                    Change:      changes,
+                    Withdrawals:    adjustedWithdrawals,
+                    Deposits:       adjustedDeposits,
+                    Change:         changes,
 
-                    Dec:         dec,
-                    Metrics:     updatedMetrics
+                    Dec:            dec,
+
+                    Growth:         cyGrowth,
+                    InflationIndex: cyInflationIndex
                 );
 
                 // Validate the calculation integrity, and return success result.
@@ -123,10 +133,9 @@ namespace NinthBall.Core
                     ROI: default,               // Irrelevant
                     Change: default,            // Since ROI is irrelevant
                     Dec: default,               // Would have spent any left-overs before Dec anyway
-
-                    // Metrics are rendered meaningless and unusable on the failed year.
-                    // Do not use default or new()
-                    Metrics: new(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)
+                    
+                    Growth:         Growth.Invalid,         // Meaningless for failed year.
+                    InflationIndex: InflationIndex.Invalid  // Meaningless for failed year.
                 );
 
                 return (success: false, failedYear);

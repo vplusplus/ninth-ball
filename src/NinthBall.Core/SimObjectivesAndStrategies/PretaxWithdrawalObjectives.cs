@@ -59,7 +59,7 @@ namespace NinthBall.Core
                 );
 
                 // Apply guardrails (adjusted for inflation)
-                double inflationMultiplier = 0 == ctx.YearIndex ? 1.0 : ctx.PriorYear.Metrics.InflationMultiplier;
+                double inflationMultiplier = 0 == ctx.YearIndex ? 1.0 : ctx.PriorYear.InflationIndex.Consumer;
 
                 if (VW.Floor.HasValue)
                 {

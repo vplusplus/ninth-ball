@@ -8,8 +8,7 @@ namespace NinthBall.Core
     {
         // History - PriorYears and PriorYear
         public ReadOnlyMemory<SimYear> PriorYears => Storage.Slice(0, _completedYears);
-        public SimYear PriorYear        => YearIndex > 0 ? PriorYears.Span[^1] : new();
-        public Metrics PriorYearMetrics => YearIndex > 0 ? PriorYear.Metrics   : new();
+        public SimYear PriorYear => YearIndex > 0 ? PriorYears.Span[^1] : new();
 
         // About current year
         public int YearIndex { get; private set; } = 0;

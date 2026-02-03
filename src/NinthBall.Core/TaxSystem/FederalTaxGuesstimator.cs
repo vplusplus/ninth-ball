@@ -11,17 +11,14 @@ namespace NinthBall.Core
         const double HundredPCT = 1.00;
         const double TenDollars = 10.00;
 
-        public Taxes.Tx GuesstimateTaxes(SimYear priorYear, TaxRateSchedules Year0TaxRates)
+        public Taxes.Tx GuesstimateTaxes(PYEarnings unadjustedGrossIncome, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates)
         {
-            // Extract unadjusted gross income from SimYear
-            var unadjustedGrossIncome = priorYear.UnadjustedGrossIncomes(TAMA).MinZero().RoundToCents();
-
             // Compute federal adjusted gross income 
             var adjustedGrossIncome = RoundToCents(MinZero(FederalAdjustGrossIncomes(unadjustedGrossIncome, TAMA)));
 
             // Quantize the inflation rate multipliers to avoid 30,000 jitters
             // Inflate tax rates (and the standard deductions).
-            var inflationMultiplier = Math.Round(priorYear.Metrics.FedTaxInflationMultiplier, 4);
+            var inflationMultiplier = Math.Round(inflationIndex.Federal, 4);
             var taxRatesOrdInc = Year0TaxRates.Federal.Inflate(inflationMultiplier, jitterGuard: TenDollars);
             var taxRatesLTCG = Year0TaxRates.LTCG.Inflate(inflationMultiplier, jitterGuard: TenDollars);
 
@@ -69,7 +66,7 @@ namespace NinthBall.Core
             public readonly double Total => OrdInc + INT + QDI + LTCG;
         }
 
-        static AGI FederalAdjustGrossIncomes(Taxes.GI inc, TaxAndMarketAssumptions TAMA)
+        static AGI FederalAdjustGrossIncomes(PYEarnings inc, TaxAndMarketAssumptions TAMA)
         {
             // Compute federal-taxable portion of SS income.
             double taxableSS = TaxableSocialSecurity(inc, TAMA);
@@ -97,7 +94,7 @@ namespace NinthBall.Core
             ));
         }
 
-        static double TaxableSocialSecurity(Taxes.GI unadjustedGrossIncome, TaxAndMarketAssumptions TAMA)
+        static double TaxableSocialSecurity(PYEarnings unadjustedGrossIncome, TaxAndMarketAssumptions TAMA)
         {
             // Provisional income...
             double nonSSOrdinary = unadjustedGrossIncome.PreTaxWDraw + unadjustedGrossIncome.Ann;
