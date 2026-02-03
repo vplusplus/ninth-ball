@@ -24,16 +24,6 @@ namespace NinthBall.Core
         InflationIndex  InflationIndex
     );
 
-    //{
-    //    public SimYear() : this(default, default, default, default, default, default, default, default, default, default, default, default, default, Growth: new(), InflationIndex: new())
-    //    {
-    //        // CRITICAL:
-    //        // InflationIndex and Growth has running multipliers, must start with 1.0
-    //        // new SimYear() must initialize InflationIndex and Growth with new() and not default.
-    //    }
-    //}
-
-
     public readonly record struct Asset(double Amount, double Allocation);
 
     public readonly record struct Assets(Asset PreTax, Asset PostTax, Asset Cash);
