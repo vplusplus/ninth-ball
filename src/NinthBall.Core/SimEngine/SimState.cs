@@ -28,7 +28,7 @@ namespace NinthBall.Core
         {
             YearIndex = yearIndex;
             Jan = (yearIndex == 0) ? Initial : PriorYear.Dec;
-            (Fees, Taxes, Incomes, Expenses, Withdrawals, ROI) = (default, default, default, default, default, default);
+            (Rebalanced, Fees, Taxes, Incomes, Expenses, Withdrawals, ROI) = (default, default, default, default, default, default, default);
         }
 
         void ISimState.Rebalance(double preTaxAllocation, double postTaxAllocation, double maxDrift)
