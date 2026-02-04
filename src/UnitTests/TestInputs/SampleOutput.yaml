@@ -1,0 +1,37 @@
+
+Outputs:
+  Html: 
+    File: D:/Junk/Something.html
+    View: Debug
+    ZZIterations: [0, 5000, 9999] 
+
+  Excel: 
+    File: D:/Junk/DeleteMe.xlsx
+    View: Essential
+
+Views:
+  
+  Debug: [
+
+        Year,             
+        Age,              
+
+        JanNet,           
+        DecNet,           
+
+        FedAGI,           
+        FedTax,           
+        StaAGI,           
+        StaTax,           
+        Taxes,            
+
+        Infl,
+        MXInf,            
+        MXInfFed,         
+        MXInfSta,         
+
+        ROI,              
+        AnnROI,           
+        RealCAGR,         
+    ]
+

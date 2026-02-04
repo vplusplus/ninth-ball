@@ -1,0 +1,114 @@
+
+SimParams:
+  StartAge: 60
+  NoOfYears: 35
+  Iterations: 10000
+  Objectives: [
+
+      YearlyRebalance,
+      AdditionalIncomes,
+      LivingExpenses,
+      AnnualFees,
+      TieredTax,
+      VariableWithdrawal,
+      RequiredMinimumDistribution,
+
+      # RandomHistoricalGrowth,
+      
+
+      # Available objectives:
+      # AdditionalIncomes,
+      # AnnualFees,
+      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, ExpectedGrowth, ConservativeGrowth, HighRiskGrowth
+      # LivingExpenses,
+      # FixedWithdrawal, VariableWithdrawal,
+      # RequiredMinimumDistribution,
+      # FlatTax, TieredTax,
+      # YearlyRebalance,
+
+      # NoOp objectives
+      # NoAdditionalIncome, NoLivingExpenses, NoWithdrawal, NoRequiredMinimumDistribution, NoAnnualFees, NoTax, NoGrowth, NoRebalance,
+
+    ]
+
+Initial:
+  YearZeroCashBalance: $12,000
+  YearZeroTaxAmount:   $25,000
+  PreTax:
+    Amount: $1,000,000
+    Allocation: 60%
+  PostTax:
+    Amount: $1,000,000
+    Allocation: 60%
+
+# ............................................................
+# Income(s) and Expense(s)
+# ............................................................
+AdditionalIncomes:
+  SS:
+    FromAge: 70
+    Amount: 48,000
+  Ann:
+    FromAge: 70
+    Amount: 24,000
+    Increment: 0%
+
+LivingExpenses:
+  FirstYearAmount: 120,000
+  StepDown:
+    - AtAge: 65           # Example: Stop paying Life Ins
+      Reduction: 24000
+    - AtAge: 70           # Example: Reduction in Med Ins.
+      Reduction: 6000
+
+
+# ............................................................
+# Flat Growth strategy
+# ............................................................
+FlatGrowth:
+  Stocks: 10.0%
+  Bonds:  4.0%
+  InflationRate: 3.0%
+
+# ............................................................
+# How fast you want to deplete the 401K funds
+# PreTax (401K) depletion velocity; Pick one.
+# All choices below are applicable ONLY to the PreTax assets
+# ............................................................
+FixedWithdrawal:
+  FirstYearPct: 4%
+  Increment:    2%
+  ResetAtAge:   [65, 70]
+
+VariableWithdrawal:
+  FutureROI: 4%
+  FutureInflation: 3%
+  Floor: 0
+  Ceiling: 150,000
+
+# ............................................................
+# Taxes and Fees
+# ............................................................
+FlatTax:
+  StandardDeduction: 31,500
+  StateExemption:    12,000
+  FederalOrdInc:     17%
+  FederalLTCG:       15%
+  State:             5%
+
+AnnualFees:
+  PreTax:   0.2%    # Tax deferred account
+  PostTax:  0.9%    # Investment account
+
+# ............................................................
+# Portfolio adjustment
+# ............................................................
+YearlyRebalance:
+  MaxDrift: 5%
+  ZZZReallocate:
+    - AtAge: 70
+      PreTaxStocksAllocation:  70%
+      PostTaxStocksAllocation: 70%
+    - AtAge: 80
+      PreTaxStocksAllocation:  80%
+      PostTaxStocksAllocation: 80%

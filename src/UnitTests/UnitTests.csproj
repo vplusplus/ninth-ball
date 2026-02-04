@@ -8,13 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="TestInputs\SampleInput.yaml" />
+    <None Remove="TestInputs\SampleOutput.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="StreamlinedConfig\SimOptions.yaml" />
     <EmbeddedResource Include="StreamlinedConfig\SimOptions-Embedded.yaml" />
+    <EmbeddedResource Include="TestInputs\SampleInput.yaml" />
+    <EmbeddedResource Include="TestInputs\SampleOutput.yaml" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
     <PackageReference Include="MSTest" Version="3.6.4" />
   </ItemGroup>
 
