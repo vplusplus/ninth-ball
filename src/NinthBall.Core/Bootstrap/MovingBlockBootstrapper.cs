@@ -42,8 +42,8 @@ namespace NinthBall.Core
                 {
                     // Yes, we picked an overlapping block.
                     // We interfere ONLY if back-to-back overlapping blocks exceed luck-threshold (good or bad)
-                    bool backToBackDisaster = prevBlock.Value.ARRScore <= thresholds.DisasterScore && nextBlock.ARRScore <= thresholds.DisasterScore;
-                    bool backToBackJackpot  = prevBlock.Value.ARRScore >= thresholds.JackpotScore  && nextBlock.ARRScore >= thresholds.JackpotScore;
+                    bool backToBackDisaster = prevBlock.Value.Features.RealCAGR6040 <= thresholds.DisasterScore && nextBlock.Features.RealCAGR6040 <= thresholds.DisasterScore;
+                    bool backToBackJackpot  = prevBlock.Value.Features.RealCAGR6040 >= thresholds.JackpotScore  && nextBlock.Features.RealCAGR6040 >= thresholds.JackpotScore;
                     if (backToBackDisaster || backToBackJackpot) continue;
                 }
 
@@ -87,7 +87,7 @@ namespace NinthBall.Core
             const double NinetiethPctl = 0.9;
 
             // Read ARRScore of all blocks, sort them worst to best.
-            var sortedScores = HBlocks.Blocks.Select(b => b.ARRScore).OrderBy(s => s).ToArray();
+            var sortedScores = HBlocks.Blocks.Select(b => b.Features.RealCAGR6040).OrderBy(s => s).ToArray();
 
             // Discover indices of disaster and jackpot percentiles.
             int disasterIdx = (int)(sortedScores.Length * TenthPctl);

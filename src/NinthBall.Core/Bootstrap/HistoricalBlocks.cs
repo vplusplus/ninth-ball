@@ -1,12 +1,21 @@
 ﻿ 
-using System.Collections.ObjectModel;
-
 namespace NinthBall.Core
 {
     // Represents a small window into the historical returns.
     // ARRScore is a ranking-score, an 'indicator' of good/bad windows.
-    readonly record struct HBlock(ReadOnlyMemory<HROI> Slice, double ARRScore)
+    readonly record struct HBlock(ReadOnlyMemory<HROI> Slice, HBlock.F Features)
     {
+        // Features of this block
+        public readonly record struct F
+        (
+            double CAGRStocks,              // TODO: Why Nominal, why not both nomimal and real
+            double CAGRBonds,               // TODO: Why Nominal, why not both nomimal and real
+            double MaxDrawdownStocks,
+            double MaxDrawdownBonds,
+            double GMeanInflationRate,
+            double RealCAGR6040
+        );
+
         public readonly int StartYear => Slice.Span[0].Year;
         public readonly int EndYear   => Slice.Span[^1].Year;
         public static bool Overlaps(in HBlock prevBlock, in HBlock nextBlock) => nextBlock.StartYear <= prevBlock.EndYear && nextBlock.EndYear >= prevBlock.StartYear;
@@ -41,9 +50,11 @@ namespace NinthBall.Core
                 var maxBlocks = availableYears - blockLength + 1;
                 for (int startIndex = 0; startIndex < maxBlocks; startIndex++)
                 {
-                    var slice = history.Slice(startIndex, blockLength);
-                    var score = CalculateARRScore(slice);
-                    availableBlocks.Add(new HBlock(slice, score));
+                    ReadOnlyMemory<HROI> slice = history.Slice(startIndex, blockLength);
+
+                    var features = slice.ComputeBlockFeatures();
+                    //var score = CalculateARRScore(slice);
+                    availableBlocks.Add(new HBlock(slice, features));
                 }
             }
 
@@ -61,34 +72,5 @@ namespace NinthBall.Core
             );
         });
 
-        // Computes a 'ranking-score' for the blocks.
-        // It may look and feel like Real annualized return, but it is not.
-        // Other than ranking the blocks, the number doesn't serve any other purpose.
-        static double CalculateARRScore(ReadOnlyMemory<HROI> window)
-        {
-            // Opinionated portfolio split for ranking purposes
-            const double SixtyPct  = 0.6;
-            const double FourtyPct = 1 - SixtyPct;
-
-            double compoundedRealMultiplier = 1.0;
-
-            for (int y = 0; y < window.Length; y++)
-            {
-                // Lookup the ROI and Inflation information
-                var hroi = window.Span[y];
-
-                // Calculate nominal multiplier for an imaginary 60/40 portfolio
-                // Adjust for inflation (Exact math: (1+n)/(1+i))
-                double nominalMultiplier = 1.0 + (hroi.StocksROI * SixtyPct + hroi.BondsROI * FourtyPct);
-                double realMultiplier    = nominalMultiplier / (1.0 + hroi.InflationRate);
-
-                // Accumulate compounding effect
-                compoundedRealMultiplier *= realMultiplier;
-            }
-
-            // Annualize the compounded result (Geometric Mean)
-            // This allows ranking a 3-year "good" block against a 5-year "excellent" block fairly.
-            return Math.Pow(compoundedRealMultiplier, 1.0 / window.Length) - 1.0;
-        }
     }
 }
