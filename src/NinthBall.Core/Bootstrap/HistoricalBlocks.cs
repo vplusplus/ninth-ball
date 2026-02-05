@@ -8,8 +8,10 @@ namespace NinthBall.Core
         // Features of this block
         public readonly record struct F
         (
-            double CAGRStocks,              // TODO: Why Nominal, why not both nomimal and real
-            double CAGRBonds,               // TODO: Why Nominal, why not both nomimal and real
+            double RealCAGRStocks,
+            double RealCAGRBonds,
+            double NominalCAGRStocks,
+            double NominalCAGRBonds,
             double MaxDrawdownStocks,
             double MaxDrawdownBonds,
             double GMeanInflationRate,

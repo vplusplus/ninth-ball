@@ -9,17 +9,18 @@ namespace NinthBall.Core
 
             return new
             (
-                CAGRStocks:         block.RealCAGR(b => b.StocksROI),
-                CAGRBonds:          block.RealCAGR(b => b.BondsROI),
-                MaxDrawdownStocks:  block.MaxDrawdown(b => b.StocksROI),
-                MaxDrawdownBonds:   block.MaxDrawdown(b => b.BondsROI),
-                GMeanInflationRate: block.Mean(b => b.InflationRate),
+                RealCAGRStocks:     block.RealCAGR(b => b.StocksROI),
+                RealCAGRBonds:      block.RealCAGR(b => b.BondsROI),
+                NominalCAGRStocks:  block.NominalCAGR(b => b.StocksROI),
+                NominalCAGRBonds:   block.NominalCAGR(b => b.BondsROI),
+                MaxDrawdownStocks:  block.NominalMaxDrawdown(b => b.StocksROI),
+                MaxDrawdownBonds:   block.NominalMaxDrawdown(b => b.BondsROI),
+                GMeanInflationRate: block.GeometricMean(b => b.InflationRate),
                 RealCAGR6040:       block.RealCAGR6040()
             );
         }
 
-
-        static double GeomericMean(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
+        static double GeometricMean(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
         {
             ArgumentNullException.ThrowIfNull(valueSelector);
             if (0 == window.Length) throw new Exception("Invalid zero length block");
@@ -37,21 +38,27 @@ namespace NinthBall.Core
             return Math.Pow(cumulativeMultiplier, 1.0 / window.Length) - 1.0;
         }
 
-
-
         static double RealCAGR(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
         {
             ArgumentNullException.ThrowIfNull(valueSelector);
             if (0 == window.Length) throw new Exception("Invalid zero length block");
 
-            double nominalCAGR = window.GeomericMean(valueSelector);
-            double inflationGeoMean = window.GeomericMean(x => x.InflationRate);
+            double nominalCAGR = window.GeometricMean(valueSelector);
+            double inflationGeoMean = window.GeometricMean(x => x.InflationRate);
 
             // (1 + nominal) / (1 + inflation) - 1
             return ((1.0 + nominalCAGR) / (1.0 + inflationGeoMean)) - 1.0;
         }
 
-        static double MaxDrawdown(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
+        static double NominalCAGR(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
+        {
+            ArgumentNullException.ThrowIfNull(valueSelector);
+            if (0 == window.Length) throw new Exception("Invalid zero length block");
+            
+            return window.GeometricMean(valueSelector);
+        }
+
+        static double NominalMaxDrawdown(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
         {
             ArgumentNullException.ThrowIfNull(valueSelector);
 
@@ -77,15 +84,6 @@ namespace NinthBall.Core
             return maxDrawdown;
         }
 
-        static double Mean(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
-        {
-            if (0 == window.Length) return 0;
-
-            double sum = 0.0;
-            foreach(var roi in window.Span) sum += valueSelector(roi);
-            return sum / window.Length;
-        }
-
         static double RealCAGR6040(this ReadOnlyMemory<HROI> window)
         {
             // Real CAGR (inflation adjusted) for an imaginary 60/40 portfolio.
@@ -97,3 +95,14 @@ namespace NinthBall.Core
 
     }
 }
+
+/*
+         static double Mean(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
+        {
+            if (0 == window.Length) return 0;
+
+            double sum = 0.0;
+            foreach(var roi in window.Span) sum += valueSelector(roi);
+            return sum / window.Length;
+        }
+*/
