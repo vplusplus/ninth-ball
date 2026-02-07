@@ -35,49 +35,33 @@ namespace NinthBall.Core.Bootstrap
 
         }
 
-        static FeatureMatrix NormalizeFeatureMatrix(FeatureMatrix rawFeatureMatrix)
+        static FeatureMatrix NormalizeFeatureMatrix(in FeatureMatrix rawFeatureMatrix)
         {
             var numSamples = rawFeatureMatrix.NumSamples;
             var numFeatures = rawFeatureMatrix.NumFeatures;
             var normalizedMatrix = new FeatureMatrix(numSamples, numFeatures);
 
-            // 1. Calculate Mean and StdDev for each feature
-            var means = new double[numFeatures];
-            var stdDevs = new double[numFeatures];
-
-            for (int f = 0; f < numFeatures; f++)
-            {
-                double sum = 0;
-                for (int s = 0; s < numSamples; s++)
-                {
-                    sum += rawFeatureMatrix[s][f];
-                }
-                means[f] = sum / numSamples;
-
-                double sumSqDiff = 0;
-                for (int s = 0; s < numSamples; s++)
-                {
-                    double diff = rawFeatureMatrix[s][f] - means[f];
-                    sumSqDiff += diff * diff;
-                }
-                
-                double variance = sumSqDiff / numSamples;
-                stdDevs[f] = Math.Sqrt(variance);
-            }
-
-            // 2. Perform Z-Score normalization: (x - mean) / stdDev
+            // 1. Calculate Mean (Horizontal Aggregate)
+            var means = new double[numFeatures].AsSpan();
             for (int s = 0; s < numSamples; s++)
             {
-                var rawRow = rawFeatureMatrix[s];
-                var normalizedRow = normalizedMatrix[s];
+                means.Sum(rawFeatureMatrix[s]);
+            }
+            means.Divide(numSamples);
 
-                for (int f = 0; f < numFeatures; f++)
-                {
-                    // Handle zero variance edge case to avoid NaN
-                    normalizedRow[f] = stdDevs[f] > 0 
-                        ? (rawRow[f] - means[f]) / stdDevs[f] 
-                        : 0.0; 
-                }
+            // 2. Calculate StdDev (Horizontal Aggregate)
+            var stdDevs = new double[numFeatures].AsSpan();
+            for (int s = 0; s < numSamples; s++)
+            {
+                stdDevs.SumSquaredDiff(rawFeatureMatrix[s], means);
+            }
+            stdDevs.Divide(numSamples);
+            stdDevs.Sqrt();
+
+            // 3. Perform Z-Score normalization (Horizontal Aggregate)
+            for (int s = 0; s < numSamples; s++)
+            {
+                normalizedMatrix[s].ZNormalize(rawFeatureMatrix[s], means, stdDevs);
             }
 
             return normalizedMatrix;
