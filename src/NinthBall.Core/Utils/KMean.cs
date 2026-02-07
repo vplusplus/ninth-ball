@@ -14,7 +14,8 @@ namespace NinthBall.Core
             double SilhouetteScore,
             ReadOnlyMemory<double> ClusterSilhouette,
             double DBI,
-            double CH
+            double CH,
+            double Dunn
         );
 
         // Cluster results 2d-matrix of centroids, NumFeatures and the cluster assignments of the samples

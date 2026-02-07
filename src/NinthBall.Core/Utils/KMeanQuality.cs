@@ -15,7 +15,8 @@ namespace NinthBall.Core
                 silhouette,
                 clustersilhouette,
                 centroids.DBI(samples, assignments),
-                centroids.CH(samples, assignments)
+                centroids.CH(samples, assignments),
+                centroids.Dunn(samples, assignments)
             );
         }
 
@@ -134,7 +135,37 @@ namespace NinthBall.Core
         /// </summary>
         static double Dunn(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
         {
-            throw new NotImplementedException();
+            if (centroids.K <= 1 || samples.Count <= 1) return 0.0;
+
+            // 1. Min Inter-cluster distance (minimum distance between any two points in different clusters)
+            // Strict version: O(N^2)
+            double minInterDist = double.MaxValue;
+            for (int i = 0; i < samples.Count; i++)
+            {
+                for (int j = i + 1; j < samples.Count; j++)
+                {
+                    if (assignments[i] == assignments[j]) continue;
+
+                    double dist = Math.Sqrt(samples[i].EuclideanDistanceSquared(samples[j]));
+                    if (dist < minInterDist) minInterDist = dist;
+                }
+            }
+
+            // 2. Max Intra-cluster distance (Maximum diameter within any cluster)
+            // Strict version: O(N^2)
+            double maxIntraDist = 0.0;
+            for (int i = 0; i < samples.Count; i++)
+            {
+                for (int j = i + 1; j < samples.Count; j++)
+                {
+                    if (assignments[i] != assignments[j]) continue;
+
+                    double dist = Math.Sqrt(samples[i].EuclideanDistanceSquared(samples[j]));
+                    if (dist > maxIntraDist) maxIntraDist = dist;
+                }
+            }
+
+            return maxIntraDist > 0 ? minInterDist / maxIntraDist : 0.0;
         }
     }
 }
