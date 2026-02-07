@@ -24,7 +24,17 @@ namespace NinthBall.Core
         /// </summary>
         static (double totalInertia, ReadOnlyMemory<double> clusterInertia) Inertia(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
         {
-            throw new NotImplementedException();
+            var inertiaPerCluster = new double[centroids.K];
+            double totalInertia = 0.0;
+
+            for (int i = 0; i < samples.Count; i++)
+            {
+                var distanceSq = samples[i].EuclideanDistanceSquared(centroids[assignments[i]]);
+                inertiaPerCluster[assignments[i]] += distanceSq;
+                totalInertia += distanceSq;
+            }
+
+            return (totalInertia, inertiaPerCluster);
         }
 
         /// <summary>
