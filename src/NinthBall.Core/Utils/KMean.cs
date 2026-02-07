@@ -53,7 +53,7 @@ namespace NinthBall.Core
             return Cluster(samples, R, K);
         }
 
-        private static (bool converged, int iterations, Result result) Cluster(in Samples samples, Random R, int K)
+        static (bool converged, int iterations, Result result) Cluster(in Samples samples, Random R, int K)
         {
             // Prepare initial locations of the centroids.
             XCentroids newCentroids = samples.InitialCentroids(R, K);
@@ -190,10 +190,6 @@ namespace NinthBall.Core
             return maxShift;
         }
 
-        //......................................................................
-        #region Syntax sugars: Domain neutral helpers
-        //......................................................................
-
         // Bulk initialize centroids with a sentinelValue
         static void Fill(this in XCentroids centroids, double sentinelValue) => centroids.Storage.Span.Fill(sentinelValue);
 
@@ -204,15 +200,8 @@ namespace NinthBall.Core
             source.Storage.Span.CopyTo(target.Storage.Span);
         }
 
-        // Copy operations
-        public static void CopyFrom(this Span<double> target, ReadOnlySpan<double> source)
-        {
-            if (target.Length != source.Length) throw new InvalidOperationException($"Vector lengths are not same | [{target.Length}] and [{source.Length}]");
-            source.CopyTo(target);
-        }
-
         // Squared straight-line distance (Euclidean) in a multi-dimensional-space.
-        public static double EuclideanDistanceSquared(this ReadOnlySpan<double> a, ReadOnlySpan<double> b)
+        static double EuclideanDistanceSquared(this ReadOnlySpan<double> a, ReadOnlySpan<double> b)
         {
             if (a.Length != b.Length) throw new InvalidOperationException($"Vector lengths are not same | [{a.Length}] and [{b.Length}]");
 
@@ -225,22 +214,8 @@ namespace NinthBall.Core
             return sum;
         }
 
-        // [target] += [source]
-        public static void Sum(this Span<double> target, ReadOnlySpan<double> source)  
-        {
-            if (target.Length != source.Length) throw new InvalidOperationException($"Vector lengths are not same | [{target.Length}] and [{source.Length}]");
-
-            for(int i=0; i< target.Length; i++) target[i] += source[i];
-        }
-
-        // [target] /= denominator
-        public static void Divide(this Span<double> target, double denominator)
-        {
-            for (int i = 0; i < target.Length; i++) target[i] /= denominator;
-        }
-
         // Similar to Random.NextDouble() but weighted 
-        public static int NextDoubleWeighted(this Random R, double[] weights)
+        static int NextDoubleWeighted(this Random R, double[] weights)
         {
             if (null == weights || 0 == weights.Length) throw new ArgumentException("Empty or NULl weights.");
 
@@ -257,6 +232,5 @@ namespace NinthBall.Core
             return weights.Length - 1;
         }
 
-        #endregion
     }
 }
