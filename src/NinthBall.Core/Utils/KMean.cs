@@ -21,8 +21,8 @@ namespace NinthBall.Core
         // Cluster results 2d-matrix of centroids, NumFeatures and the cluster assignments of the samples
         public readonly record struct Result
         (
+            int NumFeatures,
             ReadOnlyMemory<double> Centroids, 
-            int NumFeatures, 
             ReadOnlyMemory<int> Assignments,
             Quality Quality
         );
@@ -86,7 +86,7 @@ namespace NinthBall.Core
             }
 
             return converged
-                ? (true, iteration, new Result(newCentroids.Storage, newCentroids.NumFeatures, newAssignments, newCentroids.ComputeQualityMetrics(samples, newAssignments)))
+                ? (true, iteration, new Result(newCentroids.NumFeatures, newCentroids.Storage, newAssignments, newCentroids.ComputeQualityMetrics(samples, newAssignments)))
                 : (false, iteration, default);
         }
 
