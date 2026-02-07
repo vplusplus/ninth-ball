@@ -5,12 +5,15 @@ namespace NinthBall.Core
     {
         static KMean.Quality ComputeQualityMetrics(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
         {
+            var (totalInertia, clusterInertia) = centroids.Inertia(samples, assignments);
+            var (silhouette, clustersilhouette) = centroids.Silhouette(samples, assignments);
+
             return new
             (
-                centroids.Inertia(samples, assignments),
-                centroids.ClusterInertia(samples, assignments),
-                centroids.Silhouette(samples, assignments),
-                centroids.ClusterSilhouette(samples, assignments),
+                totalInertia,
+                clusterInertia,
+                silhouette,
+                clustersilhouette,
                 centroids.DBI(samples, assignments),
                 centroids.CH(samples, assignments)
             );
@@ -19,15 +22,7 @@ namespace NinthBall.Core
         /// <summary>
         /// Inertia: “How tight are the blobs?” 
         /// </summary>
-        static double Inertia(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Inertia: “How tight are the blobs?” 
-        /// </summary>
-        static ReadOnlyMemory<double> ClusterInertia(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
+        static (double totalInertia, ReadOnlyMemory<double> clusterInertia) Inertia(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
         {
             throw new NotImplementedException();
         }
@@ -35,15 +30,7 @@ namespace NinthBall.Core
         /// <summary>
         /// Silhouette: “Does each point belong to the assigned cluster?”
         /// </summary>
-        static double Silhouette(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Silhouette: “Does each point belong to the assigned cluster?”
-        /// </summary>
-        static ReadOnlyMemory<double> ClusterSilhouette(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
+        static (double silhouette, ReadOnlyMemory<double> clusterSilhouette) Silhouette(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
         {
             throw new NotImplementedException();
         }
