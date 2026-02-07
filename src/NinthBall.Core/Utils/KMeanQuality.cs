@@ -95,7 +95,38 @@ namespace NinthBall.Core
         /// </summary>
         static double CH(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
         {
-            throw new NotImplementedException();
+            if (centroids.K <= 1 || samples.Count <= centroids.K) return 0.0;
+
+            // 1. Calculate global centroid (mean of all samples)
+            var globalCentroid = new double[samples.NumFeatures];
+            for (int i = 0; i < samples.Count; i++)
+            {
+                globalCentroid.AsSpan().Sum(samples[i]);
+            }
+            globalCentroid.AsSpan().Divide(samples.Count);
+
+            // 2. SS_W (Within-cluster sum of squares) is Total Inertia
+            var (ssW, _) = centroids.Inertia(samples, assignments);
+            if (ssW == 0) return 0.0; // Avoid division by zero if all points are at centroids
+
+            // 3. SS_B (Between-cluster sum of squares)
+            // SS_B = sum( n_k * dist(centroid_k, global_centroid)^2 )
+            var counts = new int[centroids.K];
+            for (int i = 0; i < assignments.Length; i++) counts[assignments[i]]++;
+
+            double ssB = 0.0;
+            for (int x = 0; x < centroids.K; x++)
+            {
+                if (counts[x] > 0)
+                {
+                    ssB += counts[x] * centroids[x].EuclideanDistanceSquared(globalCentroid);
+                }
+            }
+
+            // 4. CH = (ssB / (k - 1)) / (ssW / (n - k))
+            double n = samples.Count;
+            double k = centroids.K;
+            return (ssB / (k - 1.0)) / (ssW / (n - k));
         }
 
         /// <summary>
