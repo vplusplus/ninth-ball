@@ -43,7 +43,64 @@ namespace NinthBall.Core
         /// </summary>
         static (double silhouette, ReadOnlyMemory<double> clusterSilhouette) Silhouette(this in XCentroids centroids, in KMean.Samples samples, ReadOnlySpan<int> assignments)
         {
-            throw new NotImplementedException();
+            if (centroids.K <= 1 || samples.Count <= 1) return (0.0, new double[centroids.K]);
+
+            double[] s = new double[samples.Count];
+            double[] clusterSilhouettes = new double[centroids.K];
+            int[] clusterCounts = new int[centroids.K];
+
+            for (int i = 0; i < samples.Count; i++)
+            {
+                int ownCluster = assignments[i];
+                double a_i = 0;
+                int countA = 0;
+
+                double[] b_distances = new double[centroids.K];
+                int[] b_counts = new int[centroids.K];
+
+                for (int j = 0; j < samples.Count; j++)
+                {
+                    if (i == j) continue;
+                    double dist = Math.Sqrt(samples[i].EuclideanDistanceSquared(samples[j]));
+                    
+                    if (assignments[j] == ownCluster)
+                    {
+                        a_i += dist;
+                        countA++;
+                    }
+                    else
+                    {
+                        b_distances[assignments[j]] += dist;
+                        b_counts[assignments[j]]++;
+                    }
+                }
+
+                if (countA > 0) a_i /= countA;
+
+                double b_i = double.MaxValue;
+                bool foundOther = false;
+                for (int c = 0; c < centroids.K; c++)
+                {
+                    if (c == ownCluster || b_counts[c] == 0) continue;
+                    b_i = Math.Min(b_i, b_distances[c] / b_counts[c]);
+                    foundOther = true;
+                }
+
+                if (!foundOther) s[i] = 0;
+                else s[i] = (b_i - a_i) / Math.Max(a_i, b_i);
+
+                clusterSilhouettes[ownCluster] += s[i];
+                clusterCounts[ownCluster]++;
+            }
+
+            double totalSum = 0;
+            for (int c = 0; c < centroids.K; c++)
+            {
+                totalSum += clusterSilhouettes[c];
+                if (clusterCounts[c] > 0) clusterSilhouettes[c] /= clusterCounts[c];
+            }
+
+            return (totalSum / samples.Count, clusterSilhouettes);
         }
 
         /// <summary>
