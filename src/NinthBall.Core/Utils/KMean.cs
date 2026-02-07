@@ -2,13 +2,29 @@
 
 namespace NinthBall.Core
 {
-    public static class KMean
+    public static partial class KMean
     {
         private const int MaxIterations = 100;
         private const double ZeroShiftThreshold = 1e-6;
 
+        public readonly record struct Quality
+        (
+            double TotalInertia,
+            ReadOnlyMemory<double> ClusterInertia,
+            double SilhouetteScore,
+            ReadOnlyMemory<double> ClusterSilhouette,
+            double DBI,
+            double CH
+        );
+
         // Cluster results 2d-matrix of centroids, NumFeatures and the cluster assignments of the samples
-        public readonly record struct Result(ReadOnlyMemory<double> Centroids, int NumFeatures, ReadOnlyMemory<int> Assignments);
+        public readonly record struct Result
+        (
+            ReadOnlyMemory<double> Centroids, 
+            int NumFeatures, 
+            ReadOnlyMemory<int> Assignments,
+            Quality Quality
+        );
 
         // Immutable 2d-matrix [numSamples, numFeatures]
         private readonly record struct Samples(ReadOnlyMemory<double> Storage, int NumFeatures)
@@ -69,7 +85,7 @@ namespace NinthBall.Core
             }
 
             return converged
-                ? (true, iteration, new Result(newCentroids.Storage, newCentroids.NumFeatures, newAssignments))
+                ? (true, iteration, new Result(newCentroids.Storage, newCentroids.NumFeatures, newAssignments, newCentroids.ComputeQualityMetrics(samples, newAssignments)))
                 : (false, iteration, default);
         }
 
