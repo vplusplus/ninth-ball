@@ -1,12 +1,40 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Office.Word;
-using System;
-using System.Collections.Generic;
-using System.Net.WebSockets;
-using System.Text;
-
+﻿
 namespace NinthBall.Core.Bootstrap
 {
+
+    public readonly record struct RegimeSet(IReadOnlyList<RegimeSet.R> Regimes, RegimeSet.RX Transitions)
+    {
+        // Describes one Regime
+        public readonly record struct R(int RegimeId, RP Profile);
+
+        // Probability of transition from current regime to next
+        public readonly record struct RX(ReadOnlyMemory<double> Matrix, int K)
+        {
+            public readonly ReadOnlySpan<double> TransitionProbabilities(int fromRegimeId) => Matrix.Slice(fromRegimeId * K, K).Span;
+        }
+
+        // Regime Profile
+        public readonly record struct RP
+        (
+            double StocksBondCorrelation,
+            double StocksInflationCorrelation,
+            double BondsInflationCorrelation,
+            M Stocks,
+            M Bonds,
+            M Inflation
+        );
+
+        // Asset Moments of one kind of asset
+        public readonly record struct M
+        (
+            double Mean,
+            double Volatility,
+            double Skewness,
+            double Kurtosis,
+            double AutoCorrelation
+        );
+    }
+
 
     public readonly record struct FeatureMatrix(int NumSamples, int NumFeatures)
     {
@@ -26,7 +54,7 @@ namespace NinthBall.Core.Bootstrap
             // Pre-check: We depend on cronology. Pre-check blocks are sorted by year & sequence length.
             if (!IsSortedByYearAndBlockLength(blocks)) throw new Exception("Invalid input: Blocks are not pre-sorted by Year and sequence length.");
 
-            // Prepare input for K-Mean clustering. Extract the features.
+            // Prepare input for K-Mean clustering, extract the features and normalize.
             var featureMatrix = ToFeatureMatrix(blocks);
             var normalizedFeatureMatrix = NormalizeFeatureMatrix(featureMatrix);
 
