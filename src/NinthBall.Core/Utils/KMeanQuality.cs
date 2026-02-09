@@ -159,7 +159,7 @@ namespace NinthBall.Core
             var globalCentroid = new double[samples.NumFeatures];
             for (int i = 0; i < samples.Count; i++)
             {
-                globalCentroid.AsSpan().Sum(samples[i]);
+                globalCentroid.AsSpan().Add(samples[i]);
             }
             globalCentroid.AsSpan().Divide(samples.Count);
 

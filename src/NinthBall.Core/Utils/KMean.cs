@@ -21,6 +21,7 @@ namespace NinthBall.Core
         // Cluster results 2d-matrix of centroids, NumFeatures and the cluster assignments of the samples
         public readonly record struct Result
         (
+            int NumClusters,
             int NumFeatures,
             ReadOnlyMemory<double> Centroids, 
             ReadOnlyMemory<int> Assignments,
@@ -86,7 +87,7 @@ namespace NinthBall.Core
             }
 
             return converged
-                ? (true, iteration, new Result(newCentroids.NumFeatures, newCentroids.Storage, newAssignments, newCentroids.ComputeQualityMetrics(samples, newAssignments)))
+                ? (true, iteration, new Result(NumClusters: K, NumFeatures: newCentroids.NumFeatures, newCentroids.Storage, newAssignments, newCentroids.ComputeQualityMetrics(samples, newAssignments)))
                 : (false, iteration, default);
         }
 
@@ -141,7 +142,7 @@ namespace NinthBall.Core
                 int clusterId = assignments[i];
                 membershipCounts[clusterId]++;
 
-                centroids[clusterId].Sum(samples[i]);
+                centroids[clusterId].Add(samples[i]);
             }
 
             // Divide by count to arrive at mean value
