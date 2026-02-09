@@ -1,0 +1,130 @@
+{
+  "Regimes": [
+    {
+      "RegimeLabel": "Balanced Growth",
+      "StocksBondCorrelation": -0.5275971621504278,
+      "StocksInflationCorrelation": -0.25200581699970465,
+      "BondsInflationCorrelation": 0.08031729765169604,
+      "Stocks": {
+        "Mean": 0.1030114806649309,
+        "Volatility": 0.07051861330681579,
+        "Skewness": -0.29561535688125723,
+        "Kurtosis": -0.1591579970288146,
+        "AutoCorrelation": 0.6027061520413546
+      },
+      "Bonds": {
+        "Mean": 0.0320314454692154,
+        "Volatility": 0.017714977497342986,
+        "Skewness": 0.6054447321184522,
+        "Kurtosis": 0.4722912040770546,
+        "AutoCorrelation": 0.4308688665130819
+      },
+      "Inflation": {
+        "Mean": 0.03482082320844898,
+        "Volatility": 0.024907416689945082,
+        "Skewness": 0.8458192173037777,
+        "Kurtosis": -0.20497142559208825,
+        "AutoCorrelation": 0.8651978725602761
+      }
+    },
+    {
+      "RegimeLabel": "Regime1",
+      "StocksBondCorrelation": 0.6540648520831929,
+      "StocksInflationCorrelation": 0.9940678193617395,
+      "BondsInflationCorrelation": 0.6994585699594076,
+      "Stocks": {
+        "Mean": -0.08282956590949023,
+        "Volatility": 0.07050169259463476,
+        "Skewness": 1.9138873265097733,
+        "Kurtosis": 3.699482890462132,
+        "AutoCorrelation": 0.9622196603523681
+      },
+      "Bonds": {
+        "Mean": 0.03611047967593067,
+        "Volatility": 0.004877332927250562,
+        "Skewness": -0.1539745286111677,
+        "Kurtosis": -5.1099204461215315,
+        "AutoCorrelation": 0.6580862642749121
+      },
+      "Inflation": {
+        "Mean": -0.045904991066519574,
+        "Volatility": 0.010604419179267847,
+        "Skewness": 1.72745536998397,
+        "Kurtosis": 3.211226311467083,
+        "AutoCorrelation": 0.799096517661289
+      }
+    },
+    {
+      "RegimeLabel": "Regime2",
+      "StocksBondCorrelation": -0.75788108067154,
+      "StocksInflationCorrelation": 0.8011469847140568,
+      "BondsInflationCorrelation": -0.9389076159284764,
+      "Stocks": {
+        "Mean": 0.05273792481380629,
+        "Volatility": 0.06470639539408526,
+        "Skewness": 0.6562295380380273,
+        "Kurtosis": -1.484111265035129,
+        "AutoCorrelation": 0.6275210775506085
+      },
+      "Bonds": {
+        "Mean": 0.04264475423741726,
+        "Volatility": 0.03911846365917627,
+        "Skewness": -0.7252734717518334,
+        "Kurtosis": -1.1075702648016725,
+        "AutoCorrelation": 0.6709152377539226
+      },
+      "Inflation": {
+        "Mean": 0.027698926162860783,
+        "Volatility": 0.008805588058165153,
+        "Skewness": 0.8872508549872642,
+        "Kurtosis": -1.0625162676010391,
+        "AutoCorrelation": 0.6556182219596463
+      }
+    },
+    {
+      "RegimeLabel": "Bull Market",
+      "StocksBondCorrelation": 0.012080974934382165,
+      "StocksInflationCorrelation": -0.3386120948903403,
+      "BondsInflationCorrelation": -0.017967245925407806,
+      "Stocks": {
+        "Mean": 0.1678465271853235,
+        "Volatility": 0.041701890105661214,
+        "Skewness": 1.054732975021393,
+        "Kurtosis": 2.4717003441347094,
+        "AutoCorrelation": 0.38109340297655525
+      },
+      "Bonds": {
+        "Mean": 0.1001843833685629,
+        "Volatility": 0.03568501876245928,
+        "Skewness": 1.1687359326682527,
+        "Kurtosis": 1.227777934261228,
+        "AutoCorrelation": 0.5740252933219092
+      },
+      "Inflation": {
+        "Mean": 0.040288050249051854,
+        "Volatility": 0.019962953203854165,
+        "Skewness": 1.6722913251902847,
+        "Kurtosis": 2.5356067658387564,
+        "AutoCorrelation": 0.9462238291386593
+      }
+    }
+  ],
+  "TransitionMatrix": [
+    0.9322033898305084,
+    0,
+    0.03389830508474576,
+    0.03389830508474576,
+    0.25,
+    0.75,
+    0,
+    0,
+    0.2222222222222222,
+    0,
+    0.7777777777777778,
+    0,
+    0.05,
+    0,
+    0.05,
+    0.9
+  ]
+}

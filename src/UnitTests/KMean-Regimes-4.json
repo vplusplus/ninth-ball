@@ -1,0 +1,130 @@
+{
+  "Regimes": [
+    {
+      "RegimeLabel": "Stagnation",
+      "StocksBondCorrelation": -0.32959143498516474,
+      "StocksInflationCorrelation": 0.06958509334626606,
+      "BondsInflationCorrelation": -0.18011910791121943,
+      "Stocks": {
+        "Mean": 0.00321072922309803,
+        "Volatility": 0.0487776804825462,
+        "Skewness": 0.5777059695881913,
+        "Kurtosis": 0.8256772859830459,
+        "AutoCorrelation": 0.16810039982975278
+      },
+      "Bonds": {
+        "Mean": 0.052232946130332435,
+        "Volatility": 0.020043982752769342,
+        "Skewness": 0.28923125072398004,
+        "Kurtosis": -0.6054528927271146,
+        "AutoCorrelation": 0.5508584461585985
+      },
+      "Inflation": {
+        "Mean": 0.033736633428923676,
+        "Volatility": 0.025027842520075942,
+        "Skewness": 0.910174132074504,
+        "Kurtosis": -0.465009567554862,
+        "AutoCorrelation": 0.8026062038458719
+      }
+    },
+    {
+      "RegimeLabel": "Crisis",
+      "StocksBondCorrelation": 0.024670923131207025,
+      "StocksInflationCorrelation": 0.6214498518546163,
+      "BondsInflationCorrelation": -0.43049215059052803,
+      "Stocks": {
+        "Mean": -0.14039132950708147,
+        "Volatility": 0.06734322002739675,
+        "Skewness": -0.6534745527662795,
+        "Kurtosis": 1.66715354069337,
+        "AutoCorrelation": -0.06022372871564283
+      },
+      "Bonds": {
+        "Mean": 0.03089622810706255,
+        "Volatility": 0.009814776842327792,
+        "Skewness": -1.3177981047895657,
+        "Kurtosis": 1.3641294653048472,
+        "AutoCorrelation": -0.5057062473933812
+      },
+      "Inflation": {
+        "Mean": -0.05371635550859974,
+        "Volatility": 0.012226647989844327,
+        "Skewness": 0.06246432060183005,
+        "Kurtosis": -5.629149177415593,
+        "AutoCorrelation": -0.502344949071118
+      }
+    },
+    {
+      "RegimeLabel": "Bull Market",
+      "StocksBondCorrelation": 0.2178728628040107,
+      "StocksInflationCorrelation": -0.24563385167714272,
+      "BondsInflationCorrelation": -0.3887144519280253,
+      "Stocks": {
+        "Mean": 0.15169300798189742,
+        "Volatility": 0.05699577796921723,
+        "Skewness": 0.4011887431209911,
+        "Kurtosis": 0.10334103415220408,
+        "AutoCorrelation": 0.4524605157805159
+      },
+      "Bonds": {
+        "Mean": 0.026270674973963282,
+        "Volatility": 0.025158185069047847,
+        "Skewness": -0.4381854419544779,
+        "Kurtosis": 1.5063269139475959,
+        "AutoCorrelation": 0.5791464973416334
+      },
+      "Inflation": {
+        "Mean": 0.023862144075587045,
+        "Volatility": 0.013692762140836583,
+        "Skewness": 0.3033424123340294,
+        "Kurtosis": 1.0027531977463675,
+        "AutoCorrelation": 0.6467701738950729
+      }
+    },
+    {
+      "RegimeLabel": "Bull Market",
+      "StocksBondCorrelation": 0.5437684862356027,
+      "StocksInflationCorrelation": -0.3180697133876013,
+      "BondsInflationCorrelation": -0.6991234756677494,
+      "Stocks": {
+        "Mean": 0.13291329393586146,
+        "Volatility": 0.056618137148025625,
+        "Skewness": 0.770799697967487,
+        "Kurtosis": 1.8378613148894476,
+        "AutoCorrelation": 0.2626617993042154
+      },
+      "Bonds": {
+        "Mean": 0.0814913877213623,
+        "Volatility": 0.04962206696057898,
+        "Skewness": 0.176372661668606,
+        "Kurtosis": -0.8162344205745544,
+        "AutoCorrelation": 0.7685065012396377
+      },
+      "Inflation": {
+        "Mean": 0.05564830261073698,
+        "Volatility": 0.02419348719368808,
+        "Skewness": 0.7723121405326555,
+        "Kurtosis": -0.33783953220606566,
+        "AutoCorrelation": 0.880375731198046
+      }
+    }
+  ],
+  "TransitionMatrix": [
+    0.8,
+    0,
+    0.15,
+    0.05,
+    0,
+    0.75,
+    0.25,
+    0,
+    0.046511627906976744,
+    0,
+    0.8372093023255814,
+    0.11627906976744186,
+    0.07692307692307693,
+    0,
+    0.15384615384615385,
+    0.7692307692307693
+  ]
+}

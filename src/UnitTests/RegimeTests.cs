@@ -12,7 +12,7 @@ namespace UnitTests
         {
             var prettyJson = new JsonSerializerOptions { WriteIndented = true };
 
-            var mbbOptions = new MovingBlockBootstrapOptions(BlockSizes: [3, 4, 5], NoBackToBackOverlaps: false );
+            var mbbOptions = new MovingBlockBootstrapOptions(BlockSizes: [3], NoBackToBackOverlaps: false );
             var history = new HistoricalReturns();
             var blocks = new HistoricalBlocks(history, mbbOptions).Blocks;
 
@@ -20,11 +20,11 @@ namespace UnitTests
 
             var clusters = HistoricalRegimesDiscovery.DiscoverClusters(blocks, R, 4);
             var json = JsonSerializer.Serialize(clusters, prettyJson);
-            File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\KMean-Clusters.json", json);
+            File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\KMean-Clusters-3.json", json);
 
             var regimes = clusters.ToRegimeSet(blocks);
             json = JsonSerializer.Serialize(regimes, prettyJson);
-            File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\KMean-Regimes.json", json);
+            File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\KMean-Regimes-3.json", json);
         }
     }
 }
