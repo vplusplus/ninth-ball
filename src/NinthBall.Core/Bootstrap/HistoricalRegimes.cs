@@ -272,6 +272,22 @@ namespace NinthBall.Core
 
         private static string GuessRegimeLabel(this RegimeSet.RP profile, int regimeId)
         {
+            // Priority 1: Crisis (Severe pain or extreme uncertainty)
+            if (profile.Stocks.Mean < -0.10 || profile.Stocks.Volatility > 0.20) return "Crisis";
+
+            // Priority 2: Stagflation (High cost of living + poor growth)
+            if (profile.Inflation.Mean > 0.05 && profile.Stocks.Mean < 0.02) return "Stagflation";
+
+            // Priority 3: Balanced Growth (Modern ideal, diversification works)
+            if (profile.Stocks.Mean > 0.06 && profile.StocksBondCorrelation < 0.0) return "Balanced Growth";
+
+            // Priority 4: Bull Market (General vigor)
+            if (profile.Stocks.Mean > 0.10) return "Bull Market";
+
+            // Priority 5: Stagnation (The "Lost Decade")
+            if (profile.Stocks.Mean < 0.02 && profile.Stocks.Mean > -0.05) return "Stagnation";
+
+            // Fallback: Statistical Label
             return $"Regime{regimeId}";
         }
 

@@ -2,7 +2,7 @@
   "Regimes": [
     {
       "RegimeId": 0,
-      "RegimeLabel": "Regime0",
+      "RegimeLabel": "Stagnation",
       "Profile": {
         "StocksBondCorrelation": 0.09735418916993158,
         "StocksInflationCorrelation": 0.5259031464822226,
@@ -32,7 +32,7 @@
     },
     {
       "RegimeId": 1,
-      "RegimeLabel": "Regime1",
+      "RegimeLabel": "Bull Market",
       "Profile": {
         "StocksBondCorrelation": 0.6365876078552316,
         "StocksInflationCorrelation": -0.4890674335826666,
@@ -62,7 +62,7 @@
     },
     {
       "RegimeId": 2,
-      "RegimeLabel": "Regime2",
+      "RegimeLabel": "Balanced Growth",
       "Profile": {
         "StocksBondCorrelation": -0.16478680490525116,
         "StocksInflationCorrelation": -0.3024256492179194,
@@ -92,7 +92,7 @@
     },
     {
       "RegimeId": 3,
-      "RegimeLabel": "Regime3",
+      "RegimeLabel": "Bull Market",
       "Profile": {
         "StocksBondCorrelation": 0.10355652313213097,
         "StocksInflationCorrelation": -0.26734103116726976,
