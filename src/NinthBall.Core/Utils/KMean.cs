@@ -4,7 +4,6 @@ namespace NinthBall.Core
 {
     public static partial class KMean
     {
-        private const int MaxIterations = 100;
         private const double ZeroShiftThreshold = 1e-6;
 
         public readonly record struct Quality
@@ -48,13 +47,13 @@ namespace NinthBall.Core
             public Span<double> this[int ids] => Storage.Slice(ids * NumFeatures, NumFeatures).Span;
         }
 
-        public static (bool converged, int iterations, Result result) Cluster(ReadOnlyMemory<double> normalizedFeatureMatrix, int NumFeatures, Random R, int K)
+        public static (bool converged, int iterations, Result result) Cluster(ReadOnlyMemory<double> normalizedFeatureMatrix, int NumFeatures, Random R, int K, int maxIterations = 100)
         {
             Samples samples = new Samples(normalizedFeatureMatrix, NumFeatures);
-            return Cluster(samples, R, K);
+            return Cluster(samples, R, K, maxIterations);
         }
 
-        static (bool converged, int iterations, Result result) Cluster(in Samples samples, Random R, int K)
+        static (bool converged, int iterations, Result result) Cluster(in Samples samples, Random R, int K, int maxIterations)
         {
             // Prepare initial locations of the centroids.
             XCentroids newCentroids = samples.InitialCentroids(R, K);
@@ -71,7 +70,7 @@ namespace NinthBall.Core
 
             var converged = false;
             var iteration = 0;
-            for(iteration = 0; iteration < MaxIterations && !converged; iteration++)
+            for(iteration = 0; iteration < maxIterations && !converged; iteration++)
             {
                 // Assign/Reassign samples to nearest centroid.
                 // Check for convergence (no assignment change)

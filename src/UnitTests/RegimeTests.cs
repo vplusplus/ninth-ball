@@ -1,10 +1,5 @@
-﻿using DocumentFormat.OpenXml.Office2010.CustomUI;
-using NinthBall.Core;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using NinthBall.Core;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace UnitTests
 {
@@ -25,16 +20,11 @@ namespace UnitTests
 
             var clusters = HistoricalRegimesDiscovery.DiscoverClusters(blocks, R, 4);
             var json = JsonSerializer.Serialize(clusters, prettyJson);
-            Console.WriteLine(json);
+            File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\KMean-Clusters.json", json);
 
-
-            var regimes = HistoricalRegimesDiscovery.DiscoverRegimes(blocks, R, 4);
+            var regimes = clusters.ToRegimeSet(blocks);
             json = JsonSerializer.Serialize(regimes, prettyJson);
-            File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\Regimes.json", json);
-
-
+            File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\KMean-Regimes.json", json);
         }
-
-
     }
 }

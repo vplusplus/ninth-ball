@@ -1,0 +1,130 @@
+{
+  "Regimes": [
+    {
+      "RegimeLabel": "Bull Market",
+      "StocksBondCorrelation": 0.08866073114113203,
+      "StocksInflationCorrelation": 0.011054494346590487,
+      "BondsInflationCorrelation": 0.49565650953833124,
+      "Stocks": {
+        "Mean": 0.1590241396313514,
+        "Volatility": 0.05710539628172161,
+        "Skewness": 0.5468449741104943,
+        "Kurtosis": 0.008389059136171717,
+        "AutoCorrelation": 0.5709616698500369
+      },
+      "Bonds": {
+        "Mean": 0.05497619711376271,
+        "Volatility": 0.04552755475442317,
+        "Skewness": 1.1494875114754999,
+        "Kurtosis": 0.727160816348392,
+        "AutoCorrelation": 0.8621049876707579
+      },
+      "Inflation": {
+        "Mean": 0.02430240159492675,
+        "Volatility": 0.013038030097484478,
+        "Skewness": -0.2038405133959328,
+        "Kurtosis": 1.8477411223905067,
+        "AutoCorrelation": 0.8216821050454075
+      }
+    },
+    {
+      "RegimeLabel": "Crisis",
+      "StocksBondCorrelation": 0.3592788257423688,
+      "StocksInflationCorrelation": 0.6796803912474103,
+      "BondsInflationCorrelation": 0.017019397786927164,
+      "Stocks": {
+        "Mean": -0.138333690569902,
+        "Volatility": 0.08938336078205794,
+        "Skewness": -0.15158423833992485,
+        "Kurtosis": -0.0898561684962873,
+        "AutoCorrelation": 0.3550475429392429
+      },
+      "Bonds": {
+        "Mean": 0.03171254254517897,
+        "Volatility": 0.00786992877147167,
+        "Skewness": -0.7691718311475779,
+        "Kurtosis": -0.3919012134732145,
+        "AutoCorrelation": -0.12073257975415363
+      },
+      "Inflation": {
+        "Mean": -0.054602966705855766,
+        "Volatility": 0.014920978610310864,
+        "Skewness": -0.6694832720639425,
+        "Kurtosis": 1.3109923170148559,
+        "AutoCorrelation": 0.05909779952806649
+      }
+    },
+    {
+      "RegimeLabel": "Regime2",
+      "StocksBondCorrelation": -0.6401366974053427,
+      "StocksInflationCorrelation": 0.3864669484493301,
+      "BondsInflationCorrelation": -0.5139243752382181,
+      "Stocks": {
+        "Mean": 0.02045805685394435,
+        "Volatility": 0.07201870016172579,
+        "Skewness": 0.11743939108333856,
+        "Kurtosis": -0.7221206833853877,
+        "AutoCorrelation": 0.6133372328762213
+      },
+      "Bonds": {
+        "Mean": 0.04063892596458502,
+        "Volatility": 0.041093891018431576,
+        "Skewness": -0.8760116381130076,
+        "Kurtosis": 0.7495624517417836,
+        "AutoCorrelation": 0.7869242380951216
+      },
+      "Inflation": {
+        "Mean": 0.023317924188588416,
+        "Volatility": 0.014066483123249044,
+        "Skewness": -0.34761294284855043,
+        "Kurtosis": 1.9052384580043036,
+        "AutoCorrelation": 0.7700027217124968
+      }
+    },
+    {
+      "RegimeLabel": "Regime3",
+      "StocksBondCorrelation": 0.04932284828552157,
+      "StocksInflationCorrelation": 0.2582313688003888,
+      "BondsInflationCorrelation": -0.045304306855582836,
+      "Stocks": {
+        "Mean": 0.07459824814827287,
+        "Volatility": 0.06058772554601695,
+        "Skewness": -0.2200864620398971,
+        "Kurtosis": -0.3150729544163142,
+        "AutoCorrelation": 0.6078213009137967
+      },
+      "Bonds": {
+        "Mean": 0.03723884009147089,
+        "Volatility": 0.025526627929282116,
+        "Skewness": 0.5801353857566324,
+        "Kurtosis": 0.5269682918840344,
+        "AutoCorrelation": 0.6633958684184657
+      },
+      "Inflation": {
+        "Mean": 0.06825878448023469,
+        "Volatility": 0.02102917620986211,
+        "Skewness": 0.2399442649052425,
+        "Kurtosis": -0.4545425253881299,
+        "AutoCorrelation": 0.7619025373291786
+      }
+    }
+  ],
+  "TransitionMatrix": [
+    0.9155844155844156,
+    0,
+    0.05844155844155844,
+    0.025974025974025976,
+    0.09090909090909091,
+    0.9090909090909091,
+    0,
+    0,
+    0.12244897959183673,
+    0.02040816326530612,
+    0.8163265306122449,
+    0.04081632653061224,
+    0.08955223880597014,
+    0,
+    0,
+    0.9104477611940298
+  ]
+}

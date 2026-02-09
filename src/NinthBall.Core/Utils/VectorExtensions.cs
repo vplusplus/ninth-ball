@@ -25,10 +25,11 @@ namespace NinthBall.Core
             source.CopyTo(target);
         }
 
-        // [targetSumSq] += ([sourceRow] - [meanVector])^2
+
         public static void SumSquaredDiff(this Span<double> targetSumSq, ReadOnlySpan<double> sourceRow, ReadOnlySpan<double> meanVector)
         {
             if (targetSumSq.Length != sourceRow.Length || targetSumSq.Length != meanVector.Length) throw new InvalidOperationException("Vector lengths mismatch");
+
             for (int i = 0; i < targetSumSq.Length; i++)
             {
                 double diff = sourceRow[i] - meanVector[i];
@@ -36,14 +37,13 @@ namespace NinthBall.Core
             }
         }
 
-        // [target] = sqrt([target])
-        public static void Sqrt(this Span<double> target)
+        public static void Sqrt(this Span<double> values)
         {
-            for (int i = 0; i < target.Length; i++) target[i] = Math.Sqrt(target[i]);
+            for (int i = 0; i < values.Length; i++) values[i] = Math.Sqrt(values[i]);
         }
 
         // [targetRow] = ([sourceRow] - [meanVector]) / [stdDevVector]
-        public static void ZNormalize(this Span<double> targetRow, ReadOnlySpan<double> sourceRow, ReadOnlySpan<double> meanVector, ReadOnlySpan<double> stdDevVector)
+        public static void ZNormalize(this ReadOnlySpan<double> sourceRow, ReadOnlySpan<double> meanVector, ReadOnlySpan<double> stdDevVector, Span<double> targetRow)
         {
             if (targetRow.Length != sourceRow.Length || targetRow.Length != meanVector.Length || targetRow.Length != stdDevVector.Length) throw new InvalidOperationException("Vector lengths mismatch");
             for (int i = 0; i < targetRow.Length; i++)
@@ -53,41 +53,6 @@ namespace NinthBall.Core
                     : 0.0;
             }
         }
-
-        //// Convert set of counts to Probability Distribution with entropyWeight
-        //public static void ToProbabilityDistribution(this Span<double> values, double entropyWeight)
-        //{
-        //    if (entropyWeight < 0.0 || entropyWeight > 1.0) throw new ArgumentOutOfRangeException(nameof(entropyWeight), "Must be in [0,1]");
-
-        //    // Edge case: Only one item
-        //    if (1 == values.Length)
-        //    {
-        //        values[0] = 1.0;
-        //        return;
-        //    }
-
-        //    double invK = 1.0 / values.Length;
-        //    double total = values.Sum();
-
-        //    // Edge case, neaningless in our usecase: Total count is zero
-        //    if (0 == total)
-        //    {
-        //        for (int i = 0; i < values.Length; i++) values[i] = invK;
-        //        return;
-        //    }
-
-        //    // Compute probabilty distribution
-        //    for (int i = 0; i < values.Length; i++)
-        //    {
-        //        double pHist = values[i] / total;
-        //        values[i] = (1.0 - entropyWeight) * pHist + entropyWeight * invK;
-        //    }
-
-        //    // Drop double precision dust. sum(p) should be 1.0
-        //    double diff = 1.0 - values.Sum();
-        //    if (Math.Abs(diff) > 1e-9) throw new Exception("Numerical instability: probability mass drift detected.");
-        //    values[values.Length - 1] += diff;
-        //}
 
         public static void ToProbabilityDistribution(this Span<double> values)
         {
@@ -120,7 +85,6 @@ namespace NinthBall.Core
             // Drop double precision dust. sum(values) should be 1.0
             values[values.Length - 1] += 1.0 - values.Sum();
         }
-
 
         public static double Sum(this ReadOnlySpan<double> values)
         {
