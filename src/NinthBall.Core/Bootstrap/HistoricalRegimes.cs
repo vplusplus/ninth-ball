@@ -33,7 +33,7 @@ namespace NinthBall.Core
         // Probability of transition from current regime to next
         public readonly record struct RX
         {
-            readonly double[][] Matrix;
+            public readonly double[][] Matrix { get; init; }
 
             public RX(double[][] matrix)
             {
@@ -76,7 +76,7 @@ namespace NinthBall.Core
         }
 
         //......................................................................
-        #region Map clusters to region prfiles and transitio matrix
+        #region Map clusters to region profiles and transition matrix
         //......................................................................
         private static RegimeSet.R[] ComputeRegimes(this IReadOnlyList<HBlock> blocks, KMean.Result clusters)
         {
@@ -85,11 +85,14 @@ namespace NinthBall.Core
             RegimeSet.R[] regimes = new RegimeSet.R[numRegimes];
             for (int r = 0; r < numRegimes; r++)
             {
+                var profile = blocks.ComputeRegimeProfile(clusters, r);
+                var label   = profile.GuessRegimeLabel(r);
+
                 regimes[r] = new
                 (
                     RegimeId: r,
-                    RegimeLabel: $"Regime{r}",
-                    Profile: blocks.ComputeRegimeProfile(clusters, r)
+                    RegimeLabel: label,
+                    Profile: profile
                 );
             }
 
@@ -192,12 +195,14 @@ namespace NinthBall.Core
             var normalizedFeatureMatrix = blocks.ToRegimeFeaturesMatrix().NormalizeFeatureMatrix();
 
             // Discover clusters (a.k.a. regimes)
+            var elapsed = Stopwatch.StartNew();
             var (converged, iterations, kResult) = KMean.Cluster(normalizedFeatureMatrix.Storage, normalizedFeatureMatrix.NumFeatures, R, numClusters);
+            elapsed.Stop();
 
             // Some diag.
             if (converged)
             {
-                Console.WriteLine($" K-Mean: Discovered {kResult.NumClusters} clusters | {iterations} iterations");
+                Console.WriteLine($" K-Mean: Discovered {kResult.NumClusters} clusters | {iterations} iterations | {elapsed.Elapsed.TotalMilliseconds:#,0.0} milliSec");
                 Console.WriteLine($" K-Mean: TotalInertia: {kResult.Quality.TotalInertia} | SilhouetteScore: {kResult.Quality.SilhouetteScore} ");
             }
 
@@ -263,6 +268,11 @@ namespace NinthBall.Core
                 blocks.ComputeRegimes(clusters),
                 clusters.ComputeRegimeTransitionProbabilities()
             );
+        }
+
+        private static string GuessRegimeLabel(this RegimeSet.RP profile, int regimeId)
+        {
+            return $"Regime{regimeId}";
         }
 
         #endregion
