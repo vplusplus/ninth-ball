@@ -20,48 +20,33 @@ namespace NinthBall.Core
         // Cluster results 2d-matrix of centroids, NumFeatures and the cluster assignments of the samples
         public readonly record struct Result
         (
-            int NumClusters,
-            int NumFeatures,
-            ReadOnlyMemory<double> Centroids, 
+            TwoDMatrix Centroids, 
             ReadOnlyMemory<int> Assignments,
             Quality Quality
-        );
-
-        // Immutable 2d-matrix [numSamples, numFeatures]
-        private readonly record struct Samples(ReadOnlyMemory<double> Storage, int NumFeatures)
+        )
         {
-            public readonly int Count =
-                0 == NumFeatures ? throw new Exception("Zero features? What are you doing?") :
-                0 != Storage.Length % NumFeatures ? throw new Exception($"Invalid feature-matrix | Storage.Length is not a multiple of num-features") :
-                Storage.Length / NumFeatures;
-
-            public ReadOnlySpan<double> this[int idx] => Storage.Slice(idx * NumFeatures, NumFeatures).Span;
+            public readonly int NumClusters => Centroids.NumRows;
+            public readonly int NumFeatures => Centroids.NumColumns;
         }
 
-        // Mutable 2d-matrix [K, numFeatures]
-        private readonly record struct XCentroids(int K, int NumFeatures)
-        {
-            public readonly Memory<double> Storage = new double[K * NumFeatures];
-            public readonly int Count = K;
+        //// Mutable 2d-matrix [K, numFeatures]
+        //private readonly record struct XCentroids(int K, int NumFeatures)
+        //{
+        //    public readonly Memory<double> Storage = new double[K * NumFeatures];
+        //    public readonly int Count = K;
 
-            public Span<double> this[int ids] => Storage.Slice(ids * NumFeatures, NumFeatures).Span;
-        }
+        //    public Span<double> this[int ids] => Storage.Slice(ids * NumFeatures, NumFeatures).Span;
+        //}
 
-        public static (bool converged, int iterations, Result result) Cluster(ReadOnlyMemory<double> normalizedFeatureMatrix, int NumFeatures, Random R, int K, int maxIterations = 100)
-        {
-            Samples samples = new Samples(normalizedFeatureMatrix, NumFeatures);
-            return Cluster(samples, R, K, maxIterations);
-        }
-
-        static (bool converged, int iterations, Result result) Cluster(in Samples samples, Random R, int K, int maxIterations)
+        public static (bool converged, int iterations, Result result) Cluster(in TwoDMatrix samples, Random R, int K, int maxIterations = 100)
         {
             // Prepare initial locations of the centroids.
-            XCentroids newCentroids = samples.InitialCentroids(R, K);
-            XCentroids oldCentroids = new(K, samples.NumFeatures);
+            XTwoDMatrix newCentroids = samples.InitialCentroids(R, K);
+            XTwoDMatrix oldCentroids = new(K, samples.NumColumns);
 
             // Assignments
-            int[] oldAssignments = new int[samples.Count];
-            int[] newAssignments = new int[samples.Count];
+            int[] oldAssignments = new int[samples.NumRows];
+            int[] newAssignments = new int[samples.NumRows];
             oldAssignments.AsSpan().Fill(-1);
             newAssignments.AsSpan().Fill(-1);
 
@@ -85,29 +70,31 @@ namespace NinthBall.Core
                 if (converged = newCentroids.MaxShift(oldCentroids) < ZeroShiftThreshold) break;
             }
 
+            TwoDMatrix centroids = newCentroids.AsReadOnly();
+
             return converged
-                ? (true, iteration, new Result(NumClusters: K, NumFeatures: newCentroids.NumFeatures, newCentroids.Storage, newAssignments, newCentroids.ComputeQualityMetrics(samples, newAssignments)))
+                ? (true, iteration, new Result(centroids, newAssignments, centroids.ComputeQualityMetrics(samples, newAssignments)))
                 : (false, iteration, default);
         }
 
-        static XCentroids InitialCentroids(this in Samples samples, Random R, int K)
+        static XTwoDMatrix InitialCentroids(this in TwoDMatrix samples, Random R, int K)
         {
             // An empty working memory of centroids
-            XCentroids centroids = new(K, samples.NumFeatures);
+            XTwoDMatrix centroids = new(K, samples.NumColumns);
 
             // Pick a spot for the first centroid.
             // Features of a random observation is the spot for first centroid.
-            var idx = R.Next(samples.Count);
+            var idx = R.Next(samples.NumRows);
             centroids[0].CopyFrom(samples[idx]);
 
             // Reusable buffer to hold min-squared-distances
-            double[] tempDistances = new double[samples.Count];
+            double[] tempDistances = new double[samples.NumRows];
 
             // Now we pick a spot for "remaining" centroids
-            for (int c = 1; c < centroids.Count; c++)
+            for (int c = 1; c < centroids.NumRows; c++)
             {
                 // For each observation
-                for (int i = 0; i < samples.Count; i++)
+                for (int i = 0; i < samples.NumRows; i++)
                 {
                     var features = samples[i];
 
@@ -126,13 +113,16 @@ namespace NinthBall.Core
             return centroids;
         }
 
-        static void Recenter(this in XCentroids centroids, in Samples samples, ReadOnlySpan<int> assignments, Random R, int[] tempBuffer)
+        static void Recenter(this in XTwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments, Random R, int[] tempBuffer)
         {
+            // No of clusters
+            int K = centroids.NumRows;
+
             // Recet all centroids. 
             centroids.Fill(0.0);
 
             // Check and reset tempBuffer used to trak membership count.
-            var membershipCounts = null == tempBuffer || tempBuffer.Length != centroids.K ? throw new Exception("Invlaid temp buffer.") : tempBuffer;
+            var membershipCounts = null == tempBuffer || tempBuffer.Length != K ? throw new Exception("Invlaid temp buffer.") : tempBuffer;
             membershipCounts.AsSpan().Fill(0);
 
             // Count members and sum their features
@@ -145,24 +135,24 @@ namespace NinthBall.Core
             }
 
             // Divide by count to arrive at mean value
-            for(int c=0; c<centroids.K; c++)
+            for(int c=0; c < K; c++)
                 if (membershipCounts[c] > 0) 
                     centroids[c].Divide(membershipCounts[c]);
                 else
-                    centroids[c].CopyFrom(samples[R.Next(samples.Count)]);
+                    centroids[c].CopyFrom(samples[R.Next(samples.NumRows)]);
         }       
 
-        static void Reassign(this int[] assignments, in Samples samples, in XCentroids centroids)
+        static void Reassign(this int[] assignments, in TwoDMatrix samples, in XTwoDMatrix centroids)
         {
             for (int i = 0; i < assignments.Length; i++) assignments[i] = samples[i].FindNearestCentroid(centroids);
         }
 
-        static int FindNearestCentroid(this ReadOnlySpan<double> features, in XCentroids centroids)
+        static int FindNearestCentroid(this ReadOnlySpan<double> features, in XTwoDMatrix centroids)
         {
             int nearestIndex = 0;
             double minDistance = features.EuclideanDistanceSquared(centroids[0]);
 
-            for (int c = 1; c < centroids.K; c++)
+            for (int c = 1; c < centroids.NumRows; c++)
             {
                 double distance = features.EuclideanDistanceSquared(centroids[c]);
                 if (distance < minDistance)
@@ -175,11 +165,11 @@ namespace NinthBall.Core
             return nearestIndex;
         }
 
-        static double MaxShift(this in XCentroids oldCentroids, in XCentroids newCentroids)
+        static double MaxShift(this in XTwoDMatrix oldCentroids, in XTwoDMatrix newCentroids)
         {
             double maxShift = 0.0;
 
-            for (int c = 0; c < oldCentroids.K; c++)
+            for (int c = 0; c < oldCentroids.NumRows; c++)
             {
                 maxShift = Math.Max(
                     maxShift,
@@ -191,13 +181,13 @@ namespace NinthBall.Core
         }
 
         // Bulk initialize centroids with a sentinelValue
-        static void Fill(this in XCentroids centroids, double sentinelValue) => centroids.Storage.Span.Fill(sentinelValue);
+        static void Fill(this in XTwoDMatrix centroids, double sentinelValue) => Array.Fill(centroids.Storage, sentinelValue);
 
         // Bulk copy centroids.
-        static void CopyFrom(this in XCentroids target, in XCentroids source)
+        static void CopyFrom(this in XTwoDMatrix target, in XTwoDMatrix source)
         {
             if (target.Storage.Length != source.Storage.Length) throw new InvalidOperationException($"Vector lengths are not same | [{target.Storage.Length}] and [{source.Storage.Length}]");
-            source.Storage.Span.CopyTo(target.Storage.Span);
+            source.Storage.CopyTo(target.Storage);
         }
 
         // Squared straight-line distance (Euclidean) in a multi-dimensional-space.

@@ -7,9 +7,13 @@ namespace NinthBall.Core
 {
     /// <summary>
     /// Historical regimes and their macroeconomic behaviors.
-    /// BY-DESIGN: Transition matrix is NOT immutable for performance & friendly-serialization 
     /// </summary>
-    public readonly record struct HRegimes(IReadOnlyList<HRegimes.R> Regimes, ReadOnlyMemory<double> TransitionMatrix)
+    public readonly record struct HRegimes
+    (
+        TwoDMatrix Centroids, 
+        IReadOnlyList<HRegimes.R> Regimes, 
+        TwoDMatrix TransitionMatrix
+    )
     {
         // Describes characteristics of one Regime
         public readonly record struct R
@@ -32,31 +36,10 @@ namespace NinthBall.Core
             double Kurtosis,
             double AutoCorrelation
         );
-
-        // Matrix is square, and validated elsewhere.
-        public readonly ReadOnlySpan<double> TransitionProbabilities(int fromRegime) => TransitionMatrix.Slice(fromRegime * Regimes.Count, Regimes.Count).Span;
     }
 
     internal static class HistoricalRegimesDiscovery
     {
-        private readonly record struct TwoDMatrix(int NumRows, int NumColumns)
-        {
-            // Mutable: Full data
-            public readonly double[] Storage = new double[NumRows * NumColumns];
-
-            // Mutable: One row
-            public readonly Span<double> this[int idx] => Storage.AsSpan().Slice(idx * NumColumns, NumColumns);
-
-            // Mutable: One cell
-            public double this[int row, int col]
-            {
-                get => this[row][col];
-                set => this[row][col] = value;
-            }
-
-            public readonly ReadOnlyMemory<double> AsReadOnly() => Storage;
-        }
-
         public static HRegimes DiscoverRegimes(IReadOnlyList<HBlock> blocks, Random R, int NumRegimes)
         {
             ArgumentNullException.ThrowIfNull(blocks);
@@ -78,6 +61,7 @@ namespace NinthBall.Core
         //......................................................................
         public static HRegimes ToRegimeSet(this KMean.Result clusters, IReadOnlyList<HBlock> blocks) => new 
         (
+            Centroids:        clusters.Centroids,  
             Regimes:          Enumerable.Range(0, clusters.NumClusters).Select(r => blocks.ComputeRegimeProfile(clusters, r)).ToArray(),
             TransitionMatrix: clusters.ComputeRegimeTransitionMatrix()
         );
@@ -148,7 +132,7 @@ namespace NinthBall.Core
             );
         }
 
-        static ReadOnlyMemory<double> ComputeRegimeTransitionMatrix(this KMean.Result clusters)
+        static TwoDMatrix ComputeRegimeTransitionMatrix(this KMean.Result clusters)
         {
             // Ideally, we would follow the chronological order of the blocks.
             // Instead, we rely on the assignment index.
@@ -161,7 +145,7 @@ namespace NinthBall.Core
             int numRegimes  = clusters.NumClusters;
 
             // Square matrix
-            var matrix = new TwoDMatrix(numRegimes, numRegimes);
+            var matrix = new XTwoDMatrix(numRegimes, numRegimes);
 
             // Step1: Count the regime transitions.
             // One row per 'fromRegime'
@@ -213,11 +197,12 @@ namespace NinthBall.Core
             // Prepare input for K-Mean clustering, extract the features and normalize.
             var normalizedFeatureMatrix = blocks
                 .ToFeaturesMatrix()
-                .NormalizeFeatureMatrix();
+                .NormalizeFeatureMatrix()
+                .AsReadOnly();
 
             // Discover clusters (a.k.a. regimes)
             var elapsed = Stopwatch.StartNew();
-            var (converged, iterations, kResult) = KMean.Cluster(normalizedFeatureMatrix.Storage, normalizedFeatureMatrix.NumColumns, R, numClusters);
+            var (converged, iterations, kResult) = KMean.Cluster(normalizedFeatureMatrix, R, numClusters);
             elapsed.Stop();
 
             // Some diag.
@@ -234,10 +219,10 @@ namespace NinthBall.Core
                 : throw new FatalWarning($"K-Mean failed to converge even after {iterations} iterations");
         }
 
-        static TwoDMatrix ToFeaturesMatrix(this IReadOnlyList<HBlock> blocks)
+        static XTwoDMatrix ToFeaturesMatrix(this IReadOnlyList<HBlock> blocks)
         {
             // One row per block, and five features per block.
-            var matrix = new TwoDMatrix(blocks.Count, 5);
+            var matrix = new XTwoDMatrix(blocks.Count, 5);
 
             var idx = 0;
             foreach (var block in blocks)
@@ -252,7 +237,7 @@ namespace NinthBall.Core
             return matrix;
         }
 
-        static TwoDMatrix NormalizeFeatureMatrix(this in TwoDMatrix featureMatrix)
+        static XTwoDMatrix NormalizeFeatureMatrix(this in XTwoDMatrix featureMatrix)
         {
             var numSamples  = featureMatrix.NumRows;
             var numFeatures = featureMatrix.NumColumns;
@@ -277,7 +262,7 @@ namespace NinthBall.Core
             stdDevs.Sqrt();
 
             // Prepare a target matrix, same shape as the source.
-            TwoDMatrix normalizedFeatureMatrix = new TwoDMatrix(featureMatrix.NumRows, featureMatrix.NumColumns);
+            XTwoDMatrix normalizedFeatureMatrix = new XTwoDMatrix(featureMatrix.NumRows, featureMatrix.NumColumns);
 
             // Perform Z-Score normalization of each row.
             for (int s = 0; s < numSamples; s++)
