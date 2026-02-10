@@ -24,7 +24,7 @@ namespace UnitTests
 
             var featureMatrix = blocks.ToFeatureMatrix();
             var zScale = featureMatrix.DiscoverStandardizationParameters();
-            var clusters = featureMatrix.ZNormalizeFeatureMatrix(zScale).DiscoverClusters(R, 4);
+            var clusters = featureMatrix.StandardizeFeatureMatrix(zScale).DiscoverClusters(R, 4);
 
             var json = JsonSerializer.Serialize(clusters, PrettyJson);
             File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\KMean-Clusters-345.json", json);

@@ -62,8 +62,8 @@ namespace NinthBall.Core
             // Learn the standardization parameters (mean and stddev)
             var standardizationParams = featureMatrix.DiscoverStandardizationParameters();
 
-            // Standardize (nomalize) the features
-            var standardizedFeatureMatrix = featureMatrix.ZNormalizeFeatureMatrix(standardizationParams);
+            // Standardize the features
+            var standardizedFeatureMatrix = featureMatrix.StandardizeFeatureMatrix(standardizationParams);
 
             // Discover K-Mean clusters
             var clusters = standardizedFeatureMatrix.DiscoverClusters(R, numRegimes);
@@ -123,32 +123,32 @@ namespace NinthBall.Core
         }
 
         // Standardize the feature matrix
-        public static TwoDMatrix ZNormalizeFeatureMatrix(this in TwoDMatrix featureMatrix, HRegimes.Z normalizationParams)
+        public static TwoDMatrix StandardizeFeatureMatrix(this in TwoDMatrix featureMatrix, HRegimes.Z standardizationParams)
         {
             var numSamples  = featureMatrix.NumRows;
             var numFeatures = featureMatrix.NumColumns;
-            var means       = normalizationParams.Mean.Span;
-            var stdDevs     = normalizationParams.StdDev.Span;
+            var means       = standardizationParams.Mean.Span;
+            var stdDevs     = standardizationParams.StdDev.Span;
             
             // Prepare a target matrix, same shape as the source.
-            XTwoDMatrix normalizedFeatureMatrix = new XTwoDMatrix(numSamples, numFeatures);
+            XTwoDMatrix standardizedFeatureMatrix = new XTwoDMatrix(numSamples, numFeatures);
 
             // Perform Z-Score normalization of each row.
             for (int s = 0; s < numSamples; s++)
             {
-                featureMatrix[s].ZNormalize(meanVector: means, stdDevVector: stdDevs, targetRow: normalizedFeatureMatrix[s]);
+                featureMatrix[s].ZNormalize(meanVector: means, stdDevVector: stdDevs, targetRow: standardizedFeatureMatrix[s]);
             }
 
-            // Returns the normalized feature matrix.
-            return normalizedFeatureMatrix.AsReadOnly();
+            // Returns the z-normalized feature matrix.
+            return standardizedFeatureMatrix.AsReadOnly();
         }
 
         // Discover K-Mean clusters
-        public static KMean.Result DiscoverClusters(this TwoDMatrix normalizedFeatureMatrix, Random R, int numClusters)
+        public static KMean.Result DiscoverClusters(this TwoDMatrix standardizedFeatureMatrix, Random R, int numClusters)
         {
             // Discover clusters (a.k.a. regimes)
             var elapsed = Stopwatch.StartNew();
-            var (converged, iterations, kResult) = KMean.Cluster(normalizedFeatureMatrix, R, numClusters);
+            var (converged, iterations, kResult) = KMean.Cluster(standardizedFeatureMatrix, R, numClusters);
             elapsed.Stop();
 
             // Some diag.
@@ -256,7 +256,7 @@ namespace NinthBall.Core
             }
 
             // Step2: Normalize regime transitions counts to probabilities.
-            // Normalize each row (local normalization)
+            // Note:  Normalize each row (local normalization)
             for (int r = 0; r < numRegimes; r++)
             {
                 matrix[r].ToProbabilityDistribution();
