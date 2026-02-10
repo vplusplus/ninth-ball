@@ -2,7 +2,6 @@
 using NinthBall.Core;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using YamlDotNet.Core.Events;
 
 namespace NinthBall.Core
 {
@@ -11,7 +10,7 @@ namespace NinthBall.Core
     /// </summary>
     public readonly record struct HRegimes
     (
-        HRegimes.Z                  NormalizationParams,
+        HRegimes.Z                  StandardizationParams,
         TwoDMatrix                  Centroids, 
         IReadOnlyList<HRegimes.R>   Regimes, 
         TwoDMatrix                  TransitionMatrix
@@ -61,13 +60,13 @@ namespace NinthBall.Core
             var featureMatrix = trainingBlocks.ToFeatureMatrix();
 
             // Learn the standardization parameters (mean and stddev)
-            var standardizationParams = featureMatrix.DiscoverNormalizationParameters();
+            var standardizationParams = featureMatrix.DiscoverStandardizationParameters();
 
             // Standardize (nomalize) the features
-            var normalizedFeatureMatrix = featureMatrix.NormalizeFeatureMatrix(standardizationParams);
+            var standardizedFeatureMatrix = featureMatrix.ZNormalizeFeatureMatrix(standardizationParams);
 
             // Discover K-Mean clusters
-            var clusters = normalizedFeatureMatrix.DiscoverClusters(R, numRegimes);
+            var clusters = standardizedFeatureMatrix.DiscoverClusters(R, numRegimes);
 
             // Map training blocks to regimes, calculate regime profile for each.
             var regimes = Enumerable.Range(0, clusters.NumClusters).Select(r => trainingBlocks.ComputeRegimeProfile(clusters, r)).ToArray();
@@ -77,7 +76,7 @@ namespace NinthBall.Core
 
             return new
             (
-                NormalizationParams: standardizationParams,
+                StandardizationParams: standardizationParams,
                 Centroids: clusters.Centroids,
                 Regimes: regimes,
                 TransitionMatrix: transitionMatrix
@@ -104,7 +103,7 @@ namespace NinthBall.Core
         }
 
         // Extract the mean and stddev of the featureset
-        public static HRegimes.Z DiscoverNormalizationParameters(this TwoDMatrix featureMatrix)
+        public static HRegimes.Z DiscoverStandardizationParameters(this TwoDMatrix featureMatrix)
         {
             var numSamples  = featureMatrix.NumRows;
             var numFeatures = featureMatrix.NumColumns;
@@ -124,7 +123,7 @@ namespace NinthBall.Core
         }
 
         // Standardize the feature matrix
-        public static TwoDMatrix NormalizeFeatureMatrix(this in TwoDMatrix featureMatrix, HRegimes.Z normalizationParams)
+        public static TwoDMatrix ZNormalizeFeatureMatrix(this in TwoDMatrix featureMatrix, HRegimes.Z normalizationParams)
         {
             var numSamples  = featureMatrix.NumRows;
             var numFeatures = featureMatrix.NumColumns;
@@ -178,8 +177,8 @@ namespace NinthBall.Core
 
             // Storage to collect regime members' features
             int idx = 0;
-            double[] stocks = new double[memberCount];
-            double[] bonds = new double[memberCount];
+            double[] stocks    = new double[memberCount];
+            double[] bonds     = new double[memberCount];
             double[] inflation = new double[memberCount];
 
             for (int i = 0; i < blocks.Count; i++)
