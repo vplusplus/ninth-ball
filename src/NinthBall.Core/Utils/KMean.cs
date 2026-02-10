@@ -20,6 +20,7 @@ namespace NinthBall.Core
         // Cluster results 2d-matrix of centroids, NumFeatures and the cluster assignments of the samples
         public readonly record struct Result
         (
+            //TwoDMatrix Samples,
             TwoDMatrix Centroids, 
             ReadOnlyMemory<int> Assignments,
             Quality Quality
@@ -28,15 +29,6 @@ namespace NinthBall.Core
             public readonly int NumClusters => Centroids.NumRows;
             public readonly int NumFeatures => Centroids.NumColumns;
         }
-
-        //// Mutable 2d-matrix [K, numFeatures]
-        //private readonly record struct XCentroids(int K, int NumFeatures)
-        //{
-        //    public readonly Memory<double> Storage = new double[K * NumFeatures];
-        //    public readonly int Count = K;
-
-        //    public Span<double> this[int ids] => Storage.Slice(ids * NumFeatures, NumFeatures).Span;
-        //}
 
         public static (bool converged, int iterations, Result result) Cluster(in TwoDMatrix samples, Random R, int K, int maxIterations = 100)
         {
@@ -70,11 +62,24 @@ namespace NinthBall.Core
                 if (converged = newCentroids.MaxShift(oldCentroids) < ZeroShiftThreshold) break;
             }
 
-            TwoDMatrix centroids = newCentroids.AsReadOnly();
+            if (converged)
+            {
+                TwoDMatrix centroids = newCentroids.AsReadOnly();
 
-            return converged
-                ? (true, iteration, new Result(centroids, newAssignments, centroids.ComputeQualityMetrics(samples, newAssignments)))
-                : (false, iteration, default);
+                var trainingResult = new KMean.Result
+                (
+                    //Samples: samples,
+                    Centroids: centroids,
+                    newAssignments,
+                    Quality: centroids.ComputeQualityMetrics(samples, newAssignments)
+                );
+
+                return new(true, iteration, trainingResult);
+            }
+            else
+            {
+                return (false, iteration, default);
+            }
         }
 
         static XTwoDMatrix InitialCentroids(this in TwoDMatrix samples, Random R, int K)

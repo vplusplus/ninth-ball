@@ -2,19 +2,28 @@
 using NinthBall.Core;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using YamlDotNet.Core.Events;
 
 namespace NinthBall.Core
 {
     /// <summary>
-    /// Historical regimes and their macroeconomic behaviors.
+    /// Historical regimes and their macro-economic characteristics.
     /// </summary>
     public readonly record struct HRegimes
     (
-        TwoDMatrix Centroids, 
-        IReadOnlyList<HRegimes.R> Regimes, 
-        TwoDMatrix TransitionMatrix
+        HRegimes.Z                  NormalizationParams,
+        TwoDMatrix                  Centroids, 
+        IReadOnlyList<HRegimes.R>   Regimes, 
+        TwoDMatrix                  TransitionMatrix
     )
     {
+        // Parameters required for standardization of features during inference.
+        public readonly record struct Z
+        (
+            ReadOnlyMemory<double> Mean, 
+            ReadOnlyMemory<double> StdDev
+        );
+
         // Describes characteristics of one Regime
         public readonly record struct R
         (   
@@ -38,35 +47,126 @@ namespace NinthBall.Core
         );
     }
 
+
     internal static class HistoricalRegimesDiscovery
     {
-        public static HRegimes DiscoverRegimes(IReadOnlyList<HBlock> blocks, Random R, int NumRegimes)
+        public static HRegimes DiscoverRegimes(this IReadOnlyList<HBlock> trainingBlocks, Random R, int numRegimes)
         {
-            ArgumentNullException.ThrowIfNull(blocks);
+            ArgumentNullException.ThrowIfNull(trainingBlocks);
 
             // Pre-check: We depend on cronology. Verify blocks are sorted by year & sequence length.
-            if (!blocks.IsSortedByYearAndBlockLength()) throw new Exception("Invalid input: Blocks are not pre-sorted by Year and sequence length.");
+            if (!trainingBlocks.IsSortedByYearAndBlockLength()) throw new Exception("Invalid input: Blocks are not pre-sorted by Year and sequence length.");
 
-            // Discover K-Mean clusters. Map K-Mean clusters to regimes.
-            var elapsed = Stopwatch.StartNew();
-            var regimes = blocks.DiscoverClusters(R, numClusters: NumRegimes).ToRegimeSet(blocks);
-            elapsed.Stop();
+            // Extract training features
+            var featureMatrix = trainingBlocks.ToFeatureMatrix();
 
-            Console.WriteLine($" Discovered {regimes.Regimes.Count} regimes | {elapsed.Elapsed.TotalMilliseconds:#,0} milliSec");
-            return regimes;
+            // Learn the standardization parameters (mean and stddev)
+            var standardizationParams = featureMatrix.DiscoverNormalizationParameters();
+
+            // Standardize (nomalize) the features
+            var normalizedFeatureMatrix = featureMatrix.NormalizeFeatureMatrix(standardizationParams);
+
+            // Discover K-Mean clusters
+            var clusters = normalizedFeatureMatrix.DiscoverClusters(R, numRegimes);
+
+            // Map training blocks to regimes, calculate regime profile for each.
+            var regimes = Enumerable.Range(0, clusters.NumClusters).Select(r => trainingBlocks.ComputeRegimeProfile(clusters, r)).ToArray();
+
+            // Compute the probability of regime switching
+            var transitionMatrix = clusters.ComputeRegimeTransitionMatrix();
+
+            return new
+            (
+                NormalizationParams: standardizationParams,
+                Centroids: clusters.Centroids,
+                Regimes: regimes,
+                TransitionMatrix: transitionMatrix
+            );
         }
 
-        //......................................................................
-        #region Map K-Mean clusters to regimes and transition matrix
-        //......................................................................
-        public static HRegimes ToRegimeSet(this KMean.Result clusters, IReadOnlyList<HBlock> blocks) => new 
-        (
-            Centroids:        clusters.Centroids,  
-            Regimes:          Enumerable.Range(0, clusters.NumClusters).Select(r => blocks.ComputeRegimeProfile(clusters, r)).ToArray(),
-            TransitionMatrix: clusters.ComputeRegimeTransitionMatrix()
-        );
+        // Extract features
+        public static TwoDMatrix ToFeatureMatrix(this IReadOnlyList<HBlock> blocks)
+        {
+            // One row per block, and five features per block.
+            var matrix = new XTwoDMatrix(blocks.Count, 5);
 
-        static HRegimes.R ComputeRegimeProfile(this IReadOnlyList<HBlock> blocks, KMean.Result clusters, int regimeId)
+            var idx = 0;
+            foreach (var block in blocks)
+            {
+                matrix.Storage[idx++] = block.Features.NominalCAGRStocks;
+                matrix.Storage[idx++] = block.Features.NominalCAGRBonds;
+                matrix.Storage[idx++] = block.Features.MaxDrawdownStocks;
+                matrix.Storage[idx++] = block.Features.MaxDrawdownBonds;
+                matrix.Storage[idx++] = block.Features.GMeanInflationRate;
+            }
+
+            return matrix.AsReadOnly();
+        }
+
+        // Extract the mean and stddev of the featureset
+        public static HRegimes.Z DiscoverNormalizationParameters(this TwoDMatrix featureMatrix)
+        {
+            var numSamples  = featureMatrix.NumRows;
+            var numFeatures = featureMatrix.NumColumns;
+            var means       = new double[featureMatrix.NumColumns];
+            var stdDevs     = new double[featureMatrix.NumColumns];
+
+            // Calculate mean of each feature.
+            for (int s = 0; s < numSamples; s++) means.Add(featureMatrix[s]);
+            means.Divide(numSamples);
+
+            // Calculate StdDev of each feature.
+            for (int s = 0; s < numSamples; s++) stdDevs.SumSquaredDiff(sourceRow: featureMatrix[s], meanVector: means);
+            stdDevs.Divide(numSamples);
+            stdDevs.Sqrt();
+
+            return new(Mean: means, StdDev: stdDevs);
+        }
+
+        // Standardize the feature matrix
+        public static TwoDMatrix NormalizeFeatureMatrix(this in TwoDMatrix featureMatrix, HRegimes.Z normalizationParams)
+        {
+            var numSamples  = featureMatrix.NumRows;
+            var numFeatures = featureMatrix.NumColumns;
+            var means       = normalizationParams.Mean.Span;
+            var stdDevs     = normalizationParams.StdDev.Span;
+            
+            // Prepare a target matrix, same shape as the source.
+            XTwoDMatrix normalizedFeatureMatrix = new XTwoDMatrix(numSamples, numFeatures);
+
+            // Perform Z-Score normalization of each row.
+            for (int s = 0; s < numSamples; s++)
+            {
+                featureMatrix[s].ZNormalize(meanVector: means, stdDevVector: stdDevs, targetRow: normalizedFeatureMatrix[s]);
+            }
+
+            // Returns the normalized feature matrix.
+            return normalizedFeatureMatrix.AsReadOnly();
+        }
+
+        // Discover K-Mean clusters
+        public static KMean.Result DiscoverClusters(this TwoDMatrix normalizedFeatureMatrix, Random R, int numClusters)
+        {
+            // Discover clusters (a.k.a. regimes)
+            var elapsed = Stopwatch.StartNew();
+            var (converged, iterations, kResult) = KMean.Cluster(normalizedFeatureMatrix, R, numClusters);
+            elapsed.Stop();
+
+            // Some diag.
+            if (converged)
+            {
+                Console.WriteLine($" K-Mean: Discovered {kResult.NumClusters} clusters | {iterations} iterations | {elapsed.Elapsed.TotalMilliseconds:#,0} milliSec");
+                Console.WriteLine($" K-Mean: TotalInertia: {kResult.Quality.TotalInertia:F2} | SilhouetteScore: {kResult.Quality.SilhouetteScore:F2}");
+                Console.WriteLine($" K-Mean: Inertia     : [{kResult.Quality.ClusterInertia.CSVMetrics8F2()}]");
+                Console.WriteLine($" K-Mean: Silhouette  : [{kResult.Quality.ClusterSilhouette.CSVMetrics8F2()}]");
+            }
+
+            return converged
+                ? kResult
+                : throw new FatalWarning($"K-Mean failed to converge even after {iterations} iterations");
+        }
+
+        public static HRegimes.R ComputeRegimeProfile(this IReadOnlyList<HBlock> blocks, KMean.Result clusters, int regimeId)
         {
             var clusterAssignments = clusters.Assignments.Span;
 
@@ -132,7 +232,7 @@ namespace NinthBall.Core
             );
         }
 
-        static TwoDMatrix ComputeRegimeTransitionMatrix(this KMean.Result clusters)
+        public static TwoDMatrix ComputeRegimeTransitionMatrix(this KMean.Result clusters)
         {
             // Ideally, we would follow the chronological order of the blocks.
             // Instead, we rely on the assignment index.
@@ -166,6 +266,25 @@ namespace NinthBall.Core
             return matrix.AsReadOnly();
         }
 
+        //......................................................................
+        #region utils
+        //......................................................................
+        static bool IsSortedByYearAndBlockLength(this IReadOnlyList<HBlock> blocks)
+        {
+            for (int i = 1; i < blocks.Count; i++)
+            {
+                var prev = blocks[i - 1];
+                var curr = blocks[i];
+
+                // Years must be non-descending
+                if (curr.StartYear < prev.StartYear) return false;
+
+                // If years are same, length must be non-descending
+                if (curr.StartYear == prev.StartYear && curr.Slice.Length < prev.Slice.Length) return false;
+            }
+            return true;
+        }
+
         static string GuessRegimeLabel(int regimeId, double sbCorrelation, double siCorrelation, double biCorrelation, HRegimes.M mStocks, HRegimes.M mBonds, HRegimes.M mInflation)
         {
             // Priority 1: Crisis (Severe pain or extreme uncertainty)
@@ -185,114 +304,6 @@ namespace NinthBall.Core
 
             // Fallback: Statistical Label
             return $"Regime{regimeId}";
-        }
-
-        #endregion
-
-        //......................................................................
-        #region DiscoverClusters()
-        //......................................................................
-        public static KMean.Result DiscoverClusters(this IReadOnlyList<HBlock> blocks, Random R, int numClusters)
-        {
-            // Prepare input for K-Mean clustering, extract the features and normalize.
-            var normalizedFeatureMatrix = blocks
-                .ToFeaturesMatrix()
-                .NormalizeFeatureMatrix()
-                .AsReadOnly();
-
-            // Discover clusters (a.k.a. regimes)
-            var elapsed = Stopwatch.StartNew();
-            var (converged, iterations, kResult) = KMean.Cluster(normalizedFeatureMatrix, R, numClusters);
-            elapsed.Stop();
-
-            // Some diag.
-            if (converged)
-            {
-                Console.WriteLine($" K-Mean: Discovered {kResult.NumClusters} clusters | {iterations} iterations | {elapsed.Elapsed.TotalMilliseconds:#,0} milliSec");
-                Console.WriteLine($" K-Mean: TotalInertia: {kResult.Quality.TotalInertia:F2} | SilhouetteScore: {kResult.Quality.SilhouetteScore:F2}");
-                Console.WriteLine($" K-Mean: Inertia     : [{kResult.Quality.ClusterInertia.CSVMetrics8F2()}]");
-                Console.WriteLine($" K-Mean: Silhouette  : [{kResult.Quality.ClusterSilhouette.CSVMetrics8F2()}]");
-            }
-
-            return converged
-                ? kResult
-                : throw new FatalWarning($"K-Mean failed to converge even after {iterations} iterations");
-        }
-
-        static XTwoDMatrix ToFeaturesMatrix(this IReadOnlyList<HBlock> blocks)
-        {
-            // One row per block, and five features per block.
-            var matrix = new XTwoDMatrix(blocks.Count, 5);
-
-            var idx = 0;
-            foreach (var block in blocks)
-            {
-                matrix.Storage[idx++] = block.Features.NominalCAGRStocks;
-                matrix.Storage[idx++] = block.Features.NominalCAGRBonds;
-                matrix.Storage[idx++] = block.Features.MaxDrawdownStocks;
-                matrix.Storage[idx++] = block.Features.MaxDrawdownBonds;
-                matrix.Storage[idx++] = block.Features.GMeanInflationRate;
-            }
-
-            return matrix;
-        }
-
-        static XTwoDMatrix NormalizeFeatureMatrix(this in XTwoDMatrix featureMatrix)
-        {
-            var numSamples  = featureMatrix.NumRows;
-            var numFeatures = featureMatrix.NumColumns;
-
-            // Calculate Mean value of each feature 
-            var means = new double[numFeatures].AsSpan();
-            for (int s = 0; s < numSamples; s++)
-            {
-                var features = featureMatrix[s];
-                means.Add(features);
-            }
-            means.Divide(numSamples);
-
-            // Calculate StdDev of each feature.
-            var stdDevs = new double[numFeatures].AsSpan();
-            for (int s = 0; s < numSamples; s++)
-            {
-                var features = featureMatrix[s];
-                stdDevs.SumSquaredDiff( sourceRow: features, meanVector: means);
-            }
-            stdDevs.Divide(numSamples);
-            stdDevs.Sqrt();
-
-            // Prepare a target matrix, same shape as the source.
-            XTwoDMatrix normalizedFeatureMatrix = new XTwoDMatrix(featureMatrix.NumRows, featureMatrix.NumColumns);
-
-            // Perform Z-Score normalization of each row.
-            for (int s = 0; s < numSamples; s++)
-            {
-                // Use named arguments, too many params of same kind.
-                featureMatrix[s].ZNormalize(meanVector: means, stdDevVector: stdDevs, targetRow: normalizedFeatureMatrix[s]);
-            }
-
-            return normalizedFeatureMatrix;
-        }
-
-        #endregion
-
-        //......................................................................
-        #region utils
-        //......................................................................
-        static bool IsSortedByYearAndBlockLength(this IReadOnlyList<HBlock> blocks)
-        {
-            for (int i = 1; i < blocks.Count; i++)
-            {
-                var prev = blocks[i - 1];
-                var curr = blocks[i];
-
-                // Years must be non-descending
-                if (curr.StartYear < prev.StartYear) return false;
-
-                // If years are same, length must be non-descending
-                if (curr.StartYear == prev.StartYear && curr.Slice.Length < prev.Slice.Length) return false;
-            }
-            return true;
         }
 
         private static string CSVMetrics8F2(this ReadOnlyMemory<double> numbers) => string.Join(", ", MemoryMarshal.ToEnumerable(numbers).Select(x => $"{x,8:F2}"));
