@@ -53,24 +53,21 @@ namespace NinthBall.Core
         // Discover regimes using 3-year blocks, once.
         readonly Lazy<HRegimes> ThreeYearRegimes = new( () =>
         {
-            // Use only three-year-blocks for regime discovery.
-            // BY-DESIGN: This is not a tuneable configuration
-            int[] OnlyThreeYearBlocksNotTwoNotFourNotFive = [3];
+            // BY-DESIGN: Use only three-year-blocks for regime discovery (This is not a tuneable configuration)
+            int[] ThreeYearBlocksOnlyNotTwoFourOrFive = [3];
 
-            // Exactly four regimes.
-            // BY-DESIGN: This is not a tuneable configuration
-            const int FourRegimesNotThreeNotFive = 4;
+            // BY-DESIGN: Exactly four regimes (This is not a tuneable configuration)
+            const int FourRegimesNotThreeOrFive = 4;
 
-            // TODO: Leaky abstraction alert.
-            // TODO: We only want to arrange 3-year blocks, which is not configurable. What is MovingBlockBootstrapOptions doing here?
-            var threeYearBlocks = new HistoricalBlocks(
-                History,
-                new MovingBlockBootstrapOptions(OnlyThreeYearBlocksNotTwoNotFourNotFive, NoBackToBackOverlaps: false)
-            ).Blocks;
+            // Simulation seed is our repeatable pseudo random seed.
+            var R = new Random(SimSeed.Value);
 
             // Using three-year blocks, discover regimes and their characteristics.
-            var R = new Random(SimSeed.Value);
-            return threeYearBlocks.DiscoverRegimes(R, FourRegimesNotThreeNotFive);
+            return History.History
+                .ReadBlocks(ThreeYearBlocksOnlyNotTwoFourOrFive)
+                .ToList()
+                .DiscoverRegimes(R, FourRegimesNotThreeOrFive)
+                ;
         });
     }
 

@@ -12,7 +12,7 @@ SimParams:
       TieredTax,
       VariableWithdrawal,
       RequiredMinimumDistribution,
-      RandomHistoricalGrowth
+      RegimeAwareHistoricalGrowth
 
       # Available objectives:
       # AdditionalIncomes,
