@@ -2,8 +2,6 @@
 
 namespace NinthBall.Core
 {
-    // TODO: Review data structure design and related utility/extensions of KMean.Result. Not criticial, nevertheless, there are pinky-promises.
-
     public static class KMean
     {
         private const double ZeroShiftThreshold = 1e-6;
