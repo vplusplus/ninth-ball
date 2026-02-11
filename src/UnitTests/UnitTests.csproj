@@ -13,8 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="StreamlinedConfig\SimOptions.yaml" />
-    <EmbeddedResource Include="StreamlinedConfig\SimOptions-Embedded.yaml" />
     <EmbeddedResource Include="TestInputs\SampleInput.yaml" />
     <EmbeddedResource Include="TestInputs\SampleOutput.yaml" />
   </ItemGroup>
