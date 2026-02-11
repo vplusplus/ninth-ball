@@ -11,7 +11,7 @@ namespace NinthBall.Core
                 && centroids.NumRows > 0
                 && samples.NumRows > 0
                 && assignments.Length > 0
-                && centroids.NumRows == samples.NumColumns
+                && centroids.NumColumns == samples.NumColumns
                 && samples.NumRows == assignments.Length;
 
             if (!good) throw new ArgumentException("You should never see this | One or more parameters to ComputeQualityMetrics() was invalid.");
