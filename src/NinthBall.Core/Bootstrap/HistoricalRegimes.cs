@@ -7,12 +7,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Historical regimes and their macro-economic characteristics.
     /// </summary>
-    public readonly record struct HRegimes
-    (
-        HRegimes.Z                  StandardizationParams,
-        IReadOnlyList<HRegimes.R>   Regimes, 
-        TwoDMatrix                  TransitionMatrix
-    )
+    public readonly record struct HRegimes( HRegimes.Z StandardizationParams, IReadOnlyList<HRegimes.RP> Regimes)
     {
         // Parameters required for standardization of features during inference.
         public readonly record struct Z
@@ -21,20 +16,23 @@ namespace NinthBall.Core
             ReadOnlyMemory<double> StdDev
         );
 
-        // Describes characteristics of one Regime
-        public readonly record struct R
-        (   
-            ReadOnlyMemory<double> Centroid,
-            string RegimeLabel, 
+        // Regime profile: Describes characteristics of one Regime
+        public readonly record struct RP
+        (
+            string                  RegimeLabel,
+            ReadOnlyMemory<double>  Centroid,
+            ReadOnlyMemory<double>  NextRegimeProbabilities,
+            
             double StocksBondCorrelation,
             double StocksInflationCorrelation,
             double BondsInflationCorrelation,
+
             M Stocks,
             M Bonds,
             M Inflation
         );
 
-        // Moments of one flavor of asset in one regime.
+        // Moments: Market dynamics of one flavor of asset in one regime.
         public readonly record struct M
         (
             double Mean,
@@ -91,17 +89,16 @@ namespace NinthBall.Core
             // Discover K-Mean clusters
             var clusters = standardizedFeatureMatrix.DiscoverClusters(R, numRegimes);
 
-            // Map training blocks to regimes, calculate regime profile for each.
-            var regimes = Enumerable.Range(0, clusters.NumClusters).Select(r => trainingBlocks.ComputeRegimeProfile(clusters, r)).ToArray();
-
             // Compute the probability of regime switching
             var transitionMatrix = clusters.ComputeRegimeTransitionMatrix();
+
+            // Map training blocks to regimes, calculate regime profile for each.
+            var regimes = Enumerable.Range(0, clusters.NumClusters).Select(r => trainingBlocks.ComputeRegimeProfile(clusters, transitionMatrix, r)).ToArray();
 
             return new
             (
                 StandardizationParams: standardizationParams,
-                Regimes: regimes,
-                TransitionMatrix: transitionMatrix
+                Regimes: regimes
             );
         }
 
@@ -190,7 +187,7 @@ namespace NinthBall.Core
                 : throw new FatalWarning($"K-Mean failed to converge even after {iterations} iterations");
         }
 
-        public static HRegimes.R ComputeRegimeProfile(this IReadOnlyList<HBlock> blocks, KMean.Result clusters, int regimeId)
+        public static HRegimes.RP ComputeRegimeProfile(this IReadOnlyList<HBlock> blocks, KMean.Result clusters, TwoDMatrix transitionProbabilities, int regimeId)
         {
             var clusterAssignments = clusters.Assignments.Span;
 
@@ -233,13 +230,17 @@ namespace NinthBall.Core
             // Capture the centroid of this regime.
             var centroid = clusters.Centroids[regimeId].ToArray();
 
+            // Capture probabilty of transition from current regime to other regimes
+            var txProbabilities = transitionProbabilities[regimeId].ToArray();
+
             // Optional label to the regime (for display only)
             var regimeLabel = GuessRegimeLabel(regimeId, sbCorr, siCorr, biCorr, mStocks, mBonds, mInflation);
 
-            return new HRegimes.R
+            return new HRegimes.RP
             (
-                centroid,
-                regimeLabel,
+                RegimeLabel:     regimeLabel,
+                Centroid:        centroid,
+                NextRegimeProbabilities: txProbabilities,
 
                 StocksBondCorrelation:      sbCorr,
                 StocksInflationCorrelation: siCorr,

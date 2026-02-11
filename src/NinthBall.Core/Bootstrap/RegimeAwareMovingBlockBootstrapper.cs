@@ -10,9 +10,9 @@ namespace NinthBall.Core
     /// <summary>
     /// Replays random blocks of historical returns and inflation.
     /// </summary>
-    internal sealed class RegimeAwareMovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalBlocks History, HistoricalRegimes Regimes) : IBootstrapper
+    internal sealed class RegimeAwareMovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalBlocks History, HistoricalRegimes HistoricalRegimes) : IBootstrapper
     {
-        readonly Lazy<(RegimeAwareBlocks RBlocks, ReadOnlyMemory<double> RCounts)> LazyRegimeAwareBlocks = new ( MapBlocksToRegimesOnce(History.Blocks, Regimes.Regimes) );
+        readonly Lazy<(RegimeAwareBlocks RBlocks, ReadOnlyMemory<double> RCounts)> LazyRegimeAwareBlocks = new ( MapBlocksToRegimesOnce(History.Blocks, HistoricalRegimes.Regimes) );
 
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
 
@@ -38,7 +38,8 @@ namespace NinthBall.Core
             var sequence = new HROI[numYears];
             var idx = 0;
 
-            int currentRegime = PickInitialRegime(R);
+            var regimes = HistoricalRegimes.Regimes.Regimes;
+            var currentRegime = PickInitialRegime(R);
 
             while (idx < numYears)
             {
@@ -49,7 +50,7 @@ namespace NinthBall.Core
                 for (int j = 0; j < nextBlock.Slice.Length && idx < numYears; j++, idx++) sequence[idx] = nextBlock.Slice.Span[j];
 
                 // Consult transition matrix, transition to next regime
-                if (idx < numYears) currentRegime = PickNextRegime(R, currentRegime);
+                if (idx < numYears) currentRegime = PickNextRegime(R, regimes, currentRegime);
             }
 
             return sequence;
@@ -65,10 +66,10 @@ namespace NinthBall.Core
             return R.NextWeightedIndex(weights.Span);
         }
 
-        private int PickNextRegime(Random R, int fromRegimeIndex)
+        private int PickNextRegime(Random R, IReadOnlyList<HRegimes.RP> regimes, int fromRegimeIndex)
         {
             // Consult transition matrix where the economy may be heading
-            var transitionProbabilities = Regimes.Regimes.TransitionMatrix[fromRegimeIndex];
+            var transitionProbabilities = regimes[fromRegimeIndex].NextRegimeProbabilities.Span;
 
             // Pick next regime basd on the probabilities
             return R.NextWeightedIndex(transitionProbabilities);
