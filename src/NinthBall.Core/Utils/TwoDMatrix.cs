@@ -29,7 +29,11 @@ namespace NinthBall.Core
             set => this[row][col] = value;
         }
 
-        public readonly TwoDMatrix AsReadOnly() => new TwoDMatrix(Storage, NumRows, NumColumns);
+        // Returns an immutable version - Zero allocation or zero copy
+        public static implicit operator TwoDMatrix(XTwoDMatrix mutable) => new (mutable.Storage, mutable.NumRows, mutable.NumColumns);
+
+        // Returns an immutable version - Zero allocation or zero copy
+        public readonly TwoDMatrix ReadOnly => this;
     }
 
 }

@@ -25,7 +25,6 @@ namespace NinthBall.Core
             source.CopyTo(target);
         }
 
-
         public static void SumSquaredDiff(this Span<double> targetSumSq, ReadOnlySpan<double> sourceRow, ReadOnlySpan<double> meanVector)
         {
             if (targetSumSq.Length != sourceRow.Length || targetSumSq.Length != meanVector.Length) throw new InvalidOperationException("Vector lengths mismatch");
@@ -52,6 +51,20 @@ namespace NinthBall.Core
                     ? (sourceRow[i] - meanVector[i]) / stdDevVector[i]
                     : 0.0;
             }
+        }
+
+        // Squared straight-line distance (Euclidean) in a multi-dimensional-space.
+        public static double EuclideanDistanceSquared(this ReadOnlySpan<double> a, ReadOnlySpan<double> b)
+        {
+            if (a.Length != b.Length) throw new InvalidOperationException($"Vector lengths are not same | [{a.Length}] and [{b.Length}]");
+
+            double sum = 0.0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                double diff = a[i] - b[i];
+                sum += diff * diff;
+            }
+            return sum;
         }
 
         public static void ToProbabilityDistribution(this Span<double> values)

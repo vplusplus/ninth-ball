@@ -99,7 +99,7 @@ namespace NinthBall.Core
                 matrix.Storage[idx++] = block.Features.GMeanInflationRate;
             }
 
-            return matrix.AsReadOnly();
+            return matrix.ReadOnly;
         }
 
         // Extract the mean and stddev of the featureset
@@ -140,7 +140,7 @@ namespace NinthBall.Core
             }
 
             // Returns the z-normalized feature matrix.
-            return standardizedFeatureMatrix.AsReadOnly();
+            return standardizedFeatureMatrix.ReadOnly;
         }
 
         // Discover K-Mean clusters
@@ -262,7 +262,7 @@ namespace NinthBall.Core
                 matrix[r].ToProbabilityDistribution();
             }
 
-            return matrix.AsReadOnly();
+            return matrix.ReadOnly;
         }
 
         //......................................................................

@@ -52,19 +52,19 @@ namespace NinthBall.Core
                 // Assign/Reassign samples to nearest centroid.
                 // Check for convergence (no assignment change)
                 newAssignments.AsSpan().CopyTo(oldAssignments);
-                newAssignments.Reassign(samples, newCentroids);
+                newAssignments.Reassign(samples, newCentroids.ReadOnly);
                 if (converged = oldAssignments.SequenceEqual(newAssignments)) break;
 
                 // Recenter the centroid to the midpoint of members
                 // Check for convergence (centroids had not shifted)
                 oldCentroids.CopyFrom(newCentroids);
                 newCentroids.Recenter(samples, newAssignments, R, tempCountBuffer);
-                if (converged = newCentroids.MaxShift(oldCentroids) < ZeroShiftThreshold) break;
+                if (converged = newCentroids.ReadOnly.MaxShift(oldCentroids) < ZeroShiftThreshold) break;
             }
 
             if (converged)
             {
-                TwoDMatrix centroids = newCentroids.AsReadOnly();
+                TwoDMatrix centroids = newCentroids.ReadOnly;
 
                 var trainingResult = new KMean.Result
                 (
@@ -147,13 +147,17 @@ namespace NinthBall.Core
                     centroids[c].CopyFrom(samples[R.Next(samples.NumRows)]);
         }       
 
-        static void Reassign(this int[] assignments, in TwoDMatrix samples, in XTwoDMatrix centroids)
+        static void Reassign(this int[] assignments, in TwoDMatrix samples, in TwoDMatrix centroids)
         {
             for (int i = 0; i < assignments.Length; i++) assignments[i] = samples[i].FindNearestCentroid(centroids);
         }
 
-        static int FindNearestCentroid(this ReadOnlySpan<double> features, in XTwoDMatrix centroids)
+        public static int FindNearestCentroid(this ReadOnlySpan<double> features, in TwoDMatrix centroids)
         {
+            // Public signature. Validate params.
+            if (0 == centroids.NumRows || 0 == centroids.NumColumns) throw new Exception("Invalid centroids.");
+            if (features.Length != centroids.NumColumns) throw new Exception("Incompatible vector");
+
             int nearestIndex = 0;
             double minDistance = features.EuclideanDistanceSquared(centroids[0]);
 
@@ -170,7 +174,7 @@ namespace NinthBall.Core
             return nearestIndex;
         }
 
-        static double MaxShift(this in XTwoDMatrix oldCentroids, in XTwoDMatrix newCentroids)
+        static double MaxShift(this in TwoDMatrix oldCentroids, in TwoDMatrix newCentroids)
         {
             double maxShift = 0.0;
 
@@ -193,20 +197,6 @@ namespace NinthBall.Core
         {
             if (target.Storage.Length != source.Storage.Length) throw new InvalidOperationException($"Vector lengths are not same | [{target.Storage.Length}] and [{source.Storage.Length}]");
             source.Storage.CopyTo(target.Storage);
-        }
-
-        // Squared straight-line distance (Euclidean) in a multi-dimensional-space.
-        static double EuclideanDistanceSquared(this ReadOnlySpan<double> a, ReadOnlySpan<double> b)
-        {
-            if (a.Length != b.Length) throw new InvalidOperationException($"Vector lengths are not same | [{a.Length}] and [{b.Length}]");
-
-            double sum = 0.0;
-            for (int i = 0; i < a.Length; i++)
-            {
-                double diff = a[i] - b[i];
-                sum += diff * diff;
-            }
-            return sum;
         }
 
         // Similar to Random.NextDouble() but weighted 
