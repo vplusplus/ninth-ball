@@ -12,13 +12,12 @@ SimParams:
       TieredTax,
       VariableWithdrawal,
       RequiredMinimumDistribution,
-      RandomHistoricalGrowth,
-      
+      RegimeAwareHistoricalGrowth
 
       # Available objectives:
       # AdditionalIncomes,
       # AnnualFees,
-      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, ExpectedGrowth, ConservativeGrowth, HighRiskGrowth
+      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, ExpectedGrowth, ConservativeGrowth, HighRiskGrowth, RegimeAwareHistoricalGrowth
       # LivingExpenses,
       # FixedWithdrawal, VariableWithdrawal,
       # RequiredMinimumDistribution,

@@ -39,6 +39,7 @@ namespace NinthBall.Core
                 .AddKeyedSingleton<ITaxAuthority, NJTaxGuesstimator>(TaxAuthority.State)
                 .AddSingleton<HistoricalReturns>()
                 .AddSingleton<HistoricalBlocks>()
+                .AddSingleton<HistoricalRegimes>()
                 .AddSingleton<SimObjectivesSelector>()
                 .AddSimulationObjectives()
                 .AddSingleton<ISimulation, Simulation>()

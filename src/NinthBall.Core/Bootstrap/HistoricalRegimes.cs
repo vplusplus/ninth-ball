@@ -1,5 +1,4 @@
 ﻿
-using NinthBall.Core;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -7,6 +6,7 @@ namespace NinthBall.Core
 {
     /// <summary>
     /// Historical regimes and their macro-economic characteristics.
+    /// IMPORTANT: TODO: Move individual centroids into the Regime profile. Remove the pinky-promise
     /// </summary>
     public readonly record struct HRegimes
     (
@@ -46,6 +46,33 @@ namespace NinthBall.Core
         );
     }
 
+    internal sealed class HistoricalRegimes(SimulationSeed SimSeed, HistoricalReturns History)
+    {
+        public HRegimes Regimes => ThreeYearRegimes.Value; 
+        
+        // Discover regimes using 3-year blocks, once.
+        readonly Lazy<HRegimes> ThreeYearRegimes = new( () =>
+        {
+            // Use only three-year-blocks for regime discovery.
+            // BY-DESIGN: This is not a tuneable configuration
+            int[] OnlyThreeYearBlocksNotTwoNotFourNotFive = [3];
+
+            // Exactly four regimes.
+            // BY-DESIGN: This is not a tuneable configuration
+            const int FourRegimesNotThreeNotFive = 4;
+
+            // TODO: Leaky abstraction alert.
+            // TODO: We only want to arrange 3-year blocks, which is not configurable. What is MovingBlockBootstrapOptions doing here?
+            var threeYearBlocks = new HistoricalBlocks(
+                History,
+                new MovingBlockBootstrapOptions(OnlyThreeYearBlocksNotTwoNotFourNotFive, NoBackToBackOverlaps: false)
+            ).Blocks;
+
+            // Using three-year blocks, discover regimes and their characteristics.
+            var R = new Random(SimSeed.Value);
+            return threeYearBlocks.DiscoverRegimes(R, FourRegimesNotThreeNotFive);
+        });
+    }
 
     internal static class HistoricalRegimesDiscovery
     {
@@ -84,6 +111,9 @@ namespace NinthBall.Core
         }
 
         // Extract features
+        // TODO: CRITICAL: Features like MaxDrawdown are length-dependent.
+        // There is no such thing as annualized MaxDrawDown.
+        // Coin a new feature such that MaxDrawDown is comparable across 3/4/5-years
         public static TwoDMatrix ToFeatureMatrix(this IReadOnlyList<HBlock> blocks)
         {
             // One row per block, and five features per block.
@@ -309,5 +339,6 @@ namespace NinthBall.Core
 
         #endregion
 
+  
     }
 }

@@ -10,9 +10,9 @@ namespace NinthBall.Core
     /// <summary>
     /// Replays random blocks of historical returns and inflation.
     /// </summary>
-    internal sealed class RegimeAwareMovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalBlocks History, HRegimes Regimes) : IBootstrapper
+    internal sealed class RegimeAwareMovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalBlocks History, HistoricalRegimes Regimes) : IBootstrapper
     {
-        readonly Lazy<(RegimeAwareBlocks RBlocks, ReadOnlyMemory<double> RCounts)> LazyRegimeAwareBlocks = new ( MapBlocksToRegimesOnce(History.Blocks, Regimes) );
+        readonly Lazy<(RegimeAwareBlocks RBlocks, ReadOnlyMemory<double> RCounts)> LazyRegimeAwareBlocks = new ( MapBlocksToRegimesOnce(History.Blocks, Regimes.Regimes) );
 
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
 
@@ -68,7 +68,7 @@ namespace NinthBall.Core
         private int PickNextRegime(Random R, int fromRegimeIndex)
         {
             // Consult transition matrix where the economy may be heading
-            var transitionProbabilities = Regimes.TransitionMatrix[fromRegimeIndex];
+            var transitionProbabilities = Regimes.Regimes.TransitionMatrix[fromRegimeIndex];
 
             // Pick next regime basd on the probabilities
             return R.NextWeightedIndex(transitionProbabilities);
