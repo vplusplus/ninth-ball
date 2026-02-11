@@ -3,6 +3,24 @@ namespace NinthBall.Core
 {
     internal static class VectorExtensions
     {
+        // int Random.Next(0, weightes.Length) - biased by suggested weighted 
+        public static int NextWeightedIndex(this Random R, ReadOnlySpan<double> weights)
+        {
+            if (0 == weights.Length) throw new ArgumentException("Empty or NULl weights.");
+
+            double totalWeights = weights.Sum();
+            double randomValue = R.NextDouble() * totalWeights;
+
+            double cumulative = 0.0;
+            for (int i = 0; i < weights.Length; i++)
+            {
+                cumulative += weights[i];
+                if (randomValue <= cumulative) return i;
+            }
+
+            return weights.Length - 1;
+        }
+
 
         // [target] += [source]
         public static void Add(this Span<double> target, ReadOnlySpan<double> source)

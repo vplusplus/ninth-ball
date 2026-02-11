@@ -111,7 +111,7 @@ namespace NinthBall.Core
 
                 // Choose a random observation, with probability proportional to distance-sqrd
                 // Next centroid is positioned at the spot of th random sample.
-                idx = R.NextDoubleWeighted(tempDistances);
+                idx = R.NextWeightedIndex(tempDistances);
                 centroids[c].CopyFrom(samples[idx]);
             }
 
@@ -198,24 +198,5 @@ namespace NinthBall.Core
             if (target.Storage.Length != source.Storage.Length) throw new InvalidOperationException($"Vector lengths are not same | [{target.Storage.Length}] and [{source.Storage.Length}]");
             source.Storage.CopyTo(target.Storage);
         }
-
-        // Similar to Random.NextDouble() but weighted 
-        static int NextDoubleWeighted(this Random R, double[] weights)
-        {
-            if (null == weights || 0 == weights.Length) throw new ArgumentException("Empty or NULl weights.");
-
-            double totalWeights = weights.Sum();
-            double randomValue  = R.NextDouble() * totalWeights;
-
-            double cumulative = 0.0;
-            for (int i = 0; i < weights.Length; i++)
-            {
-                cumulative += weights[i];
-                if (randomValue <= cumulative) return i;
-            }
-
-            return weights.Length - 1;
-        }
-
     }
 }
