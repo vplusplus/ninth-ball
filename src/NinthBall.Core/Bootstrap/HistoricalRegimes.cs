@@ -6,12 +6,10 @@ namespace NinthBall.Core
 {
     /// <summary>
     /// Historical regimes and their macro-economic characteristics.
-    /// IMPORTANT: TODO: Move individual centroids into the Regime profile. Remove the pinky-promise
     /// </summary>
     public readonly record struct HRegimes
     (
         HRegimes.Z                  StandardizationParams,
-        TwoDMatrix                  Centroids, 
         IReadOnlyList<HRegimes.R>   Regimes, 
         TwoDMatrix                  TransitionMatrix
     )
@@ -26,6 +24,7 @@ namespace NinthBall.Core
         // Describes characteristics of one Regime
         public readonly record struct R
         (   
+            ReadOnlyMemory<double> Centroid,
             string RegimeLabel, 
             double StocksBondCorrelation,
             double StocksInflationCorrelation,
@@ -101,7 +100,6 @@ namespace NinthBall.Core
             return new
             (
                 StandardizationParams: standardizationParams,
-                Centroids: clusters.Centroids,
                 Regimes: regimes,
                 TransitionMatrix: transitionMatrix
             );
@@ -232,11 +230,15 @@ namespace NinthBall.Core
             double siCorr  = stocks.Correlation(inflation);
             double biCorr  = bonds.Correlation(inflation);
 
+            // Capture the centroid of this regime.
+            var centroid = clusters.Centroids[regimeId].ToArray();
+
             // Optional label to the regime (for display only)
             var regimeLabel = GuessRegimeLabel(regimeId, sbCorr, siCorr, biCorr, mStocks, mBonds, mInflation);
 
             return new HRegimes.R
             (
+                centroid,
                 regimeLabel,
 
                 StocksBondCorrelation:      sbCorr,
@@ -291,6 +293,25 @@ namespace NinthBall.Core
 
             return matrix.ReadOnly;
         }
+
+        public static int FindNearestRegime(this HRegimes regimes, ReadOnlySpan<double> standardizedFeatures)
+        {
+            int nearestIndex = 0;
+            double minDistance = standardizedFeatures.EuclideanDistanceSquared(regimes.Regimes[0].Centroid.Span);
+
+            for (int regimeIdx = 1; regimeIdx < regimes.Regimes.Count; regimeIdx++)
+            {
+                double distance = standardizedFeatures.EuclideanDistanceSquared(regimes.Regimes[regimeIdx].Centroid.Span);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    nearestIndex = regimeIdx;
+                }
+            }
+
+            return nearestIndex;
+        }
+
 
         //......................................................................
         #region utils

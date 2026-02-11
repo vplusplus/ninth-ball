@@ -84,17 +84,14 @@ namespace NinthBall.Core
 
         static (RegimeAwareBlocks, ReadOnlyMemory<double>) MapBlocksToRegimesOnce(IReadOnlyList<HBlock> blocks, HRegimes regimes)
         {
-            if (regimes.Regimes.Count != regimes.Centroids.NumRows) throw new Exception("Invalid regimes | NumRegimes and NumCentroids doesn't match.");
-
             // Extract features of all blocks.
             // Map the features to K-Mean feature space using z-params learnt during training.
             var standardizedFeatureMatrix = blocks.ToFeatureMatrix().StandardizeFeatureMatrix(regimes.StandardizationParams);
-            if (standardizedFeatureMatrix.NumColumns != regimes.Centroids.NumColumns) throw new Exception("Invalid regimes | Feature count mismatch between block-features and centroid-features.");
             if (standardizedFeatureMatrix.NumRows != blocks.Count) throw new Exception("Invalid logic | You should never see this error.");
 
             // Given a blockIndex, consult standardized features and the centroids,
             // find the index of regime it belongs to.
-            int FindRegimeIndex(int blockIndex) => standardizedFeatureMatrix[blockIndex].FindNearestCentroid(regimes.Centroids);
+            int FindRegimeIndex(int blockIndex) => regimes.FindNearestRegime( standardizedFeatureMatrix[blockIndex] );
 
             // Map each block to the regime index.
             var rBlocks = blocks.Select((block, blockIndex) => 
