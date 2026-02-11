@@ -1,22 +1,33 @@
 ﻿
 namespace NinthBall.Core
 {
-    public static partial class KMean
+    internal static class KMeanQuality
     {
-        static KMean.Quality ComputeQualityMetrics(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
+        public static KMean.Quality ComputeQualityMetrics(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
-            var (totalInertia, clusterInertia) = centroids.Inertia(samples, assignments);
+            // Public signature. Validate inputs.
+            // Also add validation that assigned indexes are with-in the range of centroids cols.
+            var good = true
+                && centroids.NumRows > 0
+                && samples.NumRows > 0
+                && assignments.Length > 0
+                && centroids.NumRows == samples.NumColumns
+                && samples.NumRows == assignments.Length;
+
+            if (!good) throw new ArgumentException("You should never see this | One or more parameters to ComputeQualityMetrics() was invalid.");
+
+            var (totalInertia, clusterInertia)  = centroids.Inertia(samples, assignments);
             var (silhouette, clustersilhouette) = centroids.Silhouette(samples, assignments);
 
             return new
             (
-                totalInertia,
-                clusterInertia,
-                silhouette,
-                clustersilhouette,
-                centroids.DBI(samples, assignments),
-                centroids.CH(samples, assignments),
-                centroids.Dunn(samples, assignments)
+                TotalInertia:       totalInertia,
+                SilhouetteScore:    silhouette,
+                DBI:                centroids.DBI(samples, assignments),
+                CH:                 centroids.CH(samples, assignments),
+                Dunn:               centroids.Dunn(samples, assignments),
+                ClusterInertia:     clusterInertia,
+                ClusterSilhouette:  clustersilhouette
             );
         }
 

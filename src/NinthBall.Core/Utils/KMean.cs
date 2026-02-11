@@ -2,33 +2,38 @@
 
 namespace NinthBall.Core
 {
-    public static partial class KMean
+    // TODO: Review data structure design and related utility/extensions of KMean.Result. Not criticial, nevertheless, there are pinky-promises.
+
+    public static class KMean
     {
         private const double ZeroShiftThreshold = 1e-6;
-
-        public readonly record struct Quality
-        (
-            double TotalInertia,
-            ReadOnlyMemory<double> ClusterInertia,
-            double SilhouetteScore,
-            ReadOnlyMemory<double> ClusterSilhouette,
-            double DBI,
-            double CH,
-            double Dunn
-        );
 
         // Cluster results 2d-matrix of centroids, NumFeatures and the cluster assignments of the samples
         public readonly record struct Result
         (
-            //TwoDMatrix Samples,
-            TwoDMatrix Centroids, 
+            TwoDMatrix          Centroids, 
             ReadOnlyMemory<int> Assignments,
-            Quality Quality
+            Quality             Quality
         )
         {
             public readonly int NumClusters => Centroids.NumRows;
             public readonly int NumFeatures => Centroids.NumColumns;
         }
+
+        public readonly record struct Quality
+        (
+            // Overall metrics
+            double TotalInertia,
+            double SilhouetteScore,
+            double DBI,
+            double CH,
+            double Dunn,
+
+            // Per cluster metrics
+            ReadOnlyMemory<double> ClusterInertia,
+            ReadOnlyMemory<double> ClusterSilhouette
+        );
+
 
         public static (bool converged, int iterations, Result result) Cluster(in TwoDMatrix samples, Random R, int K, int maxIterations = 100)
         {
@@ -71,7 +76,7 @@ namespace NinthBall.Core
                     //Samples: samples,
                     Centroids: centroids,
                     newAssignments,
-                    Quality: centroids.ComputeQualityMetrics(samples, newAssignments)
+                    Quality: centroids.ComputeQualityMetrics(samples: samples, assignments: newAssignments)
                 );
 
                 return new(true, iteration, trainingResult);
