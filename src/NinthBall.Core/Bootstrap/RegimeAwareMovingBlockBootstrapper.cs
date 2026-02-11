@@ -84,9 +84,13 @@ namespace NinthBall.Core
 
         static (RegimeAwareBlocks, ReadOnlyMemory<double>) MapBlocksToRegimesOnce(IReadOnlyList<HBlock> blocks, HRegimes regimes)
         {
+            if (regimes.Regimes.Count != regimes.Centroids.NumRows) throw new Exception("Invalid regimes | NumRegimes and NumCentroids doesn't match.");
+
             // Extract features of all blocks.
             // Map the features to K-Mean feature space using z-params learnt during training.
             var standardizedFeatureMatrix = blocks.ToFeatureMatrix().StandardizeFeatureMatrix(regimes.StandardizationParams);
+            if (standardizedFeatureMatrix.NumColumns != regimes.Centroids.NumColumns) throw new Exception("Invalid regimes | Feature count mismatch between block-features and centroid-features.");
+            if (standardizedFeatureMatrix.NumRows != blocks.Count) throw new Exception("Invalid logic | You should never see this error.");
 
             // Given a blockIndex, consult standardized features and the centroids,
             // find the index of regime it belongs to.
@@ -118,9 +122,12 @@ namespace NinthBall.Core
                 .Select(x => (double)x.Value)
                 .ToArray();
 
-            // Group by and count by can skip regime index if there are not blocks.
-            // We depend on indexes.
-            var badData = regimes.Regimes.Count != regimes.Centroids.NumRows
+            // We depend on regime index and centroid index.
+            // Group by and count by can skip index if there are no blocks associated with the regimes.
+            // We do not support empty regimes.
+            var badData = false
+                || blocksByRegime.Sum(x => x.Count) != blocks.Count
+                || countByRegime.Sum(x => x) != blocks.Count
                 || blocksByRegime.Count != regimes.Regimes.Count
                 || countByRegime.Length != regimes.Regimes.Count
                 || countByRegime.Any(x => 0 == x)
