@@ -1,4 +1,5 @@
 ﻿
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 using NinthBall.Utils;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -89,19 +90,10 @@ namespace NinthBall.Core
             var standardizedFeatureMatrix = featureMatrix.StandardizeFeatureMatrix(standardizationParams);
 
             // Discover K-Mean clusters
-            var clusters = standardizedFeatureMatrix.DiscoverClusters(R, numRegimes);
+            var clusters = standardizedFeatureMatrix.DiscoverBestClusters(R, numRegimes);
 
-            // Compute the probability of regime switching
-            var transitionMatrix = clusters.ComputeRegimeTransitionMatrix();
-
-            // Map training blocks to regimes, calculate regime profile for each.
-            var regimes = Enumerable.Range(0, clusters.NumClusters).Select(r => trainingBlocks.ComputeRegimeProfile(clusters, transitionMatrix, r)).ToArray();
-
-            return new
-            (
-                StandardizationParams: standardizationParams,
-                Regimes: regimes
-            );
+            // best K-Mean result -> HRegimes
+            return clusters.ToHistoricalRegimes(trainingBlocks, standardizationParams);
         }
 
         // Extract features
@@ -167,77 +159,136 @@ namespace NinthBall.Core
             return standardizedFeatureMatrix.ReadOnly;
         }
 
-        // Discover K-Mean clusters
-        public static KMean.Result DiscoverClusters(this TwoDMatrix standardizedFeatureMatrix, Random R, int numClusters)
+        //......................................................................
+        #region KMean training loop - Pick best result
+        //......................................................................
+        public static KMean.Result DiscoverBestClusters(this TwoDMatrix standardizedFeatureMatrix, Random R, int numClusters)
         {
-            // Robust Regime Discovery:
-            // K-Means is sensitive to initialization. We run it multiple times with different seeds
-            // and pick the best result based on Silhouette Score.
-            // We also enforce a minimum cluster size to avoid "degenerate" regimes (e.g., tiny clusters that act as black holes).
+            const int    NumTrainings               = 50;       // Train 50 times, find the best.
+            const int    MaxIterationsPerTraining   = 100;      // We typically converge in less than 10 iterations
+            const double MinClusterSizePCT          = 0.05;     // Min 5% of the sample size.
 
-            const int NumRestarts = 50;
-            const int MinClusterSize = 5; // Approx 5% of history
+            // Derive a base seed from the input
+            // IMPORTANT: TODO: Cluster initialization and convergence is sensitive.
+            // Probably we should NOT use simulation seed.
+            // Simulation seed is meant for changing the fortunes, not changing the history.
+            var baseSeed = R.Next();
 
-            var baseSeed = R.Next(); // Derive a base seed from the input Random
-            
-            KMean.Result bestResult = default;
-            double bestSilhouette = -1.0;
-            bool foundValidResult = false;
-            
+            // Compute the minimum allowed cluster size.
+            int minAllowedClusterSize = Math.Max(1, (int)(standardizedFeatureMatrix.NumRows * MinClusterSizePCT));
+
+            // Best result so far. What is best? See rejection logic below.
+            KMean.Result? bestResult = default;
+
             var elapsed = Stopwatch.StartNew();
-            for (int attempt = 0; attempt < NumRestarts; attempt++)
+            for (int attempt = 0; attempt < NumTrainings; attempt++)
             {
+                // Training specific pseudo random generator
                 R = new Random(PredictableHashCode.Combine(baseSeed, attempt));
 
-                var (success, iter, result) = KMean.Cluster(standardizedFeatureMatrix, R, numClusters);
-                //Console.WriteLine($"{result.Quality.SilhouetteScore:F2} {(success ? "✓" : "✗")}");
+                // Train
+                var (converged, iter, nextResult) = KMean.Cluster
+                (
+                    standardizedFeatureMatrix, 
+                    R: R,
+                    K: numClusters, 
+                    maxIterations: MaxIterationsPerTraining
+                );
 
-                // Didn't converge
-                if (!success) continue;
+                // Reject clusters that didn't converge.
+                if (!converged) continue;
 
-                // --- New Logic Start ---
-                // Enforce min cluster size of 5 blocks (approx 5% of history)
-                // This prevents degenerate clusters like the "2020-2022 Black Hole"
-                bool isDegenerate = false;
-                var assignments = result.Assignments.Span;
-                for (int r = 0; r < result.NumClusters; r++)
-                {
-                    if (assignments.Count(r) < 5)
-                    {
-                        isDegenerate = true;
-                        break;
-                    }
-                }
+                // Reject degenerate clusters (This also eliminates zero-member-clusters)
+                if (nextResult.HasDegenerateClusters(minAllowedClusterSize)) continue;
 
-                if (isDegenerate) continue;
+                // Ignore if the SilhouetteScore is inferior.
+                if (bestResult.HasValue && nextResult.Quality.SilhouetteScore < bestResult.Value.Quality.SilhouetteScore) continue;
 
-                // Validation 2: Check Silhouette Score
-                // Higher is better.
-                if (result.Quality.SilhouetteScore > bestSilhouette)
-                {
-                    bestSilhouette = result.Quality.SilhouetteScore;
-                    bestResult = result;
-                    foundValidResult = true;
-                }
+                // Converged, no degenerate clusters and better SilhouetteScore. Keep it.
+                bestResult = nextResult;
             }
-
             elapsed.Stop();
 
-            if (!foundValidResult)
+            if (bestResult.HasValue)
             {
-                throw new FatalWarning($"K-Means failed to find any valid clustering after {NumRestarts} attempts (MinClusterSize={MinClusterSize}).");
+                bestResult.Value.PrettyPrint(NumTrainings, elapsed.Elapsed);
+                return bestResult.Value;
             }
-
-            // Diag
-            Console.WriteLine($" K-Mean: Discovered {bestResult.NumClusters} clusters | {NumRestarts} restarts | {elapsed.Elapsed.TotalMilliseconds:#,0} milliSec");
-            Console.WriteLine($" K-Mean: Best Result (Silhouette: {bestSilhouette:F2} | TotalInertia: {bestResult.Quality.TotalInertia:F2})");
-            Console.WriteLine($" K-Mean: Inertia     : [{bestResult.Quality.ClusterInertia.CSVMetrics8F2()}]");
-            Console.WriteLine($" K-Mean: Silhouette  : [{bestResult.Quality.ClusterSilhouette.CSVMetrics8F2()}]");
-
-            return bestResult;
+            else
+            {
+                throw new FatalWarning($"K-Means failed to find any valid clustering | {NumTrainings} trainings | {MaxIterationsPerTraining} iter/training | MinClusterSize: {minAllowedClusterSize}");
+            }
         }
 
-        public static HRegimes.RP ComputeRegimeProfile(this IReadOnlyList<HBlock> blocks, KMean.Result clusters, TwoDMatrix transitionProbabilities, int regimeId)
+        public static bool HasDegenerateClusters(this KMean.Result kResult, int minAcceptableClusterSize)
+        {
+            var assignments = kResult.Assignments.Span;
+
+            for(int c = 0; c < kResult.NumClusters; c++)
+            {
+                var memberCount = assignments.Count(c);
+                if (memberCount < minAcceptableClusterSize) return true;
+            }
+
+            return false;
+        }
+
+
+        #endregion
+
+        //......................................................................
+        #region KMean.Result -> HRegimes
+        //......................................................................
+        static HRegimes ToHistoricalRegimes(this KMean.Result clusters, IReadOnlyList<HBlock> trainingBlocks, HRegimes.Z standardizationParams)
+        {
+            // Compute the probability of regime switching
+            var transitionMatrix = clusters.ComputeRegimeTransitionMatrix();
+
+            // Map training blocks to regimes, calculate regime profile for each.
+            var regimes = Enumerable.Range(0, clusters.NumClusters).Select(r => trainingBlocks.ComputeRegimeProfile(clusters, transitionMatrix, r)).ToArray();
+
+            return new
+            (
+                StandardizationParams: standardizationParams,
+                Regimes: regimes
+            );
+        }
+
+        static TwoDMatrix ComputeRegimeTransitionMatrix(this KMean.Result clusters)
+        {
+            // Ideally, we would follow the chronological order of the blocks.
+            // Instead, we rely on the assignment index.
+            // The assignment index corresponds directly to the index of the historical blocks.
+            // This is a safe assumption because features input to K-Means is immutable and
+            // K-Means returns an array aligned to the original sample order, not tuples or reordered results.
+            // Also, we are arranging the 2D-square-transition-matrix as a flat array.
+
+            var assignments = clusters.Assignments.Span;
+            int numRegimes = clusters.NumClusters;
+
+            // Square matrix
+            var matrix = new XTwoDMatrix(numRegimes, numRegimes);
+
+            // Step1: Count the regime transitions.
+            // One row per 'fromRegime'
+            for (int i = 0; i < assignments.Length - 1; i++)
+            {
+                int fromRegime = assignments[i];
+                int toRegime = assignments[i + 1];
+                matrix[fromRegime, toRegime]++;
+            }
+
+            // Step2: Normalize regime transitions counts to probabilities.
+            // Note:  Normalize each row (local normalization)
+            for (int r = 0; r < numRegimes; r++)
+            {
+                matrix[r].ToProbabilityDistribution();
+            }
+
+            return matrix.ReadOnly;
+        }
+
+        static HRegimes.RP ComputeRegimeProfile(this IReadOnlyList<HBlock> blocks, KMean.Result clusters, TwoDMatrix transitionProbabilities, int regimeId)
         {
             var clusterAssignments = clusters.Assignments.Span;
 
@@ -311,40 +362,11 @@ namespace NinthBall.Core
             );
         }
 
-        public static TwoDMatrix ComputeRegimeTransitionMatrix(this KMean.Result clusters)
-        {
-            // Ideally, we would follow the chronological order of the blocks.
-            // Instead, we rely on the assignment index.
-            // The assignment index corresponds directly to the index of the historical blocks.
-            // This is a safe assumption because features input to K-Means is immutable and
-            // K-Means returns an array aligned to the original sample order, not tuples or reordered results.
-            // Also, we are arranging the 2D-square-transition-matrix as a flat array.
+        #endregion
 
-            var assignments = clusters.Assignments.Span;
-            int numRegimes  = clusters.NumClusters;
-
-            // Square matrix
-            var matrix = new XTwoDMatrix(numRegimes, numRegimes);
-
-            // Step1: Count the regime transitions.
-            // One row per 'fromRegime'
-            for (int i = 0; i < assignments.Length - 1; i++)
-            {
-                int fromRegime = assignments[i];
-                int toRegime   = assignments[i + 1];
-                matrix[fromRegime, toRegime]++;
-            }
-
-            // Step2: Normalize regime transitions counts to probabilities.
-            // Note:  Normalize each row (local normalization)
-            for (int r = 0; r < numRegimes; r++)
-            {
-                matrix[r].ToProbabilityDistribution();
-            }
-
-            return matrix.ReadOnly;
-        }
-
+        //......................................................................
+        #region Extensions to support inference
+        //......................................................................
         public static int FindNearestRegime(this HRegimes regimes, ReadOnlySpan<double> standardizedFeatures)
         {
             int nearestIndex = 0;
@@ -376,6 +398,8 @@ namespace NinthBall.Core
 
             return matrix.ReadOnly;
         }
+
+        #endregion
 
         //......................................................................
         #region utils
@@ -417,10 +441,21 @@ namespace NinthBall.Core
             return $"Regime{regimeId}";
         }
 
-        private static string CSVMetrics8F2(this ReadOnlyMemory<double> numbers) => string.Join(", ", MemoryMarshal.ToEnumerable(numbers).Select(x => $"{x,8:F2}"));
+        static void PrettyPrint(this KMean.Result bestResult, int numTraining, TimeSpan elapsed)
+        {
+            var Q = bestResult.Quality;
+
+            Console.WriteLine($" K-Mean: Discovered {bestResult.NumClusters} clusters | {numTraining} restarts | {elapsed.TotalMilliseconds:#,0} milliSec");
+            Console.WriteLine($" K-Mean: Silhouette: {Q.SilhouetteScore:F2} | TotalInertia: {Q.TotalInertia:F2})");
+            Console.WriteLine($" K-Mean: Inertia     : [{CSVMetrics8F2(Q.ClusterInertia)}]");
+            Console.WriteLine($" K-Mean: Silhouette  : [{CSVMetrics8F2(Q.ClusterSilhouette)}]");
+
+            static string CSVMetrics8F2(ReadOnlyMemory<double> numbers) => string.Join(", ", MemoryMarshal.ToEnumerable(numbers).Select(x => $"{x,8:F2}"));
+        }
+        
 
         #endregion
 
-  
+ 
     }
 }
