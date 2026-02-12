@@ -398,20 +398,20 @@ namespace NinthBall.Core
 
         static string GuessRegimeLabel(int regimeId, double sbCorrelation, double siCorrelation, double biCorrelation, HRegimes.M mStocks, HRegimes.M mBonds, HRegimes.M mInflation)
         {
-            // Priority 1: Crisis (Severe pain or extreme uncertainty)
-            if (mStocks.Mean < -0.10 || mStocks.Volatility > 0.20) return "Crisis";
+            //// Priority 1: Crisis (Severe pain or extreme uncertainty)
+            //if (mStocks.Mean < -0.10 || mStocks.Volatility > 0.20) return "Crisis";
 
-            // Priority 2: Stagflation (High cost of living + poor growth)
-            if (mInflation.Mean > 0.05 && mStocks.Mean < 0.02) return "Stagflation";
+            //// Priority 2: Stagflation (High cost of living + poor growth)
+            //if (mInflation.Mean > 0.05 && mStocks.Mean < 0.02) return "Stagflation";
 
-            // Priority 3: Balanced Growth (Modern ideal, diversification works)
-            if (mStocks.Mean > 0.06 && sbCorrelation < 0.0) return "Balanced";
+            //// Priority 3: Balanced Growth (Modern ideal, diversification works)
+            //if (mStocks.Mean > 0.06 && sbCorrelation < 0.0) return "Balanced";
 
-            // Priority 4: Bull Market (General vigor)
-            if (mStocks.Mean > 0.10) return "Bull";
+            //// Priority 4: Bull Market (General vigor)
+            //if (mStocks.Mean > 0.10) return "Bull";
 
-            // Priority 5: Stagnation (The "Lost Decade")
-            if (mStocks.Mean < 0.02 && mStocks.Mean > -0.05) return "Stagnation";
+            //// Priority 5: Stagnation (The "Lost Decade")
+            //if (mStocks.Mean < 0.02 && mStocks.Mean > -0.05) return "Stagnation";
 
             // Fallback: Statistical Label
             return $"Regime{regimeId}";
