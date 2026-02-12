@@ -6,8 +6,13 @@ namespace NinthBall.Core
     /// </summary>
     public readonly record struct TwoDMatrix(ReadOnlyMemory<double> Storage, int NumRows, int NumColumns)
     {
+        // Provides read-only view of the row.
         public readonly ReadOnlySpan<double> this[int row] => Storage.Slice(row * NumColumns, NumColumns).Span;
 
+        // Provides a reference to memory fragment representing the row.
+        public readonly ReadOnlyMemory<double> Row(int row) => Storage.Slice(row * NumColumns, NumColumns);
+
+        // Read a specific cell.
         public readonly double this[int row, int col] => Storage.Span[row * NumColumns + col];
     }
 

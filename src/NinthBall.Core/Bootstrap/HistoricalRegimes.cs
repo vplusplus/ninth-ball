@@ -1,6 +1,8 @@
 ﻿
+using NinthBall.Utils;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using static NinthBall.Core.KMean;
 
 namespace NinthBall.Core
 {
@@ -104,7 +106,7 @@ namespace NinthBall.Core
 
         // Extract features
         // TODO: CRITICAL: Features like MaxDrawdown are length-dependent.
-        // There is no such thing as annualized MaxDrawDown.
+        // There is no suchthing as annualized MaxDrawDown.
         // Coin a new feature such that MaxDrawDown is comparable across 3/4/5-years
         public static TwoDMatrix ToFeatureMatrix(this IReadOnlyList<HBlock> blocks)
         {
@@ -168,23 +170,71 @@ namespace NinthBall.Core
         // Discover K-Mean clusters
         public static KMean.Result DiscoverClusters(this TwoDMatrix standardizedFeatureMatrix, Random R, int numClusters)
         {
-            // Discover clusters (a.k.a. regimes)
-            var elapsed = Stopwatch.StartNew();
-            var (converged, iterations, kResult) = KMean.Cluster(standardizedFeatureMatrix, R, numClusters);
-            elapsed.Stop();
+            // Robust Regime Discovery:
+            // K-Means is sensitive to initialization. We run it multiple times with different seeds
+            // and pick the best result based on Silhouette Score.
+            // We also enforce a minimum cluster size to avoid "degenerate" regimes (e.g., tiny clusters that act as black holes).
 
-            // Some diag.
-            if (converged)
+            const int NumRestarts = 50;
+            const int MinClusterSize = 5; // Approx 5% of history
+
+            var baseSeed = R.Next(); // Derive a base seed from the input Random
+            
+            KMean.Result bestResult = default;
+            double bestSilhouette = -1.0;
+            bool foundValidResult = false;
+            
+            var elapsed = Stopwatch.StartNew();
+            for (int attempt = 0; attempt < NumRestarts; attempt++)
             {
-                Console.WriteLine($" K-Mean: Discovered {kResult.NumClusters} clusters | {iterations} iterations | {elapsed.Elapsed.TotalMilliseconds:#,0} milliSec");
-                Console.WriteLine($" K-Mean: TotalInertia: {kResult.Quality.TotalInertia:F2} | SilhouetteScore: {kResult.Quality.SilhouetteScore:F2}");
-                Console.WriteLine($" K-Mean: Inertia     : [{kResult.Quality.ClusterInertia.CSVMetrics8F2()}]");
-                Console.WriteLine($" K-Mean: Silhouette  : [{kResult.Quality.ClusterSilhouette.CSVMetrics8F2()}]");
+                R = new Random(PredictableHashCode.Combine(baseSeed, attempt));
+
+                var (success, iter, result) = KMean.Cluster(standardizedFeatureMatrix, R, numClusters);
+                //Console.WriteLine($"{result.Quality.SilhouetteScore:F2} {(success ? "✓" : "✗")}");
+
+                // Didn't converge
+                if (!success) continue;
+
+                // --- New Logic Start ---
+                // Enforce min cluster size of 5 blocks (approx 5% of history)
+                // This prevents degenerate clusters like the "2020-2022 Black Hole"
+                bool isDegenerate = false;
+                var assignments = result.Assignments.Span;
+                for (int r = 0; r < result.NumClusters; r++)
+                {
+                    if (assignments.Count(r) < 5)
+                    {
+                        isDegenerate = true;
+                        break;
+                    }
+                }
+
+                if (isDegenerate) continue;
+
+                // Validation 2: Check Silhouette Score
+                // Higher is better.
+                if (result.Quality.SilhouetteScore > bestSilhouette)
+                {
+                    bestSilhouette = result.Quality.SilhouetteScore;
+                    bestResult = result;
+                    foundValidResult = true;
+                }
             }
 
-            return converged
-                ? kResult
-                : throw new FatalWarning($"K-Mean failed to converge even after {iterations} iterations");
+            elapsed.Stop();
+
+            if (!foundValidResult)
+            {
+                throw new FatalWarning($"K-Means failed to find any valid clustering after {NumRestarts} attempts (MinClusterSize={MinClusterSize}).");
+            }
+
+            // Diag
+            Console.WriteLine($" K-Mean: Discovered {bestResult.NumClusters} clusters | {NumRestarts} restarts | {elapsed.Elapsed.TotalMilliseconds:#,0} milliSec");
+            Console.WriteLine($" K-Mean: Best Result (Silhouette: {bestSilhouette:F2} | TotalInertia: {bestResult.Quality.TotalInertia:F2})");
+            Console.WriteLine($" K-Mean: Inertia     : [{bestResult.Quality.ClusterInertia.CSVMetrics8F2()}]");
+            Console.WriteLine($" K-Mean: Silhouette  : [{bestResult.Quality.ClusterSilhouette.CSVMetrics8F2()}]");
+
+            return bestResult;
         }
 
         public static HRegimes.RP ComputeRegimeProfile(this IReadOnlyList<HBlock> blocks, KMean.Result clusters, TwoDMatrix transitionProbabilities, int regimeId)
@@ -228,10 +278,10 @@ namespace NinthBall.Core
             double biCorr  = bonds.Correlation(inflation);
 
             // Capture the centroid of this regime.
-            var centroid = clusters.Centroids[regimeId].ToArray();
+            var centroid = clusters.Centroids.Row(regimeId);
 
             // Capture probabilty of transition from current regime to other regimes
-            var txProbabilities = transitionProbabilities[regimeId].ToArray();
+            var txProbabilities = transitionProbabilities.Row(regimeId);
 
             // Optional label to the regime (for display only)
             var regimeLabel = GuessRegimeLabel(regimeId, sbCorr, siCorr, biCorr, mStocks, mBonds, mInflation);
@@ -313,6 +363,19 @@ namespace NinthBall.Core
             return nearestIndex;
         }
 
+        // Re-construct (copy) regime transitons as 2D matrix.
+        public static TwoDMatrix GetRegimeTransitionMatrix(this HRegimes regimes)
+        {
+            int numRegimes = regimes.Regimes.Count;
+            var matrix = new XTwoDMatrix(numRegimes, numRegimes);
+
+            for (int i = 0; i < numRegimes; i++)
+            {
+                regimes.Regimes[i].NextRegimeProbabilities.Span.CopyTo(matrix[i]);
+            }
+
+            return matrix.ReadOnly;
+        }
 
         //......................................................................
         #region utils
@@ -342,10 +405,10 @@ namespace NinthBall.Core
             if (mInflation.Mean > 0.05 && mStocks.Mean < 0.02) return "Stagflation";
 
             // Priority 3: Balanced Growth (Modern ideal, diversification works)
-            if (mStocks.Mean > 0.06 && sbCorrelation < 0.0) return "Balanced Growth";
+            if (mStocks.Mean > 0.06 && sbCorrelation < 0.0) return "Balanced";
 
             // Priority 4: Bull Market (General vigor)
-            if (mStocks.Mean > 0.10) return "Bull Market";
+            if (mStocks.Mean > 0.10) return "Bull";
 
             // Priority 5: Stagnation (The "Lost Decade")
             if (mStocks.Mean < 0.02 && mStocks.Mean > -0.05) return "Stagnation";
