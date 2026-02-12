@@ -1,4 +1,5 @@
-﻿using NinthBall.Core;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using NinthBall.Core;
 using NinthBall.Utils;
 using System.Text.Json;
 
@@ -9,7 +10,7 @@ namespace UnitTests
     {
         static int[] BlockSizes => [3];
 
-        static Random RND() => new Random(12345);
+        const int MyRegimeDiscoverySeed = 12345;
 
         static JsonSerializerOptions PrettyJson =>  new() { WriteIndented = true };
 
@@ -17,15 +18,13 @@ namespace UnitTests
         [TestMethod]
         public void HelloKMeanClusters()
         {
-            var R = RND();
-
             var mbbOptions = new MovingBlockBootstrapOptions(BlockSizes, NoBackToBackOverlaps: false );
             var history = new HistoricalReturns();
             var blocks = new HistoricalBlocks(history, mbbOptions).Blocks;
 
             var featureMatrix = blocks.ToFeatureMatrix();
             var zScale = featureMatrix.DiscoverStandardizationParameters();
-            var clusters = featureMatrix.StandardizeFeatureMatrix(zScale).DiscoverBestClusters(R, 4);
+            var clusters = featureMatrix.StandardizeFeatureMatrix(zScale).DiscoverBestClusters(MyRegimeDiscoverySeed, 4);
 
             //var json = JsonSerializer.Serialize(clusters, PrettyJson);
             //File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\KMean-Clusters-345.json", json);
@@ -34,14 +33,12 @@ namespace UnitTests
         [TestMethod]
         public void HelloRegimes()
         {
-            var R = RND();
-
             var mbbOptions = new MovingBlockBootstrapOptions(BlockSizes, NoBackToBackOverlaps: false);
             var history = new HistoricalReturns();
             var blocks = new HistoricalBlocks(history, mbbOptions).Blocks;
             
             // Now this calls the robust implementation with 50 restarts and MinClusterSize=5
-            var hRegimes = blocks.DiscoverRegimes(R, 4);
+            var hRegimes = blocks.DiscoverRegimes(MyRegimeDiscoverySeed, 4);
 
             // Print Matrix
             Console.Out.PrettyPrintTransitionMatrix(hRegimes);

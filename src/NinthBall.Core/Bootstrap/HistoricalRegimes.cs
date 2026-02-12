@@ -59,21 +59,18 @@ namespace NinthBall.Core
             // BY-DESIGN: Exactly four regimes (This is not a tuneable configuration)
             const int FourRegimesNotThreeOrFive = 4;
 
-            // Simulation seed is our repeatable pseudo random seed.
-            var R = new Random(SimSeed.Value);
-
             // Using three-year blocks, discover regimes and their characteristics.
             return History.History
                 .ReadBlocks(ThreeYearBlocksOnlyNotTwoFourOrFive)
                 .ToList()
-                .DiscoverRegimes(R, FourRegimesNotThreeOrFive)
+                .DiscoverRegimes(regimeDiscoverySeed: SimSeed.RegimeDiscoverySeed, numRegimes: FourRegimesNotThreeOrFive)
                 ;
         });
     }
 
     internal static class HistoricalRegimesDiscovery
     {
-        public static HRegimes DiscoverRegimes(this IReadOnlyList<HBlock> trainingBlocks, Random R, int numRegimes)
+        public static HRegimes DiscoverRegimes(this IReadOnlyList<HBlock> trainingBlocks, int regimeDiscoverySeed, int numRegimes)
         {
             ArgumentNullException.ThrowIfNull(trainingBlocks);
 
@@ -90,7 +87,7 @@ namespace NinthBall.Core
             var standardizedFeatureMatrix = featureMatrix.StandardizeFeatureMatrix(standardizationParams);
 
             // Discover K-Mean clusters
-            var clusters = standardizedFeatureMatrix.DiscoverBestClusters(R, numRegimes);
+            var clusters = standardizedFeatureMatrix.DiscoverBestClusters(regimeDiscoverySeed, numRegimes);
 
             // best K-Mean result -> HRegimes
             return clusters.ToHistoricalRegimes(trainingBlocks, standardizationParams);
@@ -162,17 +159,11 @@ namespace NinthBall.Core
         //......................................................................
         #region KMean training loop - Pick best result
         //......................................................................
-        public static KMean.Result DiscoverBestClusters(this TwoDMatrix standardizedFeatureMatrix, Random R, int numClusters)
+        public static KMean.Result DiscoverBestClusters(this in TwoDMatrix standardizedFeatureMatrix, in int regimeDiscoverySeed, in int numClusters)
         {
             const int    NumTrainings               = 50;       // Train 50 times, find the best.
             const int    MaxIterationsPerTraining   = 100;      // We typically converge in less than 10 iterations
             const double MinClusterSizePCT          = 0.05;     // Min 5% of the sample size.
-
-            // Derive a base seed from the input
-            // IMPORTANT: TODO: Cluster initialization and convergence is sensitive.
-            // Probably we should NOT use simulation seed.
-            // Simulation seed is meant for changing the fortunes, not changing the history.
-            var baseSeed = R.Next();
 
             // Compute the minimum allowed cluster size.
             int minAllowedClusterSize = Math.Max(1, (int)(standardizedFeatureMatrix.NumRows * MinClusterSizePCT));
@@ -184,7 +175,7 @@ namespace NinthBall.Core
             for (int attempt = 0; attempt < NumTrainings; attempt++)
             {
                 // Training specific pseudo random generator
-                R = new Random(PredictableHashCode.Combine(baseSeed, attempt));
+                var R = new Random(PredictableHashCode.Combine(regimeDiscoverySeed, attempt));
 
                 // Train
                 var (converged, iter, nextResult) = KMean.Cluster

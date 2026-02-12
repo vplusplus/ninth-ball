@@ -7,6 +7,10 @@ namespace NinthBall.Core
     public sealed record SimulationSeed(string? SeedHint)
     {
         public readonly int Value = (SeedHint ?? "JSR").GetPredictableHashCode();
+
+        // BY-DESIGN: RegimeDiscoverySeed is NOT same as Simulation seed.
+        // IMPORTANT: Trust me, do not change RegimeDiscoverySeed.
+        public readonly int RegimeDiscoverySeed = 2767;
     }
 
     public sealed record SimParams
