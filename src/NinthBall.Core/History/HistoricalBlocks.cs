@@ -51,7 +51,7 @@ namespace NinthBall.Core
             // We depend on chronology, ensure the input data is sorted by year
             if (!IsSortedByYear(history.Span)) throw new Exception("Invalid history | Data is not sorted by year.");
 
-            // Defensive sort.
+            // History is sorted. Ensure block-sizes are also sorted.
             blockSizes = blockSizes.OrderBy(n => n).ToArray();
 
             // Yield overlapping blocks of requested sizes
