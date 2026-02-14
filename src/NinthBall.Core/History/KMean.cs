@@ -21,13 +21,14 @@ namespace NinthBall.Core
         public readonly record struct Quality
         (
             // Overall metrics
-            double TotalInertia,
-            double SilhouetteScore,
+            double Inertia,
+            double Silhouette,
             double DBI,
             double CH,
             double Dunn,
 
             // Per cluster metrics
+            ReadOnlyMemory<int>    ClusterMembersCount,
             ReadOnlyMemory<double> ClusterInertia,
             ReadOnlyMemory<double> ClusterSilhouette
         );

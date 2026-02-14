@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
 using NinthBall.Core;
 using NinthBall.Utils;
+using System.Net.WebSockets;
 using System.Text.Json;
 
 namespace UnitTests
@@ -24,10 +25,15 @@ namespace UnitTests
 
             var featureMatrix = blocks.ToFeatureMatrix();
             var zScale = featureMatrix.DiscoverStandardizationParameters();
-            var clusters = featureMatrix.StandardizeFeatureMatrix(zScale).DiscoverBestClusters(MyRegimeDiscoverySeed, 4);
+            featureMatrix = featureMatrix.StandardizeFeatureMatrix(zScale);
 
-            //var json = JsonSerializer.Serialize(clusters, PrettyJson);
-            //File.WriteAllText(@"D:\Source\ninth-ball\src\UnitTests\KMean-Clusters-345.json", json);
+            for(int K=3; K<=5; K++)
+            {
+                Console.WriteLine();
+
+                var clusters = featureMatrix.DiscoverBestClusters(MyRegimeDiscoverySeed, K);
+                Console.Out.PrettyPrint(clusters);
+            }
         }
 
         [TestMethod]

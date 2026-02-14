@@ -1,4 +1,7 @@
 ﻿
+using DocumentFormat.OpenXml.Drawing.Charts;
+using System.ComponentModel;
+
 namespace NinthBall.Core
 {
     internal static class KMeanQuality
@@ -21,14 +24,24 @@ namespace NinthBall.Core
 
             return new
             (
-                TotalInertia:       totalInertia,
-                SilhouetteScore:    silhouette,
-                DBI:                centroids.DBI(samples, assignments),
-                CH:                 centroids.CH(samples, assignments),
-                Dunn:               centroids.Dunn(samples, assignments),
-                ClusterInertia:     clusterInertia,
-                ClusterSilhouette:  clustersilhouette
+                Inertia:    totalInertia,
+                Silhouette: silhouette,
+                DBI:        centroids.DBI(samples, assignments),
+                CH:         centroids.CH(samples, assignments),
+                Dunn:       centroids.Dunn(samples, assignments),
+
+                ClusterMembersCount:    CountClusterMembers(centroids.NumRows, assignments),
+                ClusterInertia:         clusterInertia,
+                ClusterSilhouette:      clustersilhouette
             );
+        }
+
+
+        static ReadOnlyMemory<int> CountClusterMembers(int numClusters, ReadOnlySpan<int> assignments)
+        {
+            int[] membersPerCluster = new int[numClusters];
+            for (int clusterIdx = 0; clusterIdx < numClusters; clusterIdx++) membersPerCluster[clusterIdx] = assignments.Count(clusterIdx);
+            return membersPerCluster;
         }
 
         /// <summary>

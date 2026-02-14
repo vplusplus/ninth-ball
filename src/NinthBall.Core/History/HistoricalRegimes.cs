@@ -8,7 +8,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Historical regimes and their macro-economic characteristics.
     /// </summary>
-    public readonly record struct HRegimes( HRegimes.Z StandardizationParams, IReadOnlyList<HRegimes.RP> Regimes, KMean.Quality Quality)
+    public readonly record struct HRegimes( HRegimes.Z StandardizationParams, IReadOnlyList<HRegimes.RP> Regimes)
     {
         // Parameters required for standardization of features during inference.
         public readonly record struct Z
@@ -188,22 +188,16 @@ namespace NinthBall.Core
                 if (nextResult.HasDegenerateClusters(minAllowedClusterSize)) continue;
 
                 // Ignore if the SilhouetteScore is inferior.
-                if (bestResult.HasValue && nextResult.Quality.SilhouetteScore < bestResult.Value.Quality.SilhouetteScore) continue;
+                if (bestResult.HasValue && nextResult.Quality.Silhouette < bestResult.Value.Quality.Silhouette) continue;
 
                 // Converged, no degenerate clusters and better SilhouetteScore. Keep it.
                 bestResult = nextResult;
             }
             elapsed.Stop();
 
-            if (bestResult.HasValue)
-            {
-                bestResult.Value.PrettyPrint(NumTrainings, elapsed.Elapsed);
-                return bestResult.Value;
-            }
-            else
-            {
-                throw new FatalWarning($"K-Means failed to find any valid clustering | {NumTrainings} trainings | {MaxIterationsPerTraining} iter/training | MinClusterSize: {minAllowedClusterSize}");
-            }
+            return bestResult.HasValue
+                ? bestResult.Value
+                : throw new FatalWarning($"K-Means failed to find any valid clustering | {NumTrainings} trainings | {MaxIterationsPerTraining} iter/training | MinClusterSize: {minAllowedClusterSize}");
         }
 
         public static bool HasDegenerateClusters(this KMean.Result kResult, int minAcceptableClusterSize)
@@ -236,8 +230,7 @@ namespace NinthBall.Core
             return new
             (
                 StandardizationParams: standardizationParams,
-                Regimes: regimes,
-                Quality: clusters.Quality
+                Regimes: regimes
             );
         }
 
@@ -428,17 +421,17 @@ namespace NinthBall.Core
             return $"Regime{regimeId}";
         }
 
-        static void PrettyPrint(this KMean.Result bestResult, int numTraining, TimeSpan elapsed)
-        {
-            var Q = bestResult.Quality;
+        //static void PrettyPrint(this KMean.Result bestResult, int numTraining, TimeSpan elapsed)
+        //{
+        //    var Q = bestResult.Quality;
 
-            Console.WriteLine($" K-Mean: Discovered {bestResult.NumClusters} clusters | {numTraining} restarts | {elapsed.TotalMilliseconds:#,0} milliSec");
-            Console.WriteLine($" K-Mean: Silhouette: {Q.SilhouetteScore:F2} | TotalInertia: {Q.TotalInertia:F2})");
-            Console.WriteLine($" K-Mean: Inertia     : [{CSVMetrics8F2(Q.ClusterInertia)}]");
-            Console.WriteLine($" K-Mean: Silhouette  : [{CSVMetrics8F2(Q.ClusterSilhouette)}]");
+        //    Console.WriteLine($" K-Mean: Discovered {bestResult.NumClusters} clusters | {numTraining} restarts | {elapsed.TotalMilliseconds:#,0} milliSec");
+        //    Console.WriteLine($" K-Mean: Silhouette: {Q.Silhouette:F2} | TotalInertia: {Q.Inertia:F2})");
+        //    Console.WriteLine($" K-Mean: Inertia     : [{CSVMetrics8F2(Q.ClusterInertia)}]");
+        //    Console.WriteLine($" K-Mean: Silhouette  : [{CSVMetrics8F2(Q.ClusterSilhouette)}]");
 
-            static string CSVMetrics8F2(ReadOnlyMemory<double> numbers) => string.Join(", ", MemoryMarshal.ToEnumerable(numbers).Select(x => $"{x,8:F2}"));
-        }
+        //    static string CSVMetrics8F2(ReadOnlyMemory<double> numbers) => string.Join(", ", MemoryMarshal.ToEnumerable(numbers).Select(x => $"{x,8:F2}"));
+        //}
         
 
         #endregion
