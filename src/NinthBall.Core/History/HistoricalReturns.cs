@@ -12,12 +12,16 @@ namespace NinthBall.Core
     /// </summary>
     internal sealed class HistoricalReturns
     {
-        private static readonly Lazy<ReadOnlyMemory<HROI>> LazyHistory = new(ReadHistory);
+        public ReadOnlyMemory<HROI> Returns => LazySortedHistory.Value;
+        public int FromYear => LazySortedHistory.Value.Span[0].Year;
+        public int ToYear   => LazySortedHistory.Value.Span[^1].Year;
 
-        public ReadOnlyMemory<HROI> Returns => LazyHistory.Value;
-        public int FromYear                 => LazyHistory.Value.Span[0].Year;
-        public int ToYear                   => LazyHistory.Value.Span[^1].Year;
+        //......................................................................
+        // Historical returns, read-once and chronologically ordered.
+        //......................................................................
+        private static readonly Lazy<ReadOnlyMemory<HROI>> LazySortedHistory = new(ReadHistory);
 
+        // Read, parse, sort and validate historical data from embedded resource. 
         public static ReadOnlyMemory<HROI> ReadHistory()
         {
             const string ResNameEndsWith = "ROI-History.xlsx";
@@ -35,7 +39,7 @@ namespace NinthBall.Core
                     .GetSheets()
                     .Where(s => SheetName.Equals(s.SheetName, StringComparison.OrdinalIgnoreCase))
                     .SingleOrDefault()
-                    ?? throw new Exception($"Sheet not found | Resource: {resName} | Sheet: '{SheetName}'");
+                        ?? throw new Exception($"Sheet not found | Resource: {resName} | Sheet: '{SheetName}'");
 
                 foreach (var row in sheet.GetRows())
                 {
