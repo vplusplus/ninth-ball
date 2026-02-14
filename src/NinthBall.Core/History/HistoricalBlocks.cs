@@ -4,8 +4,11 @@ using DocumentFormat.OpenXml;
 namespace NinthBall.Core
 {
     // Represents a small window into the historical returns.
-    // ARRScore is a ranking-score, an 'indicator' of good/bad windows.
-    readonly record struct HBlock(ReadOnlyMemory<HROI> Slice, HBlock.F Features)
+    readonly record struct HBlock
+    (
+        ReadOnlyMemory<HROI> Slice,     // Small slice of the history.
+        HBlock.F Features               // Computed block-level Microeconomics characteristics.
+    )
     {
         // Features of this block
         public readonly record struct F
@@ -22,29 +25,21 @@ namespace NinthBall.Core
 
         public readonly int StartYear => Slice.Span[0].Year;
         public readonly int EndYear   => Slice.Span[^1].Year;
+
         public static bool Overlaps(in HBlock prevBlock, in HBlock nextBlock) => nextBlock.StartYear <= prevBlock.EndYear && nextBlock.EndYear >= prevBlock.StartYear;
     }
 
     internal sealed class HistoricalBlocks(HistoricalReturns History, MovingBlockBootstrapOptions Options)
     {
-        public IReadOnlyList<HBlock> Blocks => LazyBlocks.Value.Blocks;
-        public int MinYear => LazyBlocks.Value.MinYear;
-        public int MaxYear => LazyBlocks.Value.MaxYear;
+        // Prepare blocks of suggested lengths once.
+        readonly Lazy<IReadOnlyList<HBlock>> LazyBlocks = new(() => History.Returns.ReadBlocks(Options.BlockSizes).ToList().AsReadOnly());
 
-        // Prepare all available blocks once.
-        readonly Lazy<(IReadOnlyList<HBlock> Blocks, int MinYear, int MaxYear)> LazyBlocks = new(() =>
-        {
-            var availableBlocks = History.Returns.ReadBlocks(Options.BlockSizes).ToList().AsReadOnly();
-            var minYear = availableBlocks.Min(x => x.StartYear);
-            var maxYear = availableBlocks.Max(x => x.EndYear);
+        public IReadOnlyList<HBlock> Blocks => LazyBlocks.Value;
 
-            return
-            (
-                Blocks:  availableBlocks,
-                MinYear: minYear,
-                MaxYear: maxYear
-            );
-        });
+        public int MinYear => LazyBlocks.Value[0].StartYear;
+
+        public int MaxYear => LazyBlocks.Value[^1].EndYear;
+
     }
 
     internal static class HistoricalBlocksExtensions
