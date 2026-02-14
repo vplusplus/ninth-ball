@@ -120,10 +120,8 @@ namespace NinthBall.Core
                 // Track new peak
                 if (currentValue > peak) peak = currentValue;
 
-                // Calculate drawown from peak
+                // Track worst drawdown from the peak
                 double drawdown = (peak - currentValue) / peak;
-
-                // Track worst drawdown
                 if (drawdown > maxDrawdown) maxDrawdown = drawdown;
             }
 
