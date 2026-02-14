@@ -60,9 +60,9 @@ namespace NinthBall.Core
                 var maxBlocks = history.Length - blockLength + 1;
                 for (int startIndex = 0; startIndex < maxBlocks; startIndex++)
                 {
-                    ReadOnlyMemory<HROI> slice = history.Slice(startIndex, blockLength);
-
+                    var slice    = history.Slice(startIndex, blockLength);
                     var features = slice.ComputeBlockFeatures();
+
                     yield return new HBlock(slice, features);
                 }
             }
