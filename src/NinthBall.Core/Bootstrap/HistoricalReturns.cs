@@ -2,36 +2,32 @@
 using System.Globalization;
 using NinthBall.Utils;
 
+// Historical returns - REF: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com
+
 namespace NinthBall.Core
 {
-    // Historical returns:
-    // REF: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com
 
     /// <summary>
     /// Represents historical stocks and bonds ROI imported from Excel file.
     /// </summary>
     internal sealed class HistoricalReturns
     {
-        private static readonly Lazy<(ReadOnlyMemory<HROI> Data, int MinYear, int MaxYear)> LazyHistory = new(ReadHistoryOnce);
+        private static readonly Lazy<ReadOnlyMemory<HROI>> LazyHistory = new(ReadHistory);
 
-        public ReadOnlyMemory<HROI> History => LazyHistory.Value.Data;
-        public int MinYear => LazyHistory.Value.MinYear;
-        public int MaxYear => LazyHistory.Value.MaxYear;
+        public ReadOnlyMemory<HROI> Returns => LazyHistory.Value;
+        public int FromYear => LazyHistory.Value.Span[0].Year;
+        public int ToYear   => LazyHistory.Value.Span[^1].Year;
 
-        static (ReadOnlyMemory<HROI> history, int minYear, int maxYear) ReadHistoryOnce()
+        public static ReadOnlyMemory<HROI> ReadHistory()
         {
             const string ResNameEndsWith = "ROI-History.xlsx";
             const string SheetName = "DATA";
 
-            // Look for exactly one ROI-History.xlsx embedded resource.
-            // Open resource stream
             var resAssembly = typeof(HistoricalReturns).Assembly;
             var resName = resAssembly.GetManifestResourceNames().Single(x => x.EndsWith(ResNameEndsWith, StringComparison.OrdinalIgnoreCase));
-            using var resStream = resAssembly.GetManifestResourceStream(resName) ?? throw new Exception("Unexpected: ManifestResourceStream was null.");
+            using var resStream = resAssembly.GetManifestResourceStream(resName) ?? throw new Exception($"Unexpected: Resource stream on {ResNameEndsWith} was null.");
 
             var history = new List<HROI>(200);
-            var minYear = int.MaxValue;
-            var maxYear = int.MinValue;
 
             using (var xlReader = new ExcelReader(resStream))
             {
@@ -62,20 +58,14 @@ namespace NinthBall.Core
                     )
                     {
                         history.Add(new(year, StocksROI: stocksROI, BondsROI: bondsROI, InflationRate: inflationRate));
-                        if (year < minYear) minYear = year;
-                        if (year > maxYear) maxYear = year;
                     }
                 }
             }
 
-            // Check and inform...
-            if (0 == history.Count || history.Count != maxYear - minYear + 1) throw new FatalWarning($"Invalid historical ROI data. Check for data integrity.");
-            Console.WriteLine($" Read {history.Count} years of historical ROI data from {minYear} to {maxYear}.");
-
             // Repeatable (sort by year) and read-only (to memory)
-            var sortedReadonlyHistory = history.OrderBy(x => x.Year).ToArray().AsMemory();
-
-            return (sortedReadonlyHistory, minYear, maxYear);
+            return (0 == history.Count) 
+                ? throw new FatalWarning($"Invalid historical ROI data | Count == 0") 
+                : history.OrderBy(x => x.Year).ToArray().AsMemory();
         }
     }
 }

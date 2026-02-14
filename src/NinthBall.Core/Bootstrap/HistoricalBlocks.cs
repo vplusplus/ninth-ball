@@ -34,7 +34,7 @@ namespace NinthBall.Core
         // Prepare all available blocks once.
         readonly Lazy<(IReadOnlyList<HBlock> Blocks, int MinYear, int MaxYear)> LazyBlocks = new(() =>
         {
-            var availableBlocks = History.History.ReadBlocks(Options.BlockSizes).ToList().AsReadOnly();
+            var availableBlocks = History.Returns.ReadBlocks(Options.BlockSizes).ToList().AsReadOnly();
             var minYear = availableBlocks.Min(x => x.StartYear);
             var maxYear = availableBlocks.Max(x => x.EndYear);
 
@@ -47,7 +47,7 @@ namespace NinthBall.Core
         });
     }
 
-    internal static class HistoricalBlockExtensions
+    internal static class HistoricalBlocksExtensions
     {
         public static IEnumerable<HBlock> ReadBlocks(this ReadOnlyMemory<HROI> history, IReadOnlyList<int> blockSizes)
         {
@@ -85,52 +85,27 @@ namespace NinthBall.Core
 
             return new
             (
-                RealCAGRStocks: block.RealCAGR(b => b.StocksROI),
-                RealCAGRBonds: block.RealCAGR(b => b.BondsROI),
-                NominalCAGRStocks: block.NominalCAGR(b => b.StocksROI),
-                NominalCAGRBonds: block.NominalCAGR(b => b.BondsROI),
-                MaxDrawdownStocks: block.NominalMaxDrawdown(b => b.StocksROI),
-                MaxDrawdownBonds: block.NominalMaxDrawdown(b => b.BondsROI),
+                RealCAGRStocks:     block.RealCAGR(b => b.StocksROI),
+                RealCAGRBonds:      block.RealCAGR(b => b.BondsROI),
+                NominalCAGRStocks:  block.NominalCAGR(b => b.StocksROI),
+                NominalCAGRBonds:   block.NominalCAGR(b => b.BondsROI),
+                MaxDrawdownStocks:  block.NominalMaxDrawdown(b => b.StocksROI),
+                MaxDrawdownBonds:   block.NominalMaxDrawdown(b => b.BondsROI),
                 GMeanInflationRate: block.GeometricMean(b => b.InflationRate),
-                RealCAGR6040: block.RealCAGR6040()
+                RealCAGR6040:       block.RealCAGR6040()
             );
         }
 
-        static double GeometricMean(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
+        static double RealCAGR(this ReadOnlyMemory<HROI> block, Func<HROI, double> valueSelector)
         {
-            ArgumentNullException.ThrowIfNull(valueSelector);
-            if (0 == window.Length) throw new Exception("Invalid zero length block");
+            double nominalCAGR      = block.GeometricMean(valueSelector);
+            double inflationGeoMean = block.GeometricMean(x => x.InflationRate);
 
-            double cumulativeMultiplier = 1.0;
-
-            foreach (var hroi in window.Span)
-            {
-                // Accumulate
-                double value = valueSelector(hroi);
-                cumulativeMultiplier *= (1 + value);
-            }
-
-            // Annualize
-            return Math.Pow(cumulativeMultiplier, 1.0 / window.Length) - 1.0;
-        }
-
-        static double RealCAGR(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
-        {
-            ArgumentNullException.ThrowIfNull(valueSelector);
-            if (0 == window.Length) throw new Exception("Invalid zero length block");
-
-            double nominalCAGR = window.GeometricMean(valueSelector);
-            double inflationGeoMean = window.GeometricMean(x => x.InflationRate);
-
-            // (1 + nominal) / (1 + inflation) - 1
             return ((1.0 + nominalCAGR) / (1.0 + inflationGeoMean)) - 1.0;
         }
 
         static double NominalCAGR(this ReadOnlyMemory<HROI> window, Func<HROI, double> valueSelector)
         {
-            ArgumentNullException.ThrowIfNull(valueSelector);
-            if (0 == window.Length) throw new Exception("Invalid zero length block");
-
             return window.GeometricMean(valueSelector);
         }
 
@@ -163,10 +138,28 @@ namespace NinthBall.Core
         static double RealCAGR6040(this ReadOnlyMemory<HROI> window)
         {
             // Real CAGR (inflation adjusted) for an imaginary 60/40 portfolio.
-            const double SixtyPCT = 0.6;
+            const double SixtyPCT  = 0.6;
             const double FourtyPCT = 1 - SixtyPCT;
 
             return window.RealCAGR(x => x.StocksROI * SixtyPCT + x.BondsROI * FourtyPCT);
+        }
+
+        static double GeometricMean(this ReadOnlyMemory<HROI> block, Func<HROI, double> valueSelector)
+        {
+            ArgumentNullException.ThrowIfNull(valueSelector);
+            if (0 == block.Length) throw new Exception("Invalid zero length block");
+
+            double cumulativeMultiplier = 1.0;
+
+            foreach (var hroi in block.Span)
+            {
+                // Accumulate
+                double value = valueSelector(hroi);
+                cumulativeMultiplier *= (1 + value);
+            }
+
+            // Annualize
+            return Math.Pow(cumulativeMultiplier, 1.0 / block.Length) - 1.0;
         }
 
     }

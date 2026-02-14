@@ -1,9 +1,7 @@
 ﻿
-using DocumentFormat.OpenXml.Drawing.Diagrams;
-using NinthBall.Utils;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using static NinthBall.Core.KMean;
+using NinthBall.Utils;
 
 namespace NinthBall.Core
 {
@@ -50,17 +48,13 @@ namespace NinthBall.Core
     {
         public HRegimes Regimes => ThreeYearRegimes.Value; 
         
-        // Discover regimes using 3-year blocks, once.
         readonly Lazy<HRegimes> ThreeYearRegimes = new( () =>
         {
-            // BY-DESIGN: Use only three-year-blocks for regime discovery (This is not a tuneable configuration)
-            int[] ThreeYearBlocksOnlyNotTwoFourOrFive = [3];
-
-            // BY-DESIGN: Exactly four regimes (This is not a tuneable configuration)
-            const int FourRegimesNotThreeOrFive = 4;
+            const int FourRegimesNotThreeOrFive = 4;            // BY-DESIGN: Exactly four regimes (This is not a tuneable configuration)
+            int[] ThreeYearBlocksOnlyNotTwoFourOrFive = [3];    // BY-DESIGN: Use only three-year-blocks for regime discovery (This is not a tuneable configuration)
 
             // Using three-year blocks, discover regimes and their characteristics.
-            return History.History
+            return History.Returns
                 .ReadBlocks(ThreeYearBlocksOnlyNotTwoFourOrFive)
                 .ToList()
                 .DiscoverRegimes(regimeDiscoverySeed: SimSeed.RegimeDiscoverySeed, numRegimes: FourRegimesNotThreeOrFive)
