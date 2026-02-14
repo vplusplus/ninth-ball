@@ -8,7 +8,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Historical regimes and their macro-economic characteristics.
     /// </summary>
-    public readonly record struct HRegimes( HRegimes.Z StandardizationParams, IReadOnlyList<HRegimes.RP> Regimes)
+    public readonly record struct HRegimes( HRegimes.Z StandardizationParams, IReadOnlyList<HRegimes.RP> Regimes, KMean.Quality Quality)
     {
         // Parameters required for standardization of features during inference.
         public readonly record struct Z
@@ -236,7 +236,8 @@ namespace NinthBall.Core
             return new
             (
                 StandardizationParams: standardizationParams,
-                Regimes: regimes
+                Regimes: regimes,
+                Quality: clusters.Quality
             );
         }
 
