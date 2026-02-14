@@ -8,15 +8,15 @@ namespace NinthBall.Core
 {
 
     /// <summary>
-    /// Represents historical stocks and bonds ROI imported from Excel file.
+    /// Represents historical stocks/bonds ROI and Inflation rates.
     /// </summary>
     internal sealed class HistoricalReturns
     {
         private static readonly Lazy<ReadOnlyMemory<HROI>> LazyHistory = new(ReadHistory);
 
         public ReadOnlyMemory<HROI> Returns => LazyHistory.Value;
-        public int FromYear => LazyHistory.Value.Span[0].Year;
-        public int ToYear   => LazyHistory.Value.Span[^1].Year;
+        public int FromYear                 => LazyHistory.Value.Span[0].Year;
+        public int ToYear                   => LazyHistory.Value.Span[^1].Year;
 
         public static ReadOnlyMemory<HROI> ReadHistory()
         {
@@ -25,7 +25,7 @@ namespace NinthBall.Core
 
             var resAssembly = typeof(HistoricalReturns).Assembly;
             var resName = resAssembly.GetManifestResourceNames().Single(x => x.EndsWith(ResNameEndsWith, StringComparison.OrdinalIgnoreCase));
-            using var resStream = resAssembly.GetManifestResourceStream(resName) ?? throw new Exception($"Unexpected: Resource stream on {ResNameEndsWith} was null.");
+            using var resStream = resAssembly.GetManifestResourceStream(resName) ?? throw new Exception($"Unexpected: Resource stream on {resName} was null.");
 
             var history = new List<HROI>(200);
 
@@ -63,9 +63,12 @@ namespace NinthBall.Core
             }
 
             // Repeatable (sort by year) and read-only (to memory)
-            return (0 == history.Count) 
-                ? throw new FatalWarning($"Invalid historical ROI data | Count == 0") 
-                : history.OrderBy(x => x.Year).ToArray().AsMemory();
+            var sortedHistory = history.OrderBy(x => x.Year).ToArray().AsMemory();
+
+            // Check data quality
+            return (0 == sortedHistory.Length || sortedHistory.Length != sortedHistory.Span[^1].Year - sortedHistory.Span[0].Year + 1)
+                ? throw new FatalWarning($"Invalid historical ROI data | Either it is empty or counts do not agree.")
+                : sortedHistory;
         }
     }
 }
