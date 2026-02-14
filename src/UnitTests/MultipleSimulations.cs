@@ -14,7 +14,7 @@ namespace UnitTests
         public async Task RunTestSimulations()
         {
             // Target objectives
-            string[] growthObjectives = ["FlatGrowth", "HistoricalGrowth", "RandomHistoricalGrowth", "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];
+            string[] growthObjectives = ["FlatGrowth", "HistoricalGrowth", "RandomHistoricalGrowth", "RegimeAwareHistoricalGrowth", "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];
 
             // Prepare base configuration
             var baseConfig = new ConfigurationBuilder()
