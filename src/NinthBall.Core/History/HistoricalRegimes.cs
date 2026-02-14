@@ -50,14 +50,14 @@ namespace NinthBall.Core
         
         readonly Lazy<HRegimes> ThreeYearRegimes = new( () =>
         {
-            const int FourRegimesNotThreeOrFive = 4;            // BY-DESIGN: Exactly four regimes (This is not a tuneable configuration)
+           const int FiveRegimes = 5;   
             int[] ThreeYearBlocksOnlyNotTwoFourOrFive = [3];    // BY-DESIGN: Use only three-year-blocks for regime discovery (This is not a tuneable configuration)
 
             // Using three-year blocks, discover regimes and their characteristics.
             return History.Returns
                 .ReadBlocks(ThreeYearBlocksOnlyNotTwoFourOrFive)
                 .ToList()
-                .DiscoverRegimes(regimeDiscoverySeed: SimSeed.RegimeDiscoverySeed, numRegimes: FourRegimesNotThreeOrFive)
+                .DiscoverRegimes(regimeDiscoverySeed: SimSeed.RegimeDiscoverySeed, numRegimes: FiveRegimes)
                 ;
         });
     }

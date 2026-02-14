@@ -44,15 +44,21 @@ namespace UnitTests
             var blocks = new HistoricalBlocks(history, mbbOptions).Blocks;
             
             // Now this calls the robust implementation with 50 restarts and MinClusterSize=5
-            var hRegimes = blocks.DiscoverRegimes(MyRegimeDiscoverySeed, 4);
-
-            Console.WriteLine("Regimes:");
-            hRegimes.Print(Console.Out);
-
-            // Print Matrix
-            Console.WriteLine();
-            Console.WriteLine("Transitions:");
+            var hRegimes = blocks.DiscoverRegimes(MyRegimeDiscoverySeed, 3);
+            Console.WriteLine($"Num regimes : {hRegimes.Regimes.Count}:");
             Console.Out.PrettyPrintTransitionMatrix(hRegimes);
+            Console.WriteLine();
+
+            hRegimes = blocks.DiscoverRegimes(MyRegimeDiscoverySeed, 4);
+            Console.WriteLine($"Num regimes : {hRegimes.Regimes.Count}:");
+            Console.Out.PrettyPrintTransitionMatrix(hRegimes);
+            Console.WriteLine();
+
+            hRegimes = blocks.DiscoverRegimes(MyRegimeDiscoverySeed, 5);
+            Console.WriteLine($"Num regimes : {hRegimes.Regimes.Count}:");
+            Console.Out.PrettyPrintTransitionMatrix(hRegimes);
+            Console.WriteLine();
+
         }
 
         [TestMethod]

@@ -4,46 +4,9 @@ namespace NinthBall.Core
 {
     internal static partial class PrettyPrintExtensions
     {
-        public static void Print(this HRegimes regimes, TextWriter writer)
-        {
-            var R = regimes.Regimes;
-            var P = regimes.StandardizationParams;
-
-            // writer.WriteLine($" {R.Count} regimes | Silhouette: {Q.SilhouetteScore:F2} | Inertia: {Q.TotalInertia}");
-
-            // NumRegimes | TotalInertia | SilhouetteScore | DBI | CH | Dunn
-
-
-            var aboutRegimes = regimes.Regimes.Select((r, idx) => new
-            {
-                Label = r.RegimeLabel,
-                Members = 1,
-                //Silhouette = Math.Round(regimes.Quality.ClusterSilhouette.Span[idx], 2),
-                //Inertia = Math.Round( regimes.Quality.ClusterInertia.Span[idx], 2 )
-            })
-            .ToList();
-
-            writer.PrintTextTable(aboutRegimes, minColWidth: 8);
-
-        }
-
         public static void PrettyPrint(this TextWriter writer, KMean.Result kResult)
         {
             var Q = kResult.Quality;
-
-            //var summary = new
-            //{
-            //    Clusters = kResult.NumClusters,
-            //    Features = kResult.NumFeatures,
-            //    Silhouette = Math.Round( Q.Silhouette, 2),
-            //    Inertia = Math.Round(Q.Inertia, 0),
-            //    DBI = Math.Round( Q.DBI, 2),
-            //    CH = Math.Round( Q.CH, 2),
-            //    Dunn = Math.Round(Q.Dunn, 2),
-            //};
-
-            //writer.WriteLine();
-            //writer.PrintTextSingleRowTable(summary, minColWidth: 10);
 
             var byCluster = Enumerable.Range(0, kResult.NumClusters).Select(i => new
             {
