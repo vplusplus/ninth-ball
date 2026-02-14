@@ -1,15 +1,11 @@
 ﻿
-using DocumentFormat.OpenXml.Drawing.Charts;
-using System.ComponentModel;
-
 namespace NinthBall.Core
 {
     internal static class KMeanQuality
     {
         public static KMean.Quality ComputeQualityMetrics(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
-            // Public signature. Validate inputs.
-            // Also add validation that assigned indexes are with-in the range of centroids cols.
+            // Validate inputs.
             var good = true
                 && centroids.NumRows > 0
                 && samples.NumRows > 0
@@ -17,26 +13,27 @@ namespace NinthBall.Core
                 && centroids.NumColumns == samples.NumColumns
                 && samples.NumRows == assignments.Length;
 
-            if (!good) throw new ArgumentException("You should never see this | One or more parameters to ComputeQualityMetrics() was invalid.");
+            if (!good) throw new ArgumentException("One or more parameters to ComputeQualityMetrics() was invalid.");
 
-            var (totalInertia, clusterInertia)  = centroids.Inertia(samples, assignments);
+            var (totalInertia, clusterInertia) = centroids.Inertia(samples, assignments);
             var (silhouette, clustersilhouette) = centroids.Silhouette(samples, assignments);
 
             return new
             (
-                Inertia:    totalInertia,
-                Silhouette: silhouette,
-                DBI:        centroids.DBI(samples, assignments),
-                CH:         centroids.CH(samples, assignments),
-                Dunn:       centroids.Dunn(samples, assignments),
+                Inertia:        totalInertia,
+                Silhouette:     silhouette,
+                DBI:            centroids.DBI(samples, assignments),
+                CH:             centroids.CH(samples, assignments),
+                Dunn:           centroids.Dunn(samples, assignments),
 
-                ClusterMembersCount:    CountClusterMembers(centroids.NumRows, assignments),
-                ClusterInertia:         clusterInertia,
-                ClusterSilhouette:      clustersilhouette
+                ClusterMembersCount: CountClusterMembers(centroids.NumRows, assignments),
+                ClusterInertia: clusterInertia,
+                ClusterSilhouette: clustersilhouette
             );
         }
 
 
+        // No of assignments per cluster
         static ReadOnlyMemory<int> CountClusterMembers(int numClusters, ReadOnlySpan<int> assignments)
         {
             int[] membersPerCluster = new int[numClusters];
@@ -44,9 +41,7 @@ namespace NinthBall.Core
             return membersPerCluster;
         }
 
-        /// <summary>
-        /// Inertia: “How tight are the blobs?” 
-        /// </summary>
+        // Inertia: “How tight are the blobs?” 
         static (double totalInertia, ReadOnlyMemory<double> clusterInertia) Inertia(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
             var inertiaPerCluster = new double[centroids.NumRows];
@@ -62,16 +57,14 @@ namespace NinthBall.Core
             return (totalInertia, inertiaPerCluster);
         }
 
-        /// <summary>
-        /// Silhouette: “Does each point belong to the assigned cluster?”
-        /// </summary>
+        // Silhouette: “Does each point belong to the assigned cluster?”
         static (double silhouette, ReadOnlyMemory<double> clusterSilhouette) Silhouette(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
             if (centroids.NumRows <= 1 || samples.NumRows <= 1) return (0.0, new double[centroids.NumRows]);
 
             // No of clusters
             int K = centroids.NumRows;
-            
+
             double[] s = new double[samples.NumRows];
             double[] clusterSilhouettes = new double[K];
             int[] clusterCounts = new int[K];
@@ -89,7 +82,7 @@ namespace NinthBall.Core
                 {
                     if (i == j) continue;
                     double dist = Math.Sqrt(samples[i].EuclideanDistanceSquared(samples[j]));
-                    
+
                     if (assignments[j] == ownCluster)
                     {
                         a_i += dist;
@@ -130,9 +123,7 @@ namespace NinthBall.Core
             return (totalSum / samples.NumRows, clusterSilhouettes);
         }
 
-        /// <summary>
-        /// DBI: “How much do blobs overlap?”
-        /// </summary>
+        // DBI: “How much do blobs overlap?”
         static double DBI(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
             // No of clusters
@@ -178,9 +169,7 @@ namespace NinthBall.Core
             return sumMaxR / K;
         }
 
-        /// <summary>
-        /// CH: “How much structure vs noise?”
-        /// </summary>
+        // CH: “How much structure vs noise?”
         static double CH(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
             // No of clusters
@@ -219,9 +208,7 @@ namespace NinthBall.Core
             return (ssB / (K - 1.0)) / (ssW / (n - K));
         }
 
-        /// <summary>
-        /// Dunn: “Is any geometry broken?”
-        /// </summary>
+        // Dunn: “Is any geometry broken?”
         static double Dunn(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
             // No of clusters

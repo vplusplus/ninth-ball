@@ -1,7 +1,5 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using NinthBall.Core;
+﻿using NinthBall.Core;
 using NinthBall.Utils;
-using System.Net.WebSockets;
 using System.Text.Json;
 
 namespace UnitTests
@@ -17,7 +15,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        public void HelloKMeanClusters()
+        public void KMeanClusterSizeSelection()
         {
             var mbbOptions = new MovingBlockBootstrapOptions(BlockSizes, NoBackToBackOverlaps: false );
             var history = new HistoricalReturns();
@@ -31,8 +29,30 @@ namespace UnitTests
             {
                 Console.WriteLine();
 
-                var clusters = featureMatrix.DiscoverBestClusters(MyRegimeDiscoverySeed, K);
+                var clusters = featureMatrix.DiscoverBestClusters(MyRegimeDiscoverySeed, K: K, numTrainings: 50);
                 Console.Out.PrettyPrint(clusters);
+            }
+        }
+
+        [TestMethod]
+        public void KMeanClusterStability()
+        {
+            var mbbOptions = new MovingBlockBootstrapOptions(BlockSizes, NoBackToBackOverlaps: false);
+            var history = new HistoricalReturns();
+            var blocks = new HistoricalBlocks(history, mbbOptions).Blocks;
+
+            var featureMatrix = blocks.ToFeatureMatrix();
+            var zScale = featureMatrix.DiscoverStandardizationParameters();
+            featureMatrix = featureMatrix.StandardizeFeatureMatrix(zScale);
+
+            for (int t = 0; t < 10; t++)
+            {
+                int trainingSeed = PredictableHashCode.Combine(12345, t);
+                
+                var clusters = featureMatrix.DiscoverBestClusters(trainingSeed, K: 5, numTrainings: 50);
+                Console.WriteLine($"Training seed: {trainingSeed}");
+                Console.Out.PrettyPrint(clusters);
+                Console.WriteLine();
             }
         }
 
@@ -82,40 +102,3 @@ namespace UnitTests
 
     }
 }
-
-/*
-
-ONE TRAINING:
-
- Read 97 years of historical ROI data from 1928 to 2024.
- K-Mean: Discovered 4 clusters | 5 iterations | 4 milliSec
- K-Mean: TotalInertia: 256.32 | SilhouetteScore: 0.26
- K-Mean: Inertia     : [  131.87,     3.22,    91.23,    30.00]
- K-Mean: Silhouette  : [    0.28,     0.61,     0.09,     0.28]
---------------------------------------------------------------------------------
-             | Bull         | Crisis       | Stagnation   | Regime3      | 
---------------------------------------------------------------------------------
-Bull         | 85.0%        | 0.0%         | 8.3%         | 6.7%         | 
-Crisis       | 33.3%        | 66.7%        | 0.0%         | 0.0%         | 
-Stagnation   | 20.0%        | 6.7%         | 60.0%        | 13.3%        | 
-Regime3      | 31.2%        | 0.0%         | 6.2%         | 62.5%        | 
---------------------------------------------------------------------------------
-
-Best of FIFTY TRAININGS:
-
- K-Mean: Discovered 4 clusters | 4 iterations | 50 trainings | 79 milliSec
- K-Mean: TotalInertia: 227.52 | SilhouetteScore: 0.30
- K-Mean: Inertia     : [  131.87,    35.08,    59.88,     0.69]
- K-Mean: Silhouette  : [    0.30,     0.27,     0.24,     0.83]
---------------------------------------------------------------------------------
-           | Bull       | Regime1    | Regime2    | Balanced   | 
---------------------------------------------------------------------------------
-Bull       | 85.0%      | 6.7%       | 6.7%       | 1.7%       | 
-Regime1    | 29.4%      | 70.6%      | 0.0%       | 0.0%       | 
-Regime2    | 26.7%      | 6.7%       | 66.7%      | 0.0%       | 
-Balanced   | 0.0%       | 0.0%       | 0.0%       | 100.0%     | 
---------------------------------------------------------------------------------
-
-
-
-*/

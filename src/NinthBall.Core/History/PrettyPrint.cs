@@ -25,7 +25,6 @@ namespace NinthBall.Core
                 Inertia     = Math.Round(Q.Inertia, 0),
             });
 
-            writer.WriteLine();
             writer.WriteLine($"Clusters: {kResult.NumClusters} | Features: {kResult.NumFeatures} | DBI: {Q.DBI:F2} | CH: {Q.CH:F2} | Dunn: {Q.Dunn:F2}");
             writer.PrintTextTable(byCluster, minColWidth: 10);
             

@@ -1,9 +1,4 @@
-﻿
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using NinthBall.Utils;
-
-namespace NinthBall.Core
+﻿namespace NinthBall.Core
 {
     /// <summary>
     /// Historical regimes and their macro-economic characteristics.
@@ -81,7 +76,7 @@ namespace NinthBall.Core
             var standardizedFeatureMatrix = featureMatrix.StandardizeFeatureMatrix(standardizationParams);
 
             // Discover K-Mean clusters
-            var clusters = standardizedFeatureMatrix.DiscoverBestClusters(regimeDiscoverySeed, numRegimes);
+            var clusters = standardizedFeatureMatrix.DiscoverBestClusters(trainingSeed: regimeDiscoverySeed, K: numRegimes, numTrainings: 50);
 
             // Best K-Mean result -> HRegimes
             return clusters.ToHistoricalRegimes(trainingBlocks, standardizationParams);
@@ -151,70 +146,6 @@ namespace NinthBall.Core
             return standardizedFeatureMatrix.ReadOnly;
         }
 
-        //......................................................................
-        #region KMean training loop - Pick best result
-        //......................................................................
-        public static KMean.Result DiscoverBestClusters(this in TwoDMatrix standardizedFeatureMatrix, in int regimeDiscoverySeed, in int numClusters)
-        {
-            const int    NumTrainings               = 50;       // Train 50 times, find the best (BY-DESIGN: Sensitive; Not configurable)
-            const int    MaxIterationsPerTraining   = 100;      // We typically converge in less than 10 iterations (BY-DESIGN: Sensitive; Not configurable)
-            const double MinClusterSizePCT          = 0.05;     // Min 5% of the sample size (BY-DESIGN: Sensitive; Not configurable)
-
-            // Compute the minimum allowed cluster size.
-            int minAllowedClusterSize = Math.Max(1, (int)(standardizedFeatureMatrix.NumRows * MinClusterSizePCT));
-
-            // Best result so far. What is best? See rejection logic below.
-            KMean.Result? bestResult = default;
-
-            var elapsed = Stopwatch.StartNew();
-            for (int attempt = 0; attempt < NumTrainings; attempt++)
-            {
-                // Training specific pseudo random generator
-                var R = new Random(PredictableHashCode.Combine(regimeDiscoverySeed, attempt));
-
-                // Train
-                var (converged, iter, nextResult) = KMean.Cluster
-                (
-                    standardizedFeatureMatrix, 
-                    R: R,
-                    K: numClusters, 
-                    maxIterations: MaxIterationsPerTraining
-                );
-
-                // Reject clusters that didn't converge.
-                if (!converged) continue;
-
-                // Reject degenerate clusters (This also eliminates zero-member-clusters)
-                if (nextResult.HasDegenerateClusters(minAllowedClusterSize)) continue;
-
-                // Ignore if the SilhouetteScore is inferior.
-                if (bestResult.HasValue && nextResult.Quality.Silhouette < bestResult.Value.Quality.Silhouette) continue;
-
-                // Converged, no degenerate clusters and better SilhouetteScore. Keep it.
-                bestResult = nextResult;
-            }
-            elapsed.Stop();
-
-            return bestResult.HasValue
-                ? bestResult.Value
-                : throw new FatalWarning($"K-Means failed to find any valid clustering | {NumTrainings} trainings | {MaxIterationsPerTraining} iter/training | MinClusterSize: {minAllowedClusterSize}");
-        }
-
-        public static bool HasDegenerateClusters(this KMean.Result kResult, int minAcceptableClusterSize)
-        {
-            var assignments = kResult.Assignments.Span;
-
-            for(int c = 0; c < kResult.NumClusters; c++)
-            {
-                var memberCount = assignments.Count(c);
-                if (memberCount < minAcceptableClusterSize) return true;
-            }
-
-            return false;
-        }
-
-
-        #endregion
 
         //......................................................................
         #region KMean.Result -> HRegimes
@@ -420,22 +351,75 @@ namespace NinthBall.Core
             // Fallback: Statistical Label
             return $"Regime{regimeId}";
         }
-
-        //static void PrettyPrint(this KMean.Result bestResult, int numTraining, TimeSpan elapsed)
-        //{
-        //    var Q = bestResult.Quality;
-
-        //    Console.WriteLine($" K-Mean: Discovered {bestResult.NumClusters} clusters | {numTraining} restarts | {elapsed.TotalMilliseconds:#,0} milliSec");
-        //    Console.WriteLine($" K-Mean: Silhouette: {Q.Silhouette:F2} | TotalInertia: {Q.Inertia:F2})");
-        //    Console.WriteLine($" K-Mean: Inertia     : [{CSVMetrics8F2(Q.ClusterInertia)}]");
-        //    Console.WriteLine($" K-Mean: Silhouette  : [{CSVMetrics8F2(Q.ClusterSilhouette)}]");
-
-        //    static string CSVMetrics8F2(ReadOnlyMemory<double> numbers) => string.Join(", ", MemoryMarshal.ToEnumerable(numbers).Select(x => $"{x,8:F2}"));
-        //}
-        
+       
 
         #endregion
-
  
     }
 }
+
+
+//......................................................................
+#region KMean training loop - Pick best result
+//......................................................................
+//public static KMean.Result DiscoverBestClusters(this in TwoDMatrix standardizedFeatureMatrix, in int regimeDiscoverySeed, in int numClusters)
+//{
+//    const int    NumTrainings               = 50;       // Train 50 times, find the best (BY-DESIGN: Sensitive; Not configurable)
+//    const int    MaxIterationsPerTraining   = 100;      // We typically converge in less than 10 iterations (BY-DESIGN: Sensitive; Not configurable)
+//    const double MinClusterSizePCT          = 0.05;     // Min 5% of the sample size (BY-DESIGN: Sensitive; Not configurable)
+
+//    // Compute the minimum allowed cluster size.
+//    int minAllowedClusterSize = Math.Max(1, (int)(standardizedFeatureMatrix.NumRows * MinClusterSizePCT));
+
+//    // Best result so far. What is best? See rejection logic below.
+//    KMean.Result? bestResult = default;
+
+//    var elapsed = Stopwatch.StartNew();
+//    for (int attempt = 0; attempt < NumTrainings; attempt++)
+//    {
+//        // Training specific pseudo random generator
+//        var R = new Random(PredictableHashCode.Combine(regimeDiscoverySeed, attempt));
+
+//        // Train
+//        var (converged, iter, nextResult) = KMean.Cluster
+//        (
+//            standardizedFeatureMatrix, 
+//            R: R,
+//            K: numClusters, 
+//            maxIterations: MaxIterationsPerTraining
+//        );
+
+//        // Reject clusters that didn't converge.
+//        if (!converged) continue;
+
+//        // Reject degenerate clusters (This also eliminates zero-member-clusters)
+//        if (nextResult.HasDegenerateClusters(minAllowedClusterSize)) continue;
+
+//        // Ignore if the SilhouetteScore is inferior.
+//        if (bestResult.HasValue && nextResult.Quality.Silhouette < bestResult.Value.Quality.Silhouette) continue;
+
+//        // Converged, no degenerate clusters and better SilhouetteScore. Keep it.
+//        bestResult = nextResult;
+//    }
+//    elapsed.Stop();
+
+//    return bestResult.HasValue
+//        ? bestResult.Value
+//        : throw new FatalWarning($"K-Means failed to find any valid clustering | {NumTrainings} trainings | {MaxIterationsPerTraining} iter/training | MinClusterSize: {minAllowedClusterSize}");
+//}
+
+//public static bool HasDegenerateClusters(this KMean.Result kResult, int minAcceptableClusterSize)
+//{
+//    var assignments = kResult.Assignments.Span;
+
+//    for(int c = 0; c < kResult.NumClusters; c++)
+//    {
+//        var memberCount = assignments.Count(c);
+//        if (memberCount < minAcceptableClusterSize) return true;
+//    }
+
+//    return false;
+//}
+
+
+#endregion

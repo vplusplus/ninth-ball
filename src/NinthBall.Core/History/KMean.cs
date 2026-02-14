@@ -1,4 +1,5 @@
-﻿
+﻿using NinthBall.Utils;
+using System.Diagnostics;
 
 namespace NinthBall.Core
 {
@@ -6,7 +7,6 @@ namespace NinthBall.Core
     {
         private const double ZeroShiftThreshold = 1e-6;
 
-        // Cluster results 2d-matrix of centroids, NumFeatures and the cluster assignments of the samples
         public readonly record struct Result
         (
             TwoDMatrix          Centroids, 
@@ -33,8 +33,72 @@ namespace NinthBall.Core
             ReadOnlyMemory<double> ClusterSilhouette
         );
 
+        //......................................................................
+        // KMean training loop
+        //......................................................................
+        public static KMean.Result DiscoverBestClusters(this in TwoDMatrix standardizedFeatureMatrix, in int trainingSeed, in int K, in int numTrainings = 50)
+        {
+            const int    MaxIterationsPerTraining = 100;    // We typically converge in less than 10 iterations (BY-DESIGN: Sensitive; Not configurable)
+            const double MinClusterSizePCT = 0.05;          // Min 5% of the sample size (BY-DESIGN: Sensitive; Not configurable)
 
-        public static (bool converged, int iterations, Result result) Cluster(in TwoDMatrix samples, Random R, int K, int maxIterations = 100)
+            // Compute the minimum allowed cluster size.
+            int minAllowedClusterSize = Math.Max(1, (int)(standardizedFeatureMatrix.NumRows * MinClusterSizePCT));
+
+            // Best result so far. What is best? See rejection logic below.
+            KMean.Result? bestResult = default;
+
+            var elapsed = Stopwatch.StartNew();
+            for (int attempt = 0; attempt < numTrainings; attempt++)
+            {
+                // Training specific pseudo random generator
+                var R = new Random(PredictableHashCode.Combine(trainingSeed, attempt));
+
+                // Train
+                var (converged, nextResult) = KMean.Cluster
+                (
+                    standardizedFeatureMatrix,
+                    R: R,
+                    K: K,
+                    maxIterations: MaxIterationsPerTraining
+                );
+
+                // Reject clusters that didn't converge.
+                if (!converged) continue;
+
+                // Reject degenerate clusters (This also eliminates zero-member-clusters)
+                if (nextResult.HasDegenerateClusters(minAllowedClusterSize)) continue;
+
+                // Ignore if the SilhouetteScore is inferior.
+                if (bestResult.HasValue && nextResult.Quality.Silhouette < bestResult.Value.Quality.Silhouette) continue;
+
+                // Converged, no degenerate clusters and better SilhouetteScore. Keep it.
+                bestResult = nextResult;
+            }
+            elapsed.Stop();
+
+            return bestResult.HasValue
+                ? bestResult.Value
+                : throw new FatalWarning($"K-Means failed to find any valid cluster(s) | {numTrainings} trainings | {MaxIterationsPerTraining} iter/training | MinClusterSize: {minAllowedClusterSize}");
+        }
+
+        static bool HasDegenerateClusters(this KMean.Result kResult, int minAcceptableClusterSize)
+        {
+            var assignments = kResult.Assignments.Span;
+
+            for (int c = 0; c < kResult.NumClusters; c++)
+            {
+                var memberCount = assignments.Count(c);
+                if (memberCount < minAcceptableClusterSize) return true;
+            }
+
+            return false;
+        }
+
+
+        //......................................................................
+        // KMean - Single training
+        //......................................................................
+        static (bool converged, Result result) Cluster(in TwoDMatrix samples, Random R, int K, int maxIterations = 100)
         {
             // Prepare initial locations of the centroids.
             XTwoDMatrix newCentroids = samples.InitialCentroids(R, K);
@@ -61,7 +125,7 @@ namespace NinthBall.Core
 
                 // Recenter the centroid to the midpoint of members
                 // Check for convergence (centroids had not shifted)
-                oldCentroids.CopyFrom(newCentroids);
+                newCentroids.Storage.CopyTo(oldCentroids.Storage);
                 newCentroids.Recenter(samples, newAssignments, R, tempCountBuffer);
                 if (converged = newCentroids.ReadOnly.MaxShift(oldCentroids) < ZeroShiftThreshold) break;
             }
@@ -72,17 +136,17 @@ namespace NinthBall.Core
 
                 var trainingResult = new KMean.Result
                 (
-                    //Samples: samples,
                     Centroids: centroids,
                     newAssignments,
                     Quality: centroids.ComputeQualityMetrics(samples: samples, assignments: newAssignments)
                 );
 
-                return new(true, iteration, trainingResult);
+                
+                return new(true, trainingResult);
             }
             else
             {
-                return (false, iteration, default);
+                return (false, default);
             }
         }
 
@@ -114,7 +178,7 @@ namespace NinthBall.Core
                 }
 
                 // Choose a random observation, with probability proportional to distance-sqrd
-                // Next centroid is positioned at the spot of th random sample.
+                // Next centroid is positioned at the spot of the random sample.
                 idx = R.NextWeightedIndex(tempDistances);
                 centroids[c].CopyFrom(samples[idx]);
             }
@@ -127,8 +191,8 @@ namespace NinthBall.Core
             // No of clusters
             int K = centroids.NumRows;
 
-            // Recet all centroids. 
-            centroids.Fill(0.0);
+            // Reset all centroids. 
+            Array.Fill(centroids.Storage, 0.0);
 
             // Check and reset tempBuffer used to trak membership count.
             var membershipCounts = null == tempBuffer || tempBuffer.Length != K ? throw new Exception("Invlaid temp buffer.") : tempBuffer;
@@ -156,7 +220,7 @@ namespace NinthBall.Core
             for (int i = 0; i < assignments.Length; i++) assignments[i] = samples[i].FindNearestCentroid(centroids);
         }
 
-        public static int FindNearestCentroid(this ReadOnlySpan<double> features, in TwoDMatrix centroids)
+        static int FindNearestCentroid(this ReadOnlySpan<double> features, in TwoDMatrix centroids)
         {
             // Public signature. Validate params.
             if (0 == centroids.NumRows || 0 == centroids.NumColumns) throw new Exception("Invalid centroids.");
@@ -191,16 +255,6 @@ namespace NinthBall.Core
             }
 
             return maxShift;
-        }
-
-        // Bulk initialize centroids with a sentinelValue
-        static void Fill(this in XTwoDMatrix centroids, double sentinelValue) => Array.Fill(centroids.Storage, sentinelValue);
-
-        // Bulk copy centroids.
-        static void CopyFrom(this in XTwoDMatrix target, in XTwoDMatrix source)
-        {
-            if (target.Storage.Length != source.Storage.Length) throw new InvalidOperationException($"Vector lengths are not same | [{target.Storage.Length}] and [{source.Storage.Length}]");
-            source.Storage.CopyTo(target.Storage);
         }
     }
 }
