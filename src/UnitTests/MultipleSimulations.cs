@@ -29,7 +29,7 @@ namespace UnitTests
             foreach (var objective in growthObjectives)
             {
                 // Prepare overrides
-                InputOverrides overrides = new InputOverrides()
+                InputOverrides overrides = InputOverrides
                     .For<Initial>()
                         .With(x => x.PreTax.Amount, 1000000)
                         .With(x => x.PostTax.Amount, 1000000)

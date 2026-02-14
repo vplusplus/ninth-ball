@@ -1,31 +1,30 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿
+using Microsoft.Extensions.Configuration;
 using System.Linq.Expressions;
 
 namespace UnitTests.WhatIf
 {
-    public sealed class InputOverrides : Dictionary<string, string?> { }
-
-    public static class Overridable
+    public sealed class InputOverrides : Dictionary<string, string?> 
     {
-        public static Override<T> For<T>(this InputOverrides overrides) => new(overrides);
+        public static InputOverrides<T> For<T>(string? configSectionName = null) => new(new(), configSectionName);
     }
 
-    public readonly record struct Override<T>(InputOverrides Overrides)
+    public readonly record struct InputOverrides<TTarget>(InputOverrides Overrides, string? ConfigSectionName = null)
     {
         // Set single value
-        public Override<T> With<TValue>(Expression<Func<T, TValue>> expression, TValue value)
+        public InputOverrides<TTarget> With<TValue>(Expression<Func<TTarget, TValue>> expression, TValue value)
         {
             var propertyPath = GetConfigurationPath(expression);
             Overrides[propertyPath] = value?.ToString();
             return this;
         }
 
-        public Override<T> Append<TCollection, TItem>(Expression<Func<T, TCollection>> expression, TItem value, IConfiguration baseConfig) where TCollection : IEnumerable<TItem>
+        // Append suggested value to the collection. Target property MUST be a primitive-collection. 
+        public InputOverrides<TTarget> Append<TCollection, TItem>(Expression<Func<TTarget, TCollection>> expression, TItem value, IConfiguration baseConfig) where TCollection : IEnumerable<TItem>
         {
-            // Append() expects a collection style property
-            // We leverage the fact that all IConfiguration primitives are string(s)
-
             var propertyPathPrefix = GetConfigurationPath(expression);
+
+            // We leverage the fact that all IConfiguration primitives are string(s)
             var oneOrMoreValues = GetArrayValues(baseConfig, propertyPathPrefix);
             oneOrMoreValues.Add(value?.ToString() ?? "");
             SetArrayValues(Overrides, propertyPathPrefix, oneOrMoreValues);
@@ -33,25 +32,36 @@ namespace UnitTests.WhatIf
             return this;
         }
 
-        // Lead to next 
-        public Override<TNext> For<TNext>() => new (Overrides);
-
-        private static string GetConfigurationPath<TProperty>(Expression<Func<T, TProperty>> expression)
+        /// <summary>
+        /// Transition to next target with optional ConfigSction name if different from convention.
+        /// </summary>
+        public InputOverrides<TNext> For<TNext>(string? configSectionName = null) => new (Overrides, configSectionName);
+        
+        /// <summary>
+        /// Returns IConfiguration compatible config path using the property expression
+        /// </summary>
+        private string GetConfigurationPath<TProperty>(Expression<Func<TTarget, TProperty>> expression)
         {
             var members = new Stack<string>();
 
             Expression? current = expression.Body;
 
+            // Defensive: Unwrap boxing conversion for value types (e.g., int, double).
             if (current is UnaryExpression unary && unary.NodeType == ExpressionType.Convert) current = unary.Operand;
 
+            // Visits the property expression, right to left
             while (current is MemberExpression member)
             {
+                // Remember the property names, right-to-left
                 members.Push(member.Member.Name);
                 current = member.Expression;
             }
 
-            var tail = members.Count == 0 ? string.Empty : $":{string.Join(":", members)}";
-            return $"{typeof(T).Name}{tail}";
+            // If not specified, top level ConfigSection name is same as simple type name of the target
+            members.Push(ConfigSectionName ?? typeof(TTarget).Name);
+
+            // Convert to IConfiguration style config path
+            return string.Join(":", members);
         }
 
         private static List<string> GetArrayValues(IConfiguration baseConfig, string pathPrefix)
@@ -72,7 +82,8 @@ namespace UnitTests.WhatIf
             }
         }
 
-        public static implicit operator InputOverrides(Override<T> context) => context.Overrides;
+        // Syntax sugar: Allows friction free assignment of Override<T> to InputOverrides
+        public static implicit operator InputOverrides(InputOverrides<TTarget> context) => context.Overrides;
 
     }
 }
