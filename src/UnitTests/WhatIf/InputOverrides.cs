@@ -15,28 +15,28 @@ namespace UnitTests.WhatIf
         // Set single value
         public Override<T> With<TValue>(Expression<Func<T, TValue>> expression, TValue value)
         {
-            var propertyPath = GetPropertyPath(expression);
+            var propertyPath = GetConfigurationPath(expression);
             Overrides[propertyPath] = value?.ToString();
             return this;
         }
 
-        public Override<T> Append<TValue>(Expression<Func<T, TValue>> expression, string value, IConfiguration baseConfig)
+        public Override<T> Append<TCollection, TItem>(Expression<Func<T, TCollection>> expression, TItem value, IConfiguration baseConfig) where TCollection : IEnumerable<TItem>
         {
+            // Append() expects a collection style property
             // We leverage the fact that all IConfiguration primitives are string(s)
-            // Append() expects an array style property
 
-            var propertyPathPrefix = GetPropertyPath(expression);
+            var propertyPathPrefix = GetConfigurationPath(expression);
             var oneOrMoreValues = GetArrayValues(baseConfig, propertyPathPrefix);
-            oneOrMoreValues.Add(value);
+            oneOrMoreValues.Add(value?.ToString() ?? "");
             SetArrayValues(Overrides, propertyPathPrefix, oneOrMoreValues);
-            
+
             return this;
         }
 
         // Lead to next 
         public Override<TNext> For<TNext>() => new (Overrides);
 
-        private static string GetPropertyPath<TProperty>(Expression<Func<T, TProperty>> expression)
+        private static string GetConfigurationPath<TProperty>(Expression<Func<T, TProperty>> expression)
         {
             var members = new Stack<string>();
 
