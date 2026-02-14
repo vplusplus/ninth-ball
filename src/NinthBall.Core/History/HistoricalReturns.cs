@@ -2,11 +2,11 @@
 using System.Globalization;
 using NinthBall.Utils;
 
-// Historical returns - REF: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html?utm_source=chatgpt.com
+// Historical data source:
+// https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html
 
 namespace NinthBall.Core
 {
-
     /// <summary>
     /// Represents historical stocks/bonds ROI and Inflation rates.
     /// </summary>
