@@ -40,14 +40,13 @@ namespace UnitTests
             // Now this calls the robust implementation with 50 restarts and MinClusterSize=5
             var hRegimes = blocks.DiscoverRegimes(MyRegimeDiscoverySeed, 4);
 
-            // Print Matrix
-            Console.Out.PrettyPrintTransitionMatrix(hRegimes);
+            Console.WriteLine("Regimes:");
+            hRegimes.Print(Console.Out);
 
-             // Reconstruct assignments for display (we need to re-run close to what DiscoverRegimes did to get assignments, 
-             // but since DiscoverRegimes encapsulates the best result, we can't easily get the assignments array back 
-             // without exposing it on HRegimes. 
-             // Ideally HRegimes should probably carry the assignments or we just trust the production code now.
-             // For this test, let's just print the transition matrix which verifies the structure.)
+            // Print Matrix
+            Console.WriteLine();
+            Console.WriteLine("Transitions:");
+            Console.Out.PrettyPrintTransitionMatrix(hRegimes);
         }
 
         [TestMethod]
