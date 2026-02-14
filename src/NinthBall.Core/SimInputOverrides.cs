@@ -1,18 +1,17 @@
-﻿
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using System.Linq.Expressions;
 
-namespace UnitTests.WhatIf
+namespace NinthBall.Core
 {
-    public sealed class InputOverrides : Dictionary<string, string?> 
+    public sealed class SimInputOverrides : Dictionary<string, string?>
     {
-        public static InputOverrides<T> For<T>(string? configSectionName = null) => new(new(), configSectionName);
+        public static SimInputOverrides<T> For<T>(string? configSectionName = null) => new(new(), configSectionName);
     }
 
-    public readonly record struct InputOverrides<TTarget>(InputOverrides Overrides, string? ConfigSectionName = null)
+    public readonly record struct SimInputOverrides<TTarget>(SimInputOverrides Overrides, string? ConfigSectionName = null)
     {
         // Set single value
-        public InputOverrides<TTarget> With<TValue>(Expression<Func<TTarget, TValue>> expression, TValue value)
+        public SimInputOverrides<TTarget> With<TValue>(Expression<Func<TTarget, TValue>> expression, TValue value)
         {
             var propertyPath = GetConfigurationPath(expression);
             Overrides[propertyPath] = value?.ToString();
@@ -20,7 +19,7 @@ namespace UnitTests.WhatIf
         }
 
         // Append suggested value to the collection. Target property MUST be a primitive-collection. 
-        public InputOverrides<TTarget> Append<TCollection, TItem>(Expression<Func<TTarget, TCollection>> expression, TItem value, IConfiguration baseConfig) where TCollection : IEnumerable<TItem>
+        public SimInputOverrides<TTarget> Append<TCollection, TItem>(Expression<Func<TTarget, TCollection>> expression, TItem value, IConfiguration baseConfig) where TCollection : IEnumerable<TItem>
         {
             var propertyPathPrefix = GetConfigurationPath(expression);
 
@@ -32,14 +31,10 @@ namespace UnitTests.WhatIf
             return this;
         }
 
-        /// <summary>
-        /// Transition to next target with optional ConfigSction name if different from convention.
-        /// </summary>
-        public InputOverrides<TNext> For<TNext>(string? configSectionName = null) => new (Overrides, configSectionName);
-        
-        /// <summary>
-        /// Returns IConfiguration compatible config path using the property expression
-        /// </summary>
+        // Transition to next target with optional ConfigSction name if different from convention.
+        public SimInputOverrides<TNext> For<TNext>(string? configSectionName = null) => new(Overrides, configSectionName);
+
+        // Returns IConfiguration compatible config path using the property expression
         private string GetConfigurationPath<TProperty>(Expression<Func<TTarget, TProperty>> expression)
         {
             var members = new Stack<string>();
@@ -74,7 +69,7 @@ namespace UnitTests.WhatIf
                 .ToList()!;
         }
 
-        private static void SetArrayValues(InputOverrides overrides, string pathPrefix, IReadOnlyList<string> values)
+        private static void SetArrayValues(SimInputOverrides overrides, string pathPrefix, IReadOnlyList<string> values)
         {
             for (int i = 0; i < values.Count; i++)
             {
@@ -82,8 +77,9 @@ namespace UnitTests.WhatIf
             }
         }
 
-        // Syntax sugar: Allows friction free assignment of Override<T> to InputOverrides
-        public static implicit operator InputOverrides(InputOverrides<TTarget> context) => context.Overrides;
+        // Syntax sugar: Allows friction free assignment
+        public static implicit operator SimInputOverrides(SimInputOverrides<TTarget> context) => context.Overrides;
 
     }
+
 }

@@ -1,7 +1,7 @@
 
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace NinthBall.Core
 {
@@ -11,6 +11,14 @@ namespace NinthBall.Core
         {
             ArgumentNullException.ThrowIfNull(builder);
             return builder.AddYamlResources(typeof(Simulation).Assembly, ".SimDefaults.");
+        }
+
+        public static IConfigurationBuilder AddOverrides(this IConfigurationBuilder builder, SimInputOverrides overrides)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(overrides);
+
+            return builder.AddInMemoryCollection(overrides);
         }
 
         public static IServiceCollection AddSimulationComponents(this IServiceCollection services)
