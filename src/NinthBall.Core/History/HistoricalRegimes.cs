@@ -68,8 +68,8 @@ namespace NinthBall.Core
         {
             ArgumentNullException.ThrowIfNull(trainingBlocks);
 
-            // Pre-check: We depend on cronology. Verify blocks are sorted by year & sequence length.
-            if (!trainingBlocks.IsSortedByYearAndBlockLength()) throw new Exception("Invalid input: Blocks are not pre-sorted by Year and sequence length.");
+            // Pre-check: We depend on Chronology. Verify blocks are sorted by year & sequence length.
+            if (!trainingBlocks.IsSortedByYearAndBlockLength()) throw new Exception("Invalid input: Blocks are not pre-sorted by year and sequence length.");
 
             // Extract training features
             var featureMatrix = trainingBlocks.ToFeatureMatrix();
@@ -83,18 +83,19 @@ namespace NinthBall.Core
             // Discover K-Mean clusters
             var clusters = standardizedFeatureMatrix.DiscoverBestClusters(regimeDiscoverySeed, numRegimes);
 
-            // best K-Mean result -> HRegimes
+            // Best K-Mean result -> HRegimes
             return clusters.ToHistoricalRegimes(trainingBlocks, standardizationParams);
         }
 
         // Extract features
-        // TODO: CRITICAL: Features like MaxDrawdown are length-dependent.
-        // There is no suchthing as annualized MaxDrawDown.
-        // Coin a new feature such that MaxDrawDown is comparable across 3/4/5-years
+        // TODO: IMPORTANT:
+        // MaxDrawdown is length-dependent, not directly comparable across 3/4/5-year blocks
+        // Technically, MaxDrawdown can't be annualized. Alternates are not effective.
+        // This is a nagging issue, still open.
         public static TwoDMatrix ToFeatureMatrix(this IReadOnlyList<HBlock> blocks)
         {
             // One row per block, and five features per block.
-            var matrix = new XTwoDMatrix(blocks.Count, 5);
+            var matrix = new XTwoDMatrix(NumRows: blocks.Count, NumColumns: 5);
 
             var idx = 0;
             foreach (var block in blocks)
@@ -155,9 +156,9 @@ namespace NinthBall.Core
         //......................................................................
         public static KMean.Result DiscoverBestClusters(this in TwoDMatrix standardizedFeatureMatrix, in int regimeDiscoverySeed, in int numClusters)
         {
-            const int    NumTrainings               = 50;       // Train 50 times, find the best.
-            const int    MaxIterationsPerTraining   = 100;      // We typically converge in less than 10 iterations
-            const double MinClusterSizePCT          = 0.05;     // Min 5% of the sample size.
+            const int    NumTrainings               = 50;       // Train 50 times, find the best (BY-DESIGN: Sensitive; Not configurable)
+            const int    MaxIterationsPerTraining   = 100;      // We typically converge in less than 10 iterations (BY-DESIGN: Sensitive; Not configurable)
+            const double MinClusterSizePCT          = 0.05;     // Min 5% of the sample size (BY-DESIGN: Sensitive; Not configurable)
 
             // Compute the minimum allowed cluster size.
             int minAllowedClusterSize = Math.Max(1, (int)(standardizedFeatureMatrix.NumRows * MinClusterSizePCT));
