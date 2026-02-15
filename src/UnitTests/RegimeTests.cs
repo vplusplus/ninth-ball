@@ -1,6 +1,7 @@
 ﻿using NinthBall.Core;
 using NinthBall.Utils;
 using System.Text.Json;
+using UnitTests.PrettyTables;
 
 namespace UnitTests
 {
