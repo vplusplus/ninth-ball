@@ -1,9 +1,7 @@
 ﻿using NinthBall.Core;
+using NinthBall.Core.PrettyPrint;
 using NinthBall.Utils;
-using System.Collections;
 using System.Data;
-using System.IO;
-using System.Reflection;
 using System.Text.Json;
 using UnitTests.PrettyTables;
 
@@ -35,7 +33,8 @@ namespace UnitTests
                 Console.WriteLine();
 
                 var clusters = featureMatrix.DiscoverBestClusters(MyRegimeDiscoverySeed, K: K, numTrainings: 50);
-                Console.Out.PrettyPrint(clusters);
+                throw new NotImplementedException("Switch to Markdown style PrettyPrintExtensions");
+                // Console.Out.PrettyPrint(clusters);
             }
         }
 
@@ -56,8 +55,9 @@ namespace UnitTests
                 
                 var clusters = featureMatrix.DiscoverBestClusters(trainingSeed, K: 5, numTrainings: 50);
                 Console.WriteLine($"Training seed: {trainingSeed}");
-                Console.Out.PrettyPrint(clusters);
-                Console.WriteLine();
+                //Console.Out.PrettyPrint(clusters);
+                throw new NotImplementedException("Switch to Markdown style PrettyPrintExtensions");
+                
             }
         }
 
@@ -95,7 +95,7 @@ namespace UnitTests
               .PrintMarkdownRecordTall(new { TargetClusters = K, DiscoverySeed = MyRegimeDiscoverySeed });
 
             sw.PrintMarkdownSectionTitle("Regime Transition Probabilities")
-              .PrintMarkdownTable(hRegimes.RegimeTransitionsAsDataTable());
+              .PrintMarkdownTable(RegimeTransitionsAsDataTable(hRegimes));
 
             sw.PrintMarkdownSectionTitle("Market Personalities (The Big Picture)")
               .PrintMarkdownTable(ToMarketPersonalityTable(hRegimes));
@@ -123,6 +123,26 @@ namespace UnitTests
 
             sw.Flush();
         }
+
+        static DataTable RegimeTransitionsAsDataTable(HRegimes regimes)
+        {
+            var dt = new DataTable();
+            dt.WithColumn("Regime");
+            foreach (var r in regimes.Regimes)
+                dt.WithColumn(r.RegimeLabel, typeof(double)).WithFormat(r.RegimeLabel, "P0");
+
+            foreach (var r in regimes.Regimes)
+            {
+                var values = new object[dt.Columns.Count];
+                values[0] = r.RegimeLabel;
+                var tx = r.NextRegimeProbabilities.Span;
+                for (int i = 0; i < tx.Length; i++) values[i + 1] = tx[i];
+                dt.Rows.Add(values);
+            }
+
+            return dt;
+        }
+
 
         private static DataTable ToMarketPersonalityTable(HRegimes hRegimes)
         {
@@ -213,3 +233,31 @@ namespace UnitTests
 
     }
 }
+
+/* TRANSCRIBE to markdown table print
+    //        public static void PrettyPrint(this TextWriter writer, KMean.Result kResult)
+    //        {
+    //            var Q = kResult.Quality;
+
+    //            var byCluster = Enumerable.Range(0, kResult.NumClusters).Select(i => new
+    //            {
+    //                Cluster = $"#{i}",
+    //                Members = Q.ClusterMembersCount.Span[i],
+    //                Silhouette = Math.Round( Q.ClusterSilhouette.Span[i], 2),
+    //                Inertia = Math.Round( Q.ClusterInertia.Span[i] ),
+    //            })
+    //            .ToList();
+
+    //            byCluster.Add(new
+    //            {
+    //                Cluster     = "Total",
+    //                Members     = kResult.Assignments.Length,
+    //                Silhouette  = Math.Round(Q.Silhouette, 2),
+    //                Inertia     = Math.Round(Q.Inertia, 0),
+    //            });
+
+    //            writer.WriteLine($"Clusters: {kResult.NumClusters} | Features: {kResult.NumFeatures} | DBI: {Q.DBI:F2} | CH: {Q.CH:F2} | Dunn: {Q.Dunn:F2}");
+    //            writer.PrintTextTable(byCluster, minColWidth: 10);
+            
+    //        }
+*/

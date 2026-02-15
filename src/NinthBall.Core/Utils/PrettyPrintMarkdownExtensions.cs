@@ -2,9 +2,9 @@
 using System.Data;
 using System.Reflection;
 
-namespace UnitTests.PrettyTables
+namespace NinthBall.Core.PrettyPrint
 {
-    internal static class PrettyPrintExtensions
+    internal static class PrettyPrintMarkdownExtensions
     {
         static readonly string DASHES = new string('-', 200);
 
@@ -168,12 +168,12 @@ namespace UnitTests.PrettyTables
 
         public static TextWriter PrintMarkdownTable<T>(this TextWriter writer, IEnumerable<T> collection, int minColWidth = 12)
         {
-            return writer.PrintMarkdownTable(collection.ToTable(), minColWidth);
+            return writer.PrintMarkdownTable(collection.ToDataTable(), minColWidth);
         }
 
         public static TextWriter PrintMarkdownTable(this TextWriter writer, IEnumerable<IDictionary> collection, int minColWidth = 12)
         {
-            return writer.PrintMarkdownTable(collection.ToTable(), minColWidth);
+            return writer.PrintMarkdownTable(collection.ToDataTable(), minColWidth);
         }
 
         #endregion

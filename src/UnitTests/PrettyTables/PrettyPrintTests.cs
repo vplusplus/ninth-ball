@@ -1,9 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NinthBall.Core;
+﻿using NinthBall.Core.PrettyPrint;
 using System.Collections;
-using System.Collections.Generic;
 using System.Data;
-using System.IO;
 
 namespace UnitTests.PrettyTables
 {

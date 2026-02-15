@@ -1,17 +1,15 @@
-﻿using NinthBall.Core;
+﻿
 using System.Collections;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Reflection;
 
-namespace UnitTests.PrettyTables
+namespace NinthBall.Core.PrettyPrint
 {
     /// <summary>
     /// Extensions on DataTable supporting PrettyPrint layout bridges.
     /// Responsibility: Structuring data into DataTables (Mapping).
     /// </summary>
-    internal static class DataTableExtensions
+    public static class PrettyPrintDataTableExtensions
     {
         //......................................................................
         #region General purpose extensions
@@ -108,18 +106,19 @@ namespace UnitTests.PrettyTables
         #region Collection Transcription (True Tables)
         //......................................................................
 
-        public static DataTable ToTable<T>(this IEnumerable<T> collection)
+        public static DataTable ToDataTable<TItem>(this IEnumerable<TItem> collection)
         {
             var dt = new DataTable();
             if (collection == null) return dt;
 
-            // Handle collections of dictionaries via delegation
-            if (typeof(IDictionary).IsAssignableFrom(typeof(T)))
+            // Does each TItem represent a IDictionary?
+            // Delegate to IEnumerable<IDictionary> to inder columns.
+            if (typeof(IDictionary).IsAssignableFrom(typeof(TItem)))
             {
-                return ToTable(collection.Cast<IDictionary>());
+                return ToDataTable(collection.Cast<IDictionary>());
             }
 
-            var properties = GetReadableProperties(typeof(T));
+            var properties = GetReadableProperties(typeof(TItem));
             foreach (var p in properties) dt.WithColumn(p.Name, p.PropertyType);
 
             foreach (var item in collection)
@@ -128,14 +127,14 @@ namespace UnitTests.PrettyTables
                 var values = new object?[properties.Count];
                 for (int i = 0; i < properties.Count; i++)
                     values[i] = properties[i].GetValue(item) ?? DBNull.Value;
-                
+
                 dt.Rows.Add(values);
             }
 
             return dt;
         }
 
-        public static DataTable ToTable(this IEnumerable<IDictionary> collection)
+        public static DataTable ToDataTable(this IEnumerable<IDictionary> collection)
         {
             var dt = new DataTable();
             if (collection == null) return dt;
@@ -170,6 +169,24 @@ namespace UnitTests.PrettyTables
         }
 
         #endregion
+
+        //......................................................................
+        #region Helpers
+        //......................................................................
+        private static List<PropertyInfo> GetReadableProperties(Type type)
+        {
+            return type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.CanRead && (p.PropertyType.IsPrimitive || p.PropertyType == typeof(string) || p.PropertyType == typeof(decimal) || p.PropertyType == typeof(DateTime) || p.PropertyType == typeof(TimeSpan)))
+                .ToList();
+        }
+
+        #endregion
+    }
+
+}
+
+
+/*   KEEP FOR NOW:  Drop if unused after refactoring
 
         //......................................................................
         #region Matrix & Span Transcription (Grid format)
@@ -222,40 +239,4 @@ namespace UnitTests.PrettyTables
 
         #endregion
 
-        //......................................................................
-        #region Domain Specific Transcription
-        //......................................................................
-
-        public static DataTable RegimeTransitionsAsDataTable(this HRegimes regimes)
-        {
-            var dt = new DataTable();
-            dt.WithColumn("Regime");
-            foreach (var r in regimes.Regimes)
-                dt.WithColumn(r.RegimeLabel, typeof(double)).WithFormat(r.RegimeLabel, "P0");
-
-            foreach (var r in regimes.Regimes)
-            {
-                var values = new object[dt.Columns.Count];
-                values[0] = r.RegimeLabel;
-                var tx = r.NextRegimeProbabilities.Span;
-                for (int i = 0; i < tx.Length; i++) values[i + 1] = tx[i];
-                dt.Rows.Add(values);
-            }
-
-            return dt;
-        }
-
-        #endregion
-
-        #region Helpers
-
-        private static List<PropertyInfo> GetReadableProperties(Type type)
-        {
-            return type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.CanRead && (p.PropertyType.IsPrimitive || p.PropertyType == typeof(string) || p.PropertyType == typeof(decimal) || p.PropertyType == typeof(DateTime) || p.PropertyType == typeof(TimeSpan)))
-                .ToList();
-        }
-
-        #endregion
-    }
-}
+*/
