@@ -16,12 +16,14 @@ Headers provide the "Anchor" for both humans and AI agents.
 * `Section`: Rendered as `#### Section` (H4).
 * Automatically adds leading/trailing empty lines for Markdown compliance.
 
-### 2. Rendering Modes (Visual Naming)
+### 2. Rendering Modes (TextWriter Extensions)
+All rendering methods are now extensions of **`TextWriter`**, enabling a fluent, chainable API.
 
 | Method | Scope | Output Style | Best For |
 |:---|:---|:---|:---|
-| **`PrintMarkdownVertical`** | POCO / Dict | 2-column table | High-density records (Config, Regimes) |
-| **`PrintMarkdownInline`** | POCO / Dict | Pipe-separated line | Tight console logs, status updates |
+| **`PrintMarkdownRecordTall`** | Record / Dict | 2-column table | High-density diagnostics (Config, Regimes) |
+| **`PrintMarkdownRecordWide`** | Record / Dict | 1-row table | Side-by-side comparison of small records |
+| **`PrintMarkdownRecordOneLine`** | Record / Dict | Pipe-separated line | High-frequency console logs, status updates |
 | **`PrintMarkdownTable`** | DataTable | N-column grid | Historical returns, transition matrices |
 
 ---

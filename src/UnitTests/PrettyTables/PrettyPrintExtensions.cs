@@ -61,25 +61,25 @@ namespace UnitTests.PrettyTables
 
         public static TextWriter PrintMarkdownRecordWide(this TextWriter writer, object record)
         {
-            record.ToWideTable().PrintMarkdownTable(writer);
+            writer.PrintMarkdownTable(record.ToWideTable());
             return writer;
         }
 
         public static TextWriter PrintMarkdownRecordWide(this TextWriter writer, IDictionary record)
         {
-            record.ToWideTable().PrintMarkdownTable(writer);
+            writer.PrintMarkdownTable(record.ToWideTable());
             return writer;
         }
 
         public static TextWriter PrintMarkdownRecordTall(this TextWriter writer, object record)
         {
-            record.ToTallTable().PrintMarkdownTable(writer);
+            writer.PrintMarkdownTable(record.ToTallTable());
             return writer;
         }
 
         public static TextWriter PrintMarkdownRecordTall(this TextWriter writer, IDictionary record)
         {
-            record.ToTallTable().PrintMarkdownTable(writer);
+            writer.PrintMarkdownTable(record.ToTallTable());
             return writer;
         }
 
@@ -91,7 +91,7 @@ namespace UnitTests.PrettyTables
 
         // THE CORE ENGINE: Prints any DataTable as a Markdown table.
         // No title/section here; use Fluent Title API on the writer instead.
-        public static TextWriter PrintMarkdownTable(this DataTable dt, TextWriter writer, int minColWidth = 12)
+        public static TextWriter PrintMarkdownTable(this TextWriter writer, DataTable dt, int minColWidth = 12)
         {
             ArgumentNullException.ThrowIfNull(dt);
             ArgumentNullException.ThrowIfNull(writer);

@@ -24,7 +24,7 @@ namespace UnitTests.PrettyTables
             sw.PrintMarkdownPageTitle("Market Summary")
               .PrintMarkdownSectionTitle("Key Indices");
             
-            dt.PrintMarkdownTable(sw);
+            sw.PrintMarkdownTable(dt);
 
             var output = sw.ToString();
             Console.WriteLine(output);
