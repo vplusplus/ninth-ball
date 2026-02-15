@@ -1,6 +1,8 @@
 ﻿using NinthBall.Core;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Reflection;
 
 namespace UnitTests.PrettyTables
@@ -103,30 +105,97 @@ namespace UnitTests.PrettyTables
         #endregion
 
         //......................................................................
+        #region Collection Transcription (True Tables)
+        //......................................................................
+
+        public static DataTable ToTable<T>(this IEnumerable<T> collection)
+        {
+            var dt = new DataTable();
+            if (collection == null) return dt;
+
+            // Handle collections of dictionaries via delegation
+            if (typeof(IDictionary).IsAssignableFrom(typeof(T)))
+            {
+                return ToTable(collection.Cast<IDictionary>());
+            }
+
+            var properties = GetReadableProperties(typeof(T));
+            foreach (var p in properties) dt.WithColumn(p.Name, p.PropertyType);
+
+            foreach (var item in collection)
+            {
+                if (item == null) continue;
+                var values = new object?[properties.Count];
+                for (int i = 0; i < properties.Count; i++)
+                    values[i] = properties[i].GetValue(item) ?? DBNull.Value;
+                
+                dt.Rows.Add(values);
+            }
+
+            return dt;
+        }
+
+        public static DataTable ToTable(this IEnumerable<IDictionary> collection)
+        {
+            var dt = new DataTable();
+            if (collection == null) return dt;
+
+            List<object>? keys = null;
+            foreach (var dict in collection)
+            {
+                keys = new List<object>();
+                foreach (DictionaryEntry entry in dict)
+                {
+                    var key = entry.Key?.ToString() ?? string.Empty;
+                    dt.WithColumn(key, entry.Value?.GetType());
+                    keys.Add(entry.Key!);
+                }
+                break; // Use first record for schema
+            }
+
+            if (keys == null) return dt;
+
+            foreach (var dict in collection)
+            {
+                var values = new object?[dt.Columns.Count];
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    var key = keys[i];
+                    values[i] = dict.Contains(key) ? dict[key] : DBNull.Value;
+                }
+                dt.Rows.Add(values);
+            }
+
+            return dt;
+        }
+
+        #endregion
+
+        //......................................................................
         #region Matrix & Span Transcription (Grid format)
         //......................................................................
 
-        public static DataTable ToWideTable(this ReadOnlySpan<double> span, string[]? labels = null)
+        public static DataTable ToTable(this ReadOnlySpan<double> collection, string[]? labels = null)
         {
             var dt = new DataTable();
-            for (int i = 0; i < span.Length; i++)
+            for (int i = 0; i < collection.Length; i++)
             {
                 var colName = (labels != null && i < labels.Length) ? labels[i] : $"[{i}]";
                 dt.WithColumn(colName, typeof(double));
             }
 
-            var row = dt.NewRow();
-            for (int i = 0; i < span.Length; i++) row[i] = span[i];
-            dt.Rows.Add(row);
+            var values = new object[collection.Length];
+            for (int i = 0; i < collection.Length; i++) values[i] = collection[i];
+            dt.Rows.Add(values);
 
             return dt;
         }
 
-        public static DataTable ToWideTable(this TwoDMatrix matrix, string[]? rowLabels = null, string[]? colLabels = null)
+        public static DataTable ToTable(this TwoDMatrix collection, string[]? rowLabels = null, string[]? colLabels = null)
         {
             var dt = new DataTable();
-            var numRows = matrix.NumRows;
-            var numCols = matrix.NumColumns;
+            var numRows = collection.NumRows;
+            var numCols = collection.NumColumns;
 
             if (rowLabels != null) dt.WithColumn("Row");
 
@@ -138,14 +207,14 @@ namespace UnitTests.PrettyTables
 
             for (int i = 0; i < numRows; i++)
             {
-                var row = dt.NewRow();
+                var values = new object[dt.Columns.Count];
                 int offset = 0;
-                if (rowLabels != null) row[offset++] = (i < rowLabels.Length) ? rowLabels[i] : $"Row {i}";
+                if (rowLabels != null) values[offset++] = (i < rowLabels.Length) ? rowLabels[i] : $"Row {i}";
 
-                var rowData = matrix.Row(i).Span;
-                for (int j = 0; j < numCols; j++) row[j + offset] = rowData[j];
+                var rowData = collection.Row(i).Span;
+                for (int j = 0; j < numCols; j++) values[j + offset] = rowData[j];
 
-                dt.Rows.Add(row);
+                dt.Rows.Add(values);
             }
 
             return dt;
@@ -166,11 +235,11 @@ namespace UnitTests.PrettyTables
 
             foreach (var r in regimes.Regimes)
             {
-                var row = dt.NewRow();
-                row[0] = r.RegimeLabel;
+                var values = new object[dt.Columns.Count];
+                values[0] = r.RegimeLabel;
                 var tx = r.NextRegimeProbabilities.Span;
-                for (int i = 0; i < tx.Length; i++) row[i + 1] = tx[i];
-                dt.Rows.Add(row);
+                for (int i = 0; i < tx.Length; i++) values[i + 1] = tx[i];
+                dt.Rows.Add(values);
             }
 
             return dt;

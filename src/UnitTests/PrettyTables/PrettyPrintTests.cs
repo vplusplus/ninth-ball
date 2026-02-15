@@ -29,8 +29,8 @@ namespace UnitTests.PrettyTables
             var output = sw.ToString();
             Console.WriteLine(output);
 
-            Assert.IsTrue(output.Contains("# Market Summary"));
-            Assert.IsTrue(output.Contains("## Key Indices"));
+            Assert.IsTrue(output.Contains("### Market Summary"));
+            Assert.IsTrue(output.Contains("#### Key Indices"));
             Assert.IsTrue(output.Contains("12.0%"));
             Assert.IsTrue(output.Contains("4.5%"));
         }
@@ -121,9 +121,51 @@ namespace UnitTests.PrettyTables
               .Write("Content");
 
             var output = sw.ToString();
-            Assert.IsTrue(output.Contains("# Main Report"));
-            Assert.IsTrue(output.Contains("## Sub Section"));
+            Assert.IsTrue(output.Contains("### Main Report"));
+            Assert.IsTrue(output.Contains("#### Sub Section"));
             Assert.IsTrue(output.Contains("Content"));
+        }
+
+        [TestMethod]
+        public void TestCollectionPOCO()
+        {
+            var collection = new[]
+            {
+                new { Metric = "Alpha", Value = 1200 },
+                new { Metric = "Beta", Value = 2500000 }
+            };
+
+            var sw = new StringWriter();
+            sw.PrintMarkdownTable(collection);
+
+            var output = sw.ToString();
+            Console.WriteLine(output);
+
+            Assert.IsTrue(output.Contains("Metric"));
+            Assert.IsTrue(output.Contains("Value"));
+            Assert.IsTrue(output.Contains("1,200"));      // N0 Integer
+            Assert.IsTrue(output.Contains("2,500,000"));  // N0 Integer
+        }
+
+        [TestMethod]
+        public void TestCollectionDictionary()
+        {
+            var collection = new List<Hashtable>
+            {
+                new Hashtable { ["Metric"] = "Return", ["Val"] = 0.0825 },
+                new Hashtable { ["Metric"] = "Vol", ["Val"] = 0.15 }
+            };
+
+            var sw = new StringWriter();
+            sw.PrintMarkdownTable(collection);
+
+            var output = sw.ToString();
+            Console.WriteLine(output);
+
+            Assert.IsTrue(output.Contains("Metric"));
+            Assert.IsTrue(output.Contains("Val"));
+            Assert.IsTrue(output.Contains("0.0825"));
+            Assert.IsTrue(output.Contains("0.1500"));
         }
     }
 }

@@ -9,12 +9,12 @@ namespace UnitTests.PrettyTables
         static readonly string DASHES = new string('-', 200);
 
         //......................................................................
-        #region Markdown Headings 
+        #region Markdown Titles & Sections
         //......................................................................
 
-        public static TextWriter PrintMarkdownPageTitle(this TextWriter writer, string text) => PrintHeading(writer, "#", text);
+        public static TextWriter PrintMarkdownPageTitle(this TextWriter writer, string text) => PrintHeading(writer, "###", text);
 
-        public static TextWriter PrintMarkdownSectionTitle(this TextWriter writer, string text) => PrintHeading(writer, "##", text);
+        public static TextWriter PrintMarkdownSectionTitle(this TextWriter writer, string text) => PrintHeading(writer, "####", text);
 
         static TextWriter PrintHeading(this TextWriter writer, string hashes, string text)
         {
@@ -30,7 +30,7 @@ namespace UnitTests.PrettyTables
         #endregion
 
         //......................................................................
-        #region Markdown record - One line
+        #region Record Rendering - One Line
         //......................................................................
 
         public static TextWriter PrintMarkdownRecordOneLine(this TextWriter writer, object record)
@@ -56,7 +56,7 @@ namespace UnitTests.PrettyTables
         #endregion
 
         //......................................................................
-        #region Markdown record - Wide and Tall formats
+        #region Record Rendering - Wide & Tall
         //......................................................................
 
         public static TextWriter PrintMarkdownRecordWide(this TextWriter writer, object record)
@@ -86,7 +86,7 @@ namespace UnitTests.PrettyTables
         #endregion
 
         //......................................................................
-        #region Markdown Table Grid
+        #region Grid Rendering (The Engine)
         //......................................................................
 
         // THE CORE ENGINE: Prints any DataTable as a Markdown table.
@@ -166,6 +166,16 @@ namespace UnitTests.PrettyTables
             return writer;
         }
 
+        public static TextWriter PrintMarkdownTable<T>(this TextWriter writer, IEnumerable<T> collection, int minColWidth = 12)
+        {
+            return writer.PrintMarkdownTable(collection.ToTable(), minColWidth);
+        }
+
+        public static TextWriter PrintMarkdownTable(this TextWriter writer, IEnumerable<IDictionary> collection, int minColWidth = 12)
+        {
+            return writer.PrintMarkdownTable(collection.ToTable(), minColWidth);
+        }
+
         #endregion
 
         //......................................................................
@@ -193,6 +203,7 @@ namespace UnitTests.PrettyTables
             if (value is double d) return d.ToString("N4");
             if (value is float f) return f.ToString("N3");
             if (value is decimal m) return m.ToString("N2");
+            if (value is int || value is long || value is short || value is byte) return string.Format("{0:N0}", value);
             return value.ToString() ?? "";
         }
 
