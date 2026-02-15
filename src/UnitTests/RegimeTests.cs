@@ -65,19 +65,23 @@ namespace UnitTests
             
             // Now this calls the robust implementation with 50 restarts and MinClusterSize=5
             var hRegimes = blocks.DiscoverRegimes(MyRegimeDiscoverySeed, 3);
-            Console.WriteLine($"Num regimes : {hRegimes.Regimes.Count}:");
-            Console.Out.PrettyPrintTransitionMatrix(hRegimes);
+            Console.WriteLine($"Num regimes : {hRegimes.Regimes.Count}");
+            hRegimes.RegimeTransitionsAsDataTable().PrettyPrint(Console.Out);
             Console.WriteLine();
 
             hRegimes = blocks.DiscoverRegimes(MyRegimeDiscoverySeed, 4);
-            Console.WriteLine($"Num regimes : {hRegimes.Regimes.Count}:");
-            Console.Out.PrettyPrintTransitionMatrix(hRegimes);
+            Console.WriteLine($"Num regimes : {hRegimes.Regimes.Count}");
+            hRegimes.RegimeTransitionsAsDataTable().PrettyPrint(Console.Out);
             Console.WriteLine();
 
             hRegimes = blocks.DiscoverRegimes(MyRegimeDiscoverySeed, 5);
-            Console.WriteLine($"Num regimes : {hRegimes.Regimes.Count}:");
-            Console.Out.PrettyPrintTransitionMatrix(hRegimes);
+            Console.WriteLine($"Num regimes : {hRegimes.Regimes.Count}");
+            hRegimes.RegimeTransitionsAsDataTable().PrettyPrint(Console.Out);
             Console.WriteLine();
+
+
+            //Console.Out.PrettyPrintTransitionMatrix(hRegimes);
+            //Console.WriteLine();
 
         }
 
