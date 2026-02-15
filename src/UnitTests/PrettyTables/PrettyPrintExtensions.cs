@@ -97,20 +97,38 @@ namespace UnitTests.PrettyTables
             ArgumentNullException.ThrowIfNull(writer);
 
             var C = dt.Columns;
-            var W = DiscoverColumnWidths(dt, minColWidth);
+            var numRows = dt.Rows.Count;
+            var numCols = C.Count;
+
+            // PASS 1: Measure and Buffer (Single Pass Formatting)
+            var W = new int[numCols];
+            Array.Fill(W, minColWidth);
+            for (int j = 0; j < numCols; j++) W[j] = Math.Max(W[j], C[j].ColumnName.Length);
+
+            var buffer = new string[numRows * numCols];
+            for (int r = 0; r < numRows; r++)
+            {
+                var row = dt.Rows[r];
+                for (int c = 0; c < numCols; c++)
+                {
+                    var formatted = GetFormattedValue(C[c], row[c]);
+                    buffer[r * numCols + c] = formatted;
+                    W[c] = Math.Max(W[c], formatted.Length);
+                }
+            }
 
             // THEAD
             writer.Write("| ");
-            for (int i = 0; i < C.Count; i++)
+            for (int i = 0; i < numCols; i++)
             {
                 if (i > 0) writer.Write(" | ");
-                PrintCellInternalSimplified(writer, C[i], C[i].ColumnName, W[i], false);
+                writer.Write(C[i].ColumnName.PadRight(W[i]));
             }
             writer.WriteLine(" |");
 
             // SEPARATOR
             writer.Write("|");
-            for (int i = 0; i < C.Count; i++)
+            for (int i = 0; i < numCols; i++)
             {
                 var isRight = IsRightAligned(C[i], null);
                 var totalWidth = W[i] + 2; 
@@ -130,13 +148,18 @@ namespace UnitTests.PrettyTables
             writer.WriteLine();
 
             // TBODY
-            foreach (DataRow R in dt.Rows)
+            for (int r = 0; r < numRows; r++)
             {
                 writer.Write("| ");
-                for (int i = 0; i < C.Count; i++)
+                for (int c = 0; c < numCols; c++)
                 {
-                    if (i > 0) writer.Write(" | ");
-                    PrintCellInternalSimplified(writer, C[i], R[i], W[i], IsRightAligned(C[i], R[i]));
+                    if (c > 0) writer.Write(" | ");
+                    
+                    var txt = buffer[r * numCols + c];
+                    var isRight = IsRightAligned(C[c], dt.Rows[r][c]);
+                    var aligned = isRight ? txt.PadLeft(W[c]) : txt.PadRight(W[c]);
+                    
+                    writer.Write(aligned);
                 }
                 writer.WriteLine(" |");
             }
@@ -171,33 +194,6 @@ namespace UnitTests.PrettyTables
             if (value is float f) return f.ToString("N3");
             if (value is decimal m) return m.ToString("N2");
             return value.ToString() ?? "";
-        }
-
-        private static void PrintCellInternalSimplified(TextWriter writer, DataColumn col, object? value, int colWidth, bool isRight)
-        {
-            var txt = GetFormattedValue(col, value);
-            var aligned = isRight ? txt.PadLeft(colWidth) : txt.PadRight(colWidth);
-            writer.Write(aligned);
-        }
-
-        private static int[] DiscoverColumnWidths(DataTable dt, int minColWidth)
-        {
-            var C = dt.Columns;
-            int[] colWidths = new int[C.Count];
-            Array.Fill(colWidths, minColWidth);
-
-            for (int i = 0; i < C.Count; i++)
-                colWidths[i] = Math.Max(colWidths[i], C[i].ColumnName.Length);
-
-            foreach (DataRow row in dt.Rows)
-            {
-                for (int i = 0; i < C.Count; i++)
-                {
-                    var cellValue = GetFormattedValue(C[i], row[i]);
-                    colWidths[i] = Math.Max(colWidths[i], cellValue.Length);
-                }
-            }
-            return colWidths;
         }
 
         private static string GetFormattedValue(DataColumn col, object? value)
