@@ -156,12 +156,15 @@
             var transitionMatrix = clusters.ComputeRegimeTransitionMatrix();
 
             // Map training blocks to regimes, calculate regime profile for each.
-            var regimes = Enumerable.Range(0, clusters.NumClusters).Select(r => trainingBlocks.ComputeRegimeProfile(clusters, transitionMatrix, r)).ToArray();
+            var regimeProfiles = Enumerable.Range(0, clusters.NumClusters)
+                .Select(r => trainingBlocks.ComputeRegimeProfile(clusters, transitionMatrix, r))
+                .ToArray()
+                .AdjustRegimeLabels();
 
             return new
             (
                 StandardizationParams: standardizationParams,
-                Regimes: regimes
+                Regimes: regimeProfiles
             );
         }
 
@@ -245,12 +248,9 @@
             // Capture probabilty of transition from current regime to other regimes
             var txProbabilities = transitionProbabilities.Row(regimeId);
 
-            // Optional label to the regime (for display only)
-            var regimeLabel = GuessRegimeLabel(regimeId, sbCorr, siCorr, biCorr, mStocks, mBonds, mInflation);
-
             return new HRegimes.RP
             (
-                RegimeLabel:     regimeLabel,
+                RegimeLabel:     "TBD",
                 Centroid:        centroid,
                 NextRegimeProbabilities: txProbabilities,
 
@@ -331,29 +331,88 @@
             return true;
         }
 
-        static string GuessRegimeLabel(int regimeId, double sbCorrelation, double siCorrelation, double biCorrelation, HRegimes.M mStocks, HRegimes.M mBonds, HRegimes.M mInflation)
+        static HRegimes.RP[] AdjustRegimeLabels(this HRegimes.RP[] profiles)
         {
-            //// Priority 1: Crisis (Severe pain or extreme uncertainty)
-            //if (mStocks.Mean < -0.10 || mStocks.Volatility > 0.20) return "Crisis";
+            ArgumentNullException.ThrowIfNull(profiles);
+            if (0 == profiles.Length) return profiles;
 
-            //// Priority 2: Stagflation (High cost of living + poor growth)
-            //if (mInflation.Mean > 0.05 && mStocks.Mean < 0.02) return "Stagflation";
+            double BullScore(HRegimes.RP p) =>
+                + p.Stocks.Mean
+                - p.Stocks.Volatility
+                + p.Stocks.Skewness
+                - p.Stocks.Kurtosis
+                - p.Bonds.Mean;
 
-            //// Priority 3: Balanced Growth (Modern ideal, diversification works)
-            //if (mStocks.Mean > 0.06 && sbCorrelation < 0.0) return "Balanced";
+            double CrisisScore(HRegimes.RP p) =>
+                - p.Stocks.Mean
+                + p.Stocks.Volatility
+                - p.Stocks.Skewness
+                + p.Stocks.Kurtosis
+                + p.Bonds.Mean;
 
-            //// Priority 4: Bull Market (General vigor)
-            //if (mStocks.Mean > 0.10) return "Bull";
+            double InflationScore(HRegimes.RP p) =>
+                + p.Inflation.Mean
+                + p.Inflation.Volatility
+                - p.Bonds.Mean;
 
-            //// Priority 5: Stagnation (The "Lost Decade")
-            //if (mStocks.Mean < 0.02 && mStocks.Mean > -0.05) return "Stagnation";
+            double RecoveryScore(HRegimes.RP p) =>
+                + (p.Stocks.Mean > 0 ? p.Stocks.Mean : -1.0)    // Penalize if negative
+                + p.Stocks.Skewness                             // Look for the "Bounce"
+                + (p.Stocks.Volatility * 0.5)                   // Volatility is "Excitement" here
+                - p.Bonds.Mean;                                 // Rates are usually stabilizing
 
-            // Fallback: Statistical Label
-            return $"Regime{regimeId}";
+            double StagnationScore(HRegimes.RP p) =>
+                - Math.Abs(p.Stocks.Mean)                       // Reward being closest to 0
+                - p.Stocks.Volatility                           // Reward low volatility (boringness)
+                - Math.Abs(p.Inflation.Mean)                    // Reward low/stable inflation
+                - p.Stocks.Kurtosis;                            // Reward absence of extreme events
+
+            // We MUST preserve the order. Say it again: "We MUST preserve the order"
+            // Remember the index of each profile, and also add the default label.
+            var unnamed = Enumerable.Range(0, profiles.Length).Select(x => new { Idx = x, Profile = profiles[x] with { RegimeLabel = $"Regime #{x}" }}).ToList();
+
+            // DRY Helper: Consult FxScore, apply suggested tag. Note: Max() wins.
+            void TagByScore(string tag, Func<HRegimes.RP, double> fxScore)
+            {
+                if (unnamed.Count > 0)
+                {
+                    var next = unnamed.OrderByDescending(p => fxScore(p.Profile)).First();
+                    unnamed.Remove(next);
+                    profiles[next.Idx] = next.Profile with { RegimeLabel = tag };
+                }
+            }
+
+            // Tag by extremes
+            TagByScore("Bull",          BullScore);
+            TagByScore("Crisis",        CrisisScore);
+            TagByScore("Infl",          InflationScore);
+            TagByScore("Recovery",      RecoveryScore);
+            TagByScore("Stagnation",    StagnationScore);
+
+            // By now we should have tagged them all.
+            // Carry forward anything left behind
+            if (unnamed.Count > 0) foreach (var p in unnamed) profiles[p.Idx] = p.Profile;
+            return profiles;
         }
-       
 
         #endregion
- 
+
     }
 }
+
+/*
+
+TODO: Verify
+
+Plot regime over time and verify:
+
+1930s               → Crisis
+1940s inflation     → Infl
+1950s–60s           → Bull
+1970s               → Infl/Stagnation
+2008                → Crisis
+2009–2013           → Recovery
+
+If those align historically, your model is validated.
+
+*/
