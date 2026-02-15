@@ -139,7 +139,6 @@ namespace NinthBall.Core
                     newAssignments,
                     Quality: centroids.ComputeQualityMetrics(samples: samples, assignments: newAssignments)
                 );
-
                 
                 return new(true, trainingResult);
             }
@@ -151,7 +150,7 @@ namespace NinthBall.Core
 
         static XTwoDMatrix InitialCentroids(this in TwoDMatrix samples, Random R, int K)
         {
-            // An empty working memory of centroids
+            // An empty working memory of centroids (numClusters x numFeatures)
             XTwoDMatrix centroids = new(K, samples.NumColumns);
 
             // Pick a spot for the first centroid.
@@ -221,10 +220,6 @@ namespace NinthBall.Core
 
         static int FindNearestCentroid(this ReadOnlySpan<double> features, in TwoDMatrix centroids)
         {
-            // Public signature. Validate params.
-            if (0 == centroids.NumRows || 0 == centroids.NumColumns) throw new Exception("Invalid centroids.");
-            if (features.Length != centroids.NumColumns) throw new Exception("Incompatible vector");
-
             int nearestIndex = 0;
             double minDistance = features.EuclideanDistanceSquared(centroids[0]);
 
