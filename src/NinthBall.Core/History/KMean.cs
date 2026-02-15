@@ -114,8 +114,7 @@ namespace NinthBall.Core
             var tempCountBuffer = new int[K];
 
             var converged = false;
-            var iteration = 0;
-            for(iteration = 0; iteration < maxIterations && !converged; iteration++)
+            for(var i = 0; i < maxIterations && !converged; i++)
             {
                 // Assign/Reassign samples to nearest centroid.
                 // Check for convergence (no assignment change)
