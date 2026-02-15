@@ -98,7 +98,7 @@ namespace NinthBall.Core
         //......................................................................
         // KMean - Single training
         //......................................................................
-        static (bool converged, Result result) Cluster(in TwoDMatrix samples, Random R, int K, int maxIterations = 100)
+        static (bool converged, Result result) Cluster(in TwoDMatrix samples, Random R, int K, int maxIterations)
         {
             // Prepare initial locations of the centroids.
             XTwoDMatrix newCentroids = samples.InitialCentroids(R, K);
