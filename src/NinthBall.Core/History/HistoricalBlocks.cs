@@ -13,13 +13,16 @@ namespace NinthBall.Core
         // Features of this block
         public readonly record struct F
         (
-            double RealCAGRStocks,
-            double RealCAGRBonds,
+            // Nominal values
             double NominalCAGRStocks,
             double NominalCAGRBonds,
             double MaxDrawdownStocks,
             double MaxDrawdownBonds,
             double GMeanInflationRate,
+
+            // Real values
+            double RealCAGRStocks,
+            double RealCAGRBonds,
             double RealCAGR6040
         );
 
@@ -78,15 +81,19 @@ namespace NinthBall.Core
         {
             if (0 == block.Length) throw new ArgumentException("Invalid HBlock | Block was empty.");
 
+            // VERY-IMP: Too many doubles. Use named-arguments.
             return new
             (
-                RealCAGRStocks:     block.RealCAGR(b => b.StocksROI),
-                RealCAGRBonds:      block.RealCAGR(b => b.BondsROI),
+                // Nominal values
                 NominalCAGRStocks:  block.NominalCAGR(b => b.StocksROI),
                 NominalCAGRBonds:   block.NominalCAGR(b => b.BondsROI),
                 MaxDrawdownStocks:  block.NominalMaxDrawdown(b => b.StocksROI),
                 MaxDrawdownBonds:   block.NominalMaxDrawdown(b => b.BondsROI),
                 GMeanInflationRate: block.GeometricMean(b => b.InflationRate),
+
+                // Real values
+                RealCAGRStocks:     block.RealCAGR(b => b.StocksROI),
+                RealCAGRBonds:      block.RealCAGR(b => b.BondsROI),
                 RealCAGR6040:       block.RealCAGR6040()
             );
         }
