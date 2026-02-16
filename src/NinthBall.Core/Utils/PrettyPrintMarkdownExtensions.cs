@@ -18,12 +18,12 @@ namespace NinthBall.Core.PrettyPrint
 
         static TextWriter PrintHeading(this TextWriter writer, string hashes, string text)
         {
-            writer.WriteLine();
+            writer.WriteLine();         // Why: blank line before - Mandatory
             writer.Write(hashes);
-            writer.Write(" ");
+            writer.Write(" ");          // Why: Always include a single space after hash
             writer.Write(text);
-            writer.WriteLine();
-            writer.WriteLine();
+            writer.WriteLine();         
+            writer.WriteLine();         // Why: blank line after - optional, highly Recommended
             return writer;
         }
 
