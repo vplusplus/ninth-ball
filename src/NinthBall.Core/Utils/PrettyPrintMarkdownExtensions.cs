@@ -47,7 +47,7 @@ namespace NinthBall.Core.PrettyPrint
                 if (!first) writer.Write(" | ");
                 writer.Write(pair.Name);
                 writer.Write(" : ");
-                writer.Write(GetFormattedValue(null, pair.Value));
+                writer.Write(GetFormattedValue(value: pair.Value, optionalCustomFormat: null));
                 first = false;
             }
             return writer;
@@ -114,7 +114,7 @@ namespace NinthBall.Core.PrettyPrint
                 var row = dt.Rows[r];
                 for (int c = 0; c < numCols; c++)
                 {
-                    var formatted = GetFormattedValue(C[c], row[c]);
+                    var formatted = GetFormattedValue(value: row[c], optionalCustomFormat: C[c].TextFormat);
                     buffer[r * numCols + c] = formatted;
                     W[c] = Math.Max(W[c], formatted.Length);
                 }
@@ -167,6 +167,8 @@ namespace NinthBall.Core.PrettyPrint
                 writer.WriteLine(" |");
             }
             return writer;
+
+            static bool IsRightAligned(DataColumn? col, object? value) => true == col?.IsRightAligned || true == value?.GetType()?.IsNumeric();
         }
 
         public static TextWriter PrintMarkdownTable<T>(this TextWriter writer, IEnumerable<T> collection, int minColWidth = 12)
@@ -191,8 +193,14 @@ namespace NinthBall.Core.PrettyPrint
 
             return record.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.CanRead && IsSimple(p.PropertyType))
+                .Where(p => p.CanRead && IsSimpleType(p.PropertyType))
                 .Select(p => (p.Name, p.GetValue(record)));
+
+            static bool IsSimpleType(Type type)
+            {
+                type = Nullable.GetUnderlyingType(type) ?? type;
+                return type.IsEnum || Type.GetTypeCode(type) != TypeCode.Object;
+            }
         }
 
         private static IEnumerable<(string Name, object? Value)> GetDictionaryKeysAndValues(IDictionary record)
@@ -203,7 +211,7 @@ namespace NinthBall.Core.PrettyPrint
                 yield return (entry.Key?.ToString() ?? "Unknown", entry.Value);
         }
 
-        private static string GetFormattedValue(DataColumn? col, object? value)
+        private static string GetFormattedValue(object? value, string? optionalCustomFormat)
         {
             if (value == null || value == DBNull.Value)
             {
@@ -211,7 +219,7 @@ namespace NinthBall.Core.PrettyPrint
             }
             else if (value is IFormattable formattable)
             {
-                string format = col?.TextFormat ?? GetDefaultFormat(value);
+                string format = optionalCustomFormat ?? GetDefaultFormat(value);
 
                 return
                     string.IsNullOrWhiteSpace(format) ? value.ToString() ?? string.Empty :
@@ -225,63 +233,28 @@ namespace NinthBall.Core.PrettyPrint
 
             static string GetDefaultFormat(object? v) => v switch
             {
-                double  => "N4",
-                float   => "N3",
+                double => "N4",
+                float => "N3",
                 decimal => "N2",
                 int or long or short or byte => "{0:N0}",
-                _       => string.Empty
+                _ => string.Empty
             };
         }
 
-        private static bool IsRightAligned(DataColumn col, object? value) =>
-            col.IsRightAligned.HasValue && col.IsRightAligned is bool alignRight ? alignRight :
-            null != value && IsNumeric(value.GetType());
-
-
-        static bool IsNumeric(Type type) => Type.GetTypeCode(type) switch
+        static bool IsNumeric(this Type? type)
         {
-            TypeCode.Byte or 
-            TypeCode.SByte or 
-            TypeCode.Int16 or 
-            TypeCode.UInt16 or 
-            TypeCode.Int32 or 
-            TypeCode.UInt32 or 
-            TypeCode.Int64 or 
-            TypeCode.UInt64 or
-            TypeCode.Single or 
-            TypeCode.Double or 
-            TypeCode.Decimal => true,
-            _ => false
-        };
+            if (null == type) return false;
 
-        static bool IsSimple(Type type)
-        {
             type = Nullable.GetUnderlyingType(type) ?? type;
-
-            if (type.IsEnum)
-                return true;
 
             return Type.GetTypeCode(type) switch
             {
-                TypeCode.Boolean or
-                TypeCode.Char or
-                TypeCode.SByte or
-                TypeCode.Byte or
-                TypeCode.Int16 or
-                TypeCode.UInt16 or
-                TypeCode.Int32 or
-                TypeCode.UInt32 or
-                TypeCode.Int64 or
-                TypeCode.UInt64 or
-                TypeCode.Single or
-                TypeCode.Double or
-                TypeCode.Decimal or
-                TypeCode.String or
-                TypeCode.DateTime => true,
+                TypeCode.Byte or TypeCode.SByte or 
+                TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Int32 or TypeCode.UInt32 or TypeCode.Int64 or TypeCode.UInt64 or
+                TypeCode.Single or TypeCode.Double or TypeCode.Decimal => true,
                 _ => false
             };
         }
-
 
         #endregion
     }
