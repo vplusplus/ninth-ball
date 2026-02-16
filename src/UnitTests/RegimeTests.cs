@@ -9,6 +9,8 @@ namespace UnitTests
     [TestClass]
     public class RegimeTests
     {
+        const string ReportsFolder = @"D:\Source\ninth-ball\src\UnitTests\Reports\";
+
         static int[] BlockSizes => [3];
 
         const int MyRegimeDiscoverySeed = 12345;
@@ -19,21 +21,89 @@ namespace UnitTests
         [TestMethod]
         public void KMeanClusterSizeSelection()
         {
-            var mbbOptions = new MovingBlockBootstrapOptions(BlockSizes, NoBackToBackOverlaps: false );
-            var history = new HistoricalReturns();
-            var blocks = new HistoricalBlocks(history, mbbOptions).Blocks;
+            int[] ThreeYearBlocks = [3];
+            int NumTrainings = 50;
 
-            var featureMatrix = blocks.ToFeatureMatrix();
-            var zScale = featureMatrix.DiscoverStandardizationParameters();
-            featureMatrix = featureMatrix.StandardizeFeatureMatrix(zScale);
+            // Prepare 3 year blocks
+            var hReturns  = new HistoricalReturns().Returns;
+            var hBlocks3Y = hReturns.ReadBlocks(ThreeYearBlocks).ToList();
 
-            for(int K=3; K<=5; K++)
+            // Extract features, standardize
+            var features  = hBlocks3Y.ToFeatureMatrix();
+            var zScale    = features.DiscoverStandardizationParameters();
+            var zFeatures = features.StandardizeFeatureMatrix(zScale);
+
+            // Try cluster sizes
+            var clusteringResults = new List<KMean.Result>();
+            for(int numClusters = 3; numClusters <= 6; numClusters++)
             {
-                Console.WriteLine();
+                var clusters = zFeatures.DiscoverBestClusters(MyRegimeDiscoverySeed, K: numClusters, numTrainings: NumTrainings);
+                clusteringResults.Add(clusters);
+            }
 
-                var clusters = featureMatrix.DiscoverBestClusters(MyRegimeDiscoverySeed, K: K, numTrainings: 50);
-                throw new NotImplementedException("Switch to Markdown style PrettyPrintExtensions");
-                // Console.Out.PrettyPrint(clusters);
+            using(var writer = File.CreateText(Path.Combine(ReportsFolder, "KMean-Results.md")))
+            {
+                writer.WriteLine("## K-Mean clustering results using 3-year blocks");
+
+                var qSummary = clusteringResults.Select(r => new
+                {
+                    K = r.NumClusters,
+                    r.Quality.Inertia,
+                    r.Quality.Silhouette,
+                    r.Quality.DBI,
+                    r.Quality.CH,
+                    r.Quality.Dunn,
+                });
+                writer.PrintMarkdownTitle3("Clusters Quality metrics:");
+                writer.PrintMarkdownTable(qSummary);
+
+                writer.PrintMarkdownTitle3($"Membership and quality by cluster");
+
+                writer.WriteLine("Note: *Cluster indexes are random, doesn't imply any raking.");
+                writer.WriteLine("For no particular reason, clusters are presented by z-normalized-Stocks-CAGR feature.");
+                writer.WriteLine("Ordering centroids using just one feature has no merit. So, do not read too much into that.*");
+
+                foreach (var R in clusteringResults)
+                {
+                    // We are pesenting the clusters rearranged by StocksCAGE
+                    var k2 = Enumerable.Range(0, R.NumClusters).OrderByDescending(x => R.Centroids[x][0]).ToArray();
+
+                    var dt = new DataTable();
+                    dt
+                        .WithColumn($"K={R.NumClusters}")
+                        .WithColumn<int>("Members")
+                        .WithColumn<double>("Inertia")
+                        .WithColumn<double>("Silhouette")
+
+                        .WithColumn<double>("zStockCAGR")
+                        .WithColumn<double>("zBondCAGR")
+                        .WithColumn<double>("zStockMaxDD")
+                        .WithColumn<double>("zBondMaxDD")
+                        .WithColumn<double>("zInflations")
+                        ;
+
+                    foreach(var k in k2)
+                    {
+                        var centroid = R.Centroids[k];
+
+                        var row = dt.Rows.Add(
+                        [
+                            $"Cluster {k}",
+                            R.Quality.ClusterMembersCount.Span[k],
+                            R.Quality.ClusterInertia.Span[k],
+                            R.Quality.ClusterSilhouette.Span[k],
+                            
+                            centroid[0],
+                            centroid[1],
+                            centroid[2],
+                            centroid[3],
+                            centroid[4],
+                        ]);
+                    }
+                    writer.PrintMarkdownTable(dt);
+                    writer.WriteLine();
+                    writer.WriteLine();
+                }
             }
         }
 
@@ -86,38 +156,38 @@ namespace UnitTests
             using var sw = new StreamWriter(path);
             var K = hRegimes.Regimes.Count;
 
-            sw.PrintMarkdownPageTitle($"Regime Discovery Analysis (K={K})");
+            sw.PrintMarkdownTitle3($"Regime Discovery Analysis (K={K})");
             sw.WriteLine($"Generated on: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             sw.WriteLine();
 
-            sw.PrintMarkdownSectionTitle("Discovery Configuration")
+            sw.PrintMarkdownTitle4("Discovery Configuration")
               .PrintMarkdownRecordTall(new { TargetClusters = K, DiscoverySeed = MyRegimeDiscoverySeed });
 
-            sw.PrintMarkdownSectionTitle("Regime Transition Probabilities")
+            sw.PrintMarkdownTitle4("Regime Transition Probabilities")
               .PrintMarkdownTable(RegimeTransitionsAsDataTable(hRegimes));
 
-            sw.PrintMarkdownSectionTitle("Market Personalities (The Big Picture)")
+            sw.PrintMarkdownTitle4("Market Personalities (The Big Picture)")
               .PrintMarkdownTable(ToMarketPersonalityTable(hRegimes));
 
-            sw.PrintMarkdownSectionTitle("Asset Behavioral Comparisons");
+            sw.PrintMarkdownTitle4("Asset Behavioral Comparisons");
             
-            sw.PrintMarkdownSectionTitle("Stocks Moment Comparison")
+            sw.PrintMarkdownTitle4("Stocks Moment Comparison")
               .PrintMarkdownTable(ToAssetMomentTable(hRegimes, "Stocks", r => r.Stocks));
 
-            sw.PrintMarkdownSectionTitle("Bonds Moment Comparison")
+            sw.PrintMarkdownTitle4("Bonds Moment Comparison")
               .PrintMarkdownTable(ToAssetMomentTable(hRegimes, "Bonds", r => r.Bonds));
 
-            sw.PrintMarkdownSectionTitle("Inflation Moment Comparison")
+            sw.PrintMarkdownTitle4("Inflation Moment Comparison")
               .PrintMarkdownTable(ToAssetMomentTable(hRegimes, "Inflation", r => r.Inflation));
 
-            sw.PrintMarkdownSectionTitle("Detailed Regime Profiles");
+            sw.PrintMarkdownTitle4("Detailed Regime Profiles");
             foreach (var r in hRegimes.Regimes)
             {
-                sw.PrintMarkdownSectionTitle($"Detailed Profile: {r.RegimeLabel}")
+                sw.PrintMarkdownTitle4($"Detailed Profile: {r.RegimeLabel}")
                   .PrintMarkdownRecordTall(r);
             }
 
-            sw.PrintMarkdownSectionTitle("Standardization Context (Z-Scale)")
+            sw.PrintMarkdownTitle4("Standardization Context (Z-Scale)")
               .PrintMarkdownTable(ToStandardizationTable(hRegimes));
 
             sw.Flush();
@@ -128,7 +198,7 @@ namespace UnitTests
             var dt = new DataTable();
             dt.WithColumn("Regime");
             foreach (var r in regimes.Regimes)
-                dt.WithColumn(r.RegimeLabel, typeof(double), format: "P0", rightAlign: true);
+                dt.WithColumn(r.RegimeLabel, typeof(double), format: "P0", alignRight: true);
 
             foreach (var r in regimes.Regimes)
             {
@@ -173,11 +243,11 @@ namespace UnitTests
         {
             var dt = new DataTable();
             dt.WithColumn("Regime")
-              .WithColumn("Mean", typeof(double), format: "P2", rightAlign: true)
-              .WithColumn("Vol",  typeof(double), format: "P2", rightAlign: true)
-              .WithColumn("Skew", typeof(double), format: "P2", rightAlign: true)
-              .WithColumn("Kurt", typeof(double), format: "P2", rightAlign: true)
-              .WithColumn("Auto", typeof(double), format: "P2", rightAlign: true);
+              .WithColumn("Mean", typeof(double), format: "P2", alignRight: true)
+              .WithColumn("Vol",  typeof(double), format: "P2", alignRight: true)
+              .WithColumn("Skew", typeof(double), format: "P2", alignRight: true)
+              .WithColumn("Kurt", typeof(double), format: "P2", alignRight: true)
+              .WithColumn("Auto", typeof(double), format: "P2", alignRight: true);
 
             foreach (var r in hRegimes.Regimes)
             {

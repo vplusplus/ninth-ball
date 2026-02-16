@@ -14,14 +14,16 @@ namespace NinthBall.Core.PrettyPrint
         //......................................................................
         #region General purpose extensions
         //......................................................................
-        public static DataTable WithColumn(this DataTable dt, string colName, Type? type = null, string? format = null, bool? rightAlign = null)
+        public static DataTable WithColumn(this DataTable dt, string colName, Type? type = null, string? format = null, bool? alignRight = null)
         {
             var col = dt.Columns.Add(colName, type ?? typeof(string));
             if (null != format) col.TextFormat = format;
-            if (rightAlign.HasValue) col.IsRightAligned = rightAlign.Value;
+            if (alignRight.HasValue) col.IsRightAligned = alignRight.Value;
 
             return dt;
         }
+
+        public static DataTable WithColumn<T>(this DataTable dt, string colName, string? format = null, bool? alignRight = null) => dt.WithColumn(colName, typeof(T), format: format, alignRight: alignRight);
 
         extension(DataColumn dtColumn)
         {
@@ -191,60 +193,3 @@ namespace NinthBall.Core.PrettyPrint
     }
 
 }
-
-
-/*   KEEP FOR NOW:  Drop if unused after refactoring
-
-        //......................................................................
-        #region Matrix & Span Transcription (Grid format)
-        //......................................................................
-
-        public static DataTable ToTable(this ReadOnlySpan<double> collection, string[]? labels = null)
-        {
-            var dt = new DataTable();
-            for (int i = 0; i < collection.Length; i++)
-            {
-                var colName = (labels != null && i < labels.Length) ? labels[i] : $"[{i}]";
-                dt.WithColumn(colName, typeof(double));
-            }
-
-            var values = new object[collection.Length];
-            for (int i = 0; i < collection.Length; i++) values[i] = collection[i];
-            dt.Rows.Add(values);
-
-            return dt;
-        }
-
-        public static DataTable ToTable(this TwoDMatrix collection, string[]? rowLabels = null, string[]? colLabels = null)
-        {
-            var dt = new DataTable();
-            var numRows = collection.NumRows;
-            var numCols = collection.NumColumns;
-
-            if (rowLabels != null) dt.WithColumn("Row");
-
-            for (int j = 0; j < numCols; j++)
-            {
-                var colName = (colLabels != null && j < colLabels.Length) ? colLabels[j] : $"Col {j}";
-                dt.WithColumn(colName, typeof(double));
-            }
-
-            for (int i = 0; i < numRows; i++)
-            {
-                var values = new object[dt.Columns.Count];
-                int offset = 0;
-                if (rowLabels != null) values[offset++] = (i < rowLabels.Length) ? rowLabels[i] : $"Row {i}";
-
-                var rowData = collection.Row(i).Span;
-                for (int j = 0; j < numCols; j++) values[j + offset] = rowData[j];
-
-                dt.Rows.Add(values);
-            }
-
-            return dt;
-        }
-
-        #endregion
-
-
-*/

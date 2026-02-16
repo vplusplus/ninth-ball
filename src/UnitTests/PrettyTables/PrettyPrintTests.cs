@@ -16,8 +16,8 @@ namespace UnitTests.PrettyTables
             dt.Rows.Add("Bond Yield", 0.045);
 
             var sw = new StringWriter();
-            sw.PrintMarkdownPageTitle("Market Summary")
-              .PrintMarkdownSectionTitle("Key Indices");
+            sw.PrintMarkdownTitle3("Market Summary")
+              .PrintMarkdownTitle4("Key Indices");
             
             sw.PrintMarkdownTable(dt);
 
@@ -93,12 +93,12 @@ namespace UnitTests.PrettyTables
             var dict = new Hashtable { ["S&P 500"] = 4500.25, ["Allocation"] = 0.60 };
             var sw = new StringWriter();
             
-            sw.PrintMarkdownPageTitle("Dictionary View");
+            sw.PrintMarkdownTitle3("Dictionary View");
             
-            sw.PrintMarkdownSectionTitle("Wide");
+            sw.PrintMarkdownTitle4("Wide");
             sw.PrintMarkdownRecordWide(dict);
 
-            sw.PrintMarkdownSectionTitle("Tall");
+            sw.PrintMarkdownTitle4("Tall");
             sw.PrintMarkdownRecordTall(dict);
             
             var output = sw.ToString();
@@ -113,8 +113,8 @@ namespace UnitTests.PrettyTables
         public void TestFluentHeaders()
         {
             var sw = new StringWriter();
-            sw.PrintMarkdownPageTitle("Main Report")
-              .PrintMarkdownSectionTitle("Sub Section")
+            sw.PrintMarkdownTitle3("Main Report")
+              .PrintMarkdownTitle4("Sub Section")
               .Write("Content");
 
             var output = sw.ToString();

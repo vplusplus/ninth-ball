@@ -12,9 +12,9 @@ namespace NinthBall.Core.PrettyPrint
         #region Markdown Titles & Sections
         //......................................................................
 
-        public static TextWriter PrintMarkdownPageTitle(this TextWriter writer, string text) => PrintHeading(writer, "###", text);
-
-        public static TextWriter PrintMarkdownSectionTitle(this TextWriter writer, string text) => PrintHeading(writer, "####", text);
+        public static TextWriter PrintMarkdownTitle2(this TextWriter writer, string text) => PrintHeading(writer, "##", text);
+        public static TextWriter PrintMarkdownTitle3(this TextWriter writer, string text) => PrintHeading(writer, "###", text);
+        public static TextWriter PrintMarkdownTitle4(this TextWriter writer, string text) => PrintHeading(writer, "####", text);
 
         static TextWriter PrintHeading(this TextWriter writer, string hashes, string text)
         {
@@ -132,10 +132,10 @@ namespace NinthBall.Core.PrettyPrint
 
             // SEPARATOR
             writer.Write("|");
-            for (int i = 0; i < numCols; i++)
+            for (int c = 0; c < numCols; c++)
             {
-                var isRight = IsRightAligned(C[i], null);
-                var totalWidth = W[i] + 2; 
+                var isRight = IsRightAligned(C[c], dt.Rows[0][c]);
+                var totalWidth = W[c] + 2; 
 
                 if (isRight)
                 {
