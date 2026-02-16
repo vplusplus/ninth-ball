@@ -60,13 +60,16 @@ namespace UnitTests
                 writer.PrintMarkdownTitle3($"Membership and quality by cluster");
 
                 writer.WriteLine("Note: *Cluster indexes are random, doesn't imply any raking.");
-                writer.WriteLine("For no particular reason, clusters are presented by z-normalized-Stocks-CAGR feature.");
-                writer.WriteLine("Ordering centroids using just one feature has no merit. So, do not read too much into that.*");
+                writer.WriteLine("For visual convenience, clusters are presented by an imaginary z-score(stocks+bonds-Inflation).");
+                writer.WriteLine("Do not read too much into that.*");
+
+                // zStocksCAGR + zBondsCAGR - zGMeanInflation
+                static double ZScore(ReadOnlySpan<double> zF) => zF[0] + zF[1] - zF[4];
 
                 foreach (var R in clusteringResults)
                 {
-                    // We are pesenting the clusters rearranged by StocksCAGE
-                    var k2 = Enumerable.Range(0, R.NumClusters).OrderByDescending(x => R.Centroids[x][0]).ToArray();
+                    // We are pesenting the clusters rearranged by an abstract score for convenience.
+                    var k2 = Enumerable.Range(0, R.NumClusters).OrderByDescending(x => ZScore(R.Centroids[x])).ToArray();
 
                     var dt = new DataTable();
                     dt
@@ -75,11 +78,13 @@ namespace UnitTests
                         .WithColumn<double>("Inertia")
                         .WithColumn<double>("Silhouette")
 
+                        .WithColumn<string>("zF >")
+
                         .WithColumn<double>("zStockCAGR")
                         .WithColumn<double>("zBondCAGR")
                         .WithColumn<double>("zStockMaxDD")
                         .WithColumn<double>("zBondMaxDD")
-                        .WithColumn<double>("zInflations")
+                        .WithColumn<double>("zInflation")
                         ;
 
                     foreach(var k in k2)
@@ -92,6 +97,8 @@ namespace UnitTests
                             R.Quality.ClusterMembersCount.Span[k],
                             R.Quality.ClusterInertia.Span[k],
                             R.Quality.ClusterSilhouette.Span[k],
+
+                            string.Empty,
                             
                             centroid[0],
                             centroid[1],

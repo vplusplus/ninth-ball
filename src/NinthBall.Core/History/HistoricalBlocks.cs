@@ -132,7 +132,8 @@ namespace NinthBall.Core
                 if (drawdown > maxDrawdown) maxDrawdown = drawdown;
             }
 
-            return maxDrawdown;
+            // Less is bad.
+            return -maxDrawdown;
         }
 
         static double RealCAGR6040(this ReadOnlyMemory<HROI> window)
