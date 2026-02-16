@@ -212,7 +212,7 @@
             // How many members are there in this regime?
             var memberCount = clusterAssignments.Count(regimeId);
 
-            // TODO: Revisit what to do if the regime has no members?
+            // Clusters will never be empty since we are rejecting degenerate clusters.
             if (0 == memberCount) throw new FatalWarning($"Regime {regimeId} has no members.");
 
             // Storage to collect regime members' features
