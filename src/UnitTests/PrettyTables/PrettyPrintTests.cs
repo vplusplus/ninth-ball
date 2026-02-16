@@ -11,11 +11,9 @@ namespace UnitTests.PrettyTables
         public void TestGridRendering()
         {
             var dt = new DataTable();
-            dt.WithColumn("Feature").WithColumn("Value", typeof(double));
+            dt.WithColumn("Feature").WithColumn("Value", typeof(double), format: "P2");
             dt.Rows.Add("S&P 500", 0.12);
             dt.Rows.Add("Bond Yield", 0.045);
-
-            dt.WithFormat("Value", "P1");
 
             var sw = new StringWriter();
             sw.PrintMarkdownPageTitle("Market Summary")
@@ -28,8 +26,8 @@ namespace UnitTests.PrettyTables
 
             Assert.IsTrue(output.Contains("### Market Summary"));
             Assert.IsTrue(output.Contains("#### Key Indices"));
-            Assert.IsTrue(output.Contains("12.0%"));
-            Assert.IsTrue(output.Contains("4.5%"));
+            Assert.IsTrue(output.Contains("12.00%"));
+            Assert.IsTrue(output.Contains("4.50%"));
         }
 
         [TestMethod]

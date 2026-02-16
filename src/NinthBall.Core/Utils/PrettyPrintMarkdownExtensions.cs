@@ -210,7 +210,7 @@ namespace NinthBall.Core.PrettyPrint
         private static string GetFormattedValue(DataColumn col, object? value)
         {
             if (value == null || value == DBNull.Value) return string.Empty;
-            if (col.ExtendedProperties["Format"] is string format && value is IFormattable formattable)
+            if (col.TextFormat is string format && value is IFormattable formattable)
             {
                 return formattable.ToString(format, null);
             }
@@ -220,8 +220,8 @@ namespace NinthBall.Core.PrettyPrint
 
         private static bool IsRightAligned(DataColumn col, object? value)
         {
-            if (col.ExtendedProperties["Align"] is string align)
-                return align.Equals("Right", StringComparison.OrdinalIgnoreCase);
+            if (col.IsRightAligned is bool isRight)
+                return isRight;
 
             var type = (value != null && value != DBNull.Value) ? value.GetType() : col.DataType;
             return type == typeof(int) || type == typeof(long) || type == typeof(float) || type == typeof(double) || type == typeof(decimal);

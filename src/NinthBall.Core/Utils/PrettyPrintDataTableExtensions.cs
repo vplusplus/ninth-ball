@@ -14,22 +14,29 @@ namespace NinthBall.Core.PrettyPrint
         //......................................................................
         #region General purpose extensions
         //......................................................................
-        public static DataTable WithColumn(this DataTable dt, string colName, Type? type = null)
+        public static DataTable WithColumn(this DataTable dt, string colName, Type? type = null, string? format = null, bool? rightAlign = null)
         {
-            dt.Columns.Add(colName, type ?? typeof(string));
+            var col = dt.Columns.Add(colName, type ?? typeof(string));
+            if (null != format) col.TextFormat = format;
+            if (rightAlign.HasValue) col.IsRightAligned = rightAlign.Value;
+
             return dt;
         }
 
-        public static DataTable WithFormat(this DataTable dt, string colName, string format)
+        extension(DataColumn dtColumn)
         {
-            dt.Columns[colName]!.ExtendedProperties["Format"] = format;
-            return dt;
-        }
+            public bool? IsRightAligned
+            {
+                set => dtColumn.ExtendedProperties["IsRightAligned"] = value;
+                get => dtColumn.ExtendedProperties["IsRightAligned"] is bool boolValue ? boolValue : null;
+            }
 
-        public static DataTable WithAlignment(this DataTable dt, string colName, string alignment)
-        {
-            dt.Columns[colName]!.ExtendedProperties["Align"] = alignment;
-            return dt;
+            public string? TextFormat
+            {
+                set => dtColumn.ExtendedProperties["TextFormat"] = value;
+                get => dtColumn.ExtendedProperties["TextFormat"] is string strValue ? strValue : null;
+            }
+
         }
 
         #endregion
@@ -238,5 +245,6 @@ namespace NinthBall.Core.PrettyPrint
         }
 
         #endregion
+
 
 */

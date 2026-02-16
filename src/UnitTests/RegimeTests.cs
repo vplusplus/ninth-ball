@@ -3,7 +3,6 @@ using NinthBall.Core.PrettyPrint;
 using NinthBall.Utils;
 using System.Data;
 using System.Text.Json;
-using UnitTests.PrettyTables;
 
 namespace UnitTests
 {
@@ -129,7 +128,7 @@ namespace UnitTests
             var dt = new DataTable();
             dt.WithColumn("Regime");
             foreach (var r in regimes.Regimes)
-                dt.WithColumn(r.RegimeLabel, typeof(double)).WithFormat(r.RegimeLabel, "P0");
+                dt.WithColumn(r.RegimeLabel, typeof(double), format: "P0", rightAlign: true);
 
             foreach (var r in regimes.Regimes)
             {
@@ -151,9 +150,9 @@ namespace UnitTests
               .WithColumn("Stocks (μ/σ)")
               .WithColumn("Bonds (μ/σ)")
               .WithColumn("Infl (μ/σ)")
-              .WithColumn("S&B Corr", typeof(double)).WithFormat("S&B Corr", "N2")
-              .WithColumn("S&I Corr", typeof(double)).WithFormat("S&I Corr", "N2")
-              .WithColumn("B&I Corr", typeof(double)).WithFormat("B&I Corr", "N2");
+              .WithColumn("S&B Corr", typeof(double), format: "N2")
+              .WithColumn("S&I Corr", typeof(double), format: "N2")
+              .WithColumn("B&I Corr", typeof(double), format: "N2");
 
             foreach (var r in hRegimes.Regimes)
             {
@@ -174,11 +173,11 @@ namespace UnitTests
         {
             var dt = new DataTable();
             dt.WithColumn("Regime")
-              .WithColumn("Mean", typeof(double)).WithFormat("Mean", "P2")
-              .WithColumn("Vol", typeof(double)).WithFormat("Vol", "P2")
-              .WithColumn("Skew", typeof(double)).WithFormat("Skew", "N2")
-              .WithColumn("Kurt", typeof(double)).WithFormat("Kurt", "N2")
-              .WithColumn("Auto", typeof(double)).WithFormat("Auto", "N2");
+              .WithColumn("Mean", typeof(double), format: "P2", rightAlign: true)
+              .WithColumn("Vol",  typeof(double), format: "P2", rightAlign: true)
+              .WithColumn("Skew", typeof(double), format: "P2", rightAlign: true)
+              .WithColumn("Kurt", typeof(double), format: "P2", rightAlign: true)
+              .WithColumn("Auto", typeof(double), format: "P2", rightAlign: true);
 
             foreach (var r in hRegimes.Regimes)
             {
@@ -199,8 +198,11 @@ namespace UnitTests
         {
             var features = new[] { "Stocks CAGR", "Bonds CAGR", "Stocks Drawdown", "Bonds Drawdown", "Inflation" };
             var dt = new DataTable();
-            dt.WithColumn("Feature").WithColumn("Mean", typeof(double)).WithColumn("StdDev", typeof(double));
-            dt.WithFormat("Mean", "N4").WithFormat("StdDev", "N4");
+            dt
+                .WithColumn("Feature")
+                .WithColumn("Mean", typeof(double), format: "N4")
+                .WithColumn("StdDev", typeof(double), format: "N4")
+                ;
 
             var m = hRegimes.StandardizationParams.Mean.Span;
             var s = hRegimes.StandardizationParams.StdDev.Span;
