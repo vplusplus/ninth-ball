@@ -169,7 +169,8 @@ namespace NinthBall.Core.PrettyPrint
             }
             return writer;
 
-            static bool IsRightAligned(DataColumn? col, object? value) => true == col?.IsRightAligned || true == value?.GetType()?.IsNumeric();
+            // Alignment is defined and is True | Alignment not specified but its numeric value
+            static bool IsRightAligned(DataColumn? col, object? value) => (null != col?.IsRightAligned && true == col?.IsRightAligned) || true == value?.GetType()?.IsNumeric();
         }
 
         public static TextWriter PrintMarkdownTable<T>(this TextWriter writer, IEnumerable<T> collection, int minColWidth = 12)
