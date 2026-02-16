@@ -86,11 +86,9 @@ namespace NinthBall.Core.PrettyPrint
         #endregion
 
         //......................................................................
-        #region Grid Rendering (The Engine)
+        #region Render Markdown Table
         //......................................................................
 
-        // THE CORE ENGINE: Prints any DataTable as a Markdown table.
-        // No title/section here; use Fluent Title API on the writer instead.
         public static TextWriter PrintMarkdownTable(this TextWriter writer, DataTable dt, int minColWidth = 12)
         {
             ArgumentNullException.ThrowIfNull(dt);
@@ -100,11 +98,16 @@ namespace NinthBall.Core.PrettyPrint
             var numRows = dt.Rows.Count;
             var numCols = C.Count;
 
-            // PASS 1: Measure and Buffer (Single Pass Formatting)
+            // Column widths. Start with suggested min widths
             var W = new int[numCols];
             Array.Fill(W, minColWidth);
+
+            // Consult column name to adjust width
             for (int j = 0; j < numCols; j++) W[j] = Math.Max(W[j], C[j].ColumnName.Length);
 
+            // Collect formatted content of all cells.
+            // Along side, adjust column width based on content.
+            // When the loop ends, we will have formatted content and adjusted column widths.
             var buffer = new string[numRows * numCols];
             for (int r = 0; r < numRows; r++)
             {
@@ -185,14 +188,17 @@ namespace NinthBall.Core.PrettyPrint
         private static IEnumerable<(string Name, object? Value)> GetPropertyNamesAndValues(object? record)
         {
             if (record == null) return [];
-            return record.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.CanRead && (p.PropertyType.IsPrimitive || p.PropertyType == typeof(string) || p.PropertyType == typeof(decimal) || p.PropertyType == typeof(DateTime) || p.PropertyType == typeof(TimeSpan)))
+
+            return record.GetType()
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.CanRead && IsSimple(p.PropertyType))
                 .Select(p => (p.Name, p.GetValue(record)));
         }
 
         private static IEnumerable<(string Name, object? Value)> GetDictionaryKeysAndValues(IDictionary record)
         {
             if (record == null) yield break;
+
             foreach (DictionaryEntry entry in record)
                 yield return (entry.Key?.ToString() ?? "Unknown", entry.Value);
         }
@@ -227,14 +233,55 @@ namespace NinthBall.Core.PrettyPrint
             };
         }
 
-        private static bool IsRightAligned(DataColumn col, object? value)
-        {
-            if (col.IsRightAligned is bool isRight)
-                return isRight;
+        private static bool IsRightAligned(DataColumn col, object? value) =>
+            col.IsRightAligned.HasValue && col.IsRightAligned is bool alignRight ? alignRight :
+            null != value && IsNumeric(value.GetType());
 
-            var type = (value != null && value != DBNull.Value) ? value.GetType() : col.DataType;
-            return type == typeof(int) || type == typeof(long) || type == typeof(float) || type == typeof(double) || type == typeof(decimal);
+
+        static bool IsNumeric(Type type) => Type.GetTypeCode(type) switch
+        {
+            TypeCode.Byte or 
+            TypeCode.SByte or 
+            TypeCode.Int16 or 
+            TypeCode.UInt16 or 
+            TypeCode.Int32 or 
+            TypeCode.UInt32 or 
+            TypeCode.Int64 or 
+            TypeCode.UInt64 or
+            TypeCode.Single or 
+            TypeCode.Double or 
+            TypeCode.Decimal => true,
+            _ => false
+        };
+
+        static bool IsSimple(Type type)
+        {
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
+            if (type.IsEnum)
+                return true;
+
+            return Type.GetTypeCode(type) switch
+            {
+                TypeCode.Boolean or
+                TypeCode.Char or
+                TypeCode.SByte or
+                TypeCode.Byte or
+                TypeCode.Int16 or
+                TypeCode.UInt16 or
+                TypeCode.Int32 or
+                TypeCode.UInt32 or
+                TypeCode.Int64 or
+                TypeCode.UInt64 or
+                TypeCode.Single or
+                TypeCode.Double or
+                TypeCode.Decimal or
+                TypeCode.String or
+                TypeCode.DateTime => true,
+                _ => false
+            };
         }
+
 
         #endregion
     }
