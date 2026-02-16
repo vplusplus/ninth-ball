@@ -34,7 +34,7 @@ namespace NinthBall.Core.PrettyPrint
         //......................................................................
 
         public static TextWriter PrintMarkdownRecordOneLine(this TextWriter writer, object record)
-            => PrintOneLine(writer, GetPropertyNamesAndValues(record));
+            => PrintOneLine(writer, GetSimplePropertyNamesAndValues(record));
 
         public static TextWriter PrintMarkdownRecordOneLine(this TextWriter writer, IDictionary record)
             => PrintOneLine(writer, GetDictionaryKeysAndValues(record));
@@ -185,7 +185,7 @@ namespace NinthBall.Core.PrettyPrint
         #region Helpers
         //......................................................................
 
-        private static IEnumerable<(string Name, object? Value)> GetPropertyNamesAndValues(object? record)
+        private static IEnumerable<(string Name, object? Value)> GetSimplePropertyNamesAndValues(object? record)
         {
             if (record == null) return [];
 
