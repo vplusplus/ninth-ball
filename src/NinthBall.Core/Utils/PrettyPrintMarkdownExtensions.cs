@@ -47,7 +47,7 @@ namespace NinthBall.Core.PrettyPrint
                 if (!first) writer.Write(" | ");
                 writer.Write(pair.Name);
                 writer.Write(" : ");
-                writer.Write(FormatDiagnosticValue(pair.Value));
+                writer.Write(GetFormattedValue(null, pair.Value));
                 first = false;
             }
             return writer;
@@ -197,25 +197,34 @@ namespace NinthBall.Core.PrettyPrint
                 yield return (entry.Key?.ToString() ?? "Unknown", entry.Value);
         }
 
-        private static string FormatDiagnosticValue(object? value)
+        private static string GetFormattedValue(DataColumn? col, object? value)
         {
-            if (value == null || value == DBNull.Value) return "";
-            if (value is double d) return d.ToString("N4");
-            if (value is float f) return f.ToString("N3");
-            if (value is decimal m) return m.ToString("N2");
-            if (value is int || value is long || value is short || value is byte) return string.Format("{0:N0}", value);
-            return value.ToString() ?? "";
-        }
-
-        private static string GetFormattedValue(DataColumn col, object? value)
-        {
-            if (value == null || value == DBNull.Value) return string.Empty;
-            if (col.TextFormat is string format && value is IFormattable formattable)
+            if (value == null || value == DBNull.Value)
             {
-                return formattable.ToString(format, null);
+                return string.Empty;
             }
-            // Fallback to diagnostic formatting if no specific format hint is present
-            return FormatDiagnosticValue(value);
+            else if (value is IFormattable formattable)
+            {
+                string format = col?.TextFormat ?? GetDefaultFormat(value);
+
+                return
+                    string.IsNullOrWhiteSpace(format) ? value.ToString() ?? string.Empty :
+                    format.Contains('{') ? string.Format(format, value) :
+                    formattable.ToString(format, null);
+            }
+            else
+            {
+                return value.ToString() ?? string.Empty;
+            }
+
+            static string GetDefaultFormat(object? v) => v switch
+            {
+                double  => "N4",
+                float   => "N3",
+                decimal => "N2",
+                int or long or short or byte => "{0:N0}",
+                _       => string.Empty
+            };
         }
 
         private static bool IsRightAligned(DataColumn col, object? value)
