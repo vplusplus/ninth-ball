@@ -27,8 +27,8 @@ namespace NinthBall.Core.PrettyPrint
         {
             public bool? IsRightAligned
             {
-                set => dtColumn.ExtendedProperties["IsRightAligned"] = value;
-                get => dtColumn.ExtendedProperties["IsRightAligned"] is bool boolValue ? boolValue : null;
+                set => dtColumn.ExtendedProperties["AlignRight"] = value;
+                get => dtColumn.ExtendedProperties["AlignRight"] is bool boolValue ? boolValue : null;
             }
 
             public string? TextFormat
