@@ -34,10 +34,10 @@ namespace NinthBall.Core.PrettyPrint
         //......................................................................
 
         public static TextWriter PrintMarkdownRecordOneLine(this TextWriter writer, object record)
-            => PrintOneLine(writer, GetSimplePropertyPairs(record));
+            => PrintOneLine(writer, GetPropertyNamesAndValues(record));
 
         public static TextWriter PrintMarkdownRecordOneLine(this TextWriter writer, IDictionary record)
-            => PrintOneLine(writer, GetDictionaryPairs(record));
+            => PrintOneLine(writer, GetDictionaryKeysAndValues(record));
 
         static TextWriter PrintOneLine(this TextWriter writer, IEnumerable<(string Name, object? Value)> pairs)
         {
@@ -182,7 +182,7 @@ namespace NinthBall.Core.PrettyPrint
         #region Helpers
         //......................................................................
 
-        private static IEnumerable<(string Name, object? Value)> GetSimplePropertyPairs(object? record)
+        private static IEnumerable<(string Name, object? Value)> GetPropertyNamesAndValues(object? record)
         {
             if (record == null) return [];
             return record.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -190,7 +190,7 @@ namespace NinthBall.Core.PrettyPrint
                 .Select(p => (p.Name, p.GetValue(record)));
         }
 
-        private static IEnumerable<(string Name, object? Value)> GetDictionaryPairs(IDictionary record)
+        private static IEnumerable<(string Name, object? Value)> GetDictionaryKeysAndValues(IDictionary record)
         {
             if (record == null) yield break;
             foreach (DictionaryEntry entry in record)
