@@ -219,7 +219,7 @@ namespace NinthBall.Core.PrettyPrint
             }
             else if (value is IFormattable formattable)
             {
-                string format = optionalCustomFormat ?? GetDefaultFormat(value);
+                string format = optionalCustomFormat ?? DefaultFormat(value);
 
                 return
                     string.IsNullOrWhiteSpace(format) ? value.ToString() ?? string.Empty :
@@ -231,14 +231,19 @@ namespace NinthBall.Core.PrettyPrint
                 return value.ToString() ?? string.Empty;
             }
 
-            static string GetDefaultFormat(object? v) => v switch
+            static string DefaultFormat(object? value)
             {
-                double => "N4",
-                float => "N3",
-                decimal => "N2",
-                int or long or short or byte => "{0:N0}",
-                _ => string.Empty
-            };
+                if (null == value) return string.Empty;
+
+                var type = Nullable.GetUnderlyingType(value.GetType()) ?? value.GetType();
+
+                return Type.GetTypeCode(type) switch
+                {
+                    TypeCode.Byte or TypeCode.SByte or TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Int32 or TypeCode.UInt32 or TypeCode.Int64 or TypeCode.UInt64 => "{0:N0}",
+                    TypeCode.Single or TypeCode.Double or TypeCode.Decimal => "N2",
+                    _ => string.Empty
+                };
+            }
         }
 
         static bool IsNumeric(this Type? type)
