@@ -45,8 +45,11 @@
         
         readonly Lazy<HRegimes> ThreeYearRegimes = new( () =>
         {
-           const int FiveRegimes = 5;   
-            int[] ThreeYearBlocksOnlyNotTwoFourOrFive = [3];    // BY-DESIGN: Use only three-year-blocks for regime discovery (This is not a tuneable configuration)
+            // Why: Five regimes gave less diagonal matrix, and avoided one massive regime (This is not a tuneable configuration)
+            const int FiveRegimes = 5;
+
+            // Why: Use only 3-year blocks for regime discovery. Feeding 3/4/5 will result redundant info and strong diagonal. (This is not a tuneable configuration)
+            int[] ThreeYearBlocksOnlyNotTwoFourOrFive = [3];    
 
             // Using three-year blocks, discover regimes and their characteristics.
             return History.Returns
