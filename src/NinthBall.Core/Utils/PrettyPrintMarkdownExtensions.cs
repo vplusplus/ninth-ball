@@ -50,6 +50,7 @@ namespace NinthBall.Core.PrettyPrint
                 writer.Write(GetFormattedValue(value: pair.Value, optionalCustomFormat: null));
                 first = false;
             }
+            writer.WriteLine();
             return writer;
         }
 

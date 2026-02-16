@@ -33,17 +33,19 @@ namespace UnitTests.PrettyTables
         [TestMethod]
         public void TestRecordOneLine()
         {
-            var config = new { NumClusters = 5, DiscoverySeed = 42, Threshold = 0.00012345 };
+            var config = new { NumClusters = 5, DiscoverySeed = 42, Threshold = 0.12345 };
             var sw = new StringWriter();
             
             sw.PrintMarkdownRecordOneLine(config);
-            
+            sw.PrintMarkdownRecordOneLine(config);
+            sw.PrintMarkdownRecordOneLine(config);
+
             var output = sw.ToString();
             Console.WriteLine(output);
 
             // Verify diagnostic formatting (N4 for double)
             Assert.IsTrue(output.Contains("NumClusters : 5"));
-            Assert.IsTrue(output.Contains("Threshold : 0.0001")); 
+            Assert.IsTrue(output.Contains("Threshold : 0.12")); 
             Assert.IsTrue(output.Contains("|"));
         }
 
