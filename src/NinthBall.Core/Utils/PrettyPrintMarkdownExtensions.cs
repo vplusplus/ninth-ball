@@ -9,11 +9,20 @@ namespace NinthBall.Core.PrettyPrint
         static readonly string DASHES = new string('-', 200);
 
         //......................................................................
-        #region Markdown Titles & Sections
+        #region Markdown Titles and text
         //......................................................................
 
+        // Pure syntax sugar.
+        public static TextWriter AppendLine(this TextWriter writer, string? text = null)
+        {
+            if (null != text) writer.WriteLine(text); else writer.WriteLine();
+            return writer;
+        }
+
         public static TextWriter PrintMarkdownTitle2(this TextWriter writer, string text) => PrintHeading(writer, "##", text);
+        
         public static TextWriter PrintMarkdownTitle3(this TextWriter writer, string text) => PrintHeading(writer, "###", text);
+        
         public static TextWriter PrintMarkdownTitle4(this TextWriter writer, string text) => PrintHeading(writer, "####", text);
 
         static TextWriter PrintHeading(this TextWriter writer, string hashes, string text)

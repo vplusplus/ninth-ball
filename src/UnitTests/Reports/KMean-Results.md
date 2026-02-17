@@ -1,4 +1,5 @@
-## K-Mean clustering results using 3-year blocks
+## K-Mean - K Selection
+Train using different K. Compare cluster quality metrics. Choose best K.
 
 ### Clusters Quality metrics:
 
@@ -11,8 +12,8 @@
 
 ### Membership and quality by cluster
 
-Note: *Cluster indexes are random, doesn't imply any raking.
-For visual convenience, clusters are presented by an imaginary z-score(stocks+bonds-Inflation).
+Note: *Cluster indexes are random.
+For visual convenience, clusters are presented by an imaginary z-score (stocks + bonds - Inflation).
 Do not read too much into that.*
 | K=3          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
