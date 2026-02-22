@@ -35,12 +35,15 @@ namespace UnitTests.ClusterTraining
             using var sw = new StreamWriter(path);
             var K = hRegimes.Regimes.Count;
 
-            var dtRegimeTransitions = RegimeTransitionsAsDataTable(hRegimes);
+            // Cosmetic: Regimes can jump around. Try to display using soft-order.
+            var displayOrder = Enumerable.Range(0, hRegimes.Regimes.Count).OrderByDescending(i => RegimeDisplayOrder(hRegimes.Regimes[i])).ToArray();
+
+            var dtRegimeTransitions = RegimeTransitionsAsDataTable(hRegimes, displayOrder);
             var dtMarketPersonality = MarketDynamicsAsDataTable(hRegimes);
-            var dtMomentsStocks     = MomentsAsDataTable(hRegimes, "Stocks",    sp => sp.Stocks);
-            var dtMomentsBonds      = MomentsAsDataTable(hRegimes, "Bonds",     sp => sp.Bonds);
-            var dtMomentsInfl       = MomentsAsDataTable(hRegimes, "Inflation", sp => sp.Inflation);
-            var dtAssetCorrelations = AssetsCorrelationAsDataTable(hRegimes);
+            var dtMomentsStocks     = MomentsAsDataTable(hRegimes, "Stocks",    displayOrder, sp => sp.Stocks);
+            var dtMomentsBonds      = MomentsAsDataTable(hRegimes, "Bonds",     displayOrder, sp => sp.Bonds);
+            var dtMomentsInfl       = MomentsAsDataTable(hRegimes, "Inflation", displayOrder, sp => sp.Inflation);
+            var dtAssetCorrelations = AssetsCorrelationAsDataTable(hRegimes, displayOrder);
 
             sw
                 .PrintMarkdownTitle2($"Regime Profile (K={K})")
@@ -48,7 +51,7 @@ namespace UnitTests.ClusterTraining
                 .PrintMarkdownTitle3("Market dynamics")
                 .PrintMarkdownTable(dtMarketPersonality)
 
-                .PrintMarkdownTitle3("Regime Transition Probabilities")
+                .PrintMarkdownTitle3("Regime Distribution and Transition Probabilities")
                 .PrintMarkdownTable(dtRegimeTransitions)
 
                 .PrintMarkdownTitle3("Assets Behavior")
@@ -66,33 +69,31 @@ namespace UnitTests.ClusterTraining
             sw.Flush();
         }
 
-        static DataTable RegimeTransitionsAsDataTable(HRegimes regimes)
+        static DataTable RegimeTransitionsAsDataTable(HRegimes regimes, int[] displayOrder)
         {
-
-            int[] DisplayOrder = Enumerable.Range(0, regimes.Regimes.Count).OrderByDescending(i => RegimeDisplayOrder(regimes.Regimes[i])).ToArray();
-
             var dt = new DataTable();
 
             dt.WithColumn("Regime");
-            foreach(var rid in DisplayOrder)
+            foreach(var rid in displayOrder)
             {
                 var r = regimes.Regimes[rid];
                 dt.WithColumn<double>(r.RegimeLabel, format: "P0", alignRight: true);
             }
 
-            foreach (var rid in DisplayOrder)
+            // Regime distribution
+            var values = new object[dt.Columns.Count];
+            values[0] = "Distribution";
+            for (int i = 0; i < displayOrder.Length; i++) values[i + 1] = regimes.RegimeDistribution.Span[displayOrder[i]];
+            dt.Rows.Add(values);
+
+            foreach (var rid in displayOrder)
             {
-                var r = regimes.Regimes[rid];
+                var r  = regimes.Regimes[rid];
+                var tx = regimes.RegimeTransitions[rid];
 
-                var values = new object[dt.Columns.Count];
-
+                values = new object[dt.Columns.Count];
                 values[0] = r.RegimeLabel;
-
-                for(int i=0; i<DisplayOrder.Length; i++)
-                {
-                    values[i + 1] = r.NextRegimeProbabilities.Span[DisplayOrder[i]];
-                }
-                
+                for(int i=0; i<displayOrder.Length; i++) values[i + 1] = tx[displayOrder[i]];
                 dt.Rows.Add(values);
             }
 
@@ -105,16 +106,16 @@ namespace UnitTests.ClusterTraining
             dt
                 .WithColumn("Regime")
 
-                .WithColumn<double>("Stocks(μ)", format: "P1")
-                .WithColumn<double>("Stocks(σ)", format: "P1")
-                .WithColumn<double>("Bonds(μ)",  format: "P1")
-                .WithColumn<double>("Bonds(σ)",  format: "P1")
-                .WithColumn<double>("Infl (μ)",  format: "P1")
-                .WithColumn<double>("Infl (σ)",  format: "P1")
+                .WithColumn<double>("Stocks (μ)", format: "P1")
+                .WithColumn<double>("Stocks (σ)", format: "P1")
+                .WithColumn<double>("Bonds (μ)",  format: "P1")
+                .WithColumn<double>("Bonds (σ)",  format: "P1")
+                .WithColumn<double>("Infl (μ)",   format: "P1")
+                .WithColumn<double>("Infl (σ)",   format: "P1")
 
-                .WithColumn<double>("S&B Corr",  format: "N2")
-                .WithColumn<double>("S&I Corr",  format: "N2")
-                .WithColumn<double>("B&I Corr",  format: "N2");
+                .WithColumn<double>("S&B Corr",   format: "N2")
+                .WithColumn<double>("I&S Corr",   format: "N2")
+                .WithColumn<double>("I&B Corr",   format: "N2");
 
             foreach (var r in hRegimes.Regimes.OrderByDescending(p => RegimeDisplayOrder(p)))
             {
@@ -129,19 +130,17 @@ namespace UnitTests.ClusterTraining
                     r.Inflation.Mean,
                     r.Inflation.Volatility,
 
-                    r.StocksBondCorrelation,
-                    r.StocksInflationCorrelation,
-                    r.BondsInflationCorrelation
+                    r.StocksBondsCorrelation,
+                    r.InflationStocksCorrelation,
+                    r.InflationBondsCorrelation
                 ]);
             }
 
             return dt;
         }
 
-        static DataTable MomentsAsDataTable(HRegimes hRegimes, string assetClass, Func<HRegimes.RP, HRegimes.M> fxMoment)
+        static DataTable MomentsAsDataTable(HRegimes hRegimes, string assetClass, int[] displayOrder, Func<Regime, Moments> fxMoment)
         {
-            int[] DisplayOrder = Enumerable.Range(0, hRegimes.Regimes.Count).OrderByDescending(i => RegimeDisplayOrder(hRegimes.Regimes[i])).ToArray();
-
             var dt = new DataTable();
 
             dt
@@ -153,7 +152,7 @@ namespace UnitTests.ClusterTraining
                 .WithColumn<Double>("AutoCorr",     format: "N2")
                 ;
 
-            foreach(var rIdx in DisplayOrder)
+            foreach(var rIdx in displayOrder)
             {
                 var R = hRegimes.Regimes[rIdx];
                 var M = fxMoment(R);
@@ -172,29 +171,27 @@ namespace UnitTests.ClusterTraining
             return dt;
         }
 
-        static DataTable AssetsCorrelationAsDataTable(HRegimes hRegimes)
+        static DataTable AssetsCorrelationAsDataTable(HRegimes hRegimes, int[] displayOrder)
         {
-            int[] DisplayOrder = Enumerable.Range(0, hRegimes.Regimes.Count).OrderByDescending(i => RegimeDisplayOrder(hRegimes.Regimes[i])).ToArray();
-
             var dt = new DataTable();
 
             dt
                 .WithColumn("Regime")
                 .WithColumn<Double>("Stocks & Bonds",       format: "F2")
-                .WithColumn<Double>("Stocks & Inflation",   format: "F2")
-                .WithColumn<Double>("Bonds & Inflation",    format: "F2")
+                .WithColumn<Double>("Inflation & Stocks",   format: "F2")
+                .WithColumn<Double>("Inflation & Bonds",    format: "F2")
                 ;
 
-            foreach (var rIdx in DisplayOrder)
+            foreach (var rIdx in displayOrder)
             {
                 var R = hRegimes.Regimes[rIdx];
 
                 dt.Rows.Add(
                 [
                     R.RegimeLabel,
-                    R.StocksBondCorrelation,
-                    R.StocksInflationCorrelation,
-                    R.BondsInflationCorrelation
+                    R.StocksBondsCorrelation,
+                    R.InflationStocksCorrelation,
+                    R.InflationBondsCorrelation
                 ]);
             }
 
@@ -202,7 +199,7 @@ namespace UnitTests.ClusterTraining
         }
 
         // Some predictable order...
-        static double RegimeDisplayOrder(HRegimes.RP p) =>
+        static double RegimeDisplayOrder(Regime p) =>
             + p.Stocks.Mean
             - p.Stocks.Volatility
             + p.Stocks.Skewness

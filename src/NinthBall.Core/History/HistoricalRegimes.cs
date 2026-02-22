@@ -1,43 +1,33 @@
 ﻿namespace NinthBall.Core
 {
-    /// <summary>
-    /// Historical regimes and their macro-economic characteristics.
-    /// </summary>
-    public readonly record struct HRegimes( HRegimes.Z StandardizationParams, IReadOnlyList<HRegimes.RP> Regimes)
-    {
-        // Parameters required for standardization of features during inference.
-        public readonly record struct Z
-        (
-            ReadOnlyMemory<double> Mean, 
-            ReadOnlyMemory<double> StdDev
-        );
+    // Features standardization parameters (discovered during training, required for inference)
+    public readonly record struct ZParams(ReadOnlyMemory<double> Mean, ReadOnlyMemory<double> StdDev);
 
-        // Regime profile: Describes characteristics of one Regime
-        public readonly record struct RP
-        (
-            string                  RegimeLabel,
-            ReadOnlyMemory<double>  Centroid,
-            ReadOnlyMemory<double>  NextRegimeProbabilities,
-            
-            double StocksBondCorrelation,
-            double StocksInflationCorrelation,
-            double BondsInflationCorrelation,
+    // Market dynamics of one flavor of asset in one clueter/regime.
+    public readonly record struct Moments(double Mean, double Volatility, double Skewness, double Kurtosis, double AutoCorrelation);
 
-            M Stocks,
-            M Bonds,
-            M Inflation
-        );
+    // Macro-economic characteristics of one Cluster/Regime
+    public readonly record struct Regime
+    (
+        int      RegimeIdx,                     // Stable Idx of the regime, indexed into other related structures.
+        string   RegimeLabel,                   // Friendly label, an approximation, has no relevance on model behavior.
+        double   StocksBondsCorrelation,        // Macro-economic indicators
+        double   InflationStocksCorrelation,
+        double   InflationBondsCorrelation,
+        Moments  Stocks,
+        Moments  Bonds,
+        Moments  Inflation
+    );
 
-        // Moments: Market dynamics of one flavor of asset in one regime.
-        public readonly record struct M
-        (
-            double Mean,
-            double Volatility,
-            double Skewness,
-            double Kurtosis,
-            double AutoCorrelation
-        );
-    }
+    // Historical regimes and their macro-economic characteristics.
+    public readonly record struct HRegimes
+    (
+        ZParams                 ZParams,
+        TwoDMatrix              ZCentroids,
+        ReadOnlyMemory<double>  RegimeDistribution,
+        TwoDMatrix              RegimeTransitions,
+        IReadOnlyList<Regime>   Regimes
+    );
 
     internal sealed class HistoricalRegimes(SimulationSeed SimSeed, HistoricalReturns History)
     {
@@ -86,10 +76,6 @@
         }
 
         // Extract features
-        // TODO: IMPORTANT:
-        // MaxDrawdown is length-dependent, not directly comparable across 3/4/5-year blocks
-        // Technically, MaxDrawdown can't be annualized. Alternates are not effective.
-        // This is a nagging issue, still open.
         public static TwoDMatrix ToFeatureMatrix(this IReadOnlyList<HBlock> blocks)
         {
             // One row per block, and five features per block.
@@ -109,7 +95,7 @@
         }
 
         // Extract the mean and stddev of the featureset
-        public static HRegimes.Z DiscoverStandardizationParameters(this TwoDMatrix featureMatrix)
+        public static ZParams DiscoverStandardizationParameters(this TwoDMatrix featureMatrix)
         {
             var numSamples  = featureMatrix.NumRows;
             var numFeatures = featureMatrix.NumColumns;
@@ -129,21 +115,17 @@
         }
 
         // Standardize the feature matrix
-        public static TwoDMatrix StandardizeFeatureMatrix(this in TwoDMatrix featureMatrix, HRegimes.Z standardizationParams)
+        public static TwoDMatrix StandardizeFeatureMatrix(this in TwoDMatrix featureMatrix, ZParams standardizationParams)
         {
-            var numSamples  = featureMatrix.NumRows;
-            var numFeatures = featureMatrix.NumColumns;
             var means       = standardizationParams.Mean.Span;
             var stdDevs     = standardizationParams.StdDev.Span;
             
             // Prepare a target matrix, same shape as the source.
-            XTwoDMatrix standardizedFeatureMatrix = new XTwoDMatrix(numSamples, numFeatures);
+            XTwoDMatrix standardizedFeatureMatrix = new(featureMatrix.NumRows, featureMatrix.NumColumns);
 
             // Perform Z-Score normalization of each row.
-            for (int s = 0; s < numSamples; s++)
-            {
-                featureMatrix[s].ZNormalize(meanVector: means, stdDevVector: stdDevs, targetRow: standardizedFeatureMatrix[s]);
-            }
+            for (int i = 0; i < featureMatrix.NumRows; i++)
+                featureMatrix[i].ZNormalize(means, stdDevs, targetRow: standardizedFeatureMatrix[i]);
 
             // Returns the z-normalized feature matrix.
             return standardizedFeatureMatrix.ReadOnly;
@@ -153,21 +135,15 @@
         //......................................................................
         #region KMean.Result -> HRegimes
         //......................................................................
-        static HRegimes ToHistoricalRegimes(this KMean.Result clusters, IReadOnlyList<HBlock> trainingBlocks, HRegimes.Z standardizationParams)
+        static HRegimes ToHistoricalRegimes(this KMean.Result clusters, IReadOnlyList<HBlock> trainingBlocks, ZParams standardizationParams)
         {
-            // Compute the probability of regime switching
-            var transitionMatrix = clusters.ComputeRegimeTransitionMatrix();
-
-            // Map training blocks to regimes, calculate regime profile for each.
-            var regimeProfiles = Enumerable.Range(0, clusters.NumClusters)
-                .Select(r => trainingBlocks.ComputeRegimeProfile(clusters, transitionMatrix, r))
-                .ToArray()
-                .AdjustRegimeLabels();
-
-            return new
+            return new HRegimes
             (
-                StandardizationParams: standardizationParams,
-                Regimes: regimeProfiles
+                ZParams:            standardizationParams,
+                ZCentroids:         clusters.Centroids,
+                RegimeDistribution:        ComputeRegimeDistribution(clusters),
+                RegimeTransitions:   ComputeRegimeTransitionMatrix(clusters),
+                Regimes:            ComputeRegimeProfiles(trainingBlocks, clusters).AdjustRegimeLabels()
             );
         }
 
@@ -186,17 +162,15 @@
             // Square matrix
             var matrix = new XTwoDMatrix(numRegimes, numRegimes);
 
-            // Step1: Count the regime transitions.
-            // One row per 'fromRegime'
+            // Count the regime transitions.
             for (int i = 0; i < assignments.Length - 1; i++)
             {
                 int fromRegime = assignments[i];
-                int toRegime = assignments[i + 1];
+                int toRegime   = assignments[i + 1];
                 matrix[fromRegime, toRegime]++;
             }
 
-            // Step2: Normalize regime transitions counts to probabilities.
-            // Note:  Normalize each row (local normalization)
+            // Normalize each row (local normalization) from counts to probabilities.
             for (int r = 0; r < numRegimes; r++)
             {
                 matrix[r].ToProbabilityDistribution();
@@ -205,68 +179,71 @@
             return matrix.ReadOnly;
         }
 
-        static HRegimes.RP ComputeRegimeProfile(this IReadOnlyList<HBlock> blocks, KMean.Result clusters, TwoDMatrix transitionProbabilities, int regimeId)
+        static ReadOnlyMemory<double> ComputeRegimeDistribution(this KMean.Result clusters)
         {
-            var clusterAssignments = clusters.Assignments.Span;
+            var assignments  = clusters.Assignments.Span;
 
-            // How many members are there in this regime?
-            var memberCount = clusterAssignments.Count(regimeId);
+            // Count the members
+            var distribution = new double[clusters.NumClusters];
+            for(int i = 0; i<assignments.Length; i++) distribution[ assignments[i] ]++;
 
-            // Clusters will never be empty since we are rejecting degenerate clusters.
-            if (0 == memberCount) throw new FatalWarning($"Regime {regimeId} has no members.");
+            // Translate counts to probabilities
+            distribution.ToProbabilityDistribution();
 
-            // Storage to collect regime members' features
-            int idx = 0;
-            double[] stocks    = new double[memberCount];
-            double[] bonds     = new double[memberCount];
-            double[] inflation = new double[memberCount];
+            return distribution;
+        }
 
-            for (int i = 0; i < blocks.Count; i++)
+        static Regime[] ComputeRegimeProfiles(this IReadOnlyList<HBlock> blocks, KMean.Result clusters)
+        {
+            var assignments = clusters.Assignments.Span;
+            var regimes     = new Regime[clusters.NumClusters];
+
+            for(int regimeIdx = 0; regimeIdx < clusters.NumClusters; regimeIdx++)
             {
-                // Skip blocks that are not part of current regime.
-                if (clusterAssignments[i] != regimeId) continue;
+                // How many members are there in this regime?
+                // Clusters will never be empty since we are rejecting degenerate clusters.
+                var memberCount = assignments.Count(regimeIdx);
+                if (0 == memberCount) throw new FatalWarning($"Regime {regimeIdx} has no members.");
 
-                // This is my blocks. Collect features we care.
-                stocks[idx]     = blocks[i].Features.NominalCAGRStocks;
-                bonds[idx]      = blocks[i].Features.NominalCAGRBonds;
-                inflation[idx]  = blocks[i].Features.GMeanInflationRate;
+                // Storage to collect current regime members' features
+                int idx = 0;
+                double[] stocks    = new double[memberCount];
+                double[] bonds     = new double[memberCount];
+                double[] inflation = new double[memberCount];
 
-                // Advance the sample index
-                idx++;
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    // Skip blocks that are not part of current regime.
+                    if (assignments[i] == regimeIdx)
+                    {
+                        // This is my blocks. Collect features we care.
+                        stocks[idx]    = blocks[i].Features.NominalCAGRStocks;
+                        bonds[idx]     = blocks[i].Features.NominalCAGRBonds;
+                        inflation[idx] = blocks[i].Features.GMeanInflationRate;
+
+                        // Advance the sample index
+                        idx++;
+                    }
+                }
+
+                regimes[regimeIdx] = new Regime
+                (
+                    RegimeIdx:   regimeIdx,
+                    RegimeLabel: $"TBD{regimeIdx}",
+
+                    StocksBondsCorrelation:     stocks.Correlation(bonds),
+                    InflationStocksCorrelation: stocks.Correlation(inflation),
+                    InflationBondsCorrelation:  bonds.Correlation(inflation),
+                    
+                    Stocks:     ToMoments(stocks),
+                    Bonds:      ToMoments(bonds),
+                    Inflation:  ToMoments(inflation)
+                );
             }
 
-            // Calculate higher-order Moments for the parametric generator
-            var mStocks    = ToMoment(stocks);
-            var mBonds     = ToMoment(bonds);
-            var mInflation = ToMoment(inflation);
+            return regimes;
 
-            // Calculate Triangular Correlations (The "Financial DNA" of the regime)
-            double sbCorr  = stocks.Correlation(bonds);
-            double siCorr  = stocks.Correlation(inflation);
-            double biCorr  = bonds.Correlation(inflation);
-
-            // Capture the centroid of this regime.
-            var centroid = clusters.Centroids.Row(regimeId);
-
-            // Capture probabilty of transition from current regime to other regimes
-            var txProbabilities = transitionProbabilities.Row(regimeId);
-
-            return new HRegimes.RP
-            (
-                RegimeLabel:     "TBD",
-                Centroid:        centroid,
-                NextRegimeProbabilities: txProbabilities,
-
-                StocksBondCorrelation:      sbCorr,
-                StocksInflationCorrelation: siCorr,
-                BondsInflationCorrelation:  biCorr,
-
-                Stocks:     mStocks,
-                Bonds:      mBonds,
-                Inflation:  mInflation
-            );
-
-            static HRegimes.M ToMoment(double[] values) => new HRegimes.M
+            static Moments ToMoments(double[] values) => new Moments
             (
                 Mean:            values.Mean(),
                 Volatility:      values.StdDev(),
@@ -281,37 +258,28 @@
         //......................................................................
         #region Extensions to support inference
         //......................................................................
-        public static int FindNearestRegime(this HRegimes regimes, ReadOnlySpan<double> standardizedFeatures)
+        public static int FindNearestRegime(this HRegimes histrodicalRegimes, ReadOnlySpan<double> zBlockFeatures)
         {
-            int nearestIndex = 0;
-            double minDistance = standardizedFeatures.EuclideanDistanceSquared(regimes.Regimes[0].Centroid.Span);
+            var regimeCentroids  = histrodicalRegimes.ZCentroids;
 
-            for (int regimeIdx = 1; regimeIdx < regimes.Regimes.Count; regimeIdx++)
+            // Pick a regime, pretend that is nearest (we picked first regime here)
+            var nearestRegimeIdx = histrodicalRegimes.Regimes[0].RegimeIdx;
+            var minDistance      = zBlockFeatures.EuclideanDistanceSquared(regimeCentroids[nearestRegimeIdx]);
+
+            foreach(var nextRegime in histrodicalRegimes.Regimes)
             {
-                double distance = standardizedFeatures.EuclideanDistanceSquared(regimes.Regimes[regimeIdx].Centroid.Span);
+                var distance = zBlockFeatures.EuclideanDistanceSquared(regimeCentroids[nextRegime.RegimeIdx]);
+
                 if (distance < minDistance)
                 {
                     minDistance = distance;
-                    nearestIndex = regimeIdx;
+                    nearestRegimeIdx = nextRegime.RegimeIdx;
                 }
             }
 
-            return nearestIndex;
+            return nearestRegimeIdx;
         }
 
-        // Re-construct (copy) regime transitons as 2D matrix.
-        public static TwoDMatrix GetRegimeTransitionMatrix(this HRegimes regimes)
-        {
-            int numRegimes = regimes.Regimes.Count;
-            var matrix = new XTwoDMatrix(numRegimes, numRegimes);
-
-            for (int i = 0; i < numRegimes; i++)
-            {
-                regimes.Regimes[i].NextRegimeProbabilities.Span.CopyTo(matrix[i]);
-            }
-
-            return matrix.ReadOnly;
-        }
 
         #endregion
 
@@ -334,37 +302,37 @@
             return true;
         }
 
-        static HRegimes.RP[] AdjustRegimeLabels(this HRegimes.RP[] profiles)
+        static Regime[] AdjustRegimeLabels(this Regime[] profiles)
         {
             ArgumentNullException.ThrowIfNull(profiles);
             if (0 == profiles.Length) return profiles;
 
-            double BullScore(HRegimes.RP p) =>
+            double BullScore(Regime p) =>
                 + p.Stocks.Mean
                 - p.Stocks.Volatility
                 + p.Stocks.Skewness
                 - p.Stocks.Kurtosis
                 - p.Bonds.Mean;
 
-            double CrisisScore(HRegimes.RP p) =>
+            double CrisisScore(Regime p) =>
                 - p.Stocks.Mean
                 + p.Stocks.Volatility
                 - p.Stocks.Skewness
                 + p.Stocks.Kurtosis
                 + p.Bonds.Mean;
 
-            double InflationScore(HRegimes.RP p) =>
+            double InflationScore(Regime p) =>
                 + p.Inflation.Mean
                 + p.Inflation.Volatility
                 - p.Bonds.Mean;
 
-            double RecoveryScore(HRegimes.RP p) =>
+            double RecoveryScore(Regime p) =>
                 + (p.Stocks.Mean > 0 ? p.Stocks.Mean : -1.0)    // Penalize if negative
                 + p.Stocks.Skewness                             // Look for the "Bounce"
                 + (p.Stocks.Volatility * 0.5)                   // Volatility is "Excitement" here
                 - p.Bonds.Mean;                                 // Rates are usually stabilizing
 
-            double StagnationScore(HRegimes.RP p) =>
+            double StagnationScore(Regime p) =>
                 - Math.Abs(p.Stocks.Mean)                       // Reward being closest to 0
                 - p.Stocks.Volatility                           // Reward low volatility (boringness)
                 - Math.Abs(p.Inflation.Mean)                    // Reward low/stable inflation
@@ -375,7 +343,7 @@
             var unnamed = Enumerable.Range(0, profiles.Length).Select(x => new { Idx = x, Profile = profiles[x] with { RegimeLabel = $"Regime #{x}" }}).ToList();
 
             // DRY Helper: Consult FxScore, apply suggested tag. Note: Max() wins.
-            void TagByScore(string tag, Func<HRegimes.RP, double> fxScore)
+            void TagByScore(string tag, Func<Regime, double> fxScore)
             {
                 if (unnamed.Count > 0)
                 {

@@ -4,16 +4,17 @@
 
 ### Market dynamics
 
-| Regime       | Stocks(μ)    | Stocks(σ)    | Bonds(μ)     | Bonds(σ)     | Infl (μ)     | Infl (σ)     | S&B Corr     | S&I Corr     | B&I Corr     |
+| Regime       | Stocks (μ)   | Stocks (σ)   | Bonds (μ)    | Bonds (σ)    | Infl (μ)     | Infl (σ)     | S&B Corr     | I&S Corr     | I&B Corr     |
 |:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|
 | Bull         |        13.1% |         4.5% |        -1.2% |         4.3% |         3.1% |         1.8% |         0.78 |        -0.87 |        -0.86 |
 | Infl         |        14.2% |         7.2% |         5.3% |         4.5% |         3.6% |         2.7% |         0.14 |        -0.23 |        -0.03 |
 | Crisis       |        -6.4% |         9.2% |         4.6% |         2.9% |         1.3% |         4.6% |        -0.01 |         0.51 |         0.11 |
 
-### Regime Transition Probabilities
+### Regime Distribution and Transition Probabilities
 
 | Regime       | Bull         | Infl         | Crisis       |
 |:-------------|-------------:|-------------:|-------------:|
+| Distribution |           7% |          74% |          19% |
 | Bull         |          67% |          33% |           0% |
 | Infl         |           3% |          90% |           7% |
 | Crisis       |           6% |          28% |          67% |
@@ -40,7 +41,7 @@
 
 ### Assets Correlation
 
-| Regime       | Stocks & Bonds | Stocks & Inflation | Bonds & Inflation |
+| Regime       | Stocks & Bonds | Inflation & Stocks | Inflation & Bonds |
 |:-------------|---------------:|-------------------:|------------------:|
 | Bull         |           0.78 |              -0.87 |             -0.86 |
 | Infl         |           0.14 |              -0.23 |             -0.03 |

@@ -4,17 +4,18 @@
 
 ### Market dynamics
 
-| Regime       | Stocks(μ)    | Stocks(σ)    | Bonds(μ)     | Bonds(σ)     | Infl (μ)     | Infl (σ)     | S&B Corr     | S&I Corr     | B&I Corr     |
+| Regime       | Stocks (μ)   | Stocks (σ)   | Bonds (μ)    | Bonds (σ)    | Infl (μ)     | Infl (σ)     | S&B Corr     | I&S Corr     | I&B Corr     |
 |:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|
 | Bull         |        13.3% |         7.4% |         3.1% |         2.2% |         3.6% |         3.1% |        -0.11 |        -0.23 |        -0.16 |
 | Infl         |        14.2% |         6.3% |         1.2% |         4.7% |         2.9% |         1.4% |         0.46 |        -0.60 |        -0.71 |
 | Recovery     |        16.7% |         5.7% |        12.1% |         3.3% |         3.8% |         1.6% |         0.07 |        -0.34 |         0.09 |
 | Crisis       |        -6.4% |         9.2% |         4.6% |         2.9% |         1.3% |         4.6% |        -0.01 |         0.51 |         0.11 |
 
-### Regime Transition Probabilities
+### Regime Distribution and Transition Probabilities
 
 | Regime       | Bull         | Infl         | Recovery     | Crisis       |
 |:-------------|-------------:|-------------:|-------------:|-------------:|
+| Distribution |          53% |          12% |          17% |          19% |
 | Bull         |          84% |           2% |           6% |           8% |
 | Infl         |          10% |          50% |          30% |          10% |
 | Recovery     |          12% |          25% |          62% |           0% |
@@ -45,7 +46,7 @@
 
 ### Assets Correlation
 
-| Regime       | Stocks & Bonds | Stocks & Inflation | Bonds & Inflation |
+| Regime       | Stocks & Bonds | Inflation & Stocks | Inflation & Bonds |
 |:-------------|---------------:|-------------------:|------------------:|
 | Bull         |          -0.11 |              -0.23 |             -0.16 |
 | Infl         |           0.46 |              -0.60 |             -0.71 |

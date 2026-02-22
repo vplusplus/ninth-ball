@@ -4,7 +4,7 @@
 
 ### Market dynamics
 
-| Regime       | Stocks(μ)    | Stocks(σ)    | Bonds(μ)     | Bonds(σ)     | Infl (μ)     | Infl (σ)     | S&B Corr     | S&I Corr     | B&I Corr     |
+| Regime       | Stocks (μ)   | Stocks (σ)   | Bonds (μ)    | Bonds (σ)    | Infl (μ)     | Infl (σ)     | S&B Corr     | I&S Corr     | I&B Corr     |
 |:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|-------------:|
 | Bull         |        14.6% |         7.4% |         3.0% |         2.0% |         2.1% |         1.5% |        -0.07 |         0.07 |        -0.26 |
 | Infl         |         5.3% |         7.4% |         3.1% |         2.3% |         8.1% |         2.1% |        -0.24 |         0.36 |        -0.68 |
@@ -12,10 +12,11 @@
 | Recovery     |        16.7% |         5.5% |        11.8% |         3.5% |         4.0% |         1.6% |         0.07 |        -0.32 |        -0.05 |
 | Crisis       |        -7.8% |        10.3% |         5.0% |         3.2% |        -0.5% |         3.9% |        -0.02 |         0.62 |         0.47 |
 
-### Regime Transition Probabilities
+### Regime Distribution and Transition Probabilities
 
 | Regime       | Bull         | Infl         | Stagnation   | Recovery     | Crisis       |
 |:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
+| Distribution |          40% |          16% |          13% |          18% |          14% |
 | Bull         |          82% |           5% |           3% |           3% |           8% |
 | Infl         |          13% |          67% |           0% |          20% |           0% |
 | Stagnation   |           9% |           0% |          55% |          27% |           9% |
@@ -50,7 +51,7 @@
 
 ### Assets Correlation
 
-| Regime       | Stocks & Bonds | Stocks & Inflation | Bonds & Inflation |
+| Regime       | Stocks & Bonds | Inflation & Stocks | Inflation & Bonds |
 |:-------------|---------------:|-------------------:|------------------:|
 | Bull         |          -0.07 |               0.07 |             -0.26 |
 | Infl         |          -0.24 |               0.36 |             -0.68 |
