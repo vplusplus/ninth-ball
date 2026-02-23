@@ -1,15 +1,16 @@
 ﻿
+using NinthBall.Utils;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using NinthBall.Utils;
 
 namespace NinthBall.Core
 {
     // Configuration options for the MBB internals
     public sealed record MovingBlockBootstrapOptions
     (
-        [property: Required] IReadOnlyList<int> BlockSizes,
-        [property: Required] bool NoBackToBackOverlaps
+        [property: Required]        IReadOnlyList<int> BlockSizes,
+        [property: Required]        bool NoBackToBackOverlaps,
+        [property: Range(0.0, 1.0)] double RegimeAwareness
     );
 
     /// <summary>

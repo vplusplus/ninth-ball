@@ -1,5 +1,4 @@
-﻿
-using NinthBall.Utils;
+﻿using NinthBall.Utils;
 using System.Collections.ObjectModel;
 using System.Data;
 
@@ -10,7 +9,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Replays random blocks of historical returns and inflation.
     /// </summary>
-    internal sealed class RegimeAwareMovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalBlocks History, HistoricalRegimes HistoricalRegimes) : IBootstrapper
+    internal sealed class RegimeAwareMovingBlockBootstrapper(SimulationSeed SimSeed, MovingBlockBootstrapOptions Options, HistoricalBlocks History, HistoricalRegimes HistoricalRegimes) : IBootstrapper
     {
         readonly Lazy<RegimeAwareBlocks> LazyRegimeAwareBlocks = new ( MapBlocksToRegimesOnce(History.Blocks, HistoricalRegimes.Regimes) );
 
@@ -40,6 +39,9 @@ namespace NinthBall.Core
             var sequence = new HROI[numYears];
             var idx = 0;
 
+            // Smooth the regime transition matrix.
+            var adjustedRegimeTransitions = ApplyRegimeAwareTransitionSmoothing(regimes.RegimeTransitions, regimes.RegimeDistribution.Span, Options.RegimeAwareness, out var _);
+
             // Use regime sizes learnt during the training, this approximates historical frequency of blocks.
             // Choose a random first regime, but biased by the regime size.
             var currentRegimeIdx = R.NextWeightedIndex(regimes.RegimeDistribution.Span);
@@ -56,7 +58,10 @@ namespace NinthBall.Core
 
                 // Consult transition matrix where the economy may be heading
                 // Pick next regime based on the transition probabilities.
-                if (idx < numYears) currentRegimeIdx = R.NextWeightedIndex(regimes.RegimeTransitions[currentRegimeIdx]);
+                if (idx < numYears)
+                {
+                    currentRegimeIdx = R.NextWeightedIndex(adjustedRegimeTransitions[currentRegimeIdx]);
+                }
             }
 
             return sequence;
@@ -93,6 +98,44 @@ namespace NinthBall.Core
             if (badData) throw new Exception("Detected empty regime or count mismatch.");
 
             return blocksByRegime;
+        }
+
+        public static TwoDMatrix ApplyRegimeAwareTransitionSmoothing(TwoDMatrix regimeTransitionMatrix, ReadOnlySpan<double> regimeDistribution, double regimeAwareness, out double[] adjustedRegimeDistribution)
+        {
+            if (regimeAwareness < 0.0 || regimeAwareness > 1.0) throw new ArgumentException("RegimeAwareness must range from 0.0 to 1.0");
+            if (regimeTransitionMatrix.NumColumns != regimeTransitionMatrix.NumRows) throw new ArgumentException("RegimeTransitions must be a square matrix.");
+            if (regimeDistribution.Length != regimeTransitionMatrix.NumColumns) throw new ArgumentException($"Regime count mismatch | RegimeTransitionMatrix says {regimeTransitionMatrix.NumColumns} | RegimeDistribution says {regimeDistribution.Length}");
+
+            int numRegmes = regimeTransitionMatrix.NumRows;
+            var adjustedTransitionMatrix = new XTwoDMatrix(numRegmes, numRegmes);
+
+            double lambda = regimeAwareness;
+            double complement = 1 - lambda;
+
+            adjustedRegimeDistribution = new double[numRegmes];
+            
+            for(int i=0; i<numRegmes; i++)
+            {
+                double pFrequency = regimeDistribution[i];
+                double pUniform = 1.0 / (double)numRegmes;
+
+                adjustedRegimeDistribution[i] = (lambda * pFrequency) + (complement * pUniform);
+            }
+
+            for (int row = 0; row < numRegmes; row++)
+            {
+                for(int col = 0; col < numRegmes; col++)
+                {
+                    double pTrans = regimeTransitionMatrix[row, col];      
+                    double pDist  = adjustedRegimeDistribution[col];
+
+                    // Dominant transitions donate to less-likey transitions
+                    // Crashes are still rare. Use regime distribution as the guide.
+                    adjustedTransitionMatrix[row, col] = (lambda * pTrans) + (complement * pDist);
+                }
+            }
+
+            return adjustedTransitionMatrix.ReadOnly;
         }
 
     }
