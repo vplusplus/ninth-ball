@@ -39,7 +39,7 @@ namespace UnitTests.ClusterTraining
             var displayOrder = Enumerable.Range(0, hRegimes.Regimes.Count).OrderByDescending(i => RegimeDisplayOrder(hRegimes.Regimes[i])).ToArray();
 
             var dtRegimeTransitions = RegimeTransitionsAsDataTable(hRegimes, displayOrder);
-            var dtMarketPersonality = MarketDynamicsAsDataTable(hRegimes);
+            var dtMarketPersonality = MarketDynamicsAsDataTable(hRegimes, displayOrder);
             var dtMomentsStocks     = MomentsAsDataTable(hRegimes, "Stocks",    displayOrder, sp => sp.Stocks);
             var dtMomentsBonds      = MomentsAsDataTable(hRegimes, "Bonds",     displayOrder, sp => sp.Bonds);
             var dtMomentsInfl       = MomentsAsDataTable(hRegimes, "Inflation", displayOrder, sp => sp.Inflation);
@@ -74,33 +74,40 @@ namespace UnitTests.ClusterTraining
             var dt = new DataTable();
 
             dt.WithColumn("Regime");
-            foreach(var rid in displayOrder)
+            foreach(var rIdx in displayOrder)
             {
-                var r = regimes.Regimes[rid];
+                var r = regimes.Regimes[rIdx];
                 dt.WithColumn<double>(r.RegimeLabel, format: "P0", alignRight: true);
             }
 
+            var values = new List<object>(dt.Columns.Count);
+
             // Regime distribution
-            var values = new object[dt.Columns.Count];
-            values[0] = "Distribution";
-            for (int i = 0; i < displayOrder.Length; i++) values[i + 1] = regimes.RegimeDistribution.Span[displayOrder[i]];
-            dt.Rows.Add(values);
-
-            foreach (var rid in displayOrder)
+            values.Clear();
+            values.Add("Distribution");
+            foreach (var rIdx in displayOrder)
             {
-                var r  = regimes.Regimes[rid];
-                var tx = regimes.RegimeTransitions[rid];
+                var R = regimes.Regimes[rIdx];
+                var dist = regimes.RegimeDistribution.Span[R.RegimeIdx];
+                values.Add(dist);
+            }
+            dt.Rows.Add(values.ToArray());
 
-                values = new object[dt.Columns.Count];
-                values[0] = r.RegimeLabel;
-                for(int i=0; i<displayOrder.Length; i++) values[i + 1] = tx[displayOrder[i]];
-                dt.Rows.Add(values);
+            foreach (var rIdx in displayOrder)
+            {
+                var R  = regimes.Regimes[rIdx];
+                var tx = regimes.RegimeTransitions[R.RegimeIdx];
+
+                values.Clear();
+                values.Add(R.RegimeLabel);
+                foreach (var ridx2 in displayOrder) values.Add(tx[ridx2]);
+                dt.Rows.Add(values.ToArray());
             }
 
             return dt;
         }
 
-        static DataTable MarketDynamicsAsDataTable(HRegimes hRegimes)
+        static DataTable MarketDynamicsAsDataTable(HRegimes hRegimes, int[] displayOrder)
         {
             var dt = new DataTable();
             dt
@@ -117,22 +124,24 @@ namespace UnitTests.ClusterTraining
                 .WithColumn<double>("I&S Corr",   format: "N2")
                 .WithColumn<double>("I&B Corr",   format: "N2");
 
-            foreach (var r in hRegimes.Regimes.OrderByDescending(p => RegimeDisplayOrder(p)))
+            foreach(var rIdx in displayOrder)
             {
+                var R = hRegimes.Regimes[rIdx];
+
                 dt.Rows.Add(
                 [
-                    r.RegimeLabel,
+                    R.RegimeLabel,
 
-                    r.Stocks.Mean,
-                    r.Stocks.Volatility,
-                    r.Bonds.Mean,
-                    r.Bonds.Volatility,
-                    r.Inflation.Mean,
-                    r.Inflation.Volatility,
+                    R.Stocks.Mean,
+                    R.Stocks.Volatility,
+                    R.Bonds.Mean,
+                    R.Bonds.Volatility,
+                    R.Inflation.Mean,
+                    R.Inflation.Volatility,
 
-                    r.StocksBondsCorrelation,
-                    r.InflationStocksCorrelation,
-                    r.InflationBondsCorrelation
+                    R.StocksBondsCorrelation,
+                    R.InflationStocksCorrelation,
+                    R.InflationBondsCorrelation
                 ]);
             }
 
