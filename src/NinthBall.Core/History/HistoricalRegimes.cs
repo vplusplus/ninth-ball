@@ -269,6 +269,32 @@
             return nearestRegimeIdx;
         }
 
+        public static TwoDMatrix ApplySmoothing(this TwoDMatrix regimeTransitionMatrix, ReadOnlySpan<double> targetDistribution, double regimeAwareness)
+        {
+            if (regimeAwareness < 0.0 || regimeAwareness > 1.0) throw new ArgumentException("RegimeAwareness must range from 0.0 to 1.0");
+            if (regimeTransitionMatrix.NumColumns != regimeTransitionMatrix.NumRows) throw new ArgumentException("RegimeTransitions must be a square matrix.");
+            if (targetDistribution.Length != regimeTransitionMatrix.NumColumns) throw new ArgumentException($"Regime count mismatch | RegimeTransitionMatrix says {regimeTransitionMatrix.NumColumns} | RegimeDistribution says {targetDistribution.Length}");
+
+            int numRegmes = regimeTransitionMatrix.NumRows;
+            var adjustedTransitionMatrix = new XTwoDMatrix(numRegmes, numRegmes);
+
+            double lambda = regimeAwareness;
+            double complement = 1 - lambda;
+
+            for (int row = 0; row < numRegmes; row++)
+            {
+                for (int col = 0; col < numRegmes; col++)
+                {
+                    // As regime awareness approach zero, transition probability approach the target.
+                    double pCurrent = regimeTransitionMatrix[row, col];
+                    double pTarget = targetDistribution[col];
+                    adjustedTransitionMatrix[row, col] = (lambda * pCurrent) + (complement * pTarget);
+                }
+            }
+
+            return adjustedTransitionMatrix.ReadOnly;
+        }
+
         #endregion
 
         //......................................................................

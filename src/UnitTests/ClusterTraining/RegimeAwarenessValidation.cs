@@ -41,9 +41,10 @@ namespace UnitTests.ClusterTraining
             foreach (var regimeAwareness in regimeAwarenessList)
             {
                 // Smooth and print
-                var adjustedMatrix = RegimeAwareMovingBlockBootstrapper.ApplyRegimeAwareTransitionSmoothing(hRegimes.RegimeTransitions, hRegimes.RegimeDistribution.Span, regimeAwareness);
+                var adjustedMatrix = hRegimes.RegimeTransitions.ApplySmoothing(hRegimes.RegimeDistribution.Span, regimeAwareness);
 
                 dt = RegimeTransitionsAsDataTable(adjustedMatrix, hRegimes.RegimeDistribution.Span, regimeNames);
+
                 sw
                     .PrintMarkdownTitle3($"Regime Awareness: {regimeAwareness:P0}")
                     .PrintMarkdownTable(dt)

@@ -40,7 +40,7 @@ namespace NinthBall.Core
             var idx = 0;
 
             // Smooth the regime transition matrix.
-            var adjustedRegimeTransitions = ApplyRegimeAwareTransitionSmoothing(regimes.RegimeTransitions, regimes.RegimeDistribution.Span, Options.RegimeAwareness);
+            var adjustedRegimeTransitions = regimes.RegimeTransitions.ApplySmoothing(regimes.RegimeDistribution.Span, Options.RegimeAwareness);
 
             // Use regime sizes learnt during the training, this approximates historical frequency of blocks.
             // Choose a random first regime, but biased by the regime size.
@@ -98,32 +98,6 @@ namespace NinthBall.Core
             if (badData) throw new Exception("Detected empty regime or count mismatch.");
 
             return blocksByRegime;
-        }
-
-        public static TwoDMatrix ApplyRegimeAwareTransitionSmoothing(TwoDMatrix regimeTransitionMatrix, ReadOnlySpan<double> regimeDistribution, double regimeAwareness)
-        {
-            if (regimeAwareness < 0.0 || regimeAwareness > 1.0) throw new ArgumentException("RegimeAwareness must range from 0.0 to 1.0");
-            if (regimeTransitionMatrix.NumColumns != regimeTransitionMatrix.NumRows) throw new ArgumentException("RegimeTransitions must be a square matrix.");
-            if (regimeDistribution.Length != regimeTransitionMatrix.NumColumns) throw new ArgumentException($"Regime count mismatch | RegimeTransitionMatrix says {regimeTransitionMatrix.NumColumns} | RegimeDistribution says {regimeDistribution.Length}");
-
-            int numRegmes = regimeTransitionMatrix.NumRows;
-            var adjustedTransitionMatrix = new XTwoDMatrix(numRegmes, numRegmes);
-
-            double lambda = regimeAwareness;
-            double complement = 1 - lambda;
-
-            for (int row = 0; row < numRegmes; row++)
-            {
-                for(int col = 0; col < numRegmes; col++)
-                {
-                    // As regime awareness approach zero, transition probability approach the target.
-                    double pCurrent = regimeTransitionMatrix[row, col];      
-                    double pTarget  = regimeDistribution[col];
-                    adjustedTransitionMatrix[row, col] = (lambda * pCurrent) + (complement * pTarget);
-                }
-            }
-
-            return adjustedTransitionMatrix.ReadOnly;
         }
     }
 }
