@@ -35,15 +35,15 @@
         
         readonly Lazy<HRegimes> ThreeYearRegimes = new( () =>
         {
-            // Why: Five regimes gave less diagonal matrix, and avoided one massive regime (This is not a tuneable configuration)
+            // Why: Five regimes gave balanced clusters and less-diagonal matrix (This is not a tuneable configuration)
             const int FiveRegimes = 5;
 
-            // Why: Use only 3-year blocks for regime discovery. Feeding 3/4/5 will result redundant info and strong diagonal. (This is not a tuneable configuration)
-            int[] ThreeYearBlocksOnlyNotTwoFourOrFive = [3];    
+            // Why: Feeding 3/4/5 will result redundant info and strong diagonal. (This is not a tuneable configuration)
+            int[] ThreeYearBlocksOnly = [ 3 ];    
 
-            // Using three-year blocks, discover regimes and their characteristics.
+            // Using 3-year blocks, discover 5-regimes and their characteristics.
             return History.Returns
-                .ReadBlocks(ThreeYearBlocksOnlyNotTwoFourOrFive)
+                .ReadBlocks(ThreeYearBlocksOnly)
                 .ToList()
                 .DiscoverRegimes(regimeDiscoverySeed: SimSeed.RegimeDiscoverySeed, numRegimes: FiveRegimes)
                 ;
