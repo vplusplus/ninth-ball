@@ -26,7 +26,7 @@ namespace UnitTests.ClusterTraining
 
             double[] regimeAwarenessList = { 1.0, 0.75, 0.5, 0.25, 0.0 };
 
-            using var sw = new StreamWriter(Path.Combine(ReportsFolder, "RegimeAwareness-V2.md"));
+            using var sw = new StreamWriter(Path.Combine(ReportsFolder, "RegimeAwareness.md"));
 
             sw.PrintMarkdownTitle2("Regime transition smoothing");
 
@@ -41,9 +41,9 @@ namespace UnitTests.ClusterTraining
             foreach (var regimeAwareness in regimeAwarenessList)
             {
                 // Smooth and print
-                var adjustedMatrix = RegimeAwareMovingBlockBootstrapper.ApplyRegimeAwareTransitionSmoothing(hRegimes.RegimeTransitions, hRegimes.RegimeDistribution.Span, regimeAwareness, out var adjustedRegimeDistribution);
+                var adjustedMatrix = RegimeAwareMovingBlockBootstrapper.ApplyRegimeAwareTransitionSmoothing(hRegimes.RegimeTransitions, hRegimes.RegimeDistribution.Span, regimeAwareness);
 
-                dt = RegimeTransitionsAsDataTable(adjustedMatrix, adjustedRegimeDistribution, regimeNames);
+                dt = RegimeTransitionsAsDataTable(adjustedMatrix, hRegimes.RegimeDistribution.Span, regimeNames);
                 sw
                     .PrintMarkdownTitle3($"Regime Awareness: {regimeAwareness:P0}")
                     .PrintMarkdownTable(dt)
