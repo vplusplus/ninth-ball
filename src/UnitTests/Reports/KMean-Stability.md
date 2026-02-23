@@ -3,18 +3,18 @@ Train using same K but different training seeds. Look for stability of the resul
 
 ### Clusters Quality metrics:
 
-| Seed           | Inertia      | Silhouette   | DBI          | CH           | Dunn         |
-|---------------:|-------------:|-------------:|-------------:|-------------:|-------------:|
-| -1,347,846,518 |       183.35 |         0.31 |         1.04 |        35.79 |         0.13 |
-|    824,496,063 |       183.44 |         0.31 |         1.04 |        35.76 |         0.13 |
-| -1,298,087,692 |       183.86 |         0.31 |         1.02 |        35.63 |         0.12 |
-|    874,295,849 |       183.44 |         0.31 |         1.03 |        35.76 |         0.12 |
-| -1,447,446,090 |       183.44 |         0.31 |         1.03 |        35.76 |         0.12 |
-|    724,937,451 |       185.43 |         0.31 |         1.01 |        35.14 |         0.12 |
-| -1,397,646,304 |       183.44 |         0.31 |         1.03 |        35.76 |         0.12 |
-|    774,737,237 |       183.93 |         0.31 |         1.03 |        35.61 |         0.12 |
-| -1,547,045,657 |       183.93 |         0.31 |         1.03 |        35.61 |         0.12 |
-|    625,337,884 |       184.71 |         0.31 |         1.01 |        35.36 |         0.12 |
+| Seed         | Inertia      | Silhouette   | DBI          | CH           | Dunn         |
+|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
+| Seed #0      |       183.35 |         0.31 |         1.04 |        35.79 |         0.13 |
+| Seed #1      |       183.44 |         0.31 |         1.04 |        35.76 |         0.13 |
+| Seed #2      |       183.86 |         0.31 |         1.02 |        35.63 |         0.12 |
+| Seed #3      |       183.44 |         0.31 |         1.03 |        35.76 |         0.12 |
+| Seed #4      |       183.44 |         0.31 |         1.03 |        35.76 |         0.12 |
+| Seed #5      |       185.43 |         0.31 |         1.01 |        35.14 |         0.12 |
+| Seed #6      |       183.44 |         0.31 |         1.03 |        35.76 |         0.12 |
+| Seed #7      |       183.93 |         0.31 |         1.03 |        35.61 |         0.12 |
+| Seed #8      |       183.93 |         0.31 |         1.03 |        35.61 |         0.12 |
+| Seed #9      |       184.71 |         0.31 |         1.01 |        35.36 |         0.12 |
 
 ### Membership and quality by cluster
 
@@ -22,7 +22,7 @@ Note: *Cluster indexes are random.
 For visual convenience, clusters are presented by an imaginary z-score (stocks + bonds - Inflation).
 Do not read too much into that.*
 
-#### Seed: -1347846518
+#### Seed: 0
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
@@ -34,7 +34,7 @@ Do not read too much into that.*
 
 
 
-#### Seed: 824496063
+#### Seed: 1
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
@@ -46,7 +46,7 @@ Do not read too much into that.*
 
 
 
-#### Seed: -1298087692
+#### Seed: 2
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
@@ -58,7 +58,7 @@ Do not read too much into that.*
 
 
 
-#### Seed: 874295849
+#### Seed: 3
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
@@ -70,7 +70,7 @@ Do not read too much into that.*
 
 
 
-#### Seed: -1447446090
+#### Seed: 4
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
@@ -82,7 +82,7 @@ Do not read too much into that.*
 
 
 
-#### Seed: 724937451
+#### Seed: 5
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
@@ -94,7 +94,7 @@ Do not read too much into that.*
 
 
 
-#### Seed: -1397646304
+#### Seed: 6
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
@@ -106,7 +106,7 @@ Do not read too much into that.*
 
 
 
-#### Seed: 774737237
+#### Seed: 7
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
@@ -118,7 +118,7 @@ Do not read too much into that.*
 
 
 
-#### Seed: -1547045657
+#### Seed: 8
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
@@ -130,7 +130,7 @@ Do not read too much into that.*
 
 
 
-#### Seed: 625337884
+#### Seed: 9
 
 | K=5          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|

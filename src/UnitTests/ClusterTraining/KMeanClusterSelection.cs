@@ -17,22 +17,18 @@ namespace UnitTests.ClusterTraining
         [TestMethod]
         public void KMeanClusterSizeSelection()
         {
-            // Prepare 3 year blocks
-            var hReturns  = new HistoricalReturns().Returns;
-            var hBlocks3Y = hReturns.ReadBlocks(ThreeYearBlocks).ToList().AsReadOnly();
+            // Use 3-year blocks, extract and standardize features.
+            var zFeatures = new HistoricalReturns().Returns
+                .ReadBlocks(ThreeYearBlocks)
+                .ToList()
+                .ExtractFeatures()
+                .DiscoverStandardizationParameters(out var zScale)
+                .StandardizeFeatureMatrix(zScale);
 
-            // Extract features, standardize
-            var features  = hBlocks3Y.ToFeatureMatrix();
-            var zScale    = features.DiscoverStandardizationParameters();
-            var zFeatures = features.StandardizeFeatureMatrix(zScale);
-
-            // Try cluster sizes
-            var clusteringResults = new List<KMean.Result>();
-            for(int numClusters = 3; numClusters <= 6; numClusters++)
-            {
-                var clusters = zFeatures.DiscoverBestClusters(MyRegimeDiscoverySeed, K: numClusters, numTrainings: NumTrainings);
-                clusteringResults.Add(clusters);
-            }
+            // Try different cluster sizes
+            var clusteringResults = new[] { 3, 4, 5, 6 }
+                .Select(K => zFeatures.DiscoverBestClusters(MyRegimeDiscoverySeed, K, numTrainings: NumTrainings))
+                .ToList();
 
             using(var writer = File.CreateText(Path.Combine(ReportsFolder, "KMean-Results.md")))
             {
@@ -74,25 +70,20 @@ namespace UnitTests.ClusterTraining
         [TestMethod]
         public void KMeanClusterStability()
         {
-            // Prepare 3 year blocks
-            var hReturns = new HistoricalReturns().Returns;
-            var hBlocks3Y = hReturns.ReadBlocks(ThreeYearBlocks).ToList().AsReadOnly();
 
-            // Extract features, standardize
-            var features  = hBlocks3Y.ToFeatureMatrix();
-            var zScale    = features.DiscoverStandardizationParameters();
-            var zFeatures = features.StandardizeFeatureMatrix(zScale);
-
-            int[] SEEDs = Enumerable.Range(0, 10).Select(x => PredictableHashCode.Combine(12345, x)).ToArray();
+            // Use 3-year blocks, extract and standardize features.
+            var zFeatures = new HistoricalReturns().Returns
+                .ReadBlocks(ThreeYearBlocks)
+                .ToList()
+                .ExtractFeatures()
+                .DiscoverStandardizationParameters(out var zScale)
+                .StandardizeFeatureMatrix(zScale);
 
             // Try a different seeds
-            var clusteringResults = new List<KMean.Result>();
-
-            foreach(var trainingSeed in SEEDs)
-            {
-                var clusters = zFeatures.DiscoverBestClusters(trainingSeed, K: 5, numTrainings: NumTrainings);
-                clusteringResults.Add(clusters);
-            }
+            var clusteringResults = Enumerable
+                .Range(0, 10).Select(x => PredictableHashCode.Combine(12345, x))
+                .Select(seed => zFeatures.DiscoverBestClusters(seed, K: 5, numTrainings: NumTrainings))
+                .ToList();
 
             using (var writer = File.CreateText(Path.Combine(ReportsFolder, "KMean-Stability.md")))
             {
@@ -102,7 +93,7 @@ namespace UnitTests.ClusterTraining
 
                 var qSummary = clusteringResults.Select((r, idx) => new
                 {
-                    Seed = SEEDs[idx],
+                    Seed = $"Seed #{idx}",
                     r.Quality.Inertia,
                     r.Quality.Silhouette,
                     r.Quality.DBI,
@@ -125,7 +116,7 @@ namespace UnitTests.ClusterTraining
                     var dt = FeaturesByCluster(R);
 
                     writer
-                        .PrintMarkdownTitle4($"Seed: {SEEDs[seedIdx++]}")
+                        .PrintMarkdownTitle4($"Seed: {seedIdx++}")
                         .PrintMarkdownTable(dt)
                         .AppendLine()
                         .AppendLine();

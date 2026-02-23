@@ -56,27 +56,17 @@
         {
             ArgumentNullException.ThrowIfNull(trainingBlocks);
 
-            // Pre-check: We depend on Chronology. Verify blocks are sorted by year & sequence length.
-            if (!trainingBlocks.IsSortedByYearAndBlockLength()) throw new Exception("Invalid input: Blocks are not pre-sorted by year and sequence length.");
-
-            // Extract training features
-            var featureMatrix = trainingBlocks.ToFeatureMatrix();
-
-            // Learn the standardization parameters (mean and stddev)
-            var standardizationParams = featureMatrix.DiscoverStandardizationParameters();
-
-            // Standardize the features
-            var standardizedFeatureMatrix = featureMatrix.StandardizeFeatureMatrix(standardizationParams);
-
-            // Discover K-Mean clusters
-            var clusters = standardizedFeatureMatrix.DiscoverBestClusters(trainingSeed: regimeDiscoverySeed, K: numRegimes, numTrainings: 50);
-
-            // Best K-Mean result -> HRegimes
-            return clusters.ToHistoricalRegimes(trainingBlocks, standardizationParams);
+            return trainingBlocks
+                .EnsureSortedByYearAndBlockLength()                    
+                .ExtractFeatures()
+                .DiscoverStandardizationParameters(out var standardizationParams)
+                .StandardizeFeatureMatrix(standardizationParams)
+                .DiscoverBestClusters(trainingSeed: regimeDiscoverySeed, K: numRegimes, numTrainings: 50)
+                .ToHistoricalRegimes(trainingBlocks, standardizationParams);
         }
 
         // Extract features
-        public static TwoDMatrix ToFeatureMatrix(this IReadOnlyList<HBlock> blocks)
+        public static TwoDMatrix ExtractFeatures(this IReadOnlyList<HBlock> blocks)
         {
             // One row per block, and five features per block.
             var matrix = new XTwoDMatrix(NumRows: blocks.Count, NumColumns: 5);
@@ -94,8 +84,8 @@
             return matrix.ReadOnly;
         }
 
-        // Extract the mean and stddev of the featureset
-        public static ZParams DiscoverStandardizationParameters(this TwoDMatrix featureMatrix)
+        // Extract the mean and stddev of the feature-matrix
+        public static TwoDMatrix DiscoverStandardizationParameters(this TwoDMatrix featureMatrix, out ZParams standardizationParameters)
         {
             var numSamples  = featureMatrix.NumRows;
             var numFeatures = featureMatrix.NumColumns;
@@ -111,10 +101,11 @@
             stdDevs.Divide(numSamples);
             stdDevs.Sqrt();
 
-            return new(Mean: means, StdDev: stdDevs);
+            standardizationParameters = new(Mean: means, StdDev: stdDevs);
+            return featureMatrix;
         }
 
-        // Standardize the feature matrix
+        // Standardize the feature-matrix
         public static TwoDMatrix StandardizeFeatureMatrix(this in TwoDMatrix featureMatrix, ZParams standardizationParams)
         {
             var means       = standardizationParams.Mean.Span;
@@ -258,15 +249,15 @@
         //......................................................................
         #region Extensions to support inference
         //......................................................................
-        public static int FindNearestRegime(this HRegimes histrodicalRegimes, ReadOnlySpan<double> zBlockFeatures)
+        public static int FindNearestRegime(this HRegimes histroricalRegimes, ReadOnlySpan<double> zBlockFeatures)
         {
-            var regimeCentroids  = histrodicalRegimes.ZCentroids;
+            var regimeCentroids = histroricalRegimes.ZCentroids;
 
             // Pick a regime, pretend that is nearest (we picked first regime here)
-            var nearestRegimeIdx = histrodicalRegimes.Regimes[0].RegimeIdx;
+            var nearestRegimeIdx = histroricalRegimes.Regimes[0].RegimeIdx;
             var minDistance      = zBlockFeatures.EuclideanDistanceSquared(regimeCentroids[nearestRegimeIdx]);
 
-            foreach(var nextRegime in histrodicalRegimes.Regimes)
+            foreach(var nextRegime in histroricalRegimes.Regimes)
             {
                 var distance = zBlockFeatures.EuclideanDistanceSquared(regimeCentroids[nextRegime.RegimeIdx]);
 
@@ -286,20 +277,21 @@
         //......................................................................
         #region utils
         //......................................................................
-        static bool IsSortedByYearAndBlockLength(this IReadOnlyList<HBlock> blocks)
+        static IReadOnlyList<HBlock> EnsureSortedByYearAndBlockLength(this IReadOnlyList<HBlock> blocks)
         {
             for (int i = 1; i < blocks.Count; i++)
             {
                 var prev = blocks[i - 1];
                 var curr = blocks[i];
 
-                // Years must be non-descending
-                if (curr.StartYear < prev.StartYear) return false;
+                var notGood = 
+                    (curr.StartYear < prev.StartYear) ||
+                    (curr.StartYear == prev.StartYear && curr.Slice.Length < prev.Slice.Length);
 
-                // If years are same, length must be non-descending
-                if (curr.StartYear == prev.StartYear && curr.Slice.Length < prev.Slice.Length) return false;
+                if (notGood) throw new Exception($"Blocks are not pre-sorted by year and sequence length | {curr.StartYear}#{curr.Slice.Length} | {prev.StartYear}#{prev.Slice.Length}");
             }
-            return true;
+
+            return blocks;
         }
 
         static Regime[] AdjustRegimeLabels(this Regime[] profiles)

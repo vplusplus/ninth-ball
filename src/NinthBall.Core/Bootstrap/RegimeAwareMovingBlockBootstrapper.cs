@@ -66,7 +66,7 @@ namespace NinthBall.Core
         {
             // Extract features of all blocks.
             // Map block features to K-Mean feature space using z-params learnt during training.
-            var zFeatureMatrix = blocks.ToFeatureMatrix().StandardizeFeatureMatrix(regimes.ZParams);
+            var zFeatureMatrix = blocks.ExtractFeatures().StandardizeFeatureMatrix(regimes.ZParams);
             if (zFeatureMatrix.NumRows != blocks.Count) throw new Exception("Invalid logic | You should never see this error.");
 
             // Helper to locate Regime for a given block
