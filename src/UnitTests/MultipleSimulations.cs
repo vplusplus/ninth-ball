@@ -84,7 +84,7 @@ namespace UnitTests
                 dt.Rows.Add(row.ToArray());
             }
 
-            using (var writer = File.CreateText(Path.Combine(ReportsFolder, "WhatIf-GrowthObjectives.md")))
+            using (var writer = File.CreateText(Path.Combine(ReportsFolder, "GrowthObjectives.md")))
             {
                 writer
                     .PrintMarkdownTitle2("## What-if: Different growth objectives ");
