@@ -2,13 +2,7 @@
 #......................................................................
 # Moving Block Bootstrap Options
 #......................................................................
-# NOTE: NoBackToBackOverlaps is off by default.
-# Enabling NoBackToBackOverlaps resamples 389 of 91,966 blocks across 10,000 iterations. 
-# That is less than 0.5%. No change in Survival Rate.
-# This is not a needle mover, neither does it materially interfere with sampling behavior.
-#......................................................................
 
 MovingBlockBootstrapOptions:
   BlockSizes:           [3, 4, 5]     # Catch sequence risk. Really no reason to second guess 3/4/5 years blocks
-  NoBackToBackOverlaps: false         # Avoids sampling back-to-back overlapping blocks with extreme outcome. 
-  RegimeAwareness:      25%           # 100% (1.0): Use learnt regime transitions | 0% (0.0): Use regime sizes as the guide.
+  RegimeAwareness:      75%           # Smooth historical regime transitions, from 100% means use exactly the regime transitions to 0% means use regime sizes as the guide.

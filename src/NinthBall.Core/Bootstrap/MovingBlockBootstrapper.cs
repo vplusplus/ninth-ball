@@ -1,66 +1,39 @@
-﻿
-using NinthBall.Utils;
+﻿using NinthBall.Utils;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 
 namespace NinthBall.Core
 {
+    using RegimeAwareBlocks = ReadOnlyCollection<ReadOnlyCollection<HBlock>>;
+
     // Configuration options for the MBB internals
     public sealed record MovingBlockBootstrapOptions
     (
-        [property: Required]        IReadOnlyList<int> BlockSizes,
-        [property: Required]        bool NoBackToBackOverlaps,
-        [property: Range(0.0, 1.0)] double RegimeAwareness
+        [property: Required]        IReadOnlyList<int>  BlockSizes,
+        [property: Range(0.0, 1.0)] double              RegimeAwareness
     );
 
     /// <summary>
     /// Replays random blocks of historical returns and inflation.
+    /// Follows historical regime transitions.
     /// </summary>
-    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, HistoricalBlocks HBlocks, MovingBlockBootstrapOptions Options) : IBootstrapper
+    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, MovingBlockBootstrapOptions Options, HistoricalBlocks HistoricalBlocks, HistoricalRegimes HistoricalRegimes) : IBootstrapper
     {
-        // We can produce theoretically unlimited possible combinations.
+        readonly Lazy<RegimeAwareBlocks> LazyRegimeAwareBlocks = new ( MapBlocksToRegimesOnce(HistoricalBlocks.Blocks, HistoricalRegimes.Regimes) );
+
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
 
         // Random blocks of history (with replacement)
         IROISequence IBootstrapper.GetROISequence(int iterationIndex, int numYears)
         {
             var iterRand = new Random(PredictableHashCode.Combine(SimSeed.Value, iterationIndex));
-            var sequence = new HROI[numYears];
-            var idx = 0;
 
-            HBlock? prevBlock = null!;
-
-            var allBlocks  = HBlocks.Blocks;
-            var thresholds = LazyDisasterAndJackpotThresholds.Value;
-
-            while (idx < numYears)
-            {
-                // Sample next random block with uniform distribution (with replacement).
-                var nextBlock = allBlocks[iterRand.Next(0, allBlocks.Count)];
-
-                // Did we pick overlapping blocks?
-                if (Options.NoBackToBackOverlaps && null != prevBlock && HBlock.Overlaps(prevBlock.Value, nextBlock))
-                {
-                    // Yes, we picked an overlapping block.
-                    // We interfere ONLY if back-to-back overlapping blocks exceed luck-threshold (good or bad)
-                    bool backToBackDisaster = prevBlock.Value.Features.RealCAGR6040 <= thresholds.DisasterScore && nextBlock.Features.RealCAGR6040 <= thresholds.DisasterScore;
-                    bool backToBackJackpot  = prevBlock.Value.Features.RealCAGR6040 >= thresholds.JackpotScore  && nextBlock.Features.RealCAGR6040 >= thresholds.JackpotScore;
-                    if (backToBackDisaster || backToBackJackpot) continue;
-                }
-
-                // Remember previous block.
-                prevBlock = nextBlock;
-
-                // Collect HROI from the sampled block.
-                for (int j = 0; j < nextBlock.Slice.Length && idx < numYears; j++, idx++) sequence[idx] = nextBlock.Slice.Span[j];
-            }
-
-            // Logic check...
-            if (idx != numYears) throw new Exception("Internal error | Mismatch in expected number of years collected.");
+            // Generate regime aware ROI sequence specific this iteration.
+            var sequence = GenerateRegimeAwareROISequence(iterRand, numYears);
 
             // Hand it over to ROISequence, it will honor the IROISequence contract.
             return new ROISequence(sequence.AsMemory());
-        
         }
 
         private readonly record struct ROISequence(ReadOnlyMemory<HROI> MemoryBlock) : IROISequence
@@ -68,49 +41,73 @@ namespace NinthBall.Core
             readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[yearIndex];
         }
 
-        //......................................................................
-        #region DisasterAndJackpotThresholds - Discovered once
-        //......................................................................
-        // Each block carries a score that represents performance during that window.
-        // It may look and feel like 'real annualized return', but it is not.
-        // Other than ranking the blocks, the number doesn't serve any other purpose.
-        //......................................................................
-        readonly record struct DisasterAndJackpotThresholds
-        (
-            double DisasterScore,   // Blocks with ARRScore <= DisasterScore represents worst performing windows.
-            double JackpotScore     // Blocks with ARRScore >= JackpotScore represents best performing windows.
-        );
-
-        // Discover the 'Disaster' and 'Jackpot' ARR score thresholds from the history.
-        readonly Lazy<DisasterAndJackpotThresholds> LazyDisasterAndJackpotThresholds = new(() => 
+        private HROI[] GenerateRegimeAwareROISequence(Random R, int numYears)
         {
-            const double TenthPctl     = 0.1;
-            const double NinetiethPctl = 0.9;
+            var regimes = HistoricalRegimes.Regimes;
+            var blocksByRegime = LazyRegimeAwareBlocks.Value;
+            var sequence = new HROI[numYears];
+            var idx = 0;
 
-            // Read ARRScore of all blocks, sort them worst to best.
-            var sortedScores = HBlocks.Blocks.Select(b => b.Features.RealCAGR6040).OrderBy(s => s).ToArray();
+            // Smooth the regime transition matrix.
+            var adjustedRegimeTransitions = regimes.RegimeTransitions.ApplySmoothing(regimes.RegimeDistribution.Span, Options.RegimeAwareness);
 
-            // Discover indices of disaster and jackpot percentiles.
-            int disasterIdx = (int)(sortedScores.Length * TenthPctl);
-            int jackpotIdx  = (int)(sortedScores.Length * NinetiethPctl);
+            // Choose a random first regime, but biased by the regime size.
+            // Use regime sizes learnt during the training, this approximates historical frequency of blocks.
+            var currentRegimeIdx = R.NextWeightedIndex(regimes.RegimeDistribution.Span);
 
-            // Clamp the index-edges, ensure it's with-in array index range.
-            disasterIdx = Math.Clamp(disasterIdx, 0, sortedScores.Length - 1);
-            jackpotIdx  = Math.Clamp(jackpotIdx,  0, sortedScores.Length - 1);
+            while (idx < numYears)
+            {
+                // Pick a block from the current regime using uniform distribution. 
+                var eligibleBlocks = blocksByRegime[currentRegimeIdx];
+                int blockIndex = R.Next(eligibleBlocks.Count);
+                var nextBlock = eligibleBlocks[blockIndex];
 
-            // Return the ARRScore(s) at the 'Disaster' and 'Jackpot' boundary.
-            return new (
-                DisasterScore: sortedScores[disasterIdx],
-                JackpotScore:  sortedScores[jackpotIdx]
-            );
-        });
+                // Collect ROI and inflation data from the sampled block.
+                for (int j = 0; j < nextBlock.Slice.Length && idx < numYears; j++, idx++) sequence[idx] = nextBlock.Slice.Span[j];
 
-        #endregion
+                // Consult transition matrix where the economy may be heading.
+                // Pick next regime based on the transition probabilities.
+                currentRegimeIdx = R.NextWeightedIndex(adjustedRegimeTransitions[currentRegimeIdx]);
+            }
 
-        // Describe...
-        public override string ToString() => $"Random historical sequence using {CSVBlockSizes}-year moving blocks from {HBlocks.MinYear} to {HBlocks.MaxYear} data {TxtNoBackToBack}";
+            return sequence;
+        }
+
+        static RegimeAwareBlocks MapBlocksToRegimesOnce(IReadOnlyList<HBlock> blocks, HRegimes regimes)
+        {
+            // Extract features of all blocks.
+            // Standardize using z-params learnt during training.
+            var zFeatureMatrix = blocks.ExtractFeatures().StandardizeFeatureMatrix(regimes.ZParams);
+
+            // Map each block to the nearest regime.
+            var blocksWithRegimeIndex = blocks.Select((block, blockIndex) => 
+            ( 
+                RegimeIndex: regimes.FindNearestRegime(zFeatureMatrix[blockIndex]), 
+                Block:       block
+            ));
+
+            // Group the blocks by Regime. 
+            // Preserve the regime index order.
+            // Prepare ReadOnlyList of ReadOnlyList.
+            var blocksByRegime = blocksWithRegimeIndex
+                .GroupBy(x => x.RegimeIndex)
+                .OrderBy(g => g.Key)
+                .Select(rg => rg.Select(x => x.Block).ToList().AsReadOnly())
+                .ToList()
+                .AsReadOnly();
+
+            // We can trust GroupBy() since K-Mean training rejects clusters with zero members.
+            // Defensive validations since LINQ-GroupBy() will happily skip zero-length regimes.
+            var badData = false
+                || blocksByRegime.Sum(x => x.Count) != blocks.Count
+                || blocksByRegime.Count != regimes.Regimes.Count;
+            if (badData) throw new Exception("Detected empty regime or count mismatch.");
+
+            return blocksByRegime;
+        }
+
+        public override string ToString() => $"Random historical sequence using {CSVBlockSizes}-year moving blocks from {HistoricalBlocks.MinYear} to {HistoricalBlocks.MaxYear} data | Regime awareness: {Options.RegimeAwareness:P0}";
         string CSVBlockSizes => string.Join("/", Options.BlockSizes);
-        string TxtNoBackToBack => Options.NoBackToBackOverlaps ? "(Avoids back-to-back overlapping years of extreme outcomes)" : string.Empty;
 
     }
 }

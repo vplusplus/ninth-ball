@@ -66,8 +66,8 @@ LivingExpenses:
 # Flat Growth strategy
 # ............................................................
 FlatGrowth:
-  Stocks: 10.0%
-  Bonds:  4.0%
+  Stocks: 6.5%
+  Bonds:  6.5%
   InflationRate: 3.0%
 
 # ............................................................

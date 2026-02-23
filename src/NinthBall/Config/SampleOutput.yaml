@@ -30,6 +30,7 @@ Views:
         MXInfFed,         
         MXInfSta,         
 
+        LikeYear,
         ROI,              
         AnnROI,           
         RealCAGR,         
