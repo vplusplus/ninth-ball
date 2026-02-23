@@ -223,8 +223,8 @@
                     RegimeLabel: $"TBD{regimeIdx}",
 
                     StocksBondsCorrelation:     stocks.Correlation(bonds),
-                    InflationStocksCorrelation: stocks.Correlation(inflation),
-                    InflationBondsCorrelation:  bonds.Correlation(inflation),
+                    InflationStocksCorrelation: inflation.Correlation(stocks),
+                    InflationBondsCorrelation:  inflation.Correlation(bonds),
                     
                     Stocks:     ToMoments(stocks),
                     Bonds:      ToMoments(bonds),
