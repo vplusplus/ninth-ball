@@ -81,7 +81,6 @@ namespace NinthBall.Core
         {
             if (0 == block.Length) throw new ArgumentException("Invalid HBlock | Block was empty.");
 
-            // VERY-IMP: Too many doubles. Use named-arguments.
             return new
             (
                 // Nominal values
