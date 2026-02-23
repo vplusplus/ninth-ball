@@ -132,8 +132,8 @@
             (
                 ZParams:            standardizationParams,
                 ZCentroids:         clusters.Centroids,
-                RegimeDistribution:        ComputeRegimeDistribution(clusters),
-                RegimeTransitions:   ComputeRegimeTransitionMatrix(clusters),
+                RegimeDistribution: ComputeRegimeDistribution(clusters),
+                RegimeTransitions:  ComputeRegimeTransitionMatrix(clusters),
                 Regimes:            ComputeRegimeProfiles(trainingBlocks, clusters).AdjustRegimeLabels()
             );
         }
