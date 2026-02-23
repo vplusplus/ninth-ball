@@ -175,10 +175,9 @@
             var assignments  = clusters.Assignments.Span;
 
             // Count the members
-            var distribution = new double[clusters.NumClusters];
-            for(int i = 0; i<assignments.Length; i++) distribution[ assignments[i] ]++;
-
             // Translate counts to probabilities
+            var distribution = new double[clusters.NumClusters];
+            for (int rIdx = 0; rIdx < clusters.NumClusters; rIdx++) distribution[rIdx] = assignments.Count(rIdx);
             distribution.ToProbabilityDistribution();
 
             return distribution;
