@@ -65,23 +65,19 @@ namespace NinthBall.Core
         static RegimeAwareBlocks MapBlocksToRegimesOnce(IReadOnlyList<HBlock> blocks, HRegimes regimes)
         {
             // Extract features of all blocks.
-            // Map block features to K-Mean feature space using z-params learnt during training.
+            // Standardize using z-params learnt during training.
             var zFeatureMatrix = blocks.ExtractFeatures().StandardizeFeatureMatrix(regimes.ZParams);
-            if (zFeatureMatrix.NumRows != blocks.Count) throw new Exception("Invalid logic | You should never see this error.");
-
-            // Helper to locate Regime for a given block
-            int FxFindRegimeIndex(int blockIndex) => regimes.FindNearestRegime( zFeatureMatrix[blockIndex] );
 
             // Map each block to the nearest regime.
             var blocksWithRegimeIndex = blocks.Select((block, blockIndex) => 
             ( 
-                RegimeIndex: FxFindRegimeIndex(blockIndex), 
+                RegimeIndex: regimes.FindNearestRegime(zFeatureMatrix[blockIndex]), 
                 Block:       block
-            ))
-            .ToList();
+            ));
 
             // Group the blocks by Regime. 
             // Preserve the regime index order.
+            // Prepare ReadOnlyList of ReadOnlyList.
             var blocksByRegime = blocksWithRegimeIndex
                 .GroupBy(x => x.RegimeIndex)
                 .OrderBy(g => g.Key)
@@ -89,8 +85,8 @@ namespace NinthBall.Core
                 .ToList()
                 .AsReadOnly();
 
-            // Out K-Mean training rejects clusters with zero members.
-            // Defensive additional validations to ensure we are tricked by LINQ-GroupBy() clause.
+            // We can trust GroupBy() since K-Mean training rejects clusters with zero members.
+            // Defensive validations since LINQ-GroupBy() will happily skip zero-length regimes.
             var badData = false
                 || blocksByRegime.Sum(x => x.Count) != blocks.Count
                 || blocksByRegime.Count != regimes.Regimes.Count;
