@@ -39,7 +39,7 @@ namespace NinthBall.Core
                 .RegisterConfigSection<TaxRateSchedules>()
                 .RegisterConfigSection<TaxAndMarketAssumptions>()
                 .RegisterConfigSection<FlatGrowth>()
-                .RegisterConfigSection<MovingBlockBootstrapOptions>()
+                .RegisterConfigSection<BootstrapOptions>()
                 .RegisterConfigSection<ParametricProfiles>()
 
                 .AddSingleton<ITaxSystem, SamAndHisBrothers>()

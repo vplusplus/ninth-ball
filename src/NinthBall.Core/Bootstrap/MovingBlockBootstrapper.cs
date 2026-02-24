@@ -1,30 +1,21 @@
-﻿using NinthBall.Utils;
+﻿
+using NinthBall.Utils;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
 
 namespace NinthBall.Core
 {
     using RegimeAwareBlocks = ReadOnlyCollection<ReadOnlyCollection<HBlock>>;
 
-    // Configuration options for the MBB internals
-    public sealed record MovingBlockBootstrapOptions
-    (
-        [property: Required]        IReadOnlyList<int>  BlockSizes,
-        [property: Range(0.0, 1.0)] double              RegimeAwareness
-    );
-
     /// <summary>
     /// Replays random blocks of historical returns and inflation.
     /// Follows historical regime transitions.
     /// </summary>
-    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, MovingBlockBootstrapOptions Options, HistoricalBlocks HistoricalBlocks, HistoricalRegimes HistoricalRegimes) : IBootstrapper
+    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, BootstrapOptions Options, HistoricalBlocks HistoricalBlocks, HistoricalRegimes HistoricalRegimes) : IBootstrapper
     {
         readonly Lazy<RegimeAwareBlocks> LazyRegimeAwareBlocks = new ( MapBlocksToRegimesOnce(HistoricalBlocks.Blocks, HistoricalRegimes.Regimes) );
 
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
 
-        // Random blocks of history (with replacement)
         IROISequence IBootstrapper.GetROISequence(int iterationIndex, int numYears)
         {
             var iterRand = new Random(PredictableHashCode.Combine(SimSeed.Value, iterationIndex));
@@ -51,8 +42,7 @@ namespace NinthBall.Core
             // Smooth the regime transition matrix.
             var adjustedRegimeTransitions = regimes.RegimeTransitions.ApplySmoothing(regimes.RegimeDistribution.Span, Options.RegimeAwareness);
 
-            // Choose a random first regime, but biased by the regime size.
-            // Use regime sizes learnt during the training, this approximates historical frequency of blocks.
+            // Choose a random first regime, weighted by the regime size.
             var currentRegimeIdx = R.NextWeightedIndex(regimes.RegimeDistribution.Span);
 
             while (idx < numYears)
@@ -98,10 +88,10 @@ namespace NinthBall.Core
 
             // We can trust GroupBy() since K-Mean training rejects clusters with zero members.
             // Defensive validations since LINQ-GroupBy() will happily skip zero-length regimes.
-            var badData = false
-                || blocksByRegime.Sum(x => x.Count) != blocks.Count
-                || blocksByRegime.Count != regimes.Regimes.Count;
-            if (badData) throw new Exception("Detected empty regime or count mismatch.");
+            if (
+                blocksByRegime.Sum(x => x.Count) != blocks.Count || 
+                blocksByRegime.Count != regimes.Regimes.Count
+            ) throw new Exception("Unexpected | Detected empty regime or count mismatch.");
 
             return blocksByRegime;
         }

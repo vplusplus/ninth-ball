@@ -64,7 +64,7 @@ namespace UnitTests.WhatIf
                 SimInputOverrides overrides = SimInputOverrides
                     .For<SimParams>()
                         .Append(x => x.Objectives, "RandomHistoricalGrowth", baseConfig)
-                    .For<MovingBlockBootstrapOptions>()
+                    .For<BootstrapOptions>()
                         .With(x => x.RegimeAwareness, regimeAwareness)
                     ;
 
@@ -87,7 +87,7 @@ namespace UnitTests.WhatIf
                 SimInputOverrides overrides = SimInputOverrides
                     .For<SimParams>()
                         .Append(x => x.Objectives, "RandomGrowth", baseConfig)
-                    .For<MovingBlockBootstrapOptions>()
+                    .For<BootstrapOptions>()
                         .With(x => x.RegimeAwareness, regimeAwareness)
                     ;
 

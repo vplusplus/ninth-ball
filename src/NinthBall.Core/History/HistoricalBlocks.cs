@@ -32,7 +32,7 @@ namespace NinthBall.Core
         public static bool Overlaps(in HBlock prevBlock, in HBlock nextBlock) => nextBlock.StartYear <= prevBlock.EndYear && nextBlock.EndYear >= prevBlock.StartYear;
     }
 
-    internal sealed class HistoricalBlocks(HistoricalReturns History, MovingBlockBootstrapOptions Options)
+    internal sealed class HistoricalBlocks(HistoricalReturns History, BootstrapOptions Options)
     {
         // Prepare blocks of suggested lengths once.
         readonly Lazy<IReadOnlyList<HBlock>> LazyBlocks = new(() => History.Returns.ReadBlocks(Options.BlockSizes).ToList().AsReadOnly());

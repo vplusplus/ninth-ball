@@ -5,7 +5,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Generates repeatable synthetic sequence of returns using statistical parameters.
     /// </summary>
-    sealed class RegimeAwareParametricBootstrapper(SimulationSeed SimSeed, MovingBlockBootstrapOptions Options, HistoricalRegimes HistoricalRegimes) : IBootstrapper
+    sealed class RegimeAwareParametricBootstrapper(SimulationSeed SimSeed, BootstrapOptions Options, HistoricalRegimes HistoricalRegimes) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;

@@ -3,6 +3,6 @@
 # Moving Block Bootstrap Options
 #......................................................................
 
-MovingBlockBootstrapOptions:
+BootstrapOptions:
   BlockSizes:           [3, 4, 5]     # Catch sequence risk. Really no reason to second guess 3/4/5 years blocks
   RegimeAwareness:      75%           # Smooth historical regime transitions, from 100% means use exactly the regime transitions to 0% means use regime sizes as the guide.
