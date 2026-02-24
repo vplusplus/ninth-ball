@@ -1,5 +1,4 @@
-﻿
-using NinthBall.Utils;
+﻿using NinthBall.Utils;
 using System.ComponentModel.DataAnnotations;
 
 //..............................................................
@@ -24,39 +23,19 @@ namespace NinthBall.Core
 {
     public sealed record ParametricProfiles
     (
-        [property: ValidateNested] ParametricProfiles.Parameters Expected,
-        [property: ValidateNested] ParametricProfiles.Parameters Conservative,
-        [property: ValidateNested] ParametricProfiles.Parameters HighRisk
-    )
-    {
-        public readonly record struct Parameters
-        (
-            [property: Range(-1.0,  1.0 )] double StocksBondCorrelation,
-            [property: Range(-1.0,  1.0 )] double StocksInflationCorrelation,
-            [property: Range(-1.0,  1.0 )] double BondsInflationCorrelation,
-            [property: Range( 0.00, 0.25)] double InflationMeanRevStrength,
-            [property: ValidateNested] Dist Stocks,
-            [property: ValidateNested] Dist Bonds,
-            [property: ValidateNested] Dist Inflation
-        );
-
-        public readonly record struct Dist
-        (
-            [property: Range(  0.01,   0.50)] double Mean,
-            [property: Range(  0.01,   0.50)] double Volatility,
-            [property: Range(-10.00,  10.00)] double Skewness,
-            [property: Range(  0.00,  10.00)] double Kurtosis,
-            [property: Range( -1.00,   1.00)] double AutoCorrelation
-        );
-    }
+        [property: Required] string Current,
+        [property: Required] IReadOnlyDictionary<string, Regime> Profiles
+    );
 
     /// <summary>
     /// Generates repeatable synthetic sequence of returns using statistical parameters.
     /// </summary>
-    sealed class ParametricBootstrapper(SimulationSeed SimSeed, ParametricProfiles.Parameters Options) : IBootstrapper
+    sealed class ParametricBootstrapper(SimulationSeed SimSeed, ParametricProfiles Profiles) : IBootstrapper
     {
         // We can produce theoretically unlimited possible combinations.
         int IBootstrapper.GetMaxIterations(int numYears) => int.MaxValue;
+
+        public Regime RegimeDynamics => Profiles.Profiles.TryGetValue(Profiles.Current, out var profile) ? profile : throw new Exception($"Parametric profile not defined | '{Profiles.Current}'");
 
         /// <summary>
         /// Generates repeatable synthetic sequence of returns using statistical parameters.
@@ -87,18 +66,18 @@ namespace NinthBall.Core
                 // Apply Correlation (Cholesky)
                 // Introduces dependency between stocks, bonds and inflation
                 var (c1, c2, c3) = Statistics.Correlate3(z1, z2, z3, 
-                    Options.StocksBondCorrelation, 
-                    Options.StocksInflationCorrelation, 
-                    Options.BondsInflationCorrelation);
+                    RegimeDynamics.StocksBondsCorrelation, 
+                    RegimeDynamics.InflationStocksCorrelation, 
+                    RegimeDynamics.InflationBondsCorrelation);
 
                 // Apply AutoCorrelation (AR1)
                 // Introduces momentum or persistence over time.
                 // Current year depends partly on previous year
                 // Z_t = rho * Z_{t-1} + sqrt(1 - rho^2) * epsilon_t
                 // Formula ensures the process remains standard normal (mean 0, var 1) if rho < 1.
-                double arStocks    = ApplyAR1(c1, prevZStocks,    Options.Stocks.AutoCorrelation);
-                double arBonds     = ApplyAR1(c2, prevZBonds,     Options.Bonds.AutoCorrelation);
-                double arInflation = ApplyAR1(c3, prevZInflation, Options.Inflation.AutoCorrelation);
+                double arStocks    = ApplyAR1(c1, prevZStocks,    RegimeDynamics.Stocks.AutoCorrelation);
+                double arBonds     = ApplyAR1(c2, prevZBonds,     RegimeDynamics.Bonds.AutoCorrelation);
+                double arInflation = ApplyAR1(c3, prevZInflation, RegimeDynamics.Inflation.AutoCorrelation);
 
                 // Carry forward the optionally-mean-reversed values
                 prevZStocks        = arStocks;
@@ -109,18 +88,18 @@ namespace NinthBall.Core
                 // Warps the bell curve.
                 // Negative skew ~> deeper crashes.
                 // High kurtosis ~> rare but extreme events.
-                double cfStocks    = Statistics.CornishFisher(arStocks,    Options.Stocks.Skewness, Options.Stocks.Kurtosis);
-                double cfBonds     = Statistics.CornishFisher(arBonds,     Options.Bonds.Skewness, Options.Bonds.Kurtosis);
-                double cfInflation = Statistics.CornishFisher(arInflation, Options.Inflation.Skewness, Options.Inflation.Kurtosis);
+                double cfStocks    = Statistics.CornishFisher(arStocks,    RegimeDynamics.Stocks.Skewness, RegimeDynamics.Stocks.Kurtosis);
+                double cfBonds     = Statistics.CornishFisher(arBonds,     RegimeDynamics.Bonds.Skewness, RegimeDynamics.Bonds.Kurtosis);
+                double cfInflation = Statistics.CornishFisher(arInflation, RegimeDynamics.Inflation.Skewness, RegimeDynamics.Inflation.Kurtosis);
 
                 // Scale by Mean and Volatility.
                 // Converts abstract scaling factor into percentage returns.
                 // Stats has no limits; but market does; clamp the extremes.
                 // The hard-coded clamps define the behavioral contract (i.e., “personality”) of the parametric bootstrapper.
                 // These values are not configuration knobs and must not be treated as tunable parameters.
-                double rStocks    = Math.Clamp(Options.Stocks.Mean    + cfStocks    * Options.Stocks.Volatility,    -0.60, +0.60);
-                double rBonds     = Math.Clamp(Options.Bonds.Mean     + cfBonds     * Options.Bonds.Volatility,     -0.15, +0.25);
-                double rInflation = Math.Clamp(Options.Inflation.Mean + cfInflation * Options.Inflation.Volatility, -0.10, +0.30);
+                double rStocks    = Math.Clamp(RegimeDynamics.Stocks.Mean    + cfStocks    * RegimeDynamics.Stocks.Volatility,    -0.60, +0.60);
+                double rBonds     = Math.Clamp(RegimeDynamics.Bonds.Mean     + cfBonds     * RegimeDynamics.Bonds.Volatility,     -0.15, +0.25);
+                double rInflation = Math.Clamp(RegimeDynamics.Inflation.Mean + cfInflation * RegimeDynamics.Inflation.Volatility, -0.10, +0.30);
 
                 sequence[i] = new HROI(0, rStocks, rBonds, rInflation);
             }
@@ -129,11 +108,11 @@ namespace NinthBall.Core
 
         }
 
-        private static double ApplyOptionalMeanReversion(double z, double lambda)
-        {
-            if (lambda <= 0) return z; // disabled
-            return (1 - lambda) * z;   // pulls toward long-run mean (0 in Z-space)
-        }
+        //private static double ApplyOptionalMeanReversion(double z, double lambda)
+        //{
+        //    if (lambda <= 0) return z; // disabled
+        //    return (1 - lambda) * z;   // pulls toward long-run mean (0 in Z-space)
+        //}
 
         private static double NextSafeDouble(Random random)
         {
@@ -154,15 +133,7 @@ namespace NinthBall.Core
             readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[yearIndex];
         }
 
-        public override string ToString() => $"[S,B,I] = {StrMean} {StrVolatility} {StrSkewness} {StrKurtosis} {StrAutoCorr} {StrMeanRev} | {StrCorr} | Cap: ±60%";
-        string StrMean       => $"μ[{Options.Stocks.Mean:P1}, {Options.Bonds.Mean:P1}, {Options.Inflation.Mean:P1}]";
-        string StrVolatility => $"σ[{Options.Stocks.Volatility:P1}, {Options.Bonds.Volatility:P1}, {Options.Inflation.Volatility:P1}]";
-        string StrSkewness   => $"γ1[{Options.Stocks.Skewness:F1}, {Options.Bonds.Skewness:F1}, {Options.Inflation.Skewness:F1}]";
-        string StrKurtosis   => $"γ2[{Options.Stocks.Kurtosis:F1}, {Options.Bonds.Kurtosis:F1}, {Options.Inflation.Kurtosis:F1}]";
-        string StrAutoCorr   => $"ρ1[{Options.Stocks.AutoCorrelation:F2}, {Options.Bonds.AutoCorrelation:F2}, {Options.Inflation.AutoCorrelation:F2}]";
-        string StrMeanRev    => $"λ[na, na, {Options.InflationMeanRevStrength:F2}]";
-        string StrCorr       => $"ρ[SB, IS, IB] = [{Options.StocksBondCorrelation:F1}, {Options.StocksInflationCorrelation:F1}, {Options.BondsInflationCorrelation:F1}]";
-
+        public override string ToString() => $"Random synthetic ROI and Inflation sequence | Profile: {Profiles.Current}";
     }
 
 }

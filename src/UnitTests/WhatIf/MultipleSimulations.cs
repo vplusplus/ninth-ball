@@ -17,7 +17,7 @@ namespace UnitTests.WhatIf
         public async Task MultipleGrowthObjectivesWithDifferentRegimeAwareness()
         {
             // Target objectives
-            string[] growthObjectives = [ "FlatGrowth", "HistoricalGrowth", "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];   // ["FlatGrowth", "HistoricalGrowth", "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];
+            string[] growthObjectives = [ "FlatGrowth", "HistoricalGrowth"];   // ["FlatGrowth", "HistoricalGrowth", "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];
 
             // Prepare base configuration
             var baseConfig = new ConfigurationBuilder()
@@ -49,6 +49,33 @@ namespace UnitTests.WhatIf
                 var row = new List<object>(6);
                 row.Add(objective);
                 row.Add(0.0);
+                row.Add(simResult.Iterations.Count);
+                row.Add(simResult.SurvivalRate);
+                row.Add(simResult.Percentile(0.2).EndingBalanceReal);
+                row.Add(simResult.Percentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
+                dt.Rows.Add(row.ToArray());
+            }
+
+            // "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"
+
+            string[] parametricProfiles = ["ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];
+
+            foreach (var profileName in parametricProfiles)
+            {
+                //// Prepare overrides
+                SimInputOverrides overrides = SimInputOverrides
+                    .For<SimParams>()
+                        .Append(x => x.Objectives, "ParametricGrowth", baseConfig)
+                    .For<ParametricProfiles>()
+                        .With(x => x.Current, profileName)
+                    ;
+
+                var simResult = RunSimulation(overrides);
+                var pctl20 = simResult.Percentile(0.2).EndingBalanceReal;
+
+                var row = new List<object>(6);
+                row.Add(profileName);
+                row.Add(0);
                 row.Add(simResult.Iterations.Count);
                 row.Add(simResult.SurvivalRate);
                 row.Add(simResult.Percentile(0.2).EndingBalanceReal);
