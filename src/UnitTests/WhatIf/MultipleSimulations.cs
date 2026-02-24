@@ -6,7 +6,7 @@ using NinthBall.Core;
 using NinthBall.Reports.PrettyPrint;
 using System.Data;
 
-namespace UnitTests
+namespace UnitTests.WhatIf
 {
     [TestClass]
     public class MultipleSimulations
@@ -14,11 +14,10 @@ namespace UnitTests
         const string ReportsFolder = @"D:\Source\ninth-ball\src\UnitTests\Reports\";
 
         [TestMethod]
-        public async Task WhatIfDifferentGrowthObjectives()
+        public async Task MultipleGrowthObjectivesWithDifferentRegimeAwareness()
         {
             // Target objectives
-            //string[] growthObjectives = ["FlatGrowth", "HistoricalGrowth", "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];
-            string[] growthObjectives = [ "FlatGrowth", "HistoricalGrowth" ];
+            string[] growthObjectives = [ "FlatGrowth", "HistoricalGrowth" ];   // ["FlatGrowth", "HistoricalGrowth", "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];
 
             // Prepare base configuration
             var baseConfig = new ConfigurationBuilder()
@@ -35,8 +34,6 @@ namespace UnitTests
                 .WithColumn<double>("20th Pctl Balance", format: "C0")
                 .WithColumn<double>("20th Pctl Real CAGR", format: "P2")
                 ;
-
-
 
             foreach (var objective in growthObjectives)
             {

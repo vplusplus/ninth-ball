@@ -1,4 +1,5 @@
-﻿using NinthBall.Core;
+﻿
+using NinthBall.Core;
 using NinthBall.Reports.PrettyPrint;
 using NinthBall.Utils;
 using System.Data;
@@ -49,11 +50,7 @@ namespace UnitTests.ClusterTraining
                 writer
                     .PrintMarkdownTitle3("Clusters Quality metrics:")
                     .PrintMarkdownTable(qSummary)
-
-                    .PrintMarkdownTitle3($"Membership and quality by cluster")
-                    .AppendLine("Note: *Cluster indexes are random.")
-                    .AppendLine("For visual convenience, clusters are presented by an imaginary z-score (stocks + bonds - Inflation).")
-                    .AppendLine("Do not read too much into that.*");
+                    .PrintMarkdownTitle3($"Membership and quality by cluster");
 
                 foreach (var R in clusteringResults)
                 {
@@ -65,7 +62,6 @@ namespace UnitTests.ClusterTraining
                 }
             }
         }
-
 
         [TestMethod]
         public void KMeanClusterStability()
@@ -104,11 +100,7 @@ namespace UnitTests.ClusterTraining
                 writer
                     .PrintMarkdownTitle3("Clusters Quality metrics:")
                     .PrintMarkdownTable(qSummary)
-
-                    .PrintMarkdownTitle3($"Membership and quality by cluster")
-                    .AppendLine("Note: *Cluster indexes are random.")
-                    .AppendLine("For visual convenience, clusters are presented by an imaginary z-score (stocks + bonds - Inflation).")
-                    .AppendLine("Do not read too much into that.*");
+                    .PrintMarkdownTitle3($"Membership and quality by cluster");
 
                 int seedIdx = 0;
                 foreach (var R in clusteringResults)
@@ -124,7 +116,6 @@ namespace UnitTests.ClusterTraining
             }
 
         }
-
 
         static DataTable FeaturesByCluster(KMean.Result R)
         {
@@ -173,7 +164,6 @@ namespace UnitTests.ClusterTraining
 
             return dt;
         }
-
 
     }
 }

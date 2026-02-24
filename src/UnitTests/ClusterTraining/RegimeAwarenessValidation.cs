@@ -1,4 +1,5 @@
-﻿using NinthBall.Core;
+﻿
+using NinthBall.Core;
 using NinthBall.Reports.PrettyPrint;
 using System.Data;
 
@@ -16,7 +17,7 @@ namespace UnitTests.ClusterTraining
             const int MyRegimeDiscoverySeed = 12345;
             int[] ThreeYearBlocksOnly = [3];
 
-            // Prepare 3 year blocks
+            // Use 3 year blocks, discover regimes.
             var hRegimes = new HistoricalReturns().Returns
                 .ReadBlocks(ThreeYearBlocksOnly)
                 .ToList()
@@ -89,7 +90,5 @@ namespace UnitTests.ClusterTraining
 
             return dt;
         }
-
-
     }
 }

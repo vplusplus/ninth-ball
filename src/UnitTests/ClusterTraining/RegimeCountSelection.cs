@@ -5,7 +5,7 @@ using System.Data;
 namespace UnitTests.ClusterTraining
 {
     [TestClass]
-    public class RegimeProfileSelection
+    public class RegimeCountSelection
     {
         const string ReportsFolder = @"D:\Source\ninth-ball\src\UnitTests\Reports\";
 
@@ -17,16 +17,16 @@ namespace UnitTests.ClusterTraining
             int[] ThreeYearBlocksOnly = [3];
 
             // Prepare 3 year blocks
-            var hReturns = new HistoricalReturns().Returns;
-            var hBlocks3Y = hReturns.ReadBlocks(ThreeYearBlocksOnly).ToList().AsReadOnly();
+            var hBlocks3Y = new HistoricalReturns().Returns
+                .ReadBlocks(ThreeYearBlocksOnly)
+                .ToList()
+                .AsReadOnly();
 
+            // Use different cluster sizes, 
             for (int K = 3; K <= 5; K++)
             {
                 var hRegimes = hBlocks3Y.DiscoverRegimes(MyRegimeDiscoverySeed, K);
-                Console.WriteLine($"Exporting Report for K={K}...");
-                
-                var reportName = Path.Combine(ReportsFolder, $"HRegime-K{K}.md");
-                ExportRegimeReport(hRegimes, reportName);
+                ExportRegimeReport(hRegimes, Path.Combine(ReportsFolder, $"HRegime-K{K}.md"));
             }
         }
 
@@ -38,18 +38,18 @@ namespace UnitTests.ClusterTraining
             // Cosmetic: Regimes can jump around. Try to display using soft-order.
             var displayOrder = Enumerable.Range(0, hRegimes.Regimes.Count).OrderByDescending(i => RegimeDisplayOrder(hRegimes.Regimes[i])).ToArray();
 
-            var dtRegimeTransitions = RegimeTransitionsAsDataTable(hRegimes, displayOrder);
-            var dtMarketPersonality = MarketDynamicsAsDataTable(hRegimes, displayOrder);
-            var dtMomentsStocks     = MomentsAsDataTable(hRegimes, "Stocks",    displayOrder, sp => sp.Stocks);
-            var dtMomentsBonds      = MomentsAsDataTable(hRegimes, "Bonds",     displayOrder, sp => sp.Bonds);
-            var dtMomentsInfl       = MomentsAsDataTable(hRegimes, "Inflation", displayOrder, sp => sp.Inflation);
-            var dtAssetCorrelations = AssetsCorrelationAsDataTable(hRegimes, displayOrder);
+            var dtMarketDynamics    = DTMarketDynamics(hRegimes, displayOrder);
+            var dtRegimeTransitions = DTRegimeTransitions(hRegimes, displayOrder);
+            var dtMomentsStocks     = DTMoments(hRegimes, displayOrder, "Stocks",    sp => sp.Stocks);
+            var dtMomentsBonds      = DTMoments(hRegimes, displayOrder, "Bonds",     sp => sp.Bonds);
+            var dtMomentsInfl       = DTMoments(hRegimes, displayOrder, "Inflation", sp => sp.Inflation);
+            var dtAssetCorrelations = DTAssetsCorrelations(hRegimes, displayOrder);
 
             sw
                 .PrintMarkdownTitle2($"Regime Profile (K={K})")
 
                 .PrintMarkdownTitle3("Market dynamics")
-                .PrintMarkdownTable(dtMarketPersonality)
+                .PrintMarkdownTable(dtMarketDynamics)
 
                 .PrintMarkdownTitle3("Regime Distribution and Transition Probabilities")
                 .PrintMarkdownTable(dtRegimeTransitions)
@@ -69,7 +69,7 @@ namespace UnitTests.ClusterTraining
             sw.Flush();
         }
 
-        static DataTable RegimeTransitionsAsDataTable(HRegimes regimes, int[] displayOrder)
+        static DataTable DTRegimeTransitions(HRegimes regimes, int[] displayOrder)
         {
             var dt = new DataTable();
 
@@ -107,7 +107,7 @@ namespace UnitTests.ClusterTraining
             return dt;
         }
 
-        static DataTable MarketDynamicsAsDataTable(HRegimes hRegimes, int[] displayOrder)
+        static DataTable DTMarketDynamics(HRegimes hRegimes, int[] displayOrder)
         {
             var dt = new DataTable();
             dt
@@ -148,7 +148,7 @@ namespace UnitTests.ClusterTraining
             return dt;
         }
 
-        static DataTable MomentsAsDataTable(HRegimes hRegimes, string assetClass, int[] displayOrder, Func<Regime, Moments> fxMoment)
+        static DataTable DTMoments(HRegimes hRegimes, int[] displayOrder, string assetClass, Func<Regime, Moments> fxMoment)
         {
             var dt = new DataTable();
 
@@ -180,7 +180,7 @@ namespace UnitTests.ClusterTraining
             return dt;
         }
 
-        static DataTable AssetsCorrelationAsDataTable(HRegimes hRegimes, int[] displayOrder)
+        static DataTable DTAssetsCorrelations(HRegimes hRegimes, int[] displayOrder)
         {
             var dt = new DataTable();
 
