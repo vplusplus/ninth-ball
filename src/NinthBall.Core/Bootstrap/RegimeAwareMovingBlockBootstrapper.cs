@@ -10,7 +10,7 @@ namespace NinthBall.Core
     /// Replays random blocks of historical returns and inflation.
     /// Follows historical regime transitions.
     /// </summary>
-    internal sealed class MovingBlockBootstrapper(SimulationSeed SimSeed, BootstrapOptions Options, HistoricalBlocks HistoricalBlocks, HistoricalRegimes HistoricalRegimes) : IBootstrapper
+    internal sealed class RegimeAwareMovingBlockBootstrapper(SimulationSeed SimSeed, BootstrapOptions Options, HistoricalBlocks HistoricalBlocks, HistoricalRegimes HistoricalRegimes) : IBootstrapper
     {
         readonly Lazy<RegimeAwareBlocks> LazyRegimeAwareBlocks = new ( MapBlocksToRegimesOnce(HistoricalBlocks.Blocks, HistoricalRegimes.Regimes) );
 

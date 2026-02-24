@@ -1,6 +1,6 @@
 ﻿
-using System.ComponentModel.DataAnnotations;
 using NinthBall.Utils;
+using System.ComponentModel.DataAnnotations;
 
 namespace NinthBall.Core
 {
@@ -112,13 +112,6 @@ namespace NinthBall.Core
         [property: Range(0.0001, 0.50)]         double FutureInflation,
         [property: Min(0)]                      double? Floor = null,
         [property: Min(0)]                      double? Ceiling = null
-    );
-
-    public sealed record FlatGrowth
-    (
-        [property: Range(0.0001, 1)] double Stocks,
-        [property: Range(0.0001, 1)] double Bonds,
-        [property: Range(0.0001, 1)] double InflationRate
     );
 
     public sealed record TaxAndMarketAssumptions

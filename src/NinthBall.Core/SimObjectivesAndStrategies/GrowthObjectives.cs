@@ -51,7 +51,7 @@ namespace NinthBall.Core
     [StrategyFamily(StrategyFamily.Growth)]
     sealed class RandomHistoricalGrowthObjective(SimParams SimParams, SimulationSeed SimSeed, BootstrapOptions Options, HistoricalBlocks HBlocks, HistoricalRegimes Regimes) : GrowthObjective(
         SimParams,
-        new MovingBlockBootstrapper(SimSeed, Options, HBlocks, Regimes)
+        new RegimeAwareMovingBlockBootstrapper(SimSeed, Options, HBlocks, Regimes)
     );
 
     [StrategyFamily(StrategyFamily.Growth)]

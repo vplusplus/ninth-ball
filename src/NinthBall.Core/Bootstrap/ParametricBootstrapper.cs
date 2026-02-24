@@ -1,5 +1,4 @@
 ﻿using NinthBall.Utils;
-using System.ComponentModel.DataAnnotations;
 
 //..............................................................
 #region Some data points:
@@ -21,12 +20,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NinthBall.Core
 {
-    public sealed record ParametricProfiles
-    (
-        [property: Required] string Current,
-        [property: Required] IReadOnlyDictionary<string, Regime> Profiles
-    );
-
     /// <summary>
     /// Generates repeatable synthetic sequence of returns using statistical parameters.
     /// </summary>

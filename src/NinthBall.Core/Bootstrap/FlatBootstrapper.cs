@@ -1,6 +1,4 @@
-﻿
-
-namespace NinthBall.Core
+﻿namespace NinthBall.Core
 {
     internal sealed class FlatBootstrapper(FlatGrowth TheFlatGrowth) : IBootstrapper, IROISequence
     {
