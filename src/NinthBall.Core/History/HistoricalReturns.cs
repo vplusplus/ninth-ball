@@ -1,12 +1,17 @@
 ﻿
-using System.Globalization;
 using NinthBall.Utils;
+using System.Globalization;
 
 // Historical data source:
 // https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html
 
 namespace NinthBall.Core
 {
+    /// <summary>
+    /// Represents market performance on a specific year.
+    /// </summary>
+    public readonly record struct HROI(int Year, double StocksROI, double BondsROI, double InflationRate);
+
     /// <summary>
     /// Represents historical stocks/bonds ROI and Inflation rates.
     /// </summary>

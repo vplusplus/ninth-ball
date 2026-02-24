@@ -1,5 +1,5 @@
 
-## ## What-if: Different growth objectives 
+## What-if: Different growth objectives 
 
 | GrowthStrategy         | RegimeAwareness | NumIterations | SurvivalRate | 20th Pctl Balance | 20th Pctl Real CAGR |
 |:-----------------------|----------------:|--------------:|-------------:|------------------:|--------------------:|

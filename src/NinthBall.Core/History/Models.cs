@@ -1,0 +1,5 @@
+﻿
+namespace NinthBall.Core
+{
+
+}

@@ -3,38 +3,40 @@ using DocumentFormat.OpenXml;
 
 namespace NinthBall.Core
 {
+    //..........................................................................
+    #region Models - HBlock and HBlockFeatures
+    //..........................................................................
+    // Microeconomics characteristics of a small sequence of historical returns
+    public readonly record struct HBlockFeatures
+    (
+        // Nominal values
+        double NominalCAGRStocks,
+        double NominalCAGRBonds,
+        double MaxDrawdownStocks,
+        double MaxDrawdownBonds,
+        double GMeanInflationRate,
+
+        // Real values
+        double RealCAGRStocks,
+        double RealCAGRBonds,
+        double RealCAGR6040
+    );
+
     // Represents a small window into the historical returns.
-    readonly record struct HBlock
+    public readonly record struct HBlock
     (
         ReadOnlyMemory<HROI> Slice,     // Small slice of the history.
-        HBlock.F Features               // Computed block-level Microeconomics characteristics.
+        HBlockFeatures       Features   // Computed block-level Microeconomics characteristics.
     )
     {
-        // Features of this block
-        public readonly record struct F
-        (
-            // Nominal values
-            double NominalCAGRStocks,
-            double NominalCAGRBonds,
-            double MaxDrawdownStocks,
-            double MaxDrawdownBonds,
-            double GMeanInflationRate,
-
-            // Real values
-            double RealCAGRStocks,
-            double RealCAGRBonds,
-            double RealCAGR6040
-        );
-
         public readonly int StartYear => Slice.Span[0].Year;
-        public readonly int EndYear   => Slice.Span[^1].Year;
-
-        public static bool Overlaps(in HBlock prevBlock, in HBlock nextBlock) => nextBlock.StartYear <= prevBlock.EndYear && nextBlock.EndYear >= prevBlock.StartYear;
+        public readonly int EndYear => Slice.Span[^1].Year;
     }
+
+    #endregion
 
     internal sealed class HistoricalBlocks(HistoricalReturns History, BootstrapOptions Options)
     {
-        // Prepare blocks of suggested lengths once.
         readonly Lazy<IReadOnlyList<HBlock>> LazyBlocks = new(() => History.Returns.ReadBlocks(Options.BlockSizes).ToList().AsReadOnly());
 
         public IReadOnlyList<HBlock> Blocks => LazyBlocks.Value;
@@ -49,9 +51,9 @@ namespace NinthBall.Core
     {
         public static IEnumerable<HBlock> ReadBlocks(this ReadOnlyMemory<HROI> history, IReadOnlyList<int> blockSizes)
         {
-            if (null == blockSizes || 0 == blockSizes.Count || blockSizes.Any(x => x <= 0)) throw new ArgumentException("Invalid block sizes.");
+            if (null == blockSizes || 0 == blockSizes.Count || blockSizes.Any(x => x <= 0 || x > history.Length)) throw new ArgumentException("Invalid block sizes.");
 
-            // We depend on chronology, ensure the input data is sorted by year
+            // We depend on chronology, ensure the historical data is sorted by year
             if (!IsSortedByYear(history.Span)) throw new Exception("Invalid history | Data is not sorted by year.");
 
             // History is sorted. Ensure block-sizes are also sorted.
@@ -77,7 +79,7 @@ namespace NinthBall.Core
             }
         }
 
-        public static HBlock.F ComputeBlockFeatures(this ReadOnlyMemory<HROI> block)
+        static HBlockFeatures ComputeBlockFeatures(this ReadOnlyMemory<HROI> block)
         {
             if (0 == block.Length) throw new ArgumentException("Invalid HBlock | Block was empty.");
 
