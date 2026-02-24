@@ -108,7 +108,7 @@ namespace UnitTests.WhatIf
             using (var writer = File.CreateText(Path.Combine(ReportsFolder, "GrowthObjectives.md")))
             {
                 writer
-                    .PrintMarkdownTitle2("## What-if: Different growth objectives ");
+                    .PrintMarkdownTitle2("What-if: Different growth objectives ");
 
                 writer
                     .PrintMarkdownTable(dt)
