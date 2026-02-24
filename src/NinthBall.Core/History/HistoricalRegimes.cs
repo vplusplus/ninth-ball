@@ -1,33 +1,38 @@
 ﻿namespace NinthBall.Core
 {
-    // Features standardization parameters (discovered during training, required for inference)
-    public readonly record struct ZParams(ReadOnlyMemory<double> Mean, ReadOnlyMemory<double> StdDev);
-
-    // Market dynamics of one flavor of asset in one clueter/regime.
-    public readonly record struct Moments(double Mean, double Volatility, double Skewness, double Kurtosis, double AutoCorrelation);
+    //..........................................................................
+    #region Models - HRegimes, Regime, Moments and ZParams
+    //..........................................................................
+    // Historical regimes and their macro-economic characteristics.
+    public readonly record struct HRegimes
+    (
+        ZParams                 ZParams,                // Standardization parameters, discovered during training, required for inference.
+        TwoDMatrix              ZCentroids,             // Mid-point of each regime in z-normalized feature space.
+        ReadOnlyMemory<double>  RegimeDistribution,     // Cluster membership (counts) represented as pct.
+        TwoDMatrix              RegimeTransitions,      // Regime transitions discovered from training samples
+        IReadOnlyList<Regime>   Regimes                 // The regimes and their macro-economic characteristics
+    );
 
     // Macro-economic characteristics of one Cluster/Regime
     public readonly record struct Regime
     (
-        int      RegimeIdx,                     // Stable Idx of the regime, indexed into other related structures.
-        string   RegimeLabel,                   // Friendly label, an approximation, has no relevance on model behavior.
-        double   StocksBondsCorrelation,        // Macro-economic indicators
-        double   InflationStocksCorrelation,
-        double   InflationBondsCorrelation,
-        Moments  Stocks,
-        Moments  Bonds,
-        Moments  Inflation
+        int     RegimeIdx,                              // Stable Idx of the regime, indexed into other related structures.
+        string  RegimeLabel,                            // Friendly label, an approximation, has no relevance on model behavior.
+        double  StocksBondsCorrelation,                 // Macro-economic indicators
+        double  InflationStocksCorrelation,
+        double  InflationBondsCorrelation,
+        Moments Stocks,
+        Moments Bonds,
+        Moments Inflation
     );
 
-    // Historical regimes and their macro-economic characteristics.
-    public readonly record struct HRegimes
-    (
-        ZParams                 ZParams,
-        TwoDMatrix              ZCentroids,
-        ReadOnlyMemory<double>  RegimeDistribution,
-        TwoDMatrix              RegimeTransitions,
-        IReadOnlyList<Regime>   Regimes
-    );
+    // Market dynamics of one flavor of asset in one clueter/regime.
+    public readonly record struct Moments(double Mean, double Volatility, double Skewness, double Kurtosis, double AutoCorrelation);
+
+    // Features standardization parameters (discovered during training, required for inference)
+    public readonly record struct ZParams(ReadOnlyMemory<double> Mean, ReadOnlyMemory<double> StdDev);
+
+    #endregion
 
     internal sealed class HistoricalRegimes(SimulationSeed SimSeed, HistoricalReturns History)
     {
@@ -382,7 +387,6 @@
         }
 
         #endregion
-
     }
 }
 

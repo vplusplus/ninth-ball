@@ -32,7 +32,6 @@ namespace NinthBall.Core
             );
         }
 
-
         // No of assignments per cluster
         static ReadOnlyMemory<int> CountClusterMembers(int numClusters, ReadOnlySpan<int> assignments)
         {

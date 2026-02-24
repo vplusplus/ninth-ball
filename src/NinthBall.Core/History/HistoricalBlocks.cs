@@ -6,6 +6,17 @@ namespace NinthBall.Core
     //..........................................................................
     #region Models - HBlock and HBlockFeatures
     //..........................................................................
+    // Represents a small window into the historical returns.
+    public readonly record struct HBlock
+    (
+        ReadOnlyMemory<HROI> Slice,     // Small slice of the history.
+        HBlockFeatures       Features   // Computed block-level Microeconomics characteristics.
+    )
+    {
+        public readonly int StartYear => Slice.Span[0].Year;
+        public readonly int EndYear => Slice.Span[^1].Year;
+    }
+
     // Microeconomics characteristics of a small sequence of historical returns
     public readonly record struct HBlockFeatures
     (
@@ -21,17 +32,6 @@ namespace NinthBall.Core
         double RealCAGRBonds,
         double RealCAGR6040
     );
-
-    // Represents a small window into the historical returns.
-    public readonly record struct HBlock
-    (
-        ReadOnlyMemory<HROI> Slice,     // Small slice of the history.
-        HBlockFeatures       Features   // Computed block-level Microeconomics characteristics.
-    )
-    {
-        public readonly int StartYear => Slice.Span[0].Year;
-        public readonly int EndYear => Slice.Span[^1].Year;
-    }
 
     #endregion
 
