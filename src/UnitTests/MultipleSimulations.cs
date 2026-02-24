@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NinthBall.Core;
-using NinthBall.Core.PrettyPrint;
+using NinthBall.Reports.PrettyPrint;
 using System.Data;
 
 namespace UnitTests

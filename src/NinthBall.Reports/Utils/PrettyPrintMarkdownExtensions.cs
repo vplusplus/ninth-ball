@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 using System.Data;
 using System.Reflection;
 
-namespace NinthBall.Core.PrettyPrint
+namespace NinthBall.Reports.PrettyPrint
 {
     internal static class PrettyPrintMarkdownExtensions
     {

@@ -1,5 +1,5 @@
 ﻿using NinthBall.Core;
-using NinthBall.Core.PrettyPrint;
+using NinthBall.Reports.PrettyPrint;
 using System.Data;
 
 namespace UnitTests.ClusterTraining

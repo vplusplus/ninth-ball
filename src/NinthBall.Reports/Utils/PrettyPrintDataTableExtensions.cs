@@ -3,7 +3,7 @@ using System.Collections;
 using System.Data;
 using System.Reflection;
 
-namespace NinthBall.Core.PrettyPrint
+namespace NinthBall.Reports.PrettyPrint
 {
     /// <summary>
     /// Extensions on DataTable supporting PrettyPrint layout bridges.
