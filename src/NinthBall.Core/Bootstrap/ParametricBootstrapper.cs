@@ -1,6 +1,6 @@
 ﻿
-using System.ComponentModel.DataAnnotations;
 using NinthBall.Utils;
+using System.ComponentModel.DataAnnotations;
 
 //..............................................................
 #region Some data points:
@@ -100,24 +100,18 @@ namespace NinthBall.Core
                 double arBonds     = ApplyAR1(c2, prevZBonds,     Options.Bonds.AutoCorrelation);
                 double arInflation = ApplyAR1(c3, prevZInflation, Options.Inflation.AutoCorrelation);
 
-                // Apply mean reversion, nudge toward long-run mean (0 in Z-space)
-                // Note: Mean reversion applied only to inflation rate.
-                double mrStocks    = arStocks;
-                double mrBonds     = arBonds;
-                double mrInflation = ApplyOptionalMeanReversion(arInflation, Options.InflationMeanRevStrength);
-
                 // Carry forward the optionally-mean-reversed values
-                prevZStocks        = mrStocks;
-                prevZBonds         = mrBonds;
-                prevZInflation     = mrInflation;       
+                prevZStocks        = arStocks;
+                prevZBonds         = arBonds;
+                prevZInflation     = arInflation;       
 
                 // Apply Cornish-Fisher (Skewness/Kurtosis)
                 // Warps the bell curve.
                 // Negative skew ~> deeper crashes.
                 // High kurtosis ~> rare but extreme events.
-                double cfStocks    = Statistics.CornishFisher(mrStocks,    Options.Stocks.Skewness, Options.Stocks.Kurtosis);
-                double cfBonds     = Statistics.CornishFisher(mrBonds,     Options.Bonds.Skewness, Options.Bonds.Kurtosis);
-                double cfInflation = Statistics.CornishFisher(mrInflation, Options.Inflation.Skewness, Options.Inflation.Kurtosis);
+                double cfStocks    = Statistics.CornishFisher(arStocks,    Options.Stocks.Skewness, Options.Stocks.Kurtosis);
+                double cfBonds     = Statistics.CornishFisher(arBonds,     Options.Bonds.Skewness, Options.Bonds.Kurtosis);
+                double cfInflation = Statistics.CornishFisher(arInflation, Options.Inflation.Skewness, Options.Inflation.Kurtosis);
 
                 // Scale by Mean and Volatility.
                 // Converts abstract scaling factor into percentage returns.

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Data\ROI-History.xlsx" />
+    <EmbeddedResource Include="SimDefaults\ParametricProfiles-V2.yaml" />
     <EmbeddedResource Include="SimDefaults\ParametricProfiles.yaml" />
     <EmbeddedResource Include="SimDefaults\TaxRateSchedules.yaml" />
     <EmbeddedResource Include="SimDefaults\MBBDefaults.yaml" />
