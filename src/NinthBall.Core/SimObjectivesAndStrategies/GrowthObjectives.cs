@@ -55,6 +55,14 @@ namespace NinthBall.Core
         public override string ToString() => $"Inflation & growth | {Bootstrapper}";
     }
 
+    [StrategyFamily(StrategyFamily.Growth)]
+    sealed class RandomGrowthObjective(SimParams SimParams, MovingBlockBootstrapOptions Options, SimulationSeed SimSeed, HistoricalBlocks HBlocks, HistoricalRegimes Regimes)
+        : GrowthObjective(SimParams, new RegimeAwareParametricBootstrapper(SimSeed, Options, Regimes))
+    {
+        public override string ToString() => $"Inflation & growth | {Bootstrapper}";
+    }
+
+
     [StrategyFamily(StrategyFamily.Growth)] 
     sealed class ExpectedGrowth(SimParams SimParams, SimulationSeed SimSeed, ParametricProfiles Profiles) : GrowthObjective( SimParams, new ParametricBootstrapper(SimSeed, Profiles.Expected) )
     {

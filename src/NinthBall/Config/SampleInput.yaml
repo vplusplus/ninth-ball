@@ -17,7 +17,7 @@ SimParams:
       # Available objectives:
       # AdditionalIncomes,
       # AnnualFees,
-      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, ExpectedGrowth, ConservativeGrowth, HighRiskGrowth
+      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, RandomGrowth, ExpectedGrowth, ConservativeGrowth, HighRiskGrowth
       # LivingExpenses,
       # FixedWithdrawal, VariableWithdrawal,
       # RequiredMinimumDistribution,
