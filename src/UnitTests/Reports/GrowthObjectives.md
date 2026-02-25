@@ -8,11 +8,11 @@
 | ExpectedGrowth         |              0% |        10,000 |          70% |           $10,324 |               2.91% |
 | ConservativeGrowth     |              0% |        10,000 |          47% |           $66,315 |              -4.87% |
 | HighRiskGrowth         |              0% |        10,000 |          52% |           $38,614 |              -1.33% |
-| RandomHistoricalGrowth |              0% |        10,000 |          88% |          $537,718 |               7.05% |
-| RandomHistoricalGrowth |             25% |        10,000 |          87% |          $475,902 |               2.82% |
-| RandomHistoricalGrowth |             50% |        10,000 |          86% |          $420,566 |               3.95% |
-| RandomHistoricalGrowth |             75% |        10,000 |          84% |          $266,808 |               5.17% |
-| RandomHistoricalGrowth |            100% |        10,000 |          82% |          $176,510 |               2.92% |
+| RandomHistoricalGrowth |              0% |        10,000 |          88% |          $554,210 |               3.57% |
+| RandomHistoricalGrowth |             25% |        10,000 |          87% |          $458,573 |               4.85% |
+| RandomHistoricalGrowth |             50% |        10,000 |          85% |          $404,127 |               1.78% |
+| RandomHistoricalGrowth |             75% |        10,000 |          84% |          $299,496 |               1.80% |
+| RandomHistoricalGrowth |            100% |        10,000 |          82% |          $173,219 |               0.99% |
 | RandomGrowth           |              0% |        10,000 |          78% |           $31,706 |               1.06% |
 | RandomGrowth           |             25% |        10,000 |          76% |           $20,621 |               1.08% |
 | RandomGrowth           |             50% |        10,000 |          75% |           $44,697 |              -0.66% |

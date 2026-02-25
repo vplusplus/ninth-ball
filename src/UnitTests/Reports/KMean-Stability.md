@@ -18,9 +18,6 @@ Train using same K but different training seeds. Look for stability of the resul
 
 ### Membership and quality by cluster
 
-Note: *Cluster indexes are random.
-For visual convenience, clusters are presented by an imaginary z-score (stocks + bonds - Inflation).
-Do not read too much into that.*
 
 #### Seed: 0
 

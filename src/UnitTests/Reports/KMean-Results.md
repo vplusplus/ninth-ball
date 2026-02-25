@@ -12,9 +12,6 @@ Train using different K. Compare cluster quality metrics. Choose best K.
 
 ### Membership and quality by cluster
 
-Note: *Cluster indexes are random.
-For visual convenience, clusters are presented by an imaginary z-score (stocks + bonds - Inflation).
-Do not read too much into that.*
 | K=3          | Members      | Inertia      | Silhouette   | zF >         | zStockCAGR   | zBondCAGR    | zStockMaxDD  | zBondMaxDD   | zInflation   |
 |:-------------|-------------:|-------------:|-------------:|:-------------|-------------:|-------------:|-------------:|-------------:|-------------:|
 | Cluster 2    |           70 |       179.82 |         0.37 |              |         0.37 |         0.13 |         0.44 |         0.24 |         0.15 |

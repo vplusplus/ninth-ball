@@ -69,8 +69,13 @@ namespace NinthBall.Core
                 }
             }
 
-            // Immutable. 
-            return blocks.AsReadOnly();
+            // Order of blocks should not matter since block selection is uniform.
+            // Repeatable (order-by year & length) and immutable (AsReadOnly). 
+            return blocks
+                .OrderBy(x => x.StartYear)
+                .ThenBy(x => x.Slice.Length)
+                .ToList()
+                .AsReadOnly();
 
             static bool IsSortedByYear(ReadOnlySpan<HROI> history)
             {
