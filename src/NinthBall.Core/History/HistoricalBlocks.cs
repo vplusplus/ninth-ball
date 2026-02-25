@@ -25,12 +25,7 @@ namespace NinthBall.Core
         double NominalCAGRBonds,
         double MaxDrawdownStocks,
         double MaxDrawdownBonds,
-        double GMeanInflationRate,
-
-        // Real values
-        double RealCAGRStocks,
-        double RealCAGRBonds,
-        double RealCAGR6040
+        double GMeanInflationRate
     );
 
     #endregion
@@ -90,12 +85,12 @@ namespace NinthBall.Core
                 NominalCAGRBonds:   block.NominalCAGR(b => b.BondsROI),
                 MaxDrawdownStocks:  block.NominalMaxDrawdown(b => b.StocksROI),
                 MaxDrawdownBonds:   block.NominalMaxDrawdown(b => b.BondsROI),
-                GMeanInflationRate: block.GeometricMean(b => b.InflationRate),
+                GMeanInflationRate: block.GeometricMean(b => b.InflationRate)
 
                 // Real values
-                RealCAGRStocks:     block.RealCAGR(b => b.StocksROI),
-                RealCAGRBonds:      block.RealCAGR(b => b.BondsROI),
-                RealCAGR6040:       block.RealCAGR6040()
+                // RealCAGRStocks:     block.RealCAGR(b => b.StocksROI),
+                // RealCAGRBonds:      block.RealCAGR(b => b.BondsROI)
+                // RealCAGR6040:       block.RealCAGR(x => x.StocksROI * SixtyPCT + x.BondsROI * FourtyPCT)
             );
         }
 
@@ -135,15 +130,6 @@ namespace NinthBall.Core
 
             // Less is bad.
             return -maxDrawdown;
-        }
-
-        static double RealCAGR6040(this ReadOnlyMemory<HROI> window)
-        {
-            // Real CAGR (inflation adjusted) for an imaginary 60/40 portfolio.
-            const double SixtyPCT  = 0.6;
-            const double FourtyPCT = 1 - SixtyPCT;
-
-            return window.RealCAGR(x => x.StocksROI * SixtyPCT + x.BondsROI * FourtyPCT);
         }
 
         static double GeometricMean(this ReadOnlyMemory<HROI> block, Func<HROI, double> valueSelector)
