@@ -21,7 +21,6 @@ namespace UnitTests.ClusterTraining
             // Use 3-year blocks, extract and standardize features.
             var zFeatures = new HistoricalReturns().Returns
                 .ReadBlocks(ThreeYearBlocks)
-                .ToList()
                 .ExtractFeatures()
                 .DiscoverStandardizationParameters(out var zScale)
                 .StandardizeFeatureMatrix(zScale);
@@ -70,7 +69,6 @@ namespace UnitTests.ClusterTraining
             // Use 3-year blocks, extract and standardize features.
             var zFeatures = new HistoricalReturns().Returns
                 .ReadBlocks(ThreeYearBlocks)
-                .ToList()
                 .ExtractFeatures()
                 .DiscoverStandardizationParameters(out var zScale)
                 .StandardizeFeatureMatrix(zScale);

@@ -18,9 +18,7 @@ namespace UnitTests.ClusterTraining
 
             // Prepare 3 year blocks
             var hBlocks3Y = new HistoricalReturns().Returns
-                .ReadBlocks(ThreeYearBlocksOnly)
-                .ToList()
-                .AsReadOnly();
+                .ReadBlocks(ThreeYearBlocksOnly);
 
             // Use different cluster sizes, 
             for (int K = 3; K <= 5; K++)

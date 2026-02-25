@@ -32,7 +32,7 @@ namespace NinthBall.Core
 
     internal sealed class HistoricalBlocks(HistoricalReturns History, BootstrapOptions Options)
     {
-        readonly Lazy<IReadOnlyList<HBlock>> LazyBlocks = new(() => History.Returns.ReadBlocks(Options.BlockSizes).ToList().AsReadOnly());
+        readonly Lazy<IReadOnlyList<HBlock>> LazyBlocks = new( History.Returns.ReadBlocks(Options.BlockSizes) );
 
         public IReadOnlyList<HBlock> Blocks => LazyBlocks.Value;
 
@@ -44,7 +44,7 @@ namespace NinthBall.Core
 
     internal static class HistoricalBlocksExtensions
     {
-        public static IEnumerable<HBlock> ReadBlocks(this ReadOnlyMemory<HROI> history, IReadOnlyList<int> blockSizes)
+        public static IReadOnlyList<HBlock> ReadBlocks(this ReadOnlyMemory<HROI> history, IReadOnlyList<int> blockSizes)
         {
             if (null == blockSizes || 0 == blockSizes.Count || blockSizes.Any(x => x <= 0 || x > history.Length)) throw new ArgumentException("Invalid block sizes.");
 
@@ -54,7 +54,9 @@ namespace NinthBall.Core
             // History is sorted. Ensure block-sizes are also sorted.
             blockSizes = blockSizes.OrderBy(n => n).ToArray();
 
-            // Yield overlapping blocks of requested sizes
+            var blocks = new List<HBlock>();
+
+            // Collect overlapping blocks of requested sizes
             foreach (var blockLength in blockSizes)
             {
                 var maxBlocks = history.Length - blockLength + 1;
@@ -63,9 +65,12 @@ namespace NinthBall.Core
                     var slice    = history.Slice(startIndex, blockLength);
                     var features = slice.ComputeBlockFeatures();
 
-                    yield return new HBlock(slice, features);
+                    blocks.Add( new HBlock(slice, features) );
                 }
             }
+
+            // Immutable. 
+            return blocks.AsReadOnly();
 
             static bool IsSortedByYear(ReadOnlySpan<HROI> history)
             {

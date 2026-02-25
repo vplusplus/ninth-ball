@@ -20,7 +20,6 @@ namespace UnitTests.ClusterTraining
             // Use 3 year blocks, discover regimes.
             var hRegimes = new HistoricalReturns().Returns
                 .ReadBlocks(ThreeYearBlocksOnly)
-                .ToList()
                 .DiscoverRegimes(MyRegimeDiscoverySeed, numRegimes: 5);
 
             var regimeNames = hRegimes.Regimes.Select(x => x.RegimeLabel).ToArray();

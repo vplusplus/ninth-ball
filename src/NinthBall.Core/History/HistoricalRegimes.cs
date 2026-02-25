@@ -49,7 +49,6 @@
             // Using 3-year blocks, discover 5-regimes and their characteristics.
             return History.Returns
                 .ReadBlocks(ThreeYearBlocksOnly)
-                .ToList()
                 .DiscoverRegimes(regimeDiscoverySeed: SimSeed.RegimeDiscoverySeed, numRegimes: FiveRegimes)
                 ;
         });
