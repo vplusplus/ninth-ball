@@ -94,8 +94,10 @@
         {
             var numSamples  = featureMatrix.NumRows;
             var numFeatures = featureMatrix.NumColumns;
-            var means       = new double[featureMatrix.NumColumns];
-            var stdDevs     = new double[featureMatrix.NumColumns];
+
+            // Working memory to track mean and stddev of each feature.
+            var means       = new double[numFeatures];
+            var stdDevs     = new double[numFeatures];
 
             // Calculate mean of each feature.
             for (int s = 0; s < numSamples; s++) means.Add(featureMatrix[s]);
