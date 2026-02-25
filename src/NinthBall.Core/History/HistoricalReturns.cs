@@ -13,7 +13,7 @@ namespace NinthBall.Core
     public readonly record struct HROI(int Year, double StocksROI, double BondsROI, double InflationRate);
 
     /// <summary>
-    /// Represents historical stocks/bonds ROI and Inflation rates.
+    /// Serves historical market performance from embedded resource.
     /// </summary>
     internal sealed class HistoricalReturns
     {
@@ -21,13 +21,11 @@ namespace NinthBall.Core
         public int FromYear => LazySortedHistory.Value.Span[0].Year;
         public int ToYear   => LazySortedHistory.Value.Span[^1].Year;
 
-        //......................................................................
-        // Historical returns, read-once and chronologically ordered.
-        //......................................................................
-        private static readonly Lazy<ReadOnlyMemory<HROI>> LazySortedHistory = new(ReadHistory);
+        // Historical returns, chronologically ordered, read-once on first use.
+        private static readonly Lazy<ReadOnlyMemory<HROI>> LazySortedHistory = new( ReadAndSortHistoryOnce );
 
         // Read, parse, sort and validate historical data from embedded resource. 
-        public static ReadOnlyMemory<HROI> ReadHistory()
+        static ReadOnlyMemory<HROI> ReadAndSortHistoryOnce()
         {
             const string ResNameEndsWith = "ROI-History.xlsx";
             const string SheetName = "DATA";
