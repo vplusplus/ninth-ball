@@ -1,8 +1,8 @@
 
 Outputs:
   Html: 
-    File: D:/Junk/TestRAMBB.html
-    View: Debug
+    File: D:/Junk/SmReport.html
+    View: Essential
     ZZIterations: [0, 5000, 9999] 
 
   Excel: 

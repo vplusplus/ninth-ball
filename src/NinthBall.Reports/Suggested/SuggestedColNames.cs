@@ -16,8 +16,6 @@ namespace NinthBall.Reports
             [CID.DecPostTax]        = "Dec-Inv",
             [CID.JanPreTaxAlloc]    = "401K[S%]",
             [CID.JanPostTaxAlloc]   = "INV[S%]",
-            [CID.DecPreTaxAlloc]    = "401K[S%]",
-            [CID.DecPostTaxAlloc]   = "INV[S%]",
 
 
             [CID.Change]            = "(±)",

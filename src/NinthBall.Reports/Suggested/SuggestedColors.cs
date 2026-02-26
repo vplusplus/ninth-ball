@@ -20,47 +20,21 @@ namespace NinthBall.Reports
 
         static readonly IReadOnlyDictionary<CID, ColorSelector> FxColors = new Dictionary<CID, ColorSelector>()
         {
-            // Anchor information:
-            // Neither good or bad on their own.
-            // Can reach zero, can't go negative. Single color.
-            [CID.JanNet]  = (SimIteration it, in SimYear y) => ColorHint.Primary,
-            [CID.DecNet]  = (SimIteration it, in SimYear y) => ColorHint.Primary,
+            [CID.JanNet]    = (it, in y) => ColorHint.Primary,
+            [CID.DecNet]    = (it, in y) => ColorHint.Primary,
 
-            // Market noise: 
-            // Individual asset returns are uncolored to focus the user's attention 
-            // on the success of their diversification strategy rather than pure market noise.
-            //[CID.ROIStocks] = (it, in y)  => ColorHint.None,
-            //[CID.ROIBonds]  = (it, in y)  => ColorHint.None,
-            //[CID.ROICash]   = (it, in y)  => ColorHint.None,
-
-            // The "Verdict" (Real ROI Strategy)
-            // Instead of nominal zeros, we color based on "Real Growth" (Purchasing Power).
-            // Red: Losing ground to inflation.
-            // Grey: Maintenance zone (+/- 1.5% around inflation).
-            // Green: Growing real wealth.
+            [CID.LikeYear]  = (it, in y) => RealROIRedGreyGreen(y),
             [CID.ROI]       = (it, in y) => RealROIRedGreyGreen(y),
-            [CID.AnnROI]    = (it, in y) => RealAnnROIRedGreyGreen(it, y),
             [CID.RealCAGR]  = (it, in y) => RealAnnROIRedGreyGreen(it, y),
+            [CID.Infl]      = (it, in y) => InflationRedGreyGreen(y.ROI.InflationRate),
 
-            // Signals the "Market Era" - remains based on nominal performance for context.
-            [CID.LikeYear]  = (it, in y) => EffectiveROIRedGreyGreen(y),
-
-
-            // Environmental Signal (Terrain)
-            // Indicates when the environment is Friendly (Green), Normal (Grey), or Hostile (Red).
-            // This provides the context for WHY the ROI might be lagging or succeeding.
-            [CID.Infl] = (it, in y) => InflationHostilityRedGreyGreen(y.ROI.InflationRate),
-
-            // Cashflow and Portfolio Changes (Polarity Signals)
-            // Simple Red/Green banding based on the "Direction" of the money.
-            // Helps identify spending patterns and portfolio growth at a glance.
             [CID.LivExp]    = (it, in y) => ColorHint.None,
-            [CID.XPreTax]   = (it, in y) => PolarityRedGreen(y.XPreTax),
-            [CID.XPostTax]  = (it, in y) => PolarityRedGreen(y.XPostTax),
+            [CID.XPreTax]   = (it, in y) => RedGreen(y.XPreTax),
+            [CID.XPostTax]  = (it, in y) => RedGreen(y.XPostTax),
 
         }.AsReadOnly();
 
-        static ColorHint PolarityRedGreen(double value) => value < 0 ? ColorHint.Danger : ColorHint.Success;
+        static ColorHint RedGreen(double value) => value < 0 ? ColorHint.Danger : ColorHint.Success;
 
         static ColorHint RealROIRedGreyGreen(in SimYear y) 
         {
@@ -99,9 +73,6 @@ namespace NinthBall.Reports
             return roi > 0.04 ? ColorHint.Success : roi < -0.04 ? ColorHint.Danger : ColorHint.Muted;
         }
 
-        static ColorHint InflationHostilityRedGreyGreen(double pctValue) => 
-            pctValue <= 0.020 ? ColorHint.Success : // Friendly
-            pctValue <= 0.035 ? ColorHint.Muted   : // Normal
-                                ColorHint.Danger;  // Hostile
+        static ColorHint InflationRedGreyGreen(double pctValue) => pctValue <= 0.020 ? ColorHint.Success :pctValue <= 0.035 ? ColorHint.Muted   :ColorHint.Danger;
     }
 }

@@ -20,14 +20,18 @@ namespace NinthBall.Reports
 
                 CID.Year,
                 CID.Age,
-                CID.LikeYear
+                CID.LikeYear,
+
+                CID.ROI,
+                CID.AnnROI,
+                CID.Infl,
+                CID.RealCAGR
+
 
                 //CID.JanPreTaxAlloc,
                 //CID.JanPostTaxAlloc,
                 //CID.DecPreTaxAlloc,
                 //CID.DecPostTaxAlloc,
-
-
                 //CID.Infl,
                 //CID.ROIStocks,
                 //CID.ROIBonds,
