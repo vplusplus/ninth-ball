@@ -7,7 +7,7 @@ namespace NinthBall.Core
     /// </summary>
     internal sealed class SequentialBootstrapper(HistoricalReturns History) : IBootstrapper
     {
-        // We have limited data. We can support only limited number of iterations.
+        // We have limited data. We can support only a limited number of iterations.
         int IBootstrapper.GetMaxIterations(int numYears) => History.Returns.Length - numYears + 1;
 
         // Replays the history using iterationIndex as the sliding-window offset.
@@ -24,7 +24,6 @@ namespace NinthBall.Core
             readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[Offset + yearIndex];
         }
 
-        // Describe...
         public override string ToString() => $"Sequence of historical returns and inflation from {History.FromYear} to {History.ToYear}";
 
     }

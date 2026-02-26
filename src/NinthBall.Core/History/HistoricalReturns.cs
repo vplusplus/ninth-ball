@@ -8,7 +8,7 @@ using System.Globalization;
 namespace NinthBall.Core
 {
     /// <summary>
-    /// Represents market performance on a specific year.
+    /// Represents market performance for a specific year.
     /// </summary>
     public readonly record struct HROI(int Year, double StocksROI, double BondsROI, double InflationRate);
 

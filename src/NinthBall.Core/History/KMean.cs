@@ -191,8 +191,8 @@ namespace NinthBall.Core
             // Reset all centroids. 
             Array.Fill(centroids.Storage, 0.0);
 
-            // Check and reset tempBuffer used to trak membership count.
-            var membershipCounts = null == tempBuffer || tempBuffer.Length != K ? throw new Exception("Invlaid temp buffer.") : tempBuffer;
+            // Check and reset tempBuffer used to track membership count.
+            var membershipCounts = null == tempBuffer || tempBuffer.Length != K ? throw new Exception("Invalid temp buffer.") : tempBuffer;
             membershipCounts.AsSpan().Fill(0);
 
             // Count members and sum their features

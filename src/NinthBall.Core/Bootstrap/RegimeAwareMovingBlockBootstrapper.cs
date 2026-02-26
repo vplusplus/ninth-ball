@@ -20,7 +20,7 @@ namespace NinthBall.Core
         {
             var iterRand = new Random(PredictableHashCode.Combine(SimSeed.Value, iterationIndex));
 
-            // Generate regime aware ROI sequence specific this iteration.
+            // Generate regime aware ROI sequence specific to this iteration.
             var sequence = GenerateRegimeAwareROISequence(iterRand, numYears);
 
             // Hand it over to ROISequence, it will honor the IROISequence contract.
@@ -55,7 +55,7 @@ namespace NinthBall.Core
                 // Collect ROI and inflation data from the sampled block.
                 for (int j = 0; j < nextBlock.Slice.Length && idx < numYears; j++, idx++) sequence[idx] = nextBlock.Slice.Span[j];
 
-                // Consult transition matrix where the economy may be heading.
+                // Consult transition matrix to see where the economy may be heading.
                 // Pick next regime based on the transition probabilities.
                 currentRegimeIdx = R.NextWeightedIndex(adjustedRegimeTransitions[currentRegimeIdx]);
             }
@@ -86,7 +86,7 @@ namespace NinthBall.Core
                 .ToList()
                 .AsReadOnly();
 
-            // We can trust GroupBy() since K-Mean training rejects clusters with zero members.
+            // We can trust GroupBy() since K-Means training rejects clusters with zero members.
             // Defensive validations since LINQ-GroupBy() will happily skip zero-length regimes.
             if (
                 blocksByRegime.Sum(x => x.Count) != blocks.Count || 

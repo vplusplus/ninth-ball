@@ -118,7 +118,7 @@ namespace NinthBall.Core
             readonly HROI IROISequence.this[int yearIndex] => MemoryBlock.Span[yearIndex];
         }
 
-        public override string ToString() => $"Random sequence of {CSVBlockSizes}-years ROI and Inflation | Regime awareness: {Options.RegimeAwareness:P0}";
+        public override string ToString() => $"Random sequence of {CSVBlockSizes}-year ROI and Inflation | Regime awareness: {Options.RegimeAwareness:P0}";
         string CSVBlockSizes => string.Join("/", Options.BlockSizes);
 
     }

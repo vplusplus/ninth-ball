@@ -10,14 +10,14 @@ namespace NinthBall.Core
     public readonly record struct HBlock
     (
         ReadOnlyMemory<HROI> Slice,     // Small slice of the history.
-        HBlockFeatures       Features   // Computed block-level Microeconomics characteristics.
+        HBlockFeatures       Features   // Computed block-level Micro-economics characteristics.
     )
     {
         public readonly int StartYear => Slice.Span[0].Year;
         public readonly int EndYear => Slice.Span[^1].Year;
     }
 
-    // Microeconomics characteristics of a small sequence of historical returns
+    // Micro-economics characteristics of a small sequence of historical returns
     public readonly record struct HBlockFeatures
     (
         // Nominal values
@@ -100,7 +100,7 @@ namespace NinthBall.Core
                 // Real values
                 // RealCAGRStocks:     block.RealCAGR(b => b.StocksROI),
                 // RealCAGRBonds:      block.RealCAGR(b => b.BondsROI)
-                // RealCAGR6040:       block.RealCAGR(x => x.StocksROI * SixtyPCT + x.BondsROI * FourtyPCT)
+                // RealCAGR6040:       block.RealCAGR(x => x.StocksROI * SixtyPCT + x.BondsROI * FortyPCT)
             );
         }
 

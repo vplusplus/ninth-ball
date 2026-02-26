@@ -12,7 +12,7 @@ namespace NinthBall.Core
     );
 
 
-    // Block centric bootstrappers configurations
+    // Block centric bootstrapper configurations
     public sealed record BootstrapOptions
     (
         [property: Required] 

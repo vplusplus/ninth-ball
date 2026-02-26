@@ -19,7 +19,6 @@
         // Returns the same ROI for all years and all iterations.
         HROI IROISequence.this[int yearIndex] => SameROI;
 
-        // Describe...
         public override string ToString() => $"Stocks: {SameROI.StocksROI:P2} Bonds: {SameROI.BondsROI:P2} Inflation: {SameROI.InflationRate:P2}";
     }
 }

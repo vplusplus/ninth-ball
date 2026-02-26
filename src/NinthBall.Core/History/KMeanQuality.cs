@@ -16,7 +16,7 @@ namespace NinthBall.Core
             if (!good) throw new ArgumentException("One or more parameters to ComputeQualityMetrics() was invalid.");
 
             var (totalInertia, clusterInertia) = centroids.Inertia(samples, assignments);
-            var (silhouette, clustersilhouette) = centroids.Silhouette(samples, assignments);
+            var (silhouette, clusterSilhouette) = centroids.Silhouette(samples, assignments);
 
             return new
             (
@@ -28,11 +28,11 @@ namespace NinthBall.Core
 
                 ClusterMembersCount: CountClusterMembers(centroids.NumRows, assignments),
                 ClusterInertia: clusterInertia,
-                ClusterSilhouette: clustersilhouette
+                ClusterSilhouette: clusterSilhouette
             );
         }
 
-        // No of assignments per cluster
+        // Number of assignments per cluster
         static ReadOnlyMemory<int> CountClusterMembers(int numClusters, ReadOnlySpan<int> assignments)
         {
             int[] membersPerCluster = new int[numClusters];
@@ -61,7 +61,7 @@ namespace NinthBall.Core
         {
             if (centroids.NumRows <= 1 || samples.NumRows <= 1) return (0.0, new double[centroids.NumRows]);
 
-            // No of clusters
+            // Number of clusters
             int K = centroids.NumRows;
 
             double[] s = new double[samples.NumRows];
@@ -125,7 +125,7 @@ namespace NinthBall.Core
         // DBI: “How much do blobs overlap?”
         static double DBI(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
-            // No of clusters
+            // Number of clusters
             int K = centroids.NumRows;
 
             if (K <= 1) return 0.0;
@@ -171,7 +171,7 @@ namespace NinthBall.Core
         // CH: “How much structure vs noise?”
         static double CH(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
-            // No of clusters
+            // Number of clusters
             int K = centroids.NumRows;
 
             if (K <= 1 || samples.NumRows <= K) return 0.0;
@@ -210,7 +210,7 @@ namespace NinthBall.Core
         // Dunn: “Is any geometry broken?”
         static double Dunn(this in TwoDMatrix centroids, in TwoDMatrix samples, ReadOnlySpan<int> assignments)
         {
-            // No of clusters
+            // Number of clusters
             int K = centroids.NumRows;
 
             if (K <= 1 || samples.NumRows <= 1) return 0.0;

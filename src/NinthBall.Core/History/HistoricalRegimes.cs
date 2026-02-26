@@ -26,7 +26,7 @@
         Moments Inflation
     );
 
-    // Market dynamics of one flavor of asset in one clueter/regime.
+    // Market dynamics of one flavor of asset in one cluster/regime.
     public readonly record struct Moments(double Mean, double Volatility, double Skewness, double Kurtosis, double AutoCorrelation);
 
     // Features standardization parameters (discovered during training, required for inference)
@@ -43,7 +43,7 @@
             // Why: Five regimes gave balanced clusters and less-diagonal matrix (This is not a tuneable configuration)
             const int FiveRegimes = 5;
 
-            // Why: Feeding 3/4/5 will result redundant info and strong diagonal. (This is not a tuneable configuration)
+            // Why: Feeding 3/4/5 will result in redundant info and strong diagonal. (This is not a tuneable configuration)
             int[] ThreeYearBlocksOnly = [ 3 ];    
 
             // Using 3-year blocks, discover 5-regimes and their characteristics.
@@ -211,7 +211,7 @@
                     // Skip blocks that are not part of current regime.
                     if (assignments[i] == regimeIdx)
                     {
-                        // This is my blocks. Collect features we care.
+                        // These are my blocks. Collect features we care about.
                         stocks[idx]    = blocks[i].Features.NominalCAGRStocks;
                         bonds[idx]     = blocks[i].Features.NominalCAGRBonds;
                         inflation[idx] = blocks[i].Features.GMeanInflationRate;
@@ -253,15 +253,15 @@
         //......................................................................
         #region Extensions to support inference
         //......................................................................
-        public static int FindNearestRegime(this HRegimes histroricalRegimes, ReadOnlySpan<double> zBlockFeatures)
+        public static int FindNearestRegime(this HRegimes historicalRegimes, ReadOnlySpan<double> zBlockFeatures)
         {
-            var regimeCentroids = histroricalRegimes.ZCentroids;
+            var regimeCentroids = historicalRegimes.ZCentroids;
 
             // Pick a regime, pretend that is nearest (we picked first regime here)
-            var nearestRegimeIdx = histroricalRegimes.Regimes[0].RegimeIdx;
+            var nearestRegimeIdx = historicalRegimes.Regimes[0].RegimeIdx;
             var minDistance      = zBlockFeatures.EuclideanDistanceSquared(regimeCentroids[nearestRegimeIdx]);
 
-            foreach(var nextRegime in histroricalRegimes.Regimes)
+            foreach(var nextRegime in historicalRegimes.Regimes)
             {
                 var distance = zBlockFeatures.EuclideanDistanceSquared(regimeCentroids[nextRegime.RegimeIdx]);
 
@@ -281,15 +281,15 @@
             if (regimeTransitionMatrix.NumColumns != regimeTransitionMatrix.NumRows) throw new ArgumentException("RegimeTransitions must be a square matrix.");
             if (targetDistribution.Length != regimeTransitionMatrix.NumColumns) throw new ArgumentException($"Regime count mismatch | RegimeTransitionMatrix says {regimeTransitionMatrix.NumColumns} | RegimeDistribution says {targetDistribution.Length}");
 
-            int numRegmes = regimeTransitionMatrix.NumRows;
-            var adjustedTransitionMatrix = new XTwoDMatrix(numRegmes, numRegmes);
+            int numRegimes = regimeTransitionMatrix.NumRows;
+            var adjustedTransitionMatrix = new XTwoDMatrix(numRegimes, numRegimes);
 
             double lambda = regimeAwareness;
             double complement = 1 - lambda;
 
-            for (int row = 0; row < numRegmes; row++)
+            for (int row = 0; row < numRegimes; row++)
             {
-                for (int col = 0; col < numRegmes; col++)
+                for (int col = 0; col < numRegimes; col++)
                 {
                     // As regime awareness approach zero, transition probability approach the target.
                     double pCurrent = regimeTransitionMatrix[row, col];

@@ -13,7 +13,7 @@
 // 1917         :  17.8%    (World War I)
 // March 1980   :  14.8%    (Modern Era High: Post-1950)
 // 1949         :  -2.1%    (Modern Era Low Post-1950)
-// 1032         : -10.3%    (Great Depression)
+// 1932         : -10.3%    (Great Depression)
 //..............................................................
 
 #endregion
