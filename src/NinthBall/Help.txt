@@ -1,14 +1,11 @@
-﻿
-Usage:
- {me} --in Input.yaml --out Output.html --watch
- {me} --sampleyamls
+﻿Usage:
+ {me} --in Input.yaml --out Output.yaml --watch
  {me} --help
 
 Switches:
  --help         Display this help text.
- --sampleyamls  Write sample configuration files (Input & Output) to the current directory.
- --watch        Watch the input file for changes and automatically reprocess it.
+ --watch        Watch the input files for changes and automatically reprocess.
 
 Parameters:
- --in           Path to the input YAML file.
- --out          Path to the output HTML file. Defaults to <input>.html if not specified.
+ --in           Path to the primary simulation input configurations YAML file.
+ --out          Path to an optional simulation output configurations YAML file.

@@ -47,15 +47,18 @@ NinthBall runs thousands of simulated scenarios to help you understand how your 
 
 ## How It Works
 
-1. **Configure** your scenario using a simple, readable YAML file:
-   - Starting age, time horizon, and account balances
-   - Withdrawal strategy and tax settings
-   - Living expenses and income triggers
-   - Choice of simulation method (Historical, Random, or Parametric)
+1. **Configure** your scenario using simple, readable YAML files:
+   - **Simulation Input**: Starting age, time horizon, balances, withdrawal strategy, tax settings, expenses, and income triggers.
+   - **Simulation Output**: Report configurations, output file paths, and metadata views.
 
 2. **Run** the simulation:
    ```
    NinthBall --in Input.yaml
+   ```
+   
+   Apply an optional output configuration (to override report settings):
+   ```
+   NinthBall --in Input.yaml --out Output.yaml
    ```
    
    Or use **watch mode** to see results update instantly as you tweak your plan:
