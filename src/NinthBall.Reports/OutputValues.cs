@@ -127,6 +127,8 @@ namespace NinthBall.Reports
             [CID.MXInfFed]          = (it, in y) => y.InflationIndex.Federal,
             [CID.MXInfSta]          = (it, in y) => y.InflationIndex.State,
 
+            [CID.DecReal]           = (it, in y) => y.DecReal,
+
 
         }.AsReadOnly();
 

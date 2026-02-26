@@ -94,5 +94,7 @@ namespace NinthBall.Reports
         MXInfFed,               // Running Federal tax adjustment inflation multiplier
         MXInfSta,               // Running State tax adjustment inflation multiplier
 
+        DecReal,                // Real-ending balance (December)
+
     }
 }

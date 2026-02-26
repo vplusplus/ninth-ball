@@ -33,10 +33,10 @@ Initial:
   YearZeroCashBalance: $12,000
   YearZeroTaxAmount:   $25,000
   PreTax:
-    Amount: $1,000,000
+    Amount: $1,500,000
     Allocation: 60%
   PostTax:
-    Amount: $1,000,000
+    Amount: $1,500,000
     Allocation: 60%
 
 # ............................................................
@@ -45,17 +45,17 @@ Initial:
 AdditionalIncomes:
   SS:
     FromAge: 70
-    Amount: 48,000
+    Amount: 70,000
   Ann:
     FromAge: 70
-    Amount: 24,000
+    Amount: 50,000
     Increment: 0%
 
 LivingExpenses:
-  FirstYearAmount: 120,000
+  FirstYearAmount: 130,000
   StepDown:
     - AtAge: 65           # Example: Stop paying Life Ins
-      Reduction: 24000
+      Reduction: 28000
     - AtAge: 70           # Example: Reduction in Med Ins.
       Reduction: 6000
 

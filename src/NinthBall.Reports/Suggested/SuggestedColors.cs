@@ -22,6 +22,7 @@ namespace NinthBall.Reports
         {
             [CID.JanNet]    = (it, in y) => ColorHint.Primary,
             [CID.DecNet]    = (it, in y) => ColorHint.Primary,
+            [CID.DecReal]   = (it, in y) => ColorHint.Primary,
 
             [CID.LikeYear]  = (it, in y) => RealROIRedGreyGreen(y),
             [CID.ROI]       = (it, in y) => RealROIRedGreyGreen(y),

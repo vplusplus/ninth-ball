@@ -17,11 +17,11 @@ OutputDefaults:
     # High-level summary of the most critical plan metrics
     Essential: [ 
         Year, Age, 
-        JanPreTax, JanPostTax, JanNet,
+        JanPreTax, JanPostTax, 
         SS, Ann, 
         Fees, TaxPCT, Taxes, LivExp,
         XPreTax, XPostTax, 
-        DecNet,
+        DecReal,
         LikeYear, ROI, Infl, RealCAGR
       ]
 

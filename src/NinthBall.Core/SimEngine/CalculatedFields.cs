@@ -1,6 +1,4 @@
-﻿
-
-namespace NinthBall.Core
+﻿namespace NinthBall.Core
 {
     public static class CalculatedFields
     {
@@ -62,6 +60,7 @@ namespace NinthBall.Core
             public double XPreTax   => 0 - Y.Withdrawals.PreTax;
             public double XPostTax  => Y.Deposits.PostTax - Y.Withdrawals.PostTax;
             public double XCash     => Y.Deposits.Cash - Y.Withdrawals.Cash;
+            public double DecReal   => Y.Dec.Total / Math.Max(Y.InflationIndex.Consumer, Precision.Rate);
         }
 
         //......................................................................
