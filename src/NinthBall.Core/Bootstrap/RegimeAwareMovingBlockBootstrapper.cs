@@ -63,7 +63,7 @@ namespace NinthBall.Core
             return sequence;
         }
 
-        static RegimeAwareBlocks MapBlocksToRegimesOnce(IReadOnlyList<HBlock> blocks, HRegimes regimes)
+        public static RegimeAwareBlocks MapBlocksToRegimesOnce(IReadOnlyList<HBlock> blocks, HRegimes regimes)
         {
             // Extract features of all blocks.
             // Standardize using z-params learnt during training.
