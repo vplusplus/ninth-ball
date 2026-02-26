@@ -1,10 +1,10 @@
 # NinthBall
 
-**Beyond the 8-Ball** – A Monte Carlo simulation framework for financial planning, grounded in math and probability.
+**Beyond the 8-Ball** – A Monte Carlo simulation framework for financial planning, grounded in math, probability, and historical economic cycles.
 
 ## What It Does
 
-NinthBall runs thousands of simulated scenarios to help you understand how your portfolio might perform under different market conditions. Instead of relying on simple assumptions, it uses historical market data and statistical methods to model realistic outcomes across multiple account types with tax-aware strategies for long-term financial planning.
+NinthBall runs thousands of simulated scenarios to help you understand how your portfolio might perform under different market conditions. Instead of relying on simple assumptions, it uses a **Regime Aware** model that simulates shifts between different economic states—like Bull markets, Crises, and Inflationary periods—based on over a century of historical data.
 
 ## Key Features
 
@@ -15,89 +15,61 @@ NinthBall runs thousands of simulated scenarios to help you understand how your 
 - Independent allocation and fee structures for each account type
 
 ### Tax-Aware Planning
-- Ordinary income and capital gains tax rates
-- Year-zero tax liability for prior year taxes
-- Tax-efficient withdrawal sequencing across account types
-- Required Minimum Distributions (RMD) starting at age 73 (IRS rules)
+- **Federal and State taxation**: Ordinary income and capital gains tax modeling
+- **State-specific rules**: Deep modeling for specific states (e.g., New Jersey) including pension exclusions and income-based cliffs
+- **Efficient sequencing**: Tax-aware withdrawal patterns across different account types
+- **RMDs**: Automatic Required Minimum Distributions starting at age 73 per IRS rules
 
 ### Income and Expense Modeling
-- **Additional income sources**: Social Security and annuities with age triggers and inflation adjustments
-- **Living expenses**: Annual expenses with inflation and age-based step-downs (e.g., life insurance, Medicare transitions)
+- **Reliable income**: Social Security and annuities with age-based triggers and automatic inflation adjustments
+- **Living expenses**: Annual spending targets with inflation and age-based step-downs (e.g., life insurance or Medicare transitions)
 
-### Advanced Bootstrap Methods
-- **Flat**: Constant returns for baseline testing
-- **Sequential**: Historical data in chronological order
-- **Moving Block**: Random blocks of historical data preserving temporal patterns and market correlations
-- **Parametric**: Statistical distribution-based (LogNormal) with configurable skewness, kurtosis, and autocorrelation for stress-testing
+### Advanced "Regime Aware" Simulation
+- **Historical replay**: Sequential or random blocks of history that respect historical sequencing
+- **Economic cycles**: Simulation engine understands the "gravity" of economic regimes, effectively modeling transitions between Bull, Crisis, and Inflationary states
+- **Stress-testing**: Parametric modeling with "fat tails" to capture rare but extreme market events that standard models often miss
 
-### Flexible distribution of tax-deferred assets
-- **Fixed**: Dollar amount with annual increments
-- **Percentage**: Percentage-based with increments and age-based resets
-- **Variable Percentage**: Dynamic withdrawals with tax-optimized amortization towards zero balance, featuring floor/ceiling constraints
-- **RMD**: Required Minimum Distributions from PreTax accounts
+### Sophisticated Withdrawal Strategies
+- **Fixed & Percentage**: Consistent withdrawal patterns with annual increments
+- **Variable Adjustment**: Tax-optimized amortization toward a zero-balance, featuring inflation-adjusted **Floor** and **Ceiling** guardrails
+- **Guardrails**: Ensure you never withdraw too little for basic needs or too much to trigger a massive tax bill
 
 ### Portfolio Management
-- **Rebalancing**: Maintain target allocation with drift tolerance
-- **Reallocation (Glide Path)**: Age-based allocation changes for risk reduction over time
-- Account-specific annual fees
+- **Smart Rebalancing**: Maintain your target allocation with configurable drift tolerance
+- **Glide Paths**: Automated age-based reallocation to reduce risk as you get older
+- Account-specific annual fees and transparent expense modeling
 
-### Comprehensive Analysis
-- Run 10,000+ iterations to capture full range of outcomes
-- View results across multiple percentiles to understand the distribution of outcomes
-- **HTML reports** with detailed statistics, percentile analysis, and year-by-year breakdowns
-- **Excel reports** with same data in spreadsheet format for custom analysis
-- Both nominal and inflation-adjusted balances presented
+### Comprehensive Analytics
+- **Outcome Distributions**: View results across multiple percentiles (10th, 25th, 50th, 90th) to understand the "safe" vs. "risky" paths
+- **Survival Metrics**: Clear probability of portfolio survival across all scenarios
+- **Failure Analysis**: "Failure buckets" to identify exactly *when* a strategy might fall short in a long-term plan
+- **Detailed Reports**: Professional HTML and Excel reports with year-by-year breakdowns
 
 ## How It Works
 
-1. **Configure** your simulation using a simple YAML file:
-   - Starting age and time horizon
-   - Initial balances and allocations for PreTax, PostTax, and Cash accounts
-   - Withdrawal strategy and RMD settings
-   - Tax rates and additional income sources
-   - Living expenses with step-downs
-   - Bootstrap method and number of iterations
+1. **Configure** your scenario using a simple, readable YAML file:
+   - Starting age, time horizon, and account balances
+   - Withdrawal strategy and tax settings
+   - Living expenses and income triggers
+   - Choice of simulation method (Historical, Random, or Parametric)
 
 2. **Run** the simulation:
    ```
    NinthBall --in Input.yaml
    ```
    
-   Specify a custom output path:
-   ```
-   NinthBall --in Input.yaml --out MyResults.html
-   ```
-   
-   Or use **watch mode** for continuous regeneration:
+   Or use **watch mode** to see results update instantly as you tweak your plan:
    ```
    NinthBall --in Input.yaml --watch
    ```
 
-   To generate a **sample input** file:
-   ```
-   NinthBall --sampleinput
-   ```
-
-3. **Review** the generated reports showing:
-   - Probability of portfolio survival
-   - Expected ending balances at different percentiles (10th, 25th, 50th, 90th)
-   - Year-by-year performance across scenarios
-   - Tax liabilities and withdrawal patterns
-   - Account-specific balances and allocations
+3. **Review** the generated reports to see your probability of success and identify where your strategy can be optimized.
 
 ## What Makes It Different
 
-- **Mathematically Sound**: Multiple bootstrap methods including parametric distributions with fat tails and autocorrelation
-- **Configurable**: All parameters defined in readable YAML files
-- **Fast**: Runs thousands of iterations in seconds
-- **Transparent**: Open methodology based on established statistical principles
-
-## Use Cases
-
-- Stress-testing portfolio strategies against historical market conditions
-- Tax-efficient withdrawal strategy optimization across account types
-- Comparing different asset allocations, withdrawal approaches, and reallocation strategies
-- Understanding the impact of fees, Social Security timing, and expense changes
+- **Sequencing Matters**: Unlike simple Monte Carlo tools that treat every year as an independent coin flip, NinthBall respects the **Regime Aware** nature of markets, recognizing that a "Crisis" year behaves differently than a "Bull" year.
+- **Tax Accuracy**: It doesn't just "apply a tax rate"; it models the actual flow of funds through federal and state tax rules.
+- **Fast and Local**: Runs thousands of iterations in seconds on your own machine. No data leaves your computer.
 
 ---
 
