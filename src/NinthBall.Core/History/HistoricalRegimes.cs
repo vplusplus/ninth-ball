@@ -255,17 +255,15 @@
         //......................................................................
         public static int FindNearestRegime(this HRegimes historicalRegimes, ReadOnlySpan<double> zBlockFeatures)
         {
-            var regimeCentroids = historicalRegimes.ZCentroids;
-
-            // Pick a regime, pretend that is nearest (we picked first regime here)
-            var nearestRegimeIdx = historicalRegimes.Regimes[0].RegimeIdx;
-            var minDistance      = zBlockFeatures.EuclideanDistanceSquared(regimeCentroids[nearestRegimeIdx]);
+            var regimeCentroids  = historicalRegimes.ZCentroids;
+            var nearestRegimeIdx = int.MinValue;
+            var minDistance      = double.NaN;
 
             foreach(var nextRegime in historicalRegimes.Regimes)
             {
                 var distance = zBlockFeatures.EuclideanDistanceSquared(regimeCentroids[nextRegime.RegimeIdx]);
 
-                if (distance < minDistance)
+                if (double.IsNaN(minDistance) || distance < minDistance)
                 {
                     minDistance = distance;
                     nearestRegimeIdx = nextRegime.RegimeIdx;
