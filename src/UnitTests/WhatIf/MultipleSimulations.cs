@@ -9,12 +9,12 @@ using System.Reflection;
 namespace UnitTests.WhatIf
 {
     [TestClass]
-    public class MultipleSimulations
+    public partial class MultipleSimulations
     {
         public const string ReportsFolder = @"D:\Source\ninth-ball\src\UnitTests\Reports\";
 
         [TestMethod]
-        public async Task DifferentGrowthObjectives()
+        public async Task TryDifferentGrowthObjectives()
         {
             // Prepare base configuration
             var baseConfig = new ConfigurationBuilder()

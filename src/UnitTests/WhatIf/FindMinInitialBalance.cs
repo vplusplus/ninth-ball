@@ -6,11 +6,10 @@ using System.Diagnostics;
 
 namespace UnitTests.WhatIf
 {
-    [TestClass]
-    public class FindMinInitialBalance
+    public partial class MultipleSimulations
     {
         [TestMethod]
-        public async Task SweepInitialBalance()
+        public async Task FindMinimumInitialBalance()
         {
             const string ReportFileName = "MinInitialBalance.md";
             const double MinBalance = 1000000;
@@ -23,7 +22,7 @@ namespace UnitTests.WhatIf
             // Base configuration (same as MultipleSimulations)
             var baseConfig = new ConfigurationBuilder()
                 .AddSimulationDefaults()
-                .AddYamlResources(typeof(FindMinInitialBalance).Assembly, ".TestInputs.")
+                .AddYamlResources(typeof(MultipleSimulations).Assembly, ".TestInputs.")
                 .Build();
 
             // Read required sections (only for reporting)
@@ -33,12 +32,12 @@ namespace UnitTests.WhatIf
 
             // Prepare output table
             var dt = new DataTable()
-                .WithColumn<double>("PreTax", format:"C0")
-                .WithColumn<double>("PostTax", format: "C0")
-                .WithColumn<double>("SurvivalRate", format: "P1")
-                .WithColumn<double>("10th PCTL", format: "C0")
-                .WithColumn<double>("20th PCTL", format: "C0")
-                .WithColumn<double>("milliSec", format: "F0")
+                .WithColumn<double>("PreTax",           format:"C0")
+                .WithColumn<double>("PostTax",          format: "C0")
+                .WithColumn<double>("SurvivalRate",     format: "P1")
+                .WithColumn<double>("Balance(r) 10th",  format: "C0")
+                .WithColumn<double>("Balance(r) 20th",  format: "C0")
+                .WithColumn<double>("milliSec",         format: "F0")
                 ;
 
             // Sweep range
@@ -73,12 +72,11 @@ namespace UnitTests.WhatIf
                 Year1   = $"{exp.FirstYearAmount / 1000:C0} K"
             };
 
-
             // Write markdown report
             using (var writer = File.CreateText(Path.Combine(MultipleSimulations.ReportsFolder, ReportFileName)))
             {
                 writer
-                    .PrintMarkdownTitle2("Initial Balance Sweep: Survival Rate vs Initial Balance")
+                    .PrintMarkdownTitle2("Initial Balance vs Survival Rate")
 
                     .PrintMarkdownTitle3("Input")
                     .PrintMarkdownRecordWide(keyInputs)

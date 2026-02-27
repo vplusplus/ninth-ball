@@ -6,11 +6,10 @@ using System.Diagnostics;
 
 namespace UnitTests.WhatIf
 {
-    [TestClass]
-    public class FindMaxFirstYearExpense
+    public partial class MultipleSimulations
     {
         [TestMethod]
-        public async Task SweepFirstYearExpense()
+        public async Task FindMaxFirstYearExpense()
         {
             const string ReportFileName = "MaxFirstYearExpense.md";
             const double MinExpense = 100000;
@@ -20,7 +19,7 @@ namespace UnitTests.WhatIf
             // Base configuration (same as MultipleSimulations)
             var baseConfig = new ConfigurationBuilder()
                 .AddSimulationDefaults()
-                .AddYamlResources(typeof(FindMaxFirstYearExpense).Assembly, ".TestInputs.")
+                .AddYamlResources(typeof(MultipleSimulations).Assembly, ".TestInputs.")
                 .Build();
 
             // Read required sections (only for reporting)
@@ -30,11 +29,11 @@ namespace UnitTests.WhatIf
 
             // Prepare output table
             var dt = new DataTable()
-                .WithColumn<string>("Expense")
-                .WithColumn<double>("SurvivalRate", format: "P0")
-                .WithColumn<double>("10th PCTL", format: "C0")
-                .WithColumn<double>("20th PCTL", format: "C0")
-                .WithColumn<double>("milliSec", format: "F0")
+                .WithColumn<double>("Y0-Expense",       format: "C0")
+                .WithColumn<double>("SurvivalRate",     format: "P0")
+                .WithColumn<double>("Balance(r) 10th",  format: "C0")
+                .WithColumn<double>("Balance(r) 20th",  format: "C0")
+                .WithColumn<double>("milliSec",         format: "F0")
                 ;
 
             // Sweep range
@@ -58,11 +57,28 @@ namespace UnitTests.WhatIf
                 dt.Rows.Add(row.ToArray());
             }
 
+            // Order by descenging 
+            // dt.DefaultView.Sort = "Y0-Expense DESC";
+            // dt = dt.DefaultView.ToTable();
+
+            var keyInputs = new
+            {
+                From = $"{p.StartAge} years",
+                To = $"{p.StartAge + p.NoOfYears} years",
+                PreTax = $"{init.PreTax.Amount / 1000000:C1} M",
+                PostTax = $"{init.PostTax.Amount / 1000000:C1} M",
+            };
+
             // Write markdown report
             using (var writer = File.CreateText(Path.Combine(MultipleSimulations.ReportsFolder, ReportFileName)))
             {
                 writer
-                    .PrintMarkdownTitle2("Expense Sweep: Survival Rate vs First Year Expense")
+                    .PrintMarkdownTitle2("Frst year expense vs survival rate")
+
+                    .PrintMarkdownTitle3("Input")
+                    .PrintMarkdownRecordWide(keyInputs)
+
+                    .PrintMarkdownTitle3("Results")
                     .PrintMarkdownTable(dt)
                     .AppendLine();
             }
