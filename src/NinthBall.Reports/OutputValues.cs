@@ -83,9 +83,9 @@ namespace NinthBall.Reports
             [CID.Infl]              = (it, in y) => y.ROI.InflationRate,
             [CID.ROIStocks]         = (it, in y) => y.ROI.StocksROI,
             [CID.ROIBonds]          = (it, in y) => y.ROI.BondsROI,
-            [CID.ROI]               = (it, in y) => y.Growth.PortfolioReturn,
-            [CID.AnnROI]            = (it, in y) => y.Growth.AnnualizedReturn,
-            [CID.RealCAGR]          = (it, in y) => y.Growth.RealAnnualizedReturn,
+            [CID.ROI]               = (it, in y) => y.RunningGrowth.PortfolioReturn,
+            [CID.AnnROI]            = (it, in y) => y.RunningGrowth.AnnualizedReturn,
+            [CID.RealCAGR]          = (it, in y) => y.RunningGrowth.RealAnnualizedReturn,
 
             // Tax $$$s, MTR and effective tax rate
             [CID.Taxes]             = (it, in y) => y.Taxes.Total,
@@ -165,9 +165,9 @@ namespace NinthBall.Reports
 
             // Bottom-line: Show annualized-effective-roi at last good year for both ROI and AnnROI
             // Do not try to summarize the market noise: StocksROI & BondROI - They are just bootstrapper data.
-            [CID.ROI]          = (it) => it.LastGoodYear.Growth.PortfolioReturn,
-            [CID.AnnROI]       = (it) => it.LastGoodYear.Growth.AnnualizedReturn,
-            [CID.RealCAGR]     = (it) => it.LastGoodYear.Growth.RealAnnualizedReturn,
+            [CID.ROI]          = (it) => it.LastGoodYear.RunningGrowth.PortfolioReturn,
+            [CID.AnnROI]       = (it) => it.LastGoodYear.RunningGrowth.AnnualizedReturn,
+            [CID.RealCAGR]     = (it) => it.LastGoodYear.RunningGrowth.RealAnnualizedReturn,
 
 
         }.AsReadOnly();

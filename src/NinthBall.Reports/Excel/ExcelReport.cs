@@ -252,7 +252,7 @@ namespace NinthBall.Reports.Excel
                         foreach (var pctl in Percentiles)
                         {
                             var p = simResult.IterationAtPercentile(pctl);
-                            var chng = p.LastGoodYear.Growth.AnnualizedReturn;  // Nominal CAGR
+                            var chng = p.LastGoodYear.RunningGrowth.AnnualizedReturn;  // Nominal CAGR
                             row.Append(chng, styles.SumP);
                         }
                         row.Append("");

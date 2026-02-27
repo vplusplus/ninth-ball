@@ -9,7 +9,7 @@ namespace NinthBall.Core
         const double HundredPCT = 1.00;
         const double TenDollars = 10.00;
 
-        public Taxes.Tx GuesstimateTaxes(PYEarnings pyEarnings, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates)
+        public Taxes.Tx GuesstimateTaxes(PYEarnings pyEarnings, RInflationIndex inflationIndex, TaxRateSchedules Year0TaxRates)
         {
             //......................................................
             // NEW JERSEY STATE TAX LOGIC

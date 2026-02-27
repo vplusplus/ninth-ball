@@ -12,7 +12,7 @@ namespace NinthBall.Core
         [FromKeyedServices(TaxAuthority.State)] ITaxAuthority stateGuesstimator
     ) : ITaxSystem
     {
-        public Taxes GuesstimateTaxes(PYEarnings pyEarnings, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates)
+        public Taxes GuesstimateTaxes(PYEarnings pyEarnings, RInflationIndex inflationIndex, TaxRateSchedules Year0TaxRates)
         {
             // Consult tax authorities, guesstimate tax liabilities.
             return new Taxes

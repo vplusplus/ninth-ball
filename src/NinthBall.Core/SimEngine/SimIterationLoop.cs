@@ -74,7 +74,7 @@ namespace NinthBall.Core
 
                 // Update the inflation index first.
                 // Growth calculation requires current year updated inflation index.
-                InflationIndex cyInflationIndex = simState.PriorYear.InflationIndex.Update
+                RInflationIndex cyInflationIndex = simState.PriorYear.InflationIndex.Update
                 (
                     cyInflationRate: simState.ROI.InflationRate,
                     federalTaxInflationLagHaircut: TAMA.FedTaxInflationLagHaircut,
@@ -82,7 +82,7 @@ namespace NinthBall.Core
                 );
 
                 // Update the running annualized growth and real annualized growth.
-                Growth cyGrowth = simState.PriorYear.Growth.Update
+                RGrowth cyGrowth = simState.PriorYear.RunningGrowth.Update
                 (
                     simState.YearIndex,
                     portfolioReturn,
@@ -107,7 +107,7 @@ namespace NinthBall.Core
                     Change:         changes,
                     Dec:            dec,
 
-                    Growth:         cyGrowth,
+                    RunningGrowth:  cyGrowth,
                     InflationIndex: cyInflationIndex
                 );
 
@@ -133,8 +133,8 @@ namespace NinthBall.Core
                     Change: default,            // Since ROI is irrelevant
                     Dec: default,               // Would have spent any left-overs before Dec anyway
                     
-                    Growth:         Growth.Invalid,         // Meaningless for failed year.
-                    InflationIndex: InflationIndex.Invalid  // Meaningless for failed year.
+                    RunningGrowth:  RGrowth.Invalid,         // Meaningless for failed year.
+                    InflationIndex: RInflationIndex.Invalid  // Meaningless for failed year.
                 );
 
                 return (success: false, failedYear);

@@ -32,7 +32,7 @@ namespace NinthBall.Core
     /// </summary>
     public interface ITaxSystem
     {
-        Taxes GuesstimateTaxes(PYEarnings pyEarnings, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates);
+        Taxes GuesstimateTaxes(PYEarnings pyEarnings, RInflationIndex inflationIndex, TaxRateSchedules Year0TaxRates);
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ namespace NinthBall.Core
     /// </summary>
     public interface ITaxAuthority
     {
-        Taxes.Tx GuesstimateTaxes(PYEarnings pyEarnings, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates);
+        Taxes.Tx GuesstimateTaxes(PYEarnings pyEarnings, RInflationIndex inflationIndex, TaxRateSchedules Year0TaxRates);
     }
 
     public readonly record struct Taxes(PYEarnings PYEarnings, Taxes.Tx Federal, Taxes.Tx State)

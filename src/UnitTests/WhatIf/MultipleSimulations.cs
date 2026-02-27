@@ -52,7 +52,7 @@ namespace UnitTests.WhatIf
                 row.Add(simResult.Iterations.Count);
                 row.Add(simResult.SurvivalRate);
                 row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
-                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
+                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.RunningGrowth.RealAnnualizedReturn);
                 dt.Rows.Add(row.ToArray());
             }
 
@@ -79,7 +79,7 @@ namespace UnitTests.WhatIf
                 row.Add(simResult.Iterations.Count);
                 row.Add(simResult.SurvivalRate);
                 row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
-                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
+                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.RunningGrowth.RealAnnualizedReturn);
                 dt.Rows.Add(row.ToArray());
             }
 
@@ -104,7 +104,7 @@ namespace UnitTests.WhatIf
                 row.Add(simResult.Iterations.Count);
                 row.Add(simResult.SurvivalRate);
                 row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
-                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
+                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.RunningGrowth.RealAnnualizedReturn);
                 dt.Rows.Add(row.ToArray());
             }
 
@@ -127,7 +127,7 @@ namespace UnitTests.WhatIf
                 row.Add(simResult.Iterations.Count);
                 row.Add(simResult.SurvivalRate);
                 row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
-                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
+                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.RunningGrowth.RealAnnualizedReturn);
                 dt.Rows.Add(row.ToArray());
             }
 

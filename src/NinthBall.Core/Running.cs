@@ -4,7 +4,7 @@ namespace NinthBall.Core
     /// <summary>
     /// Running inflation multipliers.
     /// </summary>
-    public readonly record struct InflationIndex
+    public readonly record struct RInflationIndex
     {
         // Cumulative inflation multiplier since year #0
         public double Consumer
@@ -27,7 +27,7 @@ namespace NinthBall.Core
             init => field = 0 == value ? 1e-100 : value;
         }
 
-        public InflationIndex Update(double cyInflationRate, double federalTaxInflationLagHaircut, double stateTaxInflationLagHaircut)
+        public RInflationIndex Update(double cyInflationRate, double federalTaxInflationLagHaircut, double stateTaxInflationLagHaircut)
         {
             // WHY:
             // CPI multiplier represents cumulative inflation impact since year #0
@@ -47,14 +47,13 @@ namespace NinthBall.Core
             };
         }
 
-        public static InflationIndex Invalid => new() { Consumer = double.NaN, Federal = double.NaN, State = double.NaN };
+        public static RInflationIndex Invalid => new() { Consumer = double.NaN, Federal = double.NaN, State = double.NaN };
     }
-
 
     /// <summary>
     /// Current year portfolio return and annualized returns (nominal and real) since year #0
     /// </summary>
-    public readonly record struct Growth
+    public readonly record struct RGrowth
     {
         private double GrowthMultiplier 
         {
@@ -68,7 +67,7 @@ namespace NinthBall.Core
 
         public double RealAnnualizedReturn { get; init; }
 
-        public Growth Update(int yearIndex, double cyPortfolioReturn, InflationIndex cyInflationIndex)
+        public RGrowth Update(int yearIndex, double cyPortfolioReturn, RInflationIndex cyInflationIndex)
         {
             double newGrowthMultiplier = GrowthMultiplier * (1 + cyPortfolioReturn);
 
@@ -81,7 +80,7 @@ namespace NinthBall.Core
             };
         }
 
-        public static Growth Invalid => new() { GrowthMultiplier = double.NaN, PortfolioReturn = double.NaN, AnnualizedReturn = double.NaN, RealAnnualizedReturn = double.NaN };
+        public static RGrowth Invalid => new() { GrowthMultiplier = double.NaN, PortfolioReturn = double.NaN, AnnualizedReturn = double.NaN, RealAnnualizedReturn = double.NaN };
     }
 
 }

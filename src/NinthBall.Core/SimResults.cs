@@ -20,8 +20,8 @@ namespace NinthBall.Core
         Deposits        Deposits,
         Change          Change,
         Assets          Dec,
-        Growth          Growth,
-        InflationIndex  InflationIndex
+        RGrowth         RunningGrowth,      // Running metrics
+        RInflationIndex InflationIndex      // Running metrics
     );
 
     public readonly record struct Asset(double Amount, double Allocation);

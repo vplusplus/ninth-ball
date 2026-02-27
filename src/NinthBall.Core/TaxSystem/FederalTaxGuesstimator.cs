@@ -11,7 +11,7 @@ namespace NinthBall.Core
         const double HundredPCT = 1.00;
         const double TenDollars = 10.00;
 
-        public Taxes.Tx GuesstimateTaxes(PYEarnings unadjustedGrossIncome, InflationIndex inflationIndex, TaxRateSchedules Year0TaxRates)
+        public Taxes.Tx GuesstimateTaxes(PYEarnings unadjustedGrossIncome, RInflationIndex inflationIndex, TaxRateSchedules Year0TaxRates)
         {
             // Compute federal adjusted gross income 
             var adjustedGrossIncome = RoundToCents(MinZero(FederalAdjustGrossIncomes(unadjustedGrossIncome, TAMA)));
