@@ -4,13 +4,14 @@ using Microsoft.Extensions.Hosting;
 using NinthBall.Core;
 using NinthBall.Reports.PrettyPrint;
 using System.Data;
+using System.Reflection;
 
 namespace UnitTests.WhatIf
 {
     [TestClass]
     public class MultipleSimulations
     {
-        const string ReportsFolder = @"D:\Source\ninth-ball\src\UnitTests\Reports\";
+        public const string ReportsFolder = @"D:\Source\ninth-ball\src\UnitTests\Reports\";
 
         [TestMethod]
         public async Task DifferentGrowthObjectives()
@@ -76,33 +77,6 @@ namespace UnitTests.WhatIf
 
             return;
 
-
-            static SimResult RunSimulation(SimInputOverrides overrides)
-            {
-                // We create and destroy DI container for each simulation session.
-                var simSessionBuilder = Host.CreateEmptyApplicationBuilder(settings: new());
-
-                // Apply embedded defaults and base configurations.
-                simSessionBuilder.Configuration
-                    .AddSimulationDefaults()
-                    .AddYamlResources(typeof(MultipleSimulations).Assembly, ".TestInputs.")
-                    .AddOverrides(overrides)
-                    ;
-
-                // Assemble simulation and reporting components.
-                simSessionBuilder.Services
-                    .AddSimulationComponents()
-                    ;
-
-                using (var simSession = simSessionBuilder.Build())
-                {
-                    // Run simulation
-                    var simResult = simSession.Services.GetRequiredService<ISimulation>().Run();
-                    return simResult;
-
-                }
-            }
-
             static DataTable PrepareOutputTable()
             {
                 return new DataTable()
@@ -134,6 +108,24 @@ namespace UnitTests.WhatIf
                 dt.Rows.Add(row.ToArray());
             }
 
+        }
+
+        public static SimResult RunSimulation(SimInputOverrides overrides)
+        {
+            Assembly baseConfigResourceAssembly = typeof(MultipleSimulations).Assembly;
+            string baseConfigResourceSelector = ".TestInputs.";
+
+            var builder = Host.CreateEmptyApplicationBuilder(settings: new());
+
+            builder.Configuration
+                .AddSimulationDefaults()
+                .AddYamlResources(baseConfigResourceAssembly, baseConfigResourceSelector)
+                .AddOverrides(overrides);
+
+            builder.Services.AddSimulationComponents();
+
+            using var session = builder.Build();
+            return session.Services.GetRequiredService<ISimulation>().Run();
         }
     }
 }

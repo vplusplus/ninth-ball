@@ -13,6 +13,7 @@ SimParams:
       TieredTax,
       VariableWithdrawal,
       RequiredMinimumDistribution,
+      RandomGrowth
 
     ]
 
