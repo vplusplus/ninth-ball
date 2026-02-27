@@ -1,8 +1,9 @@
 
 SimParams:
-  StartAge: 60
-  NoOfYears: 35
+  StartAge:   60
+  NoOfYears:  35
   Iterations: 10000
+
   Objectives: [
 
       YearlyRebalance,
@@ -13,33 +14,17 @@ SimParams:
       VariableWithdrawal,
       RequiredMinimumDistribution,
 
-      # RandomHistoricalGrowth,
-      
-
-      # Available objectives:
-      # AdditionalIncomes,
-      # AnnualFees,
-      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, ExpectedGrowth, ConservativeGrowth, HighRiskGrowth
-      # LivingExpenses,
-      # FixedWithdrawal, VariableWithdrawal,
-      # RequiredMinimumDistribution,
-      # FlatTax, TieredTax,
-      # YearlyRebalance,
-
-      # NoOp objectives
-      # NoAdditionalIncome, NoLivingExpenses, NoWithdrawal, NoRequiredMinimumDistribution, NoAnnualFees, NoTax, NoGrowth, NoRebalance,
-
     ]
 
 Initial:
-  YearZeroCashBalance: $12,000
+  YearZeroCashBalance: 12,000
   YearZeroTaxAmount:   $25,000
   PreTax:
-    Amount: $1,000,000
-    Allocation: 60%
+    Amount: $1,500,000
+    Allocation: 70%
   PostTax:
-    Amount: $1,000,000
-    Allocation: 60%
+    Amount: $1,500,000
+    Allocation: 70%
 
 # ............................................................
 # Income(s) and Expense(s)
@@ -47,17 +32,17 @@ Initial:
 AdditionalIncomes:
   SS:
     FromAge: 70
-    Amount: 48,000
+    Amount: 72,000
   Ann:
     FromAge: 70
-    Amount: 24,000
+    Amount: 53,000
     Increment: 0%
 
 LivingExpenses:
-  FirstYearAmount: 120,000
+  FirstYearAmount: 130,000
   StepDown:
     - AtAge: 65           # Example: Stop paying Life Ins
-      Reduction: 24000
+      Reduction: 28000
     - AtAge: 70           # Example: Reduction in Med Ins.
       Reduction: 6000
 
@@ -66,8 +51,8 @@ LivingExpenses:
 # Flat Growth strategy
 # ............................................................
 FlatGrowth:
-  Stocks: 6.5%
-  Bonds:  6.5%
+  Stocks: 5%
+  Bonds:  5%
   InflationRate: 3.0%
 
 # ............................................................

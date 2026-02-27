@@ -13,7 +13,7 @@ namespace UnitTests.WhatIf
         const string ReportsFolder = @"D:\Source\ninth-ball\src\UnitTests\Reports\";
 
         [TestMethod]
-        public async Task MultipleGrowthObjectivesWithDifferentRegimeAwareness()
+        public async Task DifferentGrowthObjectives()
         {
             // Prepare base configuration
             var baseConfig = new ConfigurationBuilder()
@@ -42,17 +42,35 @@ namespace UnitTests.WhatIf
                 );
             }
 
-            using (var writer = File.CreateText(Path.Combine(ReportsFolder, "GrowthObjectives.md")))
+            var keyInputs = new
+            {
+                From = $"{p.StartAge} years", To   = $"{p.StartAge + p.NoOfYears} years",
+                PreTax = $"{init.PreTax.Amount / 1000000:C1} M", PostTax = $"{init.PostTax.Amount / 1000000:C1} M", Year1 = $"{exp.FirstYearAmount/1000:C0} K"
+            };
+
+            using (var writer = File.CreateText(Path.Combine(ReportsFolder, "MultipleGrowthObjectives.md")))
             {
                 writer
                     .PrintMarkdownTitle2("What-if: Different growth objectives ")
+
+                    .PrintMarkdownTitle3("Input")
+                    .PrintMarkdownRecordWide(keyInputs)
 
                     .PrintMarkdownTitle3("Results")
                     .PrintMarkdownTable(dt)
                     .AppendLine()
 
-                    .PrintMarkdownTitle3("Input(s):")
-                    .PrintMarkdownJson(p, init)
+                    .PrintMarkdownTitle3("Input details:")
+
+                    .PrintMarkdownTitle4("Simulation params:")
+                    .PrintMarkdownJson(p)
+
+                    .PrintMarkdownTitle4("Inittial:")
+                    .PrintMarkdownJson(init)
+
+                    .PrintMarkdownTitle4("Expenses:")
+                    .PrintMarkdownJson(exp)
+
                     .AppendLine();
             }
 
