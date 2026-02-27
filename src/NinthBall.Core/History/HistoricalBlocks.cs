@@ -60,12 +60,15 @@ namespace NinthBall.Core
             foreach (var blockLength in blockSizes)
             {
                 var maxBlocks = history.Length - blockLength + 1;
+
                 for (int startIndex = 0; startIndex < maxBlocks; startIndex++)
                 {
-                    var slice    = history.Slice(startIndex, blockLength);
-                    var features = slice.ComputeBlockFeatures();
+                    var slice = history.Slice(startIndex, blockLength);
 
-                    blocks.Add( new HBlock(slice, features) );
+                    blocks.Add( new HBlock(
+                        slice,
+                        slice.ComputeBlockFeatures()
+                    ));
                 }
             }
 
