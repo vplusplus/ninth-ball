@@ -325,8 +325,33 @@
 
         static Regime[] AdjustRegimeLabels(this Regime[] profiles)
         {
-            ArgumentNullException.ThrowIfNull(profiles);
-            if (0 == profiles.Length) return profiles;
+            // IDs of yet-to-be-named regimes.
+            List<int> unnamed = Enumerable.Range(0, profiles.Length).ToList();
+
+            // Consult FxScore, tag the regime.
+            TagByScore(profiles, unnamed, FxBullScore,      "Bull");
+            TagByScore(profiles, unnamed, FxCrisisScore,    "Crisis");
+            TagByScore(profiles, unnamed, FxInflationScore, "Infl");
+            TagByScore(profiles, unnamed, FxRecoveryScore,  "Recovery");
+            TagByScore(profiles, unnamed, FxStagnationScore,"Stagnation");
+
+            // By now we should have tagged all regimes.
+            // Un-tagged regimes (if any) will keep their original label.
+            return profiles;
+
+            // Apply suggested tag to the regime with Max() FxScore
+            static void TagByScore(Regime[] allRegimes, List<int> unnamed, Func<Regime, double> fxScore, string tag)
+            {
+                if (unnamed.Count > 0)
+                {
+                    // Next regime with top-score
+                    var regimeIndex = unnamed.OrderByDescending(idx => fxScore(allRegimes[idx])).First();
+
+                    // Update tag, remove from unnamed list
+                    allRegimes[regimeIndex] = allRegimes[regimeIndex] with { RegimeLabel = tag };
+                    unnamed.Remove(regimeIndex);
+                }
+            }
 
             double FxBullScore(Regime p) =>
                 + p.Stocks.Mean
@@ -358,56 +383,8 @@
                 - p.Stocks.Volatility                           // Reward low volatility (boringness)
                 - Math.Abs(p.Inflation.Mean)                    // Reward low/stable inflation
                 - p.Stocks.Kurtosis;                            // Reward absence of extreme events
-
-            // We MUST preserve the order.
-            var unnamed = Enumerable.Range(0, profiles.Length).Select(x => new 
-            { 
-                Idx = x,                    // Remember the index
-                Profile = profiles[x]       // And the profile at that index
-            })
-            .ToList();
-
-            // DRY Helper: Apply suggested tag to the regime with Max() FxScore
-            void TagByScore(Func<Regime, double> fxScore, string tag)
-            {
-                if (unnamed.Count > 0)
-                {
-                    var next = unnamed.OrderByDescending(p => fxScore(p.Profile)).First();
-                    unnamed.Remove(next);
-                    profiles[next.Idx] = next.Profile with { RegimeLabel = tag };
-                }
-            }
-
-            // Consult FxScore, tag the regime.
-            TagByScore(FxBullScore,         "Bull");
-            TagByScore(FxCrisisScore,       "Crisis");
-            TagByScore(FxInflationScore,    "Infl");
-            TagByScore(FxRecoveryScore,     "Recovery");
-            TagByScore(FxStagnationScore,   "Stagnation");
-
-            // By now we should have tagged all regimes.
-            // Defensive: Carry forward anything left behind.
-            if (unnamed.Count > 0) foreach (var p in unnamed) profiles[p.Idx] = p.Profile;
-            return profiles;
         }
 
         #endregion
     }
 }
-
-/*
-
-TODO: Verify
-
-Plot regime over time and verify:
-
-1930s               → Crisis
-1940s inflation     → Infl
-1950s–60s           → Bull
-1970s               → Infl/Stagnation
-2008                → Crisis
-2009–2013           → Recovery
-
-If those align historically, your model is validated.
-
-*/
