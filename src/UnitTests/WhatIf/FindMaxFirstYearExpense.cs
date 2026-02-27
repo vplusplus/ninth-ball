@@ -13,6 +13,9 @@ namespace UnitTests.WhatIf
         public async Task SweepFirstYearExpense()
         {
             const string ReportFileName = "MaxFirstYearExpense.md";
+            const double MinExpense = 100000;
+            const double MaxExpense = 200000;
+            const double Steps = 10000;
 
             // Base configuration (same as MultipleSimulations)
             var baseConfig = new ConfigurationBuilder()
@@ -35,7 +38,7 @@ namespace UnitTests.WhatIf
                 ;
 
             // Sweep range
-            for (int expense = 100_000; expense <= 200_000; expense += 10_000)
+            for (double expense = MinExpense; expense <= MaxExpense; expense += Steps)
             {
                 var overrides = SimInputOverrides
                     .For<LivingExpenses>()
