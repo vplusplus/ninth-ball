@@ -55,7 +55,7 @@ namespace NinthBall.Reports.Excel
                 // Render one sheet per percentile
                 foreach (var pctl in Percentiles)
                 {
-                    var iter = simResult.Percentile(pctl);
+                    var iter = simResult.IterationAtPercentile(pctl);
                     var sheetName = $"{pctl.PctlName}";
                     
                     RenderIteration(xl, ssb, iter, sheetName);
@@ -214,7 +214,7 @@ namespace NinthBall.Reports.Excel
                         row.Append("Start (Real)");
                         foreach (var pctl in Percentiles)
                         {
-                            var iter = simResult.Percentile(pctl);
+                            var iter = simResult.IterationAtPercentile(pctl);
                             var m = Mil(iter.ByYear.Span[0].Jan.Total);
                             row.Append(m, styles.SumC);
                         }
@@ -227,7 +227,7 @@ namespace NinthBall.Reports.Excel
                         row.Append("End (Real)");
                         foreach (var pctl in Percentiles)
                         {
-                            var p = simResult.Percentile(pctl);
+                            var p = simResult.IterationAtPercentile(pctl);
                             var m = Mil(p.LastGoodYear.Dec.Total / p.LastGoodYear.InflationIndex.Consumer);
                             row.Append(m, styles.SumC);
                         }
@@ -239,7 +239,7 @@ namespace NinthBall.Reports.Excel
                         row.Append("End (Nominal)");
                         foreach (var pctl in Percentiles)
                         {
-                            var p = simResult.Percentile(pctl);
+                            var p = simResult.IterationAtPercentile(pctl);
                             var m = Mil(p.LastGoodYear.Dec.Total);
                             row.Append(m, styles.SumC);
                         }
@@ -251,7 +251,7 @@ namespace NinthBall.Reports.Excel
                         row.Append("Change (Annualized)");
                         foreach (var pctl in Percentiles)
                         {
-                            var p = simResult.Percentile(pctl);
+                            var p = simResult.IterationAtPercentile(pctl);
                             var chng = p.LastGoodYear.Growth.AnnualizedReturn;  // Nominal CAGR
                             row.Append(chng, styles.SumP);
                         }

@@ -27,7 +27,7 @@
 
             @foreach (var p in Percentiles)
             {
-                var iter = SimResult.Percentile(p);
+                var iter = SimResult.IterationAtPercentile(p);
 
                 if (iter.Success)
                 {
@@ -47,7 +47,7 @@
 
             @foreach (var p in Percentiles)
             {
-                var iter = SimResult.Percentile(p);
+                var iter = SimResult.IterationAtPercentile(p);
 
                 if (iter.Success)
                 {
@@ -67,7 +67,7 @@
 
             @foreach (var p in Percentiles)
             {
-                var iter = SimResult.Percentile(p);
+                var iter = SimResult.IterationAtPercentile(p);
                 var annualizedEffectiveROI = iter.GetAggregateValue(CID.ROI);
 
                 <td class="text-secondary">

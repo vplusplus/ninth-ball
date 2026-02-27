@@ -20,7 +20,6 @@
             public double BondsChange  => R.PreTax.BondsChange  + R.PostTax.BondsChange;      // Total change in stocks assets due to rebalancing
         }
 
-
         extension(Fees F)
         {
             public double Total => F.PreTax + F.PostTax;
@@ -60,6 +59,8 @@
             public double XPreTax   => 0 - Y.Withdrawals.PreTax;
             public double XPostTax  => Y.Deposits.PostTax - Y.Withdrawals.PostTax;
             public double XCash     => Y.Deposits.Cash - Y.Withdrawals.Cash;
+
+            // Dec ending balance real-value (adjusted for inflation)
             public double DecReal   => Y.Dec.Total / Math.Max(Y.InflationIndex.Consumer, Precision.Rate);
         }
 
@@ -78,7 +79,7 @@
             /// <summary>
             /// Ending balance of last survived year, adjusted for inflation.
             /// </summary>
-            public double EndingBalanceReal => iteration.LastGoodYear.Dec.Total / Math.Max(iteration.LastGoodYear.InflationIndex.Consumer, Precision.Rate);
+            public double EndingBalanceReal => iteration.LastGoodYear.DecReal;
 
             /// <summary>
             /// Zero-copy extension to calculate the sum of a selected field across all years in the iteration 
@@ -103,14 +104,13 @@
 
         extension(SimResult simResult)
         {
-            //public int NoOfYears => simResult.Input.SimParams.NoOfYears;
-
             public double SurvivalRate => simResult.Iterations.Count == 0 ? 0.0 : (double)simResult.Iterations.Count(x => x.Success) / (double)simResult.Iterations.Count;
 
             /// <summary>
-            /// IMP: Iterations are expected to be pre-ordered worst-to-best based on chosen metrics.
+            /// Iterations are expected to be pre-ordered worst-to-best based on chosen metrics.
+            /// Returns iteration at suggested percentile.
             /// </summary>
-            public SimIteration Percentile(double percentile) =>
+            public SimIteration IterationAtPercentile(double percentile) =>
                 percentile < 0.0 || percentile > 1.0 ? throw new ArgumentOutOfRangeException(nameof(percentile), "Percentile must be between 0.0 and 1.0") :
                 simResult.Iterations.Count == 0 ? throw new InvalidOperationException("No results available") :
                 0.0 == percentile ? simResult.Iterations.First() :
@@ -119,10 +119,10 @@
 
 
             /// <summary>
-            /// IMP: Iterations are expected to be pre-ordered worst-to-best based on chosen metrics.
-            /// Reverse lookup of percentile-rank of the specific iteration.
+            /// Iterations are expected to be pre-ordered worst-to-best based on chosen metrics.
+            /// Returns percentile-rank of the specific iteration.
             /// </summary>
-            public double IterationPercentile(int iterationIndex)
+            public double PercentileOfIteration(int iterationIndex)
             {
                 // Find the position of this iteration in the ranked list
                 // Calculate the percentile rank based on its relative position.

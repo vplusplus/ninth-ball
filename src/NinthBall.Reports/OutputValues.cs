@@ -137,14 +137,14 @@ namespace NinthBall.Reports
             [CID.Year]         = (it) => it.SurvivedYears,
 
             // Aggregated version presents the last good year info
-            [CID.Jan]     = (it) => it.LastGoodYear.Jan.Total,
-            [CID.JanNet]     = (it) => it.LastGoodYear.Jan.AfterTaxNetWorth,
-            [CID.JanPreTax]    = (it) => it.LastGoodYear.Jan.PreTax.Amount,
-            [CID.JanPostTax]   = (it) => it.LastGoodYear.Jan.PostTax.Amount,
-            [CID.JanCash]      = (it) => it.LastGoodYear.Jan.Cash.Amount,
+            [CID.Jan]           = (it) => it.LastGoodYear.Jan.Total,
+            [CID.JanNet]        = (it) => it.LastGoodYear.Jan.AfterTaxNetWorth,
+            [CID.JanPreTax]     = (it) => it.LastGoodYear.Jan.PreTax.Amount,
+            [CID.JanPostTax]    = (it) => it.LastGoodYear.Jan.PostTax.Amount,
+            [CID.JanCash]       = (it) => it.LastGoodYear.Jan.Cash.Amount,
 
-            [CID.Fees]         = (it) => it.Sum(y => y.Fees.Total),
-            [CID.Taxes]      = (it) => it.Sum(y => y.Taxes.Total),
+            [CID.Fees]          = (it) => it.Sum(y => y.Fees.Total),
+            [CID.Taxes]         = (it) => it.Sum(y => y.Taxes.Total),
 
             [CID.LivExp]       = (it) => it.Sum(y => y.Expenses.LivExp),
 

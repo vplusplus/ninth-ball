@@ -30,7 +30,7 @@
             if (IT < 0 || IT > SimResult.Iterations.Count - 1) continue;
 
             // Calculate the rank (0.0 to 1.0) and convert to "20th" style caption
-            var rank = SimResult.IterationPercentile(IT);
+            var rank = SimResult.PercentileOfIteration(IT);
             var pctlCaption = rank >= 0 ? $" ({rank.PctlName})" : "";
 
             var iter = SimResult.Iterations.Where(x => x.Index == IT).Single();
@@ -52,7 +52,7 @@
             // TODO: Consider preparing list of (caption, percentile) and render in one loop
             // TODO: Or consider factoring out the tab rendering block
 
-            var iter = SimResult.Percentile(p);
+            var iter = SimResult.IterationAtPercentile(p);
             var pctlId = PercentileId(p);
             var caption = $"{p.PctlName} Percentile [#{iter.Index}]";
             var isActive = p == ActivePctl ? "active" : "";
@@ -65,7 +65,7 @@
         {
             if (IT < 0 || IT > SimResult.Iterations.Count - 1) continue;
 
-            var rank = SimResult.IterationPercentile(IT);
+            var rank = SimResult.PercentileOfIteration(IT);
             var caption = rank >= 0 ? $"Iteration #{IT:0000} ({rank.PctlName} Pctl)" : $"#{IT:0000}";
 
             // We are using un-sorted view of a specific iteration path

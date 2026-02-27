@@ -44,15 +44,15 @@ namespace UnitTests.WhatIf
                     ;
 
                 var simResult = RunSimulation(overrides);
-                var pctl20 = simResult.Percentile(0.2).EndingBalanceReal;
+                var pctl20 = simResult.IterationAtPercentile(0.2).EndingBalanceReal;
 
                 var row = new List<object>(6);
                 row.Add(objective);
                 row.Add(0.0);
                 row.Add(simResult.Iterations.Count);
                 row.Add(simResult.SurvivalRate);
-                row.Add(simResult.Percentile(0.2).EndingBalanceReal);
-                row.Add(simResult.Percentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
+                row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
+                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
                 dt.Rows.Add(row.ToArray());
             }
 
@@ -71,15 +71,15 @@ namespace UnitTests.WhatIf
                     ;
 
                 var simResult = RunSimulation(overrides);
-                var pctl20 = simResult.Percentile(0.2).EndingBalanceReal;
+                var pctl20 = simResult.IterationAtPercentile(0.2).EndingBalanceReal;
 
                 var row = new List<object>(6);
                 row.Add(profileName);
                 row.Add(0);
                 row.Add(simResult.Iterations.Count);
                 row.Add(simResult.SurvivalRate);
-                row.Add(simResult.Percentile(0.2).EndingBalanceReal);
-                row.Add(simResult.Percentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
+                row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
+                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
                 dt.Rows.Add(row.ToArray());
             }
 
@@ -96,15 +96,15 @@ namespace UnitTests.WhatIf
                     ;
 
                 var simResult = RunSimulation(overrides);
-                var pctl20 = simResult.Percentile(0.2).EndingBalanceReal;
+                var pctl20 = simResult.IterationAtPercentile(0.2).EndingBalanceReal;
 
                 var row = new List<object>(6);
                 row.Add("RandomHistoricalGrowth");
                 row.Add(regimeAwareness);
                 row.Add(simResult.Iterations.Count);
                 row.Add(simResult.SurvivalRate);
-                row.Add(simResult.Percentile(0.2).EndingBalanceReal);
-                row.Add(simResult.Percentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
+                row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
+                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
                 dt.Rows.Add(row.ToArray());
             }
 
@@ -119,15 +119,15 @@ namespace UnitTests.WhatIf
                     ;
 
                 var simResult = RunSimulation(overrides);
-                var pctl20 = simResult.Percentile(0.2).EndingBalanceReal;
+                var pctl20 = simResult.IterationAtPercentile(0.2).EndingBalanceReal;
 
                 var row = new List<object>(6);
                 row.Add("RandomGrowth");
                 row.Add(regimeAwareness);
                 row.Add(simResult.Iterations.Count);
                 row.Add(simResult.SurvivalRate);
-                row.Add(simResult.Percentile(0.2).EndingBalanceReal);
-                row.Add(simResult.Percentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
+                row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
+                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.Growth.RealAnnualizedReturn);
                 dt.Rows.Add(row.ToArray());
             }
 
