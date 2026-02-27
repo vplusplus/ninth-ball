@@ -63,11 +63,9 @@ namespace NinthBall.Core
 
                 for (int startIndex = 0; startIndex < maxBlocks; startIndex++)
                 {
-                    var slice = history.Slice(startIndex, blockLength);
-
                     blocks.Add( new HBlock(
-                        slice,
-                        slice.ComputeBlockFeatures()
+                        history.Slice(startIndex, blockLength),
+                        history.Slice(startIndex, blockLength).ComputeBlockFeatures()
                     ));
                 }
             }
