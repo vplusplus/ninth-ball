@@ -196,6 +196,30 @@ namespace NinthBall.Reports.PrettyPrint
         #endregion
 
         //......................................................................
+        #region Markdown pretry json 
+        //......................................................................
+        public static TextWriter PrintMarkdownJson(this TextWriter writer, params object[] fewItems)
+        {
+            var prettyOptions = new System.Text.Json.JsonSerializerOptions() { WriteIndented = true };
+
+            writer.WriteLine("``` json");
+            foreach (var item in fewItems)
+            {
+                if (null != item)
+                {
+                    var prettyJson = System.Text.Json.JsonSerializer.Serialize(item, prettyOptions);
+                    writer.WriteLine(prettyJson);
+                }
+            }
+            writer.WriteLine("```");
+            writer.WriteLine();
+
+            return writer;
+        }
+
+        #endregion
+
+        //......................................................................
         #region Helpers
         //......................................................................
 

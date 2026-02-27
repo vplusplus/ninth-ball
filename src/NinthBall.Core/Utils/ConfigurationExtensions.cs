@@ -86,27 +86,29 @@ namespace NinthBall.Core
         public static IServiceCollection RegisterConfigSection<TSection>(this IServiceCollection services, string? optionalSectionName = null) where TSection : class
         {
             // Options pattern returns an empty and uninitialized TOption if section not defined.
-            // This is not our desired behavior.
-            // Resolving TSection will throw an exception if section not defined or section is invalid.
+            // RegisterConfigSection() will ensure that the section exists and if present is valid.
 
             // Type name is the section name if not provided.
             var sectionName = string.IsNullOrWhiteSpace(optionalSectionName) ? typeof(TSection).Name : optionalSectionName.Trim();
 
-            // Register TSection
+            // Register validated TSection
             services.AddSingleton<TSection>(sp =>
-            {
-                // Look for requested config section
-                var configSection = sp.GetRequiredService<IConfiguration>().GetSection(sectionName);
-
-                // Parse TSection if config section is present, use null if not present
-                var options = configSection.Exists() ? configSection.Get<TSection>() : null;
-
-                // If available, ensure it is valid before serving the instance.
-                return null != options ? Validate(options, sectionName) : throw new Exception($"Missing config section | '{sectionName}'");
-            });
+                sp.GetRequiredService<IConfiguration>().ReadAndValidateRequiredSestion<TSection>(optionalSectionName)
+            );
 
             // Done.
             return services;
+        }
+
+        public static TSection ReadAndValidateRequiredSestion<TSection>(this IConfiguration configuration, string? optionalSectionName = null) where TSection: class
+        {
+            ArgumentNullException.ThrowIfNull(configuration);
+
+            var sectionName = string.IsNullOrWhiteSpace(optionalSectionName) ? typeof(TSection).Name : optionalSectionName.Trim();
+            var configSection = configuration.GetSection(sectionName);
+            var options = configSection.Exists() ? configSection.Get<TSection>() : null;
+
+            return null != options ? Validate(options, sectionName) : throw new Exception($"Missing config section | '{sectionName}'");
 
             static TSomething Validate<TSomething>(TSomething options, string sectionName) where TSomething : class
             {

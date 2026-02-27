@@ -1,5 +1,4 @@
-﻿
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NinthBall.Core;
@@ -16,129 +15,44 @@ namespace UnitTests.WhatIf
         [TestMethod]
         public async Task MultipleGrowthObjectivesWithDifferentRegimeAwareness()
         {
-            // Target objectives
-            string[] growthObjectives = [ "FlatGrowth", "HistoricalGrowth"];   // ["FlatGrowth", "HistoricalGrowth", "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];
-
             // Prepare base configuration
             var baseConfig = new ConfigurationBuilder()
                 .AddSimulationDefaults()
                 .AddYamlResources(typeof(MultipleSimulations).Assembly, ".TestInputs.")
                 .Build();
 
-            var dt = new DataTable();
-            dt
-                .WithColumn<string>("GrowthStrategy")
-                .WithColumn<double>("RegimeAwareness", format: "P0")
-                .WithColumn<int>("NumIterations", format: "N0")
-                .WithColumn<double>("SurvivalRate", format: "P0")
-                .WithColumn<double>("20th Pctl Balance", format: "C0")
-                .WithColumn<double>("20th Pctl Real CAGR", format: "P2")
-                ;
+            // Capture inputs, for reporting later
+            var p = baseConfig.ReadAndValidateRequiredSestion<SimParams>();
+            var init = baseConfig.ReadAndValidateRequiredSestion<Initial>();
+            var exp = baseConfig.ReadAndValidateRequiredSestion<LivingExpenses>();
 
-            foreach (var objective in growthObjectives)
+            var dt = PrepareOutputTable();
+
+            string[] growthObjectives = ["FlatGrowth", "HistoricalGrowth", "RandomHistoricalGrowth", "RandomGrowth"];   // ["FlatGrowth", "HistoricalGrowth";
+
+            foreach (var growthObjective in growthObjectives)
             {
-                //// Prepare overrides
                 SimInputOverrides overrides = SimInputOverrides
-                    .For<SimParams>()
-                        .Append(x => x.Objectives, objective, baseConfig)
-                    ;
+                    .For<SimParams>().Append(x => x.Objectives, growthObjective, baseConfig)
+                    .For<BootstrapOptions>().With(x => x.RegimeAwareness, 1.0);
 
-                var simResult = RunSimulation(overrides);
-                var pctl20 = simResult.IterationAtPercentile(0.2).EndingBalanceReal;
-
-                var row = new List<object>(6);
-                row.Add(objective);
-                row.Add(0.0);
-                row.Add(simResult.Iterations.Count);
-                row.Add(simResult.SurvivalRate);
-                row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
-                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.RunningGrowth.RealAnnualizedReturn);
-                dt.Rows.Add(row.ToArray());
+                AppendResult(dt, 
+                    growthObjective, 
+                    RunSimulation(overrides)
+                );
             }
-
-            // "ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"
-
-            string[] parametricProfiles = ["ExpectedGrowth", "ConservativeGrowth", "HighRiskGrowth"];
-
-            foreach (var profileName in parametricProfiles)
-            {
-                //// Prepare overrides
-                SimInputOverrides overrides = SimInputOverrides
-                    .For<SimParams>()
-                        .Append(x => x.Objectives, "ParametricGrowth", baseConfig)
-                    .For<ParametricProfiles>()
-                        .With(x => x.Current, profileName)
-                    ;
-
-                var simResult = RunSimulation(overrides);
-                var pctl20 = simResult.IterationAtPercentile(0.2).EndingBalanceReal;
-
-                var row = new List<object>(6);
-                row.Add(profileName);
-                row.Add(0);
-                row.Add(simResult.Iterations.Count);
-                row.Add(simResult.SurvivalRate);
-                row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
-                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.RunningGrowth.RealAnnualizedReturn);
-                dt.Rows.Add(row.ToArray());
-            }
-
-            double[] regimeAwarenessList = { 0.0, 0.25, 0.5, 0.75, 1.0 };
-
-            foreach(var regimeAwareness in regimeAwarenessList)
-            {
-                //// Prepare overrides
-                SimInputOverrides overrides = SimInputOverrides
-                    .For<SimParams>()
-                        .Append(x => x.Objectives, "RandomHistoricalGrowth", baseConfig)
-                    .For<BootstrapOptions>()
-                        .With(x => x.RegimeAwareness, regimeAwareness)
-                    ;
-
-                var simResult = RunSimulation(overrides);
-                var pctl20 = simResult.IterationAtPercentile(0.2).EndingBalanceReal;
-
-                var row = new List<object>(6);
-                row.Add("RandomHistoricalGrowth");
-                row.Add(regimeAwareness);
-                row.Add(simResult.Iterations.Count);
-                row.Add(simResult.SurvivalRate);
-                row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
-                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.RunningGrowth.RealAnnualizedReturn);
-                dt.Rows.Add(row.ToArray());
-            }
-
-            foreach (var regimeAwareness in regimeAwarenessList)
-            {
-                //// Prepare overrides
-                SimInputOverrides overrides = SimInputOverrides
-                    .For<SimParams>()
-                        .Append(x => x.Objectives, "RandomGrowth", baseConfig)
-                    .For<BootstrapOptions>()
-                        .With(x => x.RegimeAwareness, regimeAwareness)
-                    ;
-
-                var simResult = RunSimulation(overrides);
-                var pctl20 = simResult.IterationAtPercentile(0.2).EndingBalanceReal;
-
-                var row = new List<object>(6);
-                row.Add("RandomGrowth");
-                row.Add(regimeAwareness);
-                row.Add(simResult.Iterations.Count);
-                row.Add(simResult.SurvivalRate);
-                row.Add(simResult.IterationAtPercentile(0.2).EndingBalanceReal);
-                row.Add(simResult.IterationAtPercentile(0.2).LastGoodYear.RunningGrowth.RealAnnualizedReturn);
-                dt.Rows.Add(row.ToArray());
-            }
-
 
             using (var writer = File.CreateText(Path.Combine(ReportsFolder, "GrowthObjectives.md")))
             {
                 writer
-                    .PrintMarkdownTitle2("What-if: Different growth objectives ");
+                    .PrintMarkdownTitle2("What-if: Different growth objectives ")
 
-                writer
+                    .PrintMarkdownTitle3("Results")
                     .PrintMarkdownTable(dt)
+                    .AppendLine()
+
+                    .PrintMarkdownTitle3("Input(s):")
+                    .PrintMarkdownJson(p, init)
                     .AppendLine();
             }
 
@@ -169,6 +83,37 @@ namespace UnitTests.WhatIf
                     return simResult;
 
                 }
+            }
+
+            static DataTable PrepareOutputTable()
+            {
+                return new DataTable()
+
+                    .WithColumn<string>("GrowthStrategy")
+                    .WithColumn<int>("NumIterations",       format: "N0")
+                    .WithColumn<double>("SurvivalRate",     format: "P0")
+
+                    .WithColumn<double>("Balance(r) 5th",   format: "C0")
+                    .WithColumn<double>("Balance(r) 10th",  format: "C0")
+                    .WithColumn<double>("Balance(r) 15th",  format: "C0")
+                    .WithColumn<double>("Balance(r) 20th",  format: "C0")
+                    ;
+            }
+
+            static void AppendResult(DataTable dt, string growthStrategy, SimResult simResult)
+            {
+                var row = new List<object>(6);
+
+                row.Add(growthStrategy);
+                row.Add(simResult.Iterations.Count);
+                row.Add(simResult.SurvivalRate);
+
+                row.Add(simResult.IterationAtPercentile(0.05).EndingBalanceReal);
+                row.Add(simResult.IterationAtPercentile(0.10).EndingBalanceReal);
+                row.Add(simResult.IterationAtPercentile(0.15).EndingBalanceReal);
+                row.Add(simResult.IterationAtPercentile(0.20).EndingBalanceReal);
+
+                dt.Rows.Add(row.ToArray());
             }
 
         }
