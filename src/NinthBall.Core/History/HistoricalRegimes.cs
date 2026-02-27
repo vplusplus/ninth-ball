@@ -143,6 +143,19 @@
             );
         }
 
+        static ReadOnlyMemory<double> ComputeRegimeDistribution(this KMean.Result clusters)
+        {
+            var assignments = clusters.Assignments.Span;
+
+            // Count the members
+            // Translate counts to probabilities
+            var distribution = new double[clusters.NumClusters];
+            for (int rIdx = 0; rIdx < clusters.NumClusters; rIdx++) distribution[rIdx] = assignments.Count(rIdx);
+            distribution.ToProbabilityDistribution();
+
+            return distribution;
+        }
+
         static TwoDMatrix ComputeRegimeTransitionMatrix(this KMean.Result clusters)
         {
             // Ideally, we would follow the chronological order of the blocks.
@@ -173,19 +186,6 @@
             }
 
             return matrix.ReadOnly;
-        }
-
-        static ReadOnlyMemory<double> ComputeRegimeDistribution(this KMean.Result clusters)
-        {
-            var assignments  = clusters.Assignments.Span;
-
-            // Count the members
-            // Translate counts to probabilities
-            var distribution = new double[clusters.NumClusters];
-            for (int rIdx = 0; rIdx < clusters.NumClusters; rIdx++) distribution[rIdx] = assignments.Count(rIdx);
-            distribution.ToProbabilityDistribution();
-
-            return distribution;
         }
 
         static Regime[] ComputeRegimeProfiles(this IReadOnlyList<HBlock> blocks, KMean.Result clusters)
