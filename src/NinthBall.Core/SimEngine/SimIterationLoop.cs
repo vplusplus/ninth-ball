@@ -37,13 +37,12 @@ namespace NinthBall.Core
                 // Apply all strategies
                 foreach (var s in strategies) s.Apply(simState);
 
-                // Before we start working on the suggestions...
-                // Reject negative numbers, and drop double-precision-dust.
-                simState.Fees        = simState.Fees.ThrowIfNegative().RoundToCents();
-                simState.Taxes       = simState.Taxes.ThrowIfNegative().RoundToCents();
-                simState.Incomes     = simState.Incomes.ThrowIfNegative().RoundToCents();
-                simState.Expenses    = simState.Expenses.ThrowIfNegative().RoundToCents();
-                simState.Withdrawals = simState.Withdrawals.ThrowIfNegative().RoundToCents();
+                // Drop double-precision-dust.
+                simState.Fees        = simState.Fees.RoundToCents();
+                simState.Taxes       = simState.Taxes.RoundToCents();
+                simState.Incomes     = simState.Incomes.RoundToCents();
+                simState.Expenses    = simState.Expenses.RoundToCents();
+                simState.Withdrawals = simState.Withdrawals.RoundToCents();
 
                 // Check for survivability, optimize and implement the strategy suggestions.
                 (survived, var simYear) = simState.FinalizeYear(TAMA);
@@ -148,8 +147,8 @@ namespace NinthBall.Core
             // Pre-validate our assumption.
             // BY-DESIGN: Invariants use Pascal case local variable names.
             var Jan = context.Jan.ThrowIfNegative();
-            var Fees = context.Fees.ThrowIfNegative().RoundToCents();
-            var Taxes = context.Taxes.ThrowIfNegative().RoundToCents();
+            var Fees = context.Fees.ThrowIfNegative();
+            var Taxes = context.Taxes.ThrowIfNegative();
             var Incomes = context.Incomes.ThrowIfNegative();
             var Expenses = context.Expenses.ThrowIfNegative();
             var SuggestedWithdrawals = context.Withdrawals.ThrowIfNegative();
