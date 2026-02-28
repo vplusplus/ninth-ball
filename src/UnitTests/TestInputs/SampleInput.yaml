@@ -1,7 +1,7 @@
 
 SimParams:
-  StartAge:   60
-  NoOfYears:  35
+  StartAge:   63
+  NoOfYears:  32
   Iterations: 10000
 
   Objectives: [
