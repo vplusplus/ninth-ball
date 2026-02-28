@@ -25,6 +25,12 @@ namespace NinthBall.Reports.PrettyPrint
 
         public static DataTable WithColumn<T>(this DataTable dt, string colName, string? format = null, bool? alignRight = null) => dt.WithColumn(colName, typeof(T), format: format, alignRight: alignRight);
 
+        public static DataTable AppendRow(this DataTable dt, object[] cells)
+        {
+            dt.Rows.Add(cells);
+            return dt;
+        }
+
         extension(DataColumn dtColumn)
         {
             public bool? IsRightAligned
