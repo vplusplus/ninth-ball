@@ -34,14 +34,75 @@ namespace UnitTests.WhatIf
                 var p = baseConfig.ReadAndValidateRequiredSestion<SimParams>();
                 writer.PrintMarkdownTitle3($"From {p.StartAge} to {p.StartAge + p.NoOfYears} | {p.NoOfYears} years");
 
-                TryDifferentFirstYearExpense(writer, baseConfig);
-                TryDifferentInitialBalance(writer, baseConfig);
+                using var w111 = new StringWriter();
+                using var w222 = new StringWriter();
+                using var w333 = new StringWriter();
+
+                var t1 = TrySurvivalMatrix(w111, baseConfig);
+                var t2 = TryDifferentFirstYearExpense(w222, baseConfig);
+                var t3 = TryDifferentInitialBalance(w333, baseConfig);
+
+                await Task.WhenAll(t1, t2, t3);
+
+                writer.Write(w111.ToString());
+                writer.Write(w222.ToString());
+                writer.Write(w333.ToString());
             }
 
             return;
-        
-            static void TryDifferentFirstYearExpense(TextWriter writer, IConfiguration baseConfiguration)
+
+            static async Task TrySurvivalMatrix(TextWriter writer, IConfiguration baseConfiguration)
             {
+                await Task.Yield();
+
+                Console.WriteLine($"TrySurvivalMatrix - Begin @ {DateTime.UtcNow:hh:mm:ss}");
+
+                double[] FirstYearExpenses = [120000, 130000, 140000, 150000, 160000];
+                double[] InitBalances = [ 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0 ];
+
+                var dtMatrix = new DataTable();
+                dtMatrix.WithColumn<string>("First year Exp");
+                foreach (var ib in InitBalances) dtMatrix.WithColumn<double>($"{ib:C1} M", format: "P0");
+
+                for (int fe = 0; fe < FirstYearExpenses.Length; fe++)
+                {
+                    var firstYearExp = FirstYearExpenses[fe];
+
+                    var cells = new List<object>();
+                    cells.Add($"{firstYearExp:C0}");
+
+                    for (int ib = 0; ib < InitBalances.Length; ib++)
+                    {
+                        var initBalance  = InitBalances[ib] * 1000000;
+
+                        var overrides = SimInputOverrides
+                            .For<Initial>()
+                                .With(x => x.PreTax.Amount, initBalance / 2)
+                                .With(x => x.PostTax.Amount, initBalance / 2)
+                            .For<LivingExpenses>()
+                                .With(x => x.FirstYearAmount, firstYearExp);
+
+                        var survivalRate = RunSimulation(baseConfiguration, overrides).SurvivalRate;
+                        cells.Add(survivalRate);
+                    }
+
+                    dtMatrix.Rows.Add(cells.ToArray());
+                }
+
+                writer
+                    .PrintMarkdownTitle2("Survival matrix - Init balance vs First year exp")
+                    .PrintMarkdownTable(dtMatrix)
+                    .AppendLine();
+
+                Console.WriteLine($"TrySurvivalMatrix - Done @ {DateTime.UtcNow:hh:mm:ss}");
+            }
+
+            static async Task TryDifferentFirstYearExpense(TextWriter writer, IConfiguration baseConfiguration)
+            {
+                await Task.Yield();
+
+                Console.WriteLine($"TryDifferentFirstYearExpense - Begin @ {DateTime.UtcNow:hh:mm:ss}");
+
                 // Prepare output table
                 var dt = new DataTable()
                     .WithColumn<double>("Y0-Expense", format: "C0")
@@ -80,11 +141,16 @@ namespace UnitTests.WhatIf
                     .PrintMarkdownTitle3("Results:")
                     .PrintMarkdownTable(dt)
                     .AppendLine();
+
+                Console.WriteLine($"TryDifferentFirstYearExpense - Done @ {DateTime.UtcNow:hh:mm:ss}");
             }
 
-
-            static void TryDifferentInitialBalance(TextWriter writer, IConfiguration baseConfiguration)
+            static async Task TryDifferentInitialBalance(TextWriter writer, IConfiguration baseConfiguration)
             {
+                await Task.Yield();
+
+                Console.WriteLine($"TryDifferentInitialBalance - Begin @ {DateTime.UtcNow:hh:mm:ss}");
+
                 // Prepare output table
                 var dt = new DataTable()
                     .WithColumn<double>("InitialBalance", format: "C0")
@@ -127,6 +193,7 @@ namespace UnitTests.WhatIf
                     .PrintMarkdownTable(dt)
                     .AppendLine();
 
+                Console.WriteLine($"TryDifferentInitialBalance - Done @ {DateTime.UtcNow:hh:mm:ss}");
             }
 
         }
