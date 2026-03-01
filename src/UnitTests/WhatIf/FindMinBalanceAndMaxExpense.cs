@@ -92,7 +92,7 @@ namespace UnitTests.WhatIf
                     .ToList();
 
                 var dtMatrix = new DataTable().WithColumn<string>("First Year Exp");
-                foreach (var colLabel in colLabels) dtMatrix.WithColumn<double>( $"{colLabel/1000000:C1} M", format: "P0");
+                foreach (var colLabel in colLabels) dtMatrix.WithColumn<string>( $"{colLabel/1000000:C1} M");
 
                 foreach(var grp in rowGroups)
                 {
@@ -101,7 +101,7 @@ namespace UnitTests.WhatIf
 
                     var cells = new List<object>();
                     cells.Add($"{fyExp/1000:C0} K");
-                    foreach (var r in sRates) cells.Add(r);
+                    foreach (var r in sRates) cells.Add(r >= 0.95 ? $"{r:P0}" : string.Empty);
 
                     dtMatrix.Rows.Add(cells.ToArray());
                 }
