@@ -6,7 +6,12 @@ using System.Diagnostics;
 
 namespace UnitTests.WhatIf
 {
+
     using MultiSimResult = (double InitBal, double FYExp, double SurvivalRate, double RBal5th, double RBal10th, double RBal20th);
+
+    public readonly record struct MinMaxSteps(double Min, double Max, double Steps);
+
+    public sealed record WhatIfOptions(MinMaxSteps InitialBalance, MinMaxSteps FirstYearExpense, MinMaxSteps StartAge);
 
     public partial class MultipleSimulations
     {
@@ -15,24 +20,16 @@ namespace UnitTests.WhatIf
         {
             const string ReportFileName = "MinBalanceAndMaxExpense.md";
 
-            // Given initial balance, find first year expense
-            const double MinExpense     =   120_000;
-            const double MaxExpense     =   180_000;
-            const double ExpSteps       =    10_000;
+            // Base configuration
+            var baseConfig = MyBaseConfiguration;
 
-            // Given first year expense, find initial balance.
-            const double MinBalance     = 2_000_000;
-            const double MaxBalance     = 5_000_000;
-            const double BalanceSteps   =   500_000;
+            var options = baseConfig.ReadAndValidateRequiredSestion<WhatIfOptions>();
 
             // Prepare tuples of vary-by inputs
             List<(double InitBalance, double FirstYearExp)> VaryBy = new();
-            for (double ib = MinBalance; ib <= MaxBalance; ib += BalanceSteps)
-                for (double fye = MinExpense; fye <= MaxExpense; fye += ExpSteps)
+            for (double ib = options.InitialBalance.Min; ib <= options.InitialBalance.Max; ib += options.InitialBalance.Steps)
+                for (double fye = options.FirstYearExpense.Min; fye <= options.FirstYearExpense.Max; fye += options.FirstYearExpense.Steps)
                     VaryBy.Add((ib, fye));
-
-            // Base configuration
-            var baseConfig = MyBaseConfiguration;
 
             // Simulate in parallel, collect results
             var elapsed = Stopwatch.StartNew();
@@ -186,5 +183,3 @@ namespace UnitTests.WhatIf
         }
     }
 }
-
-

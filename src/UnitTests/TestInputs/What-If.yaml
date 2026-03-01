@@ -1,0 +1,17 @@
+
+WhatIfOptions:
+
+  InitialBalance:
+    Min:    2,000,000
+    Max:    5,000,000
+    Steps:    500,000
+
+  FirstYearExpense:
+    Min:    120,000
+    Max:    180,000
+    Steps:   10,000
+
+  StartAge:
+    Min:    58
+    Max:    65
+    Steps:  1

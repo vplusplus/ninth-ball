@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="TestInputs\What-If.yaml" />
     <EmbeddedResource Include="TestInputs\SampleInput.yaml" />
     <EmbeddedResource Include="TestInputs\SampleOutput.yaml" />
   </ItemGroup>
