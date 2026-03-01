@@ -54,7 +54,7 @@ namespace UnitTests.WhatIf
                     .PrintMarkdownTitle4("Simulation params:")
                     .PrintMarkdownJson(p)
 
-                    .PrintMarkdownTitle4("Inittial:")
+                    .PrintMarkdownTitle4("Initial:")
                     .PrintMarkdownJson(init)
 
                     .PrintMarkdownTitle4("Expenses:")
