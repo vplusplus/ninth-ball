@@ -98,7 +98,7 @@ namespace UnitTests.WhatIf
                 var title = $"Initial balance: {anchorInitialBalance:C0} | Different first year expenses:";
 
                 var filteredResults = results
-                    .Where(x => x.InitialBalance == anchorInitialBalance)
+                    .Where(x => x.InitialBalance.AlmostSame(anchorInitialBalance, Precision.Amount))
                     .OrderBy(x => x.Year0Expense)
                     .ToList();
 
@@ -110,7 +110,7 @@ namespace UnitTests.WhatIf
                 var title = $"First year expense: {anchorFirstYearExpense:C0} | Different Initial Balances:";
 
                 var filteredResults = results
-                    .Where(x => x.Year0Expense == anchorFirstYearExpense)
+                    .Where(x => x.Year0Expense.AlmostSame(anchorFirstYearExpense, Precision.Amount))
                     .OrderBy(x => x.InitialBalance)
                     .ToList();
 

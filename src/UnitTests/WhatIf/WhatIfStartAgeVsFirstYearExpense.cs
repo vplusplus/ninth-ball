@@ -120,7 +120,7 @@ namespace UnitTests.WhatIf
                 var title = $"First year expense: {targetFirstYearExp:C0} | Different start ages:";
 
                 var filteredResults = results
-                    .Where(x => x.Year0Expense == targetFirstYearExp)
+                    .Where(x => x.Year0Expense.AlmostSame(targetFirstYearExp, Precision.Amount))
                     .OrderBy(x => x.StartAge)
                     .ToList();
 
