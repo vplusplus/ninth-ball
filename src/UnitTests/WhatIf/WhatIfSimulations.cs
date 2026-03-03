@@ -7,17 +7,21 @@ using NinthBall.Core;
 namespace UnitTests.WhatIf
 {
     [TestClass]
-    public partial class MultipleSimulations
+    public partial class WhatIfSimulations
     {
         public const string ReportsFolder = @"D:\Source\ninth-ball\src\UnitTests\Reports\";
 
+        // TODO: Move base configuration to Core assembly
         private static IConfiguration MyBaseConfiguration => new ConfigurationBuilder()
             .AddSimulationDefaults()
-            .AddYamlResources(typeof(MultipleSimulations).Assembly, ".TestInputs.")
+            .AddYamlResources(typeof(WhatIfSimulations).Assembly, ".WhatIf-Inputs.")
             .Build();
 
-        private static SimResult RunSimulation(IConfiguration baseConfiguration, SimInputOverrides overrides)
+        private static WhatIfMetrics RunOneSimulation(IConfiguration baseConfiguration, SimInputOverrides overrides)
         {
+            ArgumentNullException.ThrowIfNull(baseConfiguration);
+            ArgumentNullException.ThrowIfNull(overrides);
+
             var builder = Host.CreateEmptyApplicationBuilder(settings: new());
 
             builder.Configuration
@@ -27,11 +31,11 @@ namespace UnitTests.WhatIf
             builder.Services
                 .AddSimulationComponents();
 
-            using var session = builder.Build();
-
-            return session.Services
-                .GetRequiredService<ISimulation>()
-                .Run();
+            using (var session = builder.Build())
+            {
+                var simResult = session.Services.GetRequiredService<ISimulation>().Run();
+                return new(simResult);
+            }
         }
     }
 }

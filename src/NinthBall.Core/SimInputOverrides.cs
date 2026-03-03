@@ -18,13 +18,31 @@ namespace NinthBall.Core
             return this;
         }
 
-        // Append suggested value to the collection. Target property MUST be a primitive-collection. 
-        public SimInputOverrides<TTarget> Append<TCollection, TItem>(Expression<Func<TTarget, TCollection>> expression, TItem value, IConfiguration baseConfig) where TCollection : IEnumerable<TItem>
+        //// Append suggested value to the collection. Target property MUST be a primitive-collection. 
+        //public SimInputOverrides<TTarget> Append<TCollection, TItem>(Expression<Func<TTarget, TCollection>> expression, TItem value, IConfiguration baseConfig) where TCollection : IEnumerable<TItem>
+        //{
+        //    var propertyPathPrefix = GetConfigurationPath(expression);
+
+        //    // We leverage the fact that all IConfiguration primitives are string(s)
+        //    var oneOrMoreValues = GetArrayValues(baseConfig, propertyPathPrefix);
+        //    oneOrMoreValues.Add(value?.ToString() ?? "");
+        //    SetArrayValues(Overrides, propertyPathPrefix, oneOrMoreValues);
+
+        //    return this;
+        //}
+
+        public SimInputOverrides<TTarget> Replace<TCollection, TItem>(Expression<Func<TTarget, TCollection>> expression, TItem value, IConfiguration baseConfig, Func<string, bool> fxItemSelector) where TCollection : IEnumerable<TItem>
         {
             var propertyPathPrefix = GetConfigurationPath(expression);
 
             // We leverage the fact that all IConfiguration primitives are string(s)
             var oneOrMoreValues = GetArrayValues(baseConfig, propertyPathPrefix);
+
+            // Items to remove
+            var unwanted = oneOrMoreValues.Where(fxItemSelector).ToArray();
+            if (unwanted.Length > 0) foreach (var item in unwanted) oneOrMoreValues.Remove(item);
+
+            // Add suggested item to the list.
             oneOrMoreValues.Add(value?.ToString() ?? "");
             SetArrayValues(Overrides, propertyPathPrefix, oneOrMoreValues);
 

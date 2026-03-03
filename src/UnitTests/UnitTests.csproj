@@ -8,14 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="TestInputs\SampleInput.yaml" />
-    <None Remove="TestInputs\SampleOutput.yaml" />
+    <None Remove="WhatIfInputs\SampleInput.yaml" />
+    <None Remove="WhatIfInputs\SampleOutput.yaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="TestInputs\What-If.yaml" />
-    <EmbeddedResource Include="TestInputs\SampleInput.yaml" />
-    <EmbeddedResource Include="TestInputs\SampleOutput.yaml" />
+    <EmbeddedResource Include="WhatIfInputs\WhatIfOptions.yaml" />
+    <EmbeddedResource Include="WhatIfInputs\SampleInput.yaml" />
+    <EmbeddedResource Include="WhatIfInputs\SampleOutput.yaml" />
   </ItemGroup>
 
   <ItemGroup>
