@@ -32,7 +32,7 @@ namespace UnitTests.WhatIf
             using (var writer = File.CreateText(Path.Combine(WhatIfSimulations.ReportsFolder, ReportFileName)))
             {
                 writer.PrintMarkdownTitle2($"Different growth objectives");
-                PrintMetrics(writer, metrics);
+                PrintGrowthObjectiveAndMetrics(writer, metrics);
             }
 
             return;
@@ -49,7 +49,7 @@ namespace UnitTests.WhatIf
                 );
             }
 
-            static void PrintMetrics(TextWriter writer, IList<(string GrowthObjective, WhatIfMetrics Metrics)> results)
+            static void PrintGrowthObjectiveAndMetrics(TextWriter writer, IList<(string GrowthObjective, WhatIfMetrics Metrics)> results)
             {
                 var dt = new DataTable()
                     .WithColumn<string>("Growth")

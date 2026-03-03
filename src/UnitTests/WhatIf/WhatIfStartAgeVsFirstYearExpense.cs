@@ -105,7 +105,7 @@ namespace UnitTests.WhatIf
 
             static void PrintMetricsForSelectStartAge(TextWriter writer, IList<WhatIfMetrics> results, int targetStartAge)
             {
-                var title = $"Start at {targetStartAge} - Different first year expenses:";
+                var title = $"Start at {targetStartAge} | Different first year expenses:";
 
                 var filteredResults = results
                     .Where(x => x.StartAge == targetStartAge)
@@ -117,7 +117,7 @@ namespace UnitTests.WhatIf
 
             static void PrintMetricsForSelectFirstYearExpense(TextWriter writer, IList<WhatIfMetrics> results, double targetFirstYearExp)
             {
-                var title = $"{targetFirstYearExp:C0} fist year expense - Different start ages:";
+                var title = $"First year expense: {targetFirstYearExp:C0} | Different start ages:";
 
                 var filteredResults = results
                     .Where(x => x.Year0Expense == targetFirstYearExp)
@@ -127,7 +127,7 @@ namespace UnitTests.WhatIf
                 PrintMetrics(writer, title, filteredResults);
             }
 
-            static void PrintMetrics(TextWriter writer, string title, IList< WhatIfMetrics> filteredResults)
+            static void PrintMetrics(TextWriter writer, string title, IList<WhatIfMetrics> filteredResults)
             {
                 var dt = new DataTable()
                     .WithColumn<string>("Start Age")
@@ -136,8 +136,7 @@ namespace UnitTests.WhatIf
                     .WithColumn<double>("Balance(r) 5th", format: "C0")
                     .WithColumn<double>("Balance(r) 10th", format: "C0")
                     .WithColumn<double>("Balance(r) 20th", format: "C0")
-                    .WithColumn<double>("Balance(r) 50th", format: "C0")
-                    ;
+                    .WithColumn<double>("Balance(r) 50th", format: "C0");
 
                 foreach (var r in filteredResults)
                 {

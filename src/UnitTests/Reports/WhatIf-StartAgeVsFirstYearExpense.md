@@ -15,7 +15,7 @@
 | 64-94 (31y)  | 99%          | 98%          | 97%          |              |              |              |              |
 
 
-### Start at 60 - Different first year expenses:
+### Start at 60 | Different first year expenses:
 
 | Start Age    | Y0-Expense   | SurvivalRate | Balance(r) 5th | Balance(r) 10th | Balance(r) 20th | Balance(r) 50th |
 |:-------------|:-------------|-------------:|---------------:|----------------:|----------------:|----------------:|
@@ -28,7 +28,7 @@
 | 60-94 (35y)  | $180 K       |          69% |             $0 |              $0 |              $0 |      $2,670,000 |
 
 
-### $130,000 fist year expense - Different start ages:
+### First year expense: $130,000 | Different start ages:
 
 | Start Age    | Y0-Expense   | SurvivalRate | Balance(r) 5th | Balance(r) 10th | Balance(r) 20th | Balance(r) 50th |
 |:-------------|:-------------|-------------:|---------------:|----------------:|----------------:|----------------:|

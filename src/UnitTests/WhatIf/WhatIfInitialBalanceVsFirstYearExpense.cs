@@ -40,7 +40,7 @@ namespace UnitTests.WhatIf
             using (var writer = File.CreateText(Path.Combine(WhatIfSimulations.ReportsFolder, ReportFileName)))
             {
                 var p = baseConfig.ReadAndValidateRequiredSestion<SimParams>();
-                writer.PrintMarkdownTitle3($"{p.NoOfYears} years | From {p.StartAge} to {p.StartAge + p.NoOfYears}");
+                writer.PrintMarkdownTitle2($"Initial balance vs first year expense | {p.NoOfYears} years | From {p.StartAge} to {p.StartAge + p.NoOfYears}");
 
                 PrintSurvivalMatrix(writer, Results, options.TargetSurvivalRate);
                 PrintMetricsForSelectInitialBalance(writer, Results, anchorInitialBalance: options.InitialBalance.Target);
@@ -67,22 +67,22 @@ namespace UnitTests.WhatIf
 
                 // FYI: .NET preserves the order when using Distinct()
                 // FYI: .NET preserves the order of inner elements when using GroupBy()
-                var colLabels = results.Select(x => x.InitialBalance).Distinct().ToList();
+                var colLabels = results.Select(x => x.Year0Expense).Distinct().ToList();
                 var rowGroups = results
-                    .GroupBy(x => x.Year0Expense)
+                    .GroupBy(x => x.InitialBalance)
                     .OrderBy(x => x.Key)
                     .ToList();
 
-                var dtMatrix = new DataTable().WithColumn<string>("First year exp");
-                foreach (var colLabel in colLabels) dtMatrix.WithColumn<string>($"{colLabel / 1000000:C1} M");
+                var dtMatrix = new DataTable().WithColumn<string>("Initial Balance");
+                foreach (var colLabel in colLabels) dtMatrix.WithColumn<string>($"{colLabel / 1000:C1} K");
 
                 foreach (var grp in rowGroups)
                 {
-                    var rowLabel = grp.Select(x => x.Year0Expense).Distinct().Single();
+                    var rowLabel = grp.Select(x => x.InitialBalance).Distinct().Single();
                     var sRates = grp.Select(x => x.SurvivalRate);
 
                     var cells = new List<object>();
-                    cells.Add($"{rowLabel/1000:C0} K" );
+                    cells.Add($"{rowLabel/1000000:C1} M" );
                     foreach (var r in sRates) cells.Add(r >= tatgetSurvivalRate ? $"{r:P0}" : string.Empty);
                     dtMatrix.Rows.Add(cells.ToArray());
                 }
@@ -95,7 +95,7 @@ namespace UnitTests.WhatIf
 
             static void PrintMetricsForSelectInitialBalance(TextWriter writer, IList<WhatIfMetrics> results, double anchorInitialBalance)
             {
-                var title = $"Initial balance: {anchorInitialBalance:C0} - Different first year expenses:";
+                var title = $"Initial balance: {anchorInitialBalance:C0} | Different first year expenses:";
 
                 var filteredResults = results
                     .Where(x => x.InitialBalance == anchorInitialBalance)
@@ -107,7 +107,7 @@ namespace UnitTests.WhatIf
 
             static void PrintMetricsForSelectFirstYearExpense(TextWriter writer, IList<WhatIfMetrics> results, double anchorFirstYearExpense)
             {
-                var title = $"First year expense: {anchorFirstYearExpense:C0} - Different Initial Balances:";
+                var title = $"First year expense: {anchorFirstYearExpense:C0} | Different Initial Balances:";
 
                 var filteredResults = results
                     .Where(x => x.Year0Expense == anchorFirstYearExpense)
@@ -147,6 +147,8 @@ namespace UnitTests.WhatIf
                     .PrintMarkdownTable(dt)
                     .AppendLine();
             }
+
+
         }
     }
 }

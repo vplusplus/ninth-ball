@@ -14,7 +14,7 @@ namespace UnitTests.WhatIf
         // TODO: Move base configuration to Core assembly
         private static IConfiguration MyBaseConfiguration => new ConfigurationBuilder()
             .AddSimulationDefaults()
-            .AddYamlResources(typeof(WhatIfSimulations).Assembly, ".WhatIf-Inputs.")
+            .AddYamlResources(typeof(WhatIfSimulations).Assembly, ".WhatIfInputs.")
             .Build();
 
         private static WhatIfMetrics RunOneSimulation(IConfiguration baseConfiguration, SimInputOverrides overrides)
@@ -37,5 +37,6 @@ namespace UnitTests.WhatIf
                 return new(simResult);
             }
         }
+
     }
 }
