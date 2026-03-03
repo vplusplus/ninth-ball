@@ -16,7 +16,7 @@ namespace UnitTests.WhatIf
             // Base configuration
             var baseConfig = MyBaseConfiguration;
 
-            var options = baseConfig.ReadAndValidateRequiredSestion<WhatIfOptions>();
+            var options = baseConfig.ReadAndValidateRequiredSection<WhatIfOptions>();
 
             // Prepare tuples of vary-by inputs
             List<(double InitialBalance, double FirstYearExp)> VaryBy = new();
@@ -39,7 +39,7 @@ namespace UnitTests.WhatIf
 
             using (var writer = File.CreateText(Path.Combine(WhatIfSimulations.ReportsFolder, ReportFileName)))
             {
-                var p = baseConfig.ReadAndValidateRequiredSestion<SimParams>();
+                var p = baseConfig.ReadAndValidateRequiredSection<SimParams>();
                 writer.PrintMarkdownTitle2($"Initial balance vs first year expense | {p.NoOfYears} years | From {p.StartAge} to {p.StartAge + p.NoOfYears}");
 
                 PrintSurvivalMatrix(writer, Results, options.TargetSurvivalRate);
@@ -59,7 +59,7 @@ namespace UnitTests.WhatIf
                 return RunOneSimulation(baseConfiguration, overrides);
             }
 
-            static void PrintSurvivalMatrix(TextWriter writer, IList<WhatIfMetrics> results, double tatgetSurvivalRate)
+            static void PrintSurvivalMatrix(TextWriter writer, IList<WhatIfMetrics> results, double targetSurvivalRate)
             {
                 // WHY: Do not trust the ordering guarentee from upstream.
                 // It is a small list, let us sort it here to avoid pinky-promise.
@@ -83,7 +83,7 @@ namespace UnitTests.WhatIf
 
                     var cells = new List<object>();
                     cells.Add($"{rowLabel/1000000:C1} M" );
-                    foreach (var r in sRates) cells.Add(r >= tatgetSurvivalRate ? $"{r:P0}" : string.Empty);
+                    foreach (var r in sRates) cells.Add(r >= targetSurvivalRate ? $"{r:P0}" : string.Empty);
                     dtMatrix.Rows.Add(cells.ToArray());
                 }
 

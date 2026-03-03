@@ -11,7 +11,7 @@ namespace UnitTests.WhatIf
         [TestMethod]
         public async Task WhatIfDifferentGrowthObjectives()
         {
-            const string ReportFileName = "WhatIf-DifferentGrowthObjevtives.md";
+            const string ReportFileName = "WhatIf-DifferentGrowthObjectives.md";
 
             // Base configuration
             var baseConfig = MyBaseConfiguration;

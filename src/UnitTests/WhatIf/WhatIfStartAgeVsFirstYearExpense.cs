@@ -15,8 +15,8 @@ namespace UnitTests.WhatIf
 
             // Base configuration
             var baseConfig = MyBaseConfiguration;
-            var baseParams = baseConfig.ReadAndValidateRequiredSestion<SimParams>();
-            var options = baseConfig.ReadAndValidateRequiredSestion<WhatIfOptions>();
+            var baseParams = baseConfig.ReadAndValidateRequiredSection<SimParams>();
+            var options = baseConfig.ReadAndValidateRequiredSection<WhatIfOptions>();
 
             // Prepare tuples of vary-by inputs
             List<(int StartAge, int NumYears, double FirstYearExp)> VaryBy = new();
@@ -45,7 +45,7 @@ namespace UnitTests.WhatIf
 
             using (var writer = File.CreateText(Path.Combine(WhatIfSimulations.ReportsFolder, ReportFileName)))
             {
-                var ini = baseConfig.ReadAndValidateRequiredSestion<Initial>();
+                var ini = baseConfig.ReadAndValidateRequiredSection<Initial>();
                 var initialBalance = ini.PreTax.Amount + ini.PostTax.Amount;
                 writer.PrintMarkdownTitle2($"Delayed start vs first year expense | Initial: {initialBalance / 1000000:C1} M");
 
@@ -68,7 +68,7 @@ namespace UnitTests.WhatIf
                 return RunOneSimulation(baseConfiguration, overrides);
             }
 
-            static void PrintSurvivalMatrix(TextWriter writer, IList<WhatIfMetrics> results, double tatgetSurvivalRate)
+            static void PrintSurvivalMatrix(TextWriter writer, IList<WhatIfMetrics> results, double targetSurvivalRate)
             {
                 // WHY: Do not trust the ordering guarentee from upstream.
                 // It is a small list, let us sort it here to avoid pinky-promise.
@@ -92,7 +92,7 @@ namespace UnitTests.WhatIf
 
                     var cells = new List<object>();
                     cells.Add(rowLabel);
-                    foreach (var r in sRates) cells.Add(r >= tatgetSurvivalRate ? $"{r:P0}" : string.Empty);
+                    foreach (var r in sRates) cells.Add(r >= targetSurvivalRate ? $"{r:P0}" : string.Empty);
                     dtMatrix.Rows.Add(cells.ToArray());
                 }
 

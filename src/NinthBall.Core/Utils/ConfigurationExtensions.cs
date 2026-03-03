@@ -93,14 +93,14 @@ namespace NinthBall.Core
 
             // Register validated TSection
             services.AddSingleton<TSection>(sp =>
-                sp.GetRequiredService<IConfiguration>().ReadAndValidateRequiredSestion<TSection>(optionalSectionName)
+                sp.GetRequiredService<IConfiguration>().ReadAndValidateRequiredSection<TSection>(optionalSectionName)
             );
 
             // Done.
             return services;
         }
 
-        public static TSection ReadAndValidateRequiredSestion<TSection>(this IConfiguration configuration, string? optionalSectionName = null) where TSection: class
+        public static TSection ReadAndValidateRequiredSection<TSection>(this IConfiguration configuration, string? optionalSectionName = null) where TSection: class
         {
             ArgumentNullException.ThrowIfNull(configuration);
 
