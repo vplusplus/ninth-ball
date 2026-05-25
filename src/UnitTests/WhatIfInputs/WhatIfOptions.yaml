@@ -4,10 +4,10 @@ WhatIfOptions:
   TargetSurvivalRate: 95%
 
   InitialBalance:
-    Min:    2,000,000
+    Min:    3,000,000
     Max:    5,000,000
     Steps:    500,000
-    Target: 3,000,000
+    Target: 3,500,000
 
   FirstYearExpense:
     Min:    120,000
@@ -16,7 +16,7 @@ WhatIfOptions:
     Target: 130,000
 
   StartAge:
-    Min:    58
-    Max:    64
+    Min:    60
+    Max:    63
     Steps:  1
-    Target: 60
+    Target: 63

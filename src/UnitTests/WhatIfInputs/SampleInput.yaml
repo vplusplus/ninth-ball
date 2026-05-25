@@ -1,7 +1,7 @@
 
 SimParams:
   StartAge:   60
-  NoOfYears:  35
+  NoOfYears:  30
   Iterations: 10000
 
   Objectives: [
@@ -21,10 +21,10 @@ Initial:
   YearZeroCashBalance: 12,000
   YearZeroTaxAmount:   $25,000
   PreTax:
-    Amount: $1,500,000
+    Amount: $1,750,000
     Allocation: 70%
   PostTax:
-    Amount: $1,500,000
+    Amount: $1,750,000
     Allocation: 70%
 
 # ............................................................
