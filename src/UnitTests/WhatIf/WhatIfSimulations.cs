@@ -25,7 +25,6 @@ namespace UnitTests.WhatIf
         public readonly int NumIterations { init; get; }
         public readonly double InitialBalance { init; get; }
         public readonly double Year0Expense { init; get; }
-        public readonly string[] Strategies { init; get; }
 
         // Model predictions
         public readonly double SurvivalRate { init; get; }
@@ -47,7 +46,6 @@ namespace UnitTests.WhatIf
             NumIterations = simResult.SimParams.Iterations;
             InitialBalance = I0Y0.Jan.PreTax.Amount + I0Y0.Jan.PostTax.Amount;
             Year0Expense = I0Y0.Expenses.Total;
-            Strategies = simResult.Strategies.ToArray();
 
             // Aggregate results
             SurvivalRate = Math.Round(simResult.SurvivalRate, 2);
@@ -90,17 +88,25 @@ namespace UnitTests.WhatIf
 
             // Simulate in parallel, collect results
             var elapsed = Stopwatch.StartNew();
+            var strategies = new HashSet<string>();
             var whatIfResults = varyBy
                 .AsParallel()
                 .WithDegreeOfParallelism(Environment.ProcessorCount)
-                .Select(x => TryOneVariation(baseConfig, x))
+                .Select(x => TryOneVariation(baseConfig, x, strategies))
                 .ToList();
             elapsed.Stop();
             Console.WriteLine($"Completed {whatIfResults.Count:#,0} simulations | Elapsed: {elapsed.Elapsed.TotalSeconds:#,0} sec");
 
+            // Extract common assumptions.
+            // Group the strategies by its text, keep only common items, i.e. group count > 1
+            string[] commonAssumptions = strategies
+                .Where(x => !x.StartsWith("Living expenses"))
+                .ToArray();
+
             var output = new
             {
                 Description = "Represents Monte Carlo what-if simulation results. WhatIfOptions represents range of questions asked. WhatIfResults represents key metrics of each Monte Carlo simulation.",
+                Assumptions = commonAssumptions,
                 WhatIfOptions = whatIfOptions,
                 WhatIfResults = whatIfResults
             };
@@ -118,7 +124,7 @@ namespace UnitTests.WhatIf
             );
         }
 
-        static WhatIfResult TryOneVariation(IConfiguration baseConfiguration, Variant varyBy)
+        static WhatIfResult TryOneVariation(IConfiguration baseConfiguration, Variant varyBy, HashSet<string> strategies)
         {
             var overrides = SimInputOverrides
                 .For<SimParams>()
@@ -141,7 +147,14 @@ namespace UnitTests.WhatIf
 
             using (var session = builder.Build())
             {
+                // Run the simulation
                 var simResult = session.Services.GetRequiredService<ISimulation>().Run();
+
+                // Accumulate strategies to a common list.
+                lock(strategies) {
+                    foreach(var strategy in simResult.Strategies) strategies.Add(strategy);
+                }
+
                 return new(simResult);
             }
         }
