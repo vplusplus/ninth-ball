@@ -10,12 +10,12 @@
     "Inflation & growth | RandomGrowth | Random sequence of 3/4/5-year ROI and Inflation | Regime awareness: 100%"
   ],
   "WhatIfOptions": {
-    "TargetSurvivalRate": 0.9,
+    "TargetSurvivalRate": 0.95,
     "InitialBalance": {
       "Min": 3500000,
       "Max": 4500000,
       "Steps": 500000,
-      "Target": 3500000
+      "Target": 4000000
     },
     "FirstYearExpense": {
       "Min": 120000,
