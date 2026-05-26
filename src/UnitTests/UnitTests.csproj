@@ -16,6 +16,9 @@
     <EmbeddedResource Include="WhatIfInputs\WhatIfOptions.yaml" />
     <EmbeddedResource Include="WhatIfInputs\SampleInput.yaml" />
     <EmbeddedResource Include="WhatIfInputs\SampleOutput.yaml" />
+    <EmbeddedResource Include="WhatIf\WhatIf-Instructions-Distribution.md" />
+    <EmbeddedResource Include="WhatIf\WhatIf-Instructions-CashFlow.md" />
+    <EmbeddedResource Include="WhatIf\WhatIf-Instructions-Summary.md" />
   </ItemGroup>
 
   <ItemGroup>

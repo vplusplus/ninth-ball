@@ -1,7 +1,7 @@
 
 WhatIfOptions:
 
-  TargetSurvivalRate: 95%
+  TargetSurvivalRate: 90%
 
   InitialBalance:
     Min:    3,500,000
