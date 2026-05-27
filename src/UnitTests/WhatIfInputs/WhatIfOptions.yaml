@@ -11,12 +11,12 @@ WhatIfOptions:
 
   FirstYearExpense:
     Min:    120,000
-    Max:    180,000
+    Max:    140,000
     Steps:   10,000
-    Target: 140,000
+    Target: 120,000
 
   StartAge:
-    Min:    60
+    Min:    61
     Max:    63
     Steps:  1
-    Target: 63
+    Target: 61

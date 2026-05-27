@@ -44,9 +44,8 @@ LivingExpenses:
   StepDown:
     - AtAge: 65           # Example: Stop paying Life Ins
       Reduction: 28000
-    - AtAge: 70           # Example: Reduction in Med Ins.
-      Reduction: 6000
-
+    # - AtAge: 70           # Example: Reduction in Med Ins.
+    #  Reduction: 6000
 
 # ............................................................
 # Flat Growth strategy

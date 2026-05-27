@@ -30,9 +30,14 @@ An array where **each entry represents one scenario** produced from an independe
 
 ---
 
-# Presentation Guidance
+# Survival matrix prsentation guidelines
 
-* Matrix layouts are preferred for presenting survival rate.
+Unless asked otherwise, present Survival rate as a matrix with following format:
+* Present survival rate as a matrix
+* Present one matrix for each initial balance
+* Use First year expense for the rows and start age for the columns
 * Display survival rates as whole percentages
-* Optionally suppress survival rate below target survival threshold (display blank)
+* Suppress survival rate (display blank) if the survival rate is below suggested target survival threshold
+* Do not add citation links to individual cells to improve readability.
+
 
