@@ -38,12 +38,12 @@ namespace NinthBall.Core
 
             if (0 == chosenResourceNames.Count) throw new FatalWarning($"Zero resources found | Assembly: {resourceAssembly.GetName().Name} | **{resourcePathSelector}**.yaml");
 
-            foreach (var resourceName in chosenResourceNames) builder.AddYamlResource(resourceAssembly, resourceName);
+            foreach (var resourceName in chosenResourceNames) builder.AddOneYamlResource(resourceAssembly, resourceName);
 
             return builder;
         }
 
-        static IConfigurationBuilder AddYamlResource(this IConfigurationBuilder builder, Assembly resourceAssembly, string exactResourceName)
+        static IConfigurationBuilder AddOneYamlResource(this IConfigurationBuilder builder, Assembly resourceAssembly, string exactResourceName)
         {
             ArgumentNullException.ThrowIfNull(builder);
             ArgumentNullException.ThrowIfNull(resourceAssembly);

@@ -13,11 +13,11 @@ namespace UnitTests.WhatIf
     [TestClass]
     public partial class WhatIfSimulations
     {
-        const string ReportsFolder = @"D:\Source\ninth-ball\src\UnitTests\Reports\";
+        static string WhatIfReportsFolder => MyConfig.Instance["WhatIfReportsFolder"] ?? throw new Exception("Missing config entry: 'WhatIfReportsFolder'");
+
         const string WhatIfSummaryFileName = @"WhatIf-Summary.json.txt";
         const string WhatIfCashFlowFileName = @"WhatIf-CashFlow.json.txt";
         const string WhatIfDistributionFileName = @"WhatIf-Distribution.json.txt";
-
 
         [TestMethod]
         public void RunWhatIfSimulation()
@@ -140,25 +140,31 @@ namespace UnitTests.WhatIf
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
 
+            // Ensure the output folder exists
+            if (!Directory.Exists(WhatIfReportsFolder)) Directory.CreateDirectory(WhatIfReportsFolder);
+
             // Write the jsonified-data
             File.WriteAllText
             (
-                Path.Combine(ReportsFolder, WhatIfSummaryFileName),
+                Path.Combine(WhatIfReportsFolder, WhatIfSummaryFileName),
                 JsonSerializer.Serialize(whatIfSummary, formatedAndRelaxed)
             );
 
+            // Write distribution of real-ending-balance (to see the skew)
             File.WriteAllText
             (
-                Path.Combine(ReportsFolder, WhatIfCashFlowFileName),
-                JsonSerializer.Serialize(whatifCashFlow, formatedAndRelaxed)
-            );
-
-            File.WriteAllText
-            (
-                Path.Combine(ReportsFolder, WhatIfDistributionFileName),
+                Path.Combine(WhatIfReportsFolder, WhatIfDistributionFileName),
                 JsonSerializer.Serialize(whatIfDistribution, formatedAndRelaxed)
             );
 
+            // Write year-by-year on select percentiles to review the cashflow.
+            File.WriteAllText
+            (
+                Path.Combine(WhatIfReportsFolder, WhatIfCashFlowFileName),
+                JsonSerializer.Serialize(whatifCashFlow, formatedAndRelaxed)
+            );
+
+            Console.WriteLine($"See '{WhatIfReportsFolder}' for results.");
 
             //................................................
             // Helpers
