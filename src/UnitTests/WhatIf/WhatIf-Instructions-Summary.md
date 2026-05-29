@@ -1,7 +1,7 @@
 ﻿
 # Monte Carlo Financial planning what-if Simulation Dataset
 
-This dataset contains Monte Carlo financial planning simulations used to compare multiple what-if strategies.
+This dataset represents summary view of multiple what-if questions against a Monte Carlo financial planning simulations.
 All values are synthetic and contain **no PII**.
 
 ## About the dataset
@@ -32,12 +32,10 @@ An array where **each entry represents one scenario** produced from an independe
 
 # Survival matrix prsentation guidelines
 
-Unless asked otherwise, present Survival rate as a matrix with following format:
+Present Survival rate as a matrix with following format:
 * Present survival rate as a matrix
 * Present one matrix for each initial balance
 * Use First year expense for the rows and start age for the columns
 * Display survival rates as whole percentages
 * Suppress survival rate (display blank) if the survival rate is below suggested target survival threshold
 * Do not add citation links to individual cells to improve readability.
-
-
