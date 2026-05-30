@@ -1,13 +1,13 @@
 
 Outputs:
   Html: 
-    File: D:/Junk/SmReport.html
-    View: Essential
+    File: D:/Junk/SimReport.html
+    View: Default
     ZZIterations: [0, 5000, 9999] 
 
   Excel: 
-    File: D:/Junk/DeleteMe.xlsx
-    View: Essential
+    File: D:/Junk/SimReport.xlsx
+    View: Default
 
 Views:
   

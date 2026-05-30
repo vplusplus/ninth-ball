@@ -93,6 +93,8 @@ namespace NinthBall.Reports
         MXInf,                  // Running inflation multiplier
         MXInfFed,               // Running Federal tax adjustment inflation multiplier
         MXInfSta,               // Running State tax adjustment inflation multiplier
+        MXGrowth,               // Running portfolio growth multiplier
+
 
         DecReal,                // Real-ending balance (December)
 

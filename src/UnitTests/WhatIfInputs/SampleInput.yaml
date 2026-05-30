@@ -82,8 +82,8 @@ FlatTax:
   State:             5%
 
 AnnualFees:
-  PreTax:   0.2%    # Tax deferred account
-  PostTax:  0.9%    # Investment account
+  PreTax:   1.1%    # Tax deferred account
+  PostTax:  1.1%    # Investment account
 
 # ............................................................
 # Portfolio adjustment
