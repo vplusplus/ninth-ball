@@ -1,6 +1,4 @@
-﻿using NinthBall.Utils;
-
-namespace NinthBall.Core
+﻿namespace NinthBall.Core
 {
     [StrategyFamily(StrategyFamily.Expenses)]
     sealed class LivingExpensesObjective(SimParams P, LivingExpenses LExp) : ISimObjective
@@ -8,7 +6,7 @@ namespace NinthBall.Core
         ISimStrategy ISimObjective.CreateStrategy(int iterationIndex)
         {
             // Fail fast: Year #0 can't use step-down. Adjust Initial amount instead.
-            if (null != LExp.StepDown && LExp.StepDown.Any(x => x.AtAge == P.StartAge)) throw new FatalWarning("Avoid step-down at start age. Adjust FirstYearAmount if required and retry.");
+            // if (null != LExp.StepDown && LExp.StepDown.Any(x => x.AtAge == P.StartAge)) throw new FatalWarning("Avoid step-down at start age. Adjust FirstYearAmount if required and retry.");
 
             return new Strategy(P, LExp);
         }
