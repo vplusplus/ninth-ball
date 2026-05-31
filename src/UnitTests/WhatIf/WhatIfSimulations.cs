@@ -101,10 +101,16 @@ namespace UnitTests.WhatIf
                     RealBalance50thPercentile = $"{pctl50.EndingBalanceReal:C0}",
                 },
 
-                YearByYear05thPercentile = IterationToJsonLike(pctl05),
-                YearByYear10thPercentile = IterationToJsonLike(pctl10),
-                YearByYear20thPercentile = IterationToJsonLike(pctl20),
-                YearByYear50thPercentile = IterationToJsonLike(pctl50),
+                //YearByYear05thPercentile = IterationToJsonLike(pctl05),
+                //YearByYear10thPercentile = IterationToJsonLike(pctl10),
+                //YearByYear20thPercentile = IterationToJsonLike(pctl20),
+                //YearByYear50thPercentile = IterationToJsonLike(pctl50),
+
+                YearByYear05thPercentile = pctl05,
+                YearByYear10thPercentile = pctl10,
+                YearByYear20thPercentile = pctl20,
+                YearByYear50thPercentile = pctl50,
+
             };
 
             var whatIfDistribution = new
@@ -178,52 +184,6 @@ namespace UnitTests.WhatIf
                     .ToArray();
             }
 
-            static object IterationToJsonLike(SimIteration iter)
-            {
-                return new
-                {
-                    Survived = iter.Success,
-                    SurvivedYears = iter.SurvivedYears,
-
-                    CashFlow = iter.ByYear.ToArray().Select(x => new 
-                    {
-                        x.Year,
-                        x.Age,
-
-                        JanPreTaxBalanceNominal     = x.Jan.PreTax.Amount.RoundToMultiples(100),
-                        JanPostTaxBalanceNominal    = x.Jan.PostTax.Amount.RoundToMultiples(100),
-
-                        SocialSecurityIncome        = x.Incomes.SS.RoundToMultiples(100),
-                        AnnuityIncome               = x.Incomes.Ann.RoundToMultiples(100),
-
-                        PriorYearTaxes              = x.Taxes.Total.RoundToMultiples(100),
-                        CurrentYearLivingExpense    = x.Expenses.LivExp.RoundToMultiples(100),
-
-                        WithdrawalsPreTax           = x.Withdrawals.PreTax.RoundToMultiples(100),
-                        WithdrawalsPostTax          = x.Withdrawals.PostTax.RoundToMultiples(100),
-                        DepositsPostTax             = x.Deposits.PostTax.RoundToMultiples(100),
-
-                        PYEffectiveTaxRate          = ThreeDecimals(x.Taxes.TaxPCT),
-                        PYEffectiveTaxRateFederal   = ThreeDecimals(x.Taxes.TaxPCTFed),
-                        PYEffectiveTaxRateState     = ThreeDecimals(x.Taxes.TaxPCTState),
-
-                        StocksROI                   = ThreeDecimals(x.ROI.StocksROI),
-                        BondsROI                    = ThreeDecimals(x.ROI.BondsROI),
-                        InflationRate               = ThreeDecimals(x.ROI.InflationRate),
-                        ChangePreTax                = x.Change.PreTax.RoundToMultiples(100),
-                        ChangePostTax               = x.Change.PostTax.RoundToMultiples(100),
-
-                        DecPreTaxBalanceNominal     = x.Dec.PreTax.Amount.RoundToMultiples(100),
-                        DecPostTaxBalanceNominal    = x.Dec.PostTax.Amount.RoundToMultiples(100),
-                        DecBalanceReal              = x.DecReal.RoundToMultiples(100),
-
-                        AnnualizedReturnNominal     = ThreeDecimals(x.RunningGrowth.AnnualizedReturn),
-                        AnnualizedReturnReal        = ThreeDecimals(x.RunningGrowth.RealAnnualizedReturn),
-                        RunningInflationMultiplier  = ThreeDecimals(x.InflationIndex.Consumer),
-
-                    }).ToArray()
-                };
-            }
 
             static double ThreeDecimals(double value) => Math.Round(value, 3);
         }
