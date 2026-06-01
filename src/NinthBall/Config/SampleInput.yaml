@@ -1,7 +1,7 @@
 
 SimParams:
-  StartAge: 60
-  NoOfYears: 35
+  StartAge: 61
+  NoOfYears: 34
   Iterations: 10000
   Objectives: [
 
@@ -12,12 +12,18 @@ SimParams:
       TieredTax,
       VariableWithdrawal,
       RequiredMinimumDistribution,
-      RandomHistoricalGrowth
+      RandomGrowth
 
       # Available objectives:
       # AdditionalIncomes,
       # AnnualFees,
-      # FlatGrowth, HistoricalGrowth, RandomHistoricalGrowth, RandomGrowth, ExpectedGrowth, ConservativeGrowth, HighRiskGrowth
+
+      # FlatGrowth,               # Flat predefined growth
+      # HistoricalGrowth,         # Replays history exactly
+      # RandomHistoricalGrowth,   # Regime aware moving blocks (regimes inferred from history)
+      # RandomGrowth,             # Regime aware ParametricBootstrapper (regimes inferred from history)
+      # ParametricGrowth          # ParametricBootstrapper using regime profiles defined in config files
+
       # LivingExpenses,
       # FixedWithdrawal, VariableWithdrawal,
       # RequiredMinimumDistribution,
@@ -33,10 +39,10 @@ Initial:
   YearZeroCashBalance: $12,000
   YearZeroTaxAmount:   $25,000
   PreTax:
-    Amount: $1,500,000
+    Amount: $2,000,000
     Allocation: 60%
   PostTax:
-    Amount: $1,500,000
+    Amount: $2,000,000
     Allocation: 60%
 
 # ............................................................
@@ -45,10 +51,10 @@ Initial:
 AdditionalIncomes:
   SS:
     FromAge: 70
-    Amount: 70,000
+    Amount: 72,000
   Ann:
     FromAge: 70
-    Amount: 50,000
+    Amount: 53,000
     Increment: 0%
 
 LivingExpenses:
@@ -102,7 +108,7 @@ AnnualFees:
 # Portfolio adjustment
 # ............................................................
 YearlyRebalance:
-  MaxDrift: 5%
+  MaxDrift: 10%
   ZZZReallocate:
     - AtAge: 70
       PreTaxStocksAllocation:  70%

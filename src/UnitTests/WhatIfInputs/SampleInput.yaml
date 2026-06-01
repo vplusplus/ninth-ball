@@ -1,7 +1,7 @@
 
 SimParams:
-  StartAge:   60
-  NoOfYears:  30
+  StartAge:   61
+  NoOfYears:  34
   Iterations: 10000
 
   Objectives: [
@@ -13,7 +13,7 @@ SimParams:
       TieredTax,
       VariableWithdrawal,
       RequiredMinimumDistribution,
-      RandomHistoricalGrowth
+      RandomGrowth
 
     ]
 
@@ -21,11 +21,11 @@ Initial:
   YearZeroCashBalance: 12,000
   YearZeroTaxAmount:   $25,000
   PreTax:
-    Amount: $1,750,000
-    Allocation: 70%
+    Amount: $2,000,000
+    Allocation: 60%
   PostTax:
-    Amount: $1,750,000
-    Allocation: 70%
+    Amount: $2,000,000
+    Allocation: 60%
 
 # ............................................................
 # Income(s) and Expense(s)
@@ -44,8 +44,8 @@ LivingExpenses:
   StepDown:
     - AtAge: 65           # Example: Stop paying Life Ins
       Reduction: 28000
-    # - AtAge: 70           # Example: Reduction in Med Ins.
-    #  Reduction: 6000
+    - AtAge: 70           # Example: Reduction in Med Ins.
+      Reduction: 6000
 
 # ............................................................
 # Flat Growth strategy
@@ -89,7 +89,7 @@ AnnualFees:
 # Portfolio adjustment
 # ............................................................
 YearlyRebalance:
-  MaxDrift: 5%
+  MaxDrift: 10%
   ZZZReallocate:
     - AtAge: 70
       PreTaxStocksAllocation:  70%
