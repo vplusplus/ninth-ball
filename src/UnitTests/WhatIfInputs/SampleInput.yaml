@@ -11,9 +11,9 @@ SimParams:
       LivingExpenses,
       AnnualFees,
       TieredTax,
-      VariableWithdrawal,
+      FixedWithdrawal,
       RequiredMinimumDistribution,
-      RandomGrowth
+      RandomHistoricalGrowth
 
     ]
 
@@ -63,7 +63,7 @@ FlatGrowth:
 FixedWithdrawal:
   FirstYearPct: 4%
   Increment:    2%
-  ResetAtAge:   [65, 70]
+  ResetAtAge:   [120]
 
 VariableWithdrawal:
   FutureROI: 4%

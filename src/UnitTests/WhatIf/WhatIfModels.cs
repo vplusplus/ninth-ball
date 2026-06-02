@@ -64,7 +64,7 @@ namespace UnitTests.WhatIf
             RealBalance50thPercentile = simResult.IterationAtPercentile(0.50).EndingBalanceReal.RoundToMultiples(1000.0);
         }
 
-        public readonly string AgeRange => $"{StartAge}-{StartAge + NumYears - 1} ({NumYears}y)";
+        public readonly string AgeRange => $"{StartAge}-{StartAge + NumYears} ({NumYears}y)";
     }
 
 

@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NinthBall.Core;
+using NinthBall.Reports.PrettyPrint;
+using System.Data;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -15,9 +17,9 @@ namespace UnitTests.WhatIf
     {
         static string WhatIfReportsFolder => MyConfig.Instance["WhatIfReportsFolder"] ?? throw new Exception("Missing config entry: 'WhatIfReportsFolder'");
 
-        const string WhatIfSummaryFileName = @"WhatIf-Summary.json.txt";
         const string WhatIfCashFlowFileName = @"WhatIf-CashFlow.json.txt";
         const string WhatIfDistributionFileName = @"WhatIf-Distribution.json.txt";
+        const string WhatIfSurvivalMatrixFileName = @"WhatIf-SurvivalMatrix.md";
 
         [TestMethod]
         public void RunWhatIfSimulation()
@@ -68,14 +70,6 @@ namespace UnitTests.WhatIf
             var pctl10 = targetResult.IterationAtPercentile(0.10);
             var pctl20 = targetResult.IterationAtPercentile(0.20);
             var pctl50 = targetResult.IterationAtPercentile(0.50);
-
-            var whatIfSummary = new
-            {
-                Description = ReadInstructions("WhatIf-Instructions-Summary.md"),
-                Assumptions = GetCommonAssumptions(strategies),
-                WhatIfOptions = whatIfOptions,
-                WhatIfResults = whatIfResults,
-            };
 
             var whatifCashFlow = new
             {
@@ -149,12 +143,16 @@ namespace UnitTests.WhatIf
             // Ensure the output folder exists
             if (!Directory.Exists(WhatIfReportsFolder)) Directory.CreateDirectory(WhatIfReportsFolder);
 
-            // Write the jsonified-data
-            File.WriteAllText
-            (
-                Path.Combine(WhatIfReportsFolder, WhatIfSummaryFileName),
-                JsonSerializer.Serialize(whatIfSummary, formatedAndRelaxed)
-            );
+            // Survival matrix (md)
+            using (var writer = File.CreateText(Path.Combine(WhatIfReportsFolder, WhatIfSurvivalMatrixFileName)))
+            {
+                RenderSurvivalMatrixReport(
+                    writer,
+                    GetCommonAssumptions(strategies),
+                    whatIfResults,
+                    whatIfOptions.TargetSurvivalRate
+                );
+            }
 
             // Write distribution of real-ending-balance (to see the skew)
             File.WriteAllText
@@ -225,6 +223,59 @@ namespace UnitTests.WhatIf
             {
                 var simResult = session.Services.GetRequiredService<ISimulation>().Run();
                 return simResult;
+            }
+        }
+
+        static void RenderSurvivalMatrixReport(TextWriter writer, string[] commonAssumptions, List<WhatIfResult> whatIfResults, double targetSurvivalRate)
+        {
+            writer.WriteLine($"# WhatIf: Survival rates");
+            writer.WriteLine($"");
+
+            writer.WriteLine($"## Common assumptions");
+            writer.WriteLine($"");
+            foreach (var assumption in commonAssumptions) writer.WriteLine($"* {assumption}");
+            writer.WriteLine($"");
+
+            writer.WriteLine($"## Survival matrix:");
+            writer.WriteLine($"");
+
+            var initialBalances = whatIfResults.Select(x => x.InitialBalance).Distinct().OrderBy(x => x).ToArray();
+            var year0Expenses = whatIfResults.Select(x => x.Year0Expense).Distinct().OrderBy(x => x).ToArray();
+            var startAges = whatIfResults.Select(x => (x.StartAge, x.AgeRange)).Distinct().OrderBy(x => x).ToArray();
+
+            foreach (var initialBalance in initialBalances)
+            {
+                var pivot = whatIfResults
+                    .Where(x => x.InitialBalance == initialBalance)
+                    .ToDictionary(
+                        keySelector: x => (x.StartAge, x.Year0Expense),
+                        elementSelector: x => x.SurvivalRate
+                    );
+
+                DataTable dt = new DataTable();
+
+                // Table row
+                dt.WithColumn("Start at", typeof(string));
+                foreach (var y0exp in year0Expenses) dt.WithColumn($"{y0exp/1000:C0} K", typeof(string));
+
+                foreach(var startAge in startAges)
+                {
+                    var row = new List<string> { $"{startAge.AgeRange}" };
+
+                    foreach(var y0Exp in year0Expenses)
+                    {
+                        var found = pivot.TryGetValue((startAge.StartAge, y0Exp), out var rate) && rate >= targetSurvivalRate;
+                        var cell = found ? $"{rate:P0}" : string.Empty;
+                        row.Add(cell);
+                    }
+
+                    dt.AppendRow(row.ToArray());
+                }
+
+                writer.WriteLine($"### Initial balance: {initialBalance/1000000:C1} M");
+                writer.WriteLine($"");
+                writer.PrintMarkdownTable(dt);
+                writer.WriteLine($"");
             }
         }
 
