@@ -1,6 +1,5 @@
 ﻿
 using NinthBall.Core;
-using NinthBall.Reports;
 using NinthBall.Reports.Excel;
 using NinthBall.Reports.Html;
 
@@ -22,8 +21,8 @@ namespace NinthBall.Reports
             {
                 await Task.WhenAll
                 (
-                    HtmlReport.GenerateAsync(simResult),
-                    ExcelReport.GenerateAsync(simResult)
+                    string.IsNullOrWhiteSpace(Options.Html.File)  ? Task.CompletedTask : HtmlReport.GenerateAsync(simResult),
+                    string.IsNullOrWhiteSpace(Options.Excel.File) ? Task.CompletedTask : ExcelReport.GenerateAsync(simResult)
                 );
             }
             catch (Exception err)

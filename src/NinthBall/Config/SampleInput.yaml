@@ -1,8 +1,19 @@
 
+Outputs:
+  Html: 
+    File: D:/Junk/SimReport-RandomGrowth.html
+    View: Default
+    ZZIterations: [0, 5000, 9999] 
+
+  Excel: 
+    ZZFile: D:/Junk/SimReport.xlsx
+    View: Default
+
 SimParams:
   StartAge: 61
   NoOfYears: 34
   Iterations: 10000
+
   Objectives: [
 
       YearlyRebalance,
@@ -62,8 +73,8 @@ LivingExpenses:
   StepDown:
     - AtAge: 65           # Example: Stop paying Life Ins
       Reduction: 28000
-    - AtAge: 70           # Example: Reduction in Med Ins.
-      Reduction: 6000
+    # - AtAge: 70           # Example: Reduction in Med Ins.
+    #   Reduction: 6000
 
 
 # ............................................................

@@ -6,22 +6,22 @@ namespace NinthBall.Reports
 {
     public sealed record OutputOptions
     (
-        [property: Required, ValidateNested] HtmlOutputOptions  Html,
-        [property: Required, ValidateNested] ExcelOutputOptions Excel
+        [property: ValidateNested] HtmlOutputOptions  Html,
+        [property: ValidateNested] ExcelOutputOptions Excel
     );
 
     public readonly record struct HtmlOutputOptions
     (
-        [property: Required]    string File,
-        [property: Required]    string View,
+        string File,
+        string View,
         IReadOnlyList<double>?  Percentiles,
         IReadOnlyList<int>?     Iterations
     );
 
     public readonly record struct ExcelOutputOptions
     (
-        [property: Required]    string File,
-        [property: Required]    string View,
+        string File,
+        string View,
         IReadOnlyList<double>?  Percentiles,
         IReadOnlyList<int>?     Iterations
     );
