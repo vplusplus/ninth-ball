@@ -23,7 +23,7 @@
 
         <!-- Ending balance (Real) -->
         <tr>
-            <th>End (Real)</th>
+            <th>Ending Balance (Real)</th>
 
             @foreach (var p in Percentiles)
             {
@@ -31,7 +31,7 @@
 
                 if (iter.Success)
                 {
-                    var endBalance = (iter.LastGoodYear.Dec.Total / iter.LastGoodYear.InflationIndex.Consumer).Millions();
+                    var endBalance = iter.EndingBalanceReal.Millions();
                     <th>@endBalance</th>
                 }
                 else
@@ -41,9 +41,23 @@
             }
         </tr>
 
+        <tr>
+            <th>CAGR (Real)</th>
+
+            @foreach (var p in Percentiles)
+            {
+                var iter = SimResult.IterationAtPercentile(p);
+
+                <th>
+                    @($"{iter.RealAnnualizedReturn:P1}")
+                </th>
+            }
+        </tr>
+
+
         <!-- Ending balance (Nominal) -->
         <tr>
-            <td>End (Nominal)</td>
+            <td>Ending Balance (Nominal)</td>
 
             @foreach (var p in Percentiles)
             {
@@ -51,7 +65,7 @@
 
                 if (iter.Success)
                 {
-                    var endBalance = iter.LastGoodYear.Dec.Total.Millions();
+                    var endBalance = iter.EndingBalance.Millions();
                     <td class="text-secondary">@endBalance</td>
                 }
                 else
@@ -61,17 +75,15 @@
             }
         </tr>
 
-        <!-- End-to-end ROI (Annualized) -->
         <tr>
-            <td>Change (Annualized)</td>
+            <td>CAGR (Nominal)</td>
 
             @foreach (var p in Percentiles)
             {
                 var iter = SimResult.IterationAtPercentile(p);
-                var annualizedEffectiveROI = iter.GetAggregateValue(CID.ROI);
 
                 <td class="text-secondary">
-                    @($"{annualizedEffectiveROI:P1}")
+                    @($"{iter.AnnualizedReturn:P1}")
                 </td>
             }
         </tr>

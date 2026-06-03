@@ -79,7 +79,23 @@
             /// <summary>
             /// Ending balance of last survived year, adjusted for inflation.
             /// </summary>
+            public double EndingBalance => iteration.Success ? iteration.LastGoodYear.Dec.Total : 0.0;
+
+            /// <summary>
+            /// Ending balance of last survived year, adjusted for inflation.
+            /// </summary>
             public double EndingBalanceReal => iteration.Success ? iteration.LastGoodYear.DecReal : 0.0;
+
+
+            /// <summary>
+            /// Annualized return of this iteration (from last good year)
+            /// </summary>
+            public double AnnualizedReturn => iteration.LastGoodYear.RunningGrowth.AnnualizedReturn;
+
+            /// <summary>
+            /// Inflation adjusted annualized return of this iteration (from last good year)
+            /// </summary>
+            public double RealAnnualizedReturn => iteration.LastGoodYear.RunningGrowth.RealAnnualizedReturn;
 
             /// <summary>
             /// Zero-copy extension to calculate the sum of a selected field across all years in the iteration 
