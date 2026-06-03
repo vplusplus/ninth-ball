@@ -89,10 +89,10 @@ namespace UnitTests.WhatIf
                 ResultSummary = new 
                 {
                     SurvivalRate = Math.Round(targetResult.SurvivalRate, 2),
-                    RealBalance05thPercentile = $"{pctl05.EndingBalanceReal:C0}",
-                    RealBalance10thPercentile = $"{pctl10.EndingBalanceReal:C0}",
-                    RealBalance20thPercentile = $"{pctl20.EndingBalanceReal:C0}",
-                    RealBalance50thPercentile = $"{pctl50.EndingBalanceReal:C0}",
+                    RealBalance05thPercentile = $"{pctl05.RealEndingBalance:C0}",
+                    RealBalance10thPercentile = $"{pctl10.RealEndingBalance:C0}",
+                    RealBalance20thPercentile = $"{pctl20.RealEndingBalance:C0}",
+                    RealBalance50thPercentile = $"{pctl50.RealEndingBalance:C0}",
                 },
 
                 //YearByYear05thPercentile = IterationToJsonLike(pctl05),
@@ -125,13 +125,13 @@ namespace UnitTests.WhatIf
                 ResultSummary = new
                 {
                     SurvivalRate = Math.Round(targetResult.SurvivalRate, 2),
-                    RealBalance05thPercentile = $"{pctl05.EndingBalanceReal:C0}",
-                    RealBalance10thPercentile = $"{pctl10.EndingBalanceReal:C0}",
-                    RealBalance20thPercentile = $"{pctl20.EndingBalanceReal:C0}",
-                    RealBalance50thPercentile = $"{pctl50.EndingBalanceReal:C0}",
+                    RealBalance05thPercentile = $"{pctl05.RealEndingBalance:C0}",
+                    RealBalance10thPercentile = $"{pctl10.RealEndingBalance:C0}",
+                    RealBalance20thPercentile = $"{pctl20.RealEndingBalance:C0}",
+                    RealBalance50thPercentile = $"{pctl50.RealEndingBalance:C0}",
                 },
 
-                RealEndingBalanceByIteration = targetResult.Iterations.AsEnumerable().Select(x => x.EndingBalanceReal.RoundToMultiples(1000.0)).ToArray(),
+                RealEndingBalanceByIteration = targetResult.Iterations.AsEnumerable().Select(x => x.RealEndingBalance.RoundToMultiples(1000.0)).ToArray(),
             };
 
             var formatedAndRelaxed = new JsonSerializerOptions()

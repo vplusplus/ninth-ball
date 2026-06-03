@@ -46,7 +46,7 @@ namespace NinthBall.Core
             // Use real purchaing power to ensure percentiles are monotonic under variable inflation.
             var iterationResultsWorstToBest = iterationResults
                 .OrderBy(iter => iter.SurvivedYears)
-                .ThenBy(iter => iter.EndingBalanceReal)
+                .ThenBy(iter => iter.RealEndingBalance)
                 .ToList()
                 .AsReadOnly();
 

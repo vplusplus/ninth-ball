@@ -58,10 +58,10 @@ namespace UnitTests.WhatIf
 
             // Aggregate results
             SurvivalRate = Math.Round(simResult.SurvivalRate, 2);
-            RealBalance05thPercentile = simResult.IterationAtPercentile(0.05).EndingBalanceReal.RoundToMultiples(1000.0);
-            RealBalance10thPercentile = simResult.IterationAtPercentile(0.10).EndingBalanceReal.RoundToMultiples(1000.0);
-            RealBalance20thPercentile = simResult.IterationAtPercentile(0.20).EndingBalanceReal.RoundToMultiples(1000.0);
-            RealBalance50thPercentile = simResult.IterationAtPercentile(0.50).EndingBalanceReal.RoundToMultiples(1000.0);
+            RealBalance05thPercentile = simResult.IterationAtPercentile(0.05).RealEndingBalance.RoundToMultiples(1000.0);
+            RealBalance10thPercentile = simResult.IterationAtPercentile(0.10).RealEndingBalance.RoundToMultiples(1000.0);
+            RealBalance20thPercentile = simResult.IterationAtPercentile(0.20).RealEndingBalance.RoundToMultiples(1000.0);
+            RealBalance50thPercentile = simResult.IterationAtPercentile(0.50).RealEndingBalance.RoundToMultiples(1000.0);
         }
 
         public readonly string AgeRange => $"{StartAge}-{StartAge + NumYears} ({NumYears}y)";

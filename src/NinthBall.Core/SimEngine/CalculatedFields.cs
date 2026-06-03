@@ -84,8 +84,7 @@
             /// <summary>
             /// Ending balance of last survived year, adjusted for inflation.
             /// </summary>
-            public double EndingBalanceReal => iteration.Success ? iteration.LastGoodYear.DecReal : 0.0;
-
+            public double RealEndingBalance => iteration.Success ? iteration.LastGoodYear.DecReal : 0.0;
 
             /// <summary>
             /// Annualized return of this iteration (from last good year)

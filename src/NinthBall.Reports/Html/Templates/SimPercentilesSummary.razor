@@ -9,82 +9,69 @@
     </caption>
     <tbody>
 
+        @{
+            var pctlSummary = Percentiles.Select(p => new
+            {
+                Caption = p.PctlName,
+                Iter    = SimResult.IterationAtPercentile(p)
+            })
+            .Select(x => new
+            {
+                x.Caption,
+                RealAnnualizedReturn    = $"{x.Iter.RealAnnualizedReturn:P1}",
+                RealEndingBalance       = x.Iter.Success ? x.Iter.RealEndingBalance.Millions() : "--",
+                AnnualizedReturn        = $"{x.Iter.AnnualizedReturn:P1}",
+                EndingBalance           = x.Iter.Success ? x.Iter.EndingBalance.Millions() : "--",
+            })
+            .ToArray();
+        }
+
         <!-- Percentile Tags -->
         <tr>
             <td>Percentile</td>
 
-            @foreach (var p in Percentiles)
+            @foreach (var p in pctlSummary)
             {
                 <td class="text-primary">
-                    @p.PctlName
+                    @p.Caption
                 </td>
             }
         </tr>
 
-        <!-- Ending balance (Real) -->
+        <!-- Ending balance and CAGR (Real) -->
         <tr>
             <th>Ending Balance (Real)</th>
 
-            @foreach (var p in Percentiles)
+            @foreach (var p in pctlSummary)
             {
-                var iter = SimResult.IterationAtPercentile(p);
-
-                if (iter.Success)
-                {
-                    var endBalance = iter.EndingBalanceReal.Millions();
-                    <th>@endBalance</th>
-                }
-                else
-                {
-                    <td class="text-danger">--</td>
-                }
+                <th>@p.RealEndingBalance</th>
             }
         </tr>
 
         <tr>
             <th>CAGR (Real)</th>
 
-            @foreach (var p in Percentiles)
+            @foreach (var p in pctlSummary)
             {
-                var iter = SimResult.IterationAtPercentile(p);
-
-                <th>
-                    @($"{iter.RealAnnualizedReturn:P1}")
-                </th>
+                <th>@p.RealAnnualizedReturn</th>
             }
         </tr>
 
-
-        <!-- Ending balance (Nominal) -->
+        <!-- Ending balance and CAGR (Nominal) -->
         <tr>
-            <td>Ending Balance (Nominal)</td>
+            <td class="text-secondary">Ending Balance (Nominal)</td>
 
-            @foreach (var p in Percentiles)
+            @foreach (var p in pctlSummary)
             {
-                var iter = SimResult.IterationAtPercentile(p);
-
-                if (iter.Success)
-                {
-                    var endBalance = iter.EndingBalance.Millions();
-                    <td class="text-secondary">@endBalance</td>
-                }
-                else
-                {
-                    <td class="text-danger">--</td>
-                }
+                <td class="text-secondary">@p.EndingBalance</td>
             }
         </tr>
-
         <tr>
-            <td>CAGR (Nominal)</td>
+            <td class="text-secondary">CAGR (Nominal)</td>
 
-            @foreach (var p in Percentiles)
+            @foreach (var p in pctlSummary)
             {
-                var iter = SimResult.IterationAtPercentile(p);
-
-                <td class="text-secondary">
-                    @($"{iter.AnnualizedReturn:P1}")
-                </td>
+                <td class="text-secondary">@p.AnnualizedReturn</td>
             }
         </tr>
 

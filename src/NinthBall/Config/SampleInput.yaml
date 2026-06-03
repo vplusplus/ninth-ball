@@ -1,7 +1,7 @@
 
 Outputs:
   Html: 
-    File: D:/Junk/SimReport-RandomGrowth.html
+    File: D:/Junk/SimReport-RandomHistoricalGrowth.html
     View: Default
     ZZIterations: [0, 5000, 9999] 
 
@@ -23,7 +23,7 @@ SimParams:
       TieredTax,
       VariableWithdrawal,
       RequiredMinimumDistribution,
-      RandomGrowth
+      RandomHistoricalGrowth
 
       # Available objectives:
       # AdditionalIncomes,
