@@ -111,16 +111,13 @@ OutputDefaults:
         RBLPostTax,             # PostTax stock assets change due to rebalancing (Bonds is mirror image)
 
         Jan,                    # Total asset value in January (start of year)
-        JanNet,                 # Approximate indicative value (JanTotal), less taxes and fees
-        Dec,                    # Total Assets (PreTax + PostTax + Cash) in Dec
-        DecNet,                 # Approximate indicative value (Dec), less taxes and fees
-
         JanPreTax,              # PreTax (401k/IRA) balance in January
         JanPostTax,             # PostTax (Brokerage) balance in January
         JanCash,                # Cash balance in January
         JanPreTaxAlloc,         # Stock allocation % for PreTax assets in JanTotal
         JanPostTaxAlloc,        # Stock allocation % for PostTax assets in JanTotal
 
+        Dec,                    # Total Assets (PreTax + PostTax + Cash) in Dec
         DecPreTax,              # PreTax (401k/IRA) balance in December
         DecPostTax,             # PostTax (Brokerage) balance in December
         DecCash,                # Cash balance in December

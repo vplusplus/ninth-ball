@@ -1,7 +1,4 @@
-﻿
-using NinthBall.Core;
-
-namespace NinthBall.Reports
+﻿namespace NinthBall.Reports
 {
     internal static partial class Suggested
     {
@@ -10,9 +7,6 @@ namespace NinthBall.Reports
         static readonly IReadOnlyDictionary<CID, string> ColumnTitles = new Dictionary<CID, string>()
         {
             
-            [CID.JanNet]        = "Jan - Approx net worth less taxes liability (401K x 75% + Inv x 85%)",
-            [CID.DecNet]        = "Jan - Approx net worth less taxes liability (401K x 75% + Inv x 85%)",
-
             [CID.TaxPCT]        = "For every $ that came in, what PCT went to taxes",
             [CID.FedTaxPCT]     = "For every $ that came in, what PCT went to Federal taxes",
             [CID.StaTaxPCT]     = "For every $ that came in, what PCT went to State taxes",

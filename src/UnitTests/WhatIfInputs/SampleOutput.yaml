@@ -9,29 +9,3 @@ Outputs:
     File: D:/Junk/DeleteMe.xlsx
     View: Essential
 
-Views:
-  
-  Debug: [
-
-        Year,             
-        Age,              
-
-        JanNet,           
-        DecNet,           
-
-        FedAGI,           
-        FedTax,           
-        StaAGI,           
-        StaTax,           
-        Taxes,            
-
-        Infl,
-        MXInf,            
-        MXInfFed,         
-        MXInfSta,         
-
-        ROI,              
-        AnnROI,           
-        RealCAGR,         
-    ]
-

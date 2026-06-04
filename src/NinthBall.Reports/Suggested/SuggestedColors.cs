@@ -20,10 +20,6 @@ namespace NinthBall.Reports
 
         static readonly IReadOnlyDictionary<CID, ColorSelector> FxColors = new Dictionary<CID, ColorSelector>()
         {
-            [CID.JanNet]    = (it, in y) => ColorHint.Primary,
-            [CID.DecNet]    = (it, in y) => ColorHint.Primary,
-            [CID.DecReal]   = (it, in y) => ColorHint.Primary,
-
             [CID.LikeYear]  = (it, in y) => RealROIRedGreyGreen(y),
             [CID.ROI]       = (it, in y) => RealROIRedGreyGreen(y),
             [CID.RealCAGR]  = (it, in y) => RealAnnROIRedGreyGreen(it, y),
@@ -32,6 +28,8 @@ namespace NinthBall.Reports
             [CID.LivExp]    = (it, in y) => ColorHint.None,
             [CID.XPreTax]   = (it, in y) => RedGreen(y.XPreTax),
             [CID.XPostTax]  = (it, in y) => RedGreen(y.XPostTax),
+
+            [CID.DecReal] = (it, in y) => ColorHint.Primary,
 
         }.AsReadOnly();
 

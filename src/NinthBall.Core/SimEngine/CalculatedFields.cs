@@ -6,12 +6,6 @@
         {
             // Total asset value.
             public double Total => A.PreTax.Amount + A.PostTax.Amount + A.Cash.Amount;
-
-            // Approximate Tax-adjusted portfolio value (indicative value)
-            // This is not cash in hand, if you try to withdraw all amount, will push you into a higher tax bracket.
-            // BY-DESIGN: Ignoring cash basis, loss-harvesting (Taxes are overstated), all are qualified or long term gains (Taxes are understated).
-            public double AfterTaxNetWorth => (A.PreTax.Amount * 0.75) + (A.PostTax.Amount * 0.85) + A.Cash.Amount;
-
         }
 
         extension(Rebalanced R)

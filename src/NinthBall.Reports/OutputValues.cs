@@ -37,18 +37,14 @@ namespace NinthBall.Reports
             [CID.RBLPreTax]         = (it, in y) => y.Rebalanced.PreTax.StocksChange,
             [CID.RBLPostTax]        = (it, in y) => y.Rebalanced.PostTax.StocksChange,
 
-            // Total portfolio values (gross and approx after-tax-worth)
+            // Total portfolio values
             [CID.Jan]               = (it, in y) => y.Jan.Total,
-            [CID.JanNet]            = (it, in y) => y.Jan.AfterTaxNetWorth,
-            [CID.Dec]               = (it, in y) => y.Dec.Total,
-            [CID.DecNet]            = (it, in y) => y.Dec.AfterTaxNetWorth,
-
-            // Balance and allocation of individual assets
             [CID.JanPreTax]         = (it, in y) => y.Jan.PreTax.Amount,
             [CID.JanPostTax]        = (it, in y) => y.Jan.PostTax.Amount,
             [CID.JanCash]           = (it, in y) => y.Jan.Cash.Amount,
             [CID.JanPreTaxAlloc]    = (it, in y) => y.Jan.PreTax.Allocation,
             [CID.JanPostTaxAlloc]   = (it, in y) => y.Jan.PostTax.Allocation,
+            [CID.Dec]               = (it, in y) => y.Dec.Total,
             [CID.DecPreTax]         = (it, in y) => y.Dec.PreTax.Amount,
             [CID.DecPostTax]        = (it, in y) => y.Dec.PostTax.Amount,
             [CID.DecCash]           = (it, in y) => y.Dec.Cash.Amount,
@@ -138,7 +134,6 @@ namespace NinthBall.Reports
 
             // Aggregated version presents the last good year info
             [CID.Jan]           = (it) => it.LastGoodYear.Jan.Total,
-            [CID.JanNet]        = (it) => it.LastGoodYear.Jan.AfterTaxNetWorth,
             [CID.JanPreTax]     = (it) => it.LastGoodYear.Jan.PreTax.Amount,
             [CID.JanPostTax]    = (it) => it.LastGoodYear.Jan.PostTax.Amount,
             [CID.JanCash]       = (it) => it.LastGoodYear.Jan.Cash.Amount,
@@ -158,7 +153,6 @@ namespace NinthBall.Reports
 
             // Bottom-line: Data is nominal. Show nominal value of last good year.
             [CID.Dec]     = (it) => it.LastGoodYear.Dec.Total,
-            [CID.DecNet]     = (it) => it.LastGoodYear.Dec.AfterTaxNetWorth,
             [CID.DecPreTax]    = (it) => it.LastGoodYear.Dec.PreTax.Amount,
             [CID.DecPostTax]   = (it) => it.LastGoodYear.Dec.PostTax.Amount,
             [CID.DecCash]      = (it) => it.LastGoodYear.Dec.Cash.Amount,

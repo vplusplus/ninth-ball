@@ -64,7 +64,7 @@ AdditionalIncomes:
     FromAge: 70
     Amount: 72,000
   Ann:
-    FromAge: 70
+    FromAge: 71
     Amount: 53,000
     Increment: 0%
 
