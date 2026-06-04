@@ -9,7 +9,7 @@
     <caption>
         <div>
             <h3 class="mb-0">@Caption</h3>
-            <small class="text-muted">All values are nominal. Monetary amounts are in thousands</small>
+            <small class="text-muted">All values are nominal unless specified as real or (r). Monetary amounts are in thousands.</small>
         </div>
     </caption>
 
@@ -55,7 +55,7 @@
         <!-- Summary row (totals, ann-returns, etc.) moves to top of tbody (so it doesn't repeat in print) -->
         <tr class="text-end">
             
-            <td colspan="2" class="text-start text-warning">Bottom Line</td>
+            <td colspan="2" class="text-start text-indigo">Bottom Line</td>
 
             @foreach (var cid in Columns.Skip(2))
             {
@@ -82,7 +82,7 @@
                     }
                 }
                 
-                <td class="@alignHint.ToCSSTextAlignment() text-warning">@txtCellValue</td>
+                <td class="@alignHint.ToCSSTextAlignment() text-indigo">@txtCellValue</td>
             }
         </tr>
 

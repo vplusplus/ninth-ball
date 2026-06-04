@@ -20,15 +20,23 @@ namespace NinthBall.Reports
 
         static readonly IReadOnlyDictionary<CID, ColorSelector> FxColors = new Dictionary<CID, ColorSelector>()
         {
-            [CID.LikeYear]  = (it, in y) => RealROIRedGreyGreen(y),
-            [CID.ROI]       = (it, in y) => RealROIRedGreyGreen(y),
-            [CID.RealCAGR]  = (it, in y) => RealAnnROIRedGreyGreen(it, y),
-            [CID.Infl]      = (it, in y) => InflationRedGreyGreen(y.ROI.InflationRate),
+            [CID.LikeYear]  = (it, in y) => BadYearIsRed(y),
+
+            [CID.Infl] = (it, in y) => InflationRedGreyGreen(y.ROI.InflationRate),
+
+            [CID.ROIStocks] = (it, in y) => ROIVsInflation(y.ROI.StocksROI, inflation: y.ROI.InflationRate),
+            [CID.ROIBonds]  = (it, in y) => ROIVsInflation(y.ROI.BondsROI, inflation: y.ROI.InflationRate),
+            [CID.ROI]       = (it, in y) => ROIVsInflation(y.RunningGrowth.PortfolioReturn, inflation: y.ROI.InflationRate), 
 
             [CID.LivExp]    = (it, in y) => ColorHint.None,
             [CID.XPreTax]   = (it, in y) => RedGreen(y.XPreTax),
             [CID.XPostTax]  = (it, in y) => RedGreen(y.XPostTax),
 
+            [CID.ChangePreTax]  = (it, in y) => RedGreen(y.Change.PreTax),
+            [CID.ChangePostTax] = (it, in y) => RedGreen(y.Change.PostTax),
+            [CID.Change]        = (it, in y) => RedGreen(y.Change.Total),
+
+            [CID.CAGRReal] = (it, in y) => RealAnnROIRedGreyGreen(it, y),
             [CID.DecReal] = (it, in y) => ColorHint.Primary,
 
         }.AsReadOnly();
@@ -37,15 +45,31 @@ namespace NinthBall.Reports
 
         static ColorHint RealROIRedGreyGreen(in SimYear y) 
         {
-            if (double.IsNaN(y.RunningGrowth.PortfolioReturn)) return ColorHint.None;
+            if (double.IsNaN(y.RunningGrowth.PortfolioReturn)) return ColorHint.None; 
 
             // Purchasing Power Parity (Standard financial term: Nominal ROI - Inflation = Real Return)
             var realReturn = y.RunningGrowth.PortfolioReturn - y.ROI.InflationRate;  
 
             const double GreyBand = 0.015;
             return realReturn > GreyBand ? ColorHint.Success : realReturn < -GreyBand ? ColorHint.Danger : ColorHint.Muted;
-
         }
+
+        static ColorHint BadYearIsRed(in SimYear y)
+        {
+            return
+                y.RunningGrowth.PortfolioReturn < 0 || y.ROI.InflationRate > 0.05 ? ColorHint.Danger :
+                y.RunningGrowth.PortfolioReturn - y.ROI.InflationRate > 0.0 ? ColorHint.Success :
+                ColorHint.Muted;
+
+            //if (double.IsNaN(y.RunningGrowth.PortfolioReturn)) return ColorHint.None;
+
+            //// Purchasing Power Parity (Standard financial term: Nominal ROI - Inflation = Real Return)
+            //var realReturn = y.RunningGrowth.PortfolioReturn - y.ROI.InflationRate;
+
+            //const double GreyBand = 0.015;
+            //return realReturn > GreyBand ? ColorHint.Success : realReturn < -GreyBand ? ColorHint.Danger : ColorHint.Muted;
+        }
+
 
         static ColorHint RealAnnROIRedGreyGreen(SimIteration it, in SimYear y)
         {
@@ -72,6 +96,13 @@ namespace NinthBall.Reports
             return roi > 0.04 ? ColorHint.Success : roi < -0.04 ? ColorHint.Danger : ColorHint.Muted;
         }
 
-        static ColorHint InflationRedGreyGreen(double pctValue) => pctValue <= 0.020 ? ColorHint.Success :pctValue <= 0.035 ? ColorHint.Muted   :ColorHint.Danger;
+        static ColorHint InflationRedGreyGreen(double pctValue) => pctValue <= 0.030 ? ColorHint.Success : pctValue <= 0.05 ? ColorHint.Muted : ColorHint.Danger;
+
+
+        static ColorHint ROIVsInflation(double roi, double inflation) =>
+            roi < 0.0 ? ColorHint.Danger :
+            roi < inflation ? ColorHint.Muted :
+            ColorHint.Success;
+
     }
 }

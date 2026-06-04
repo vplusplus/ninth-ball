@@ -34,14 +34,13 @@ OutputDefaults:
         ChangePostTax,          # PostTax change in assets contributed by ROI on investments
 
         LikeYear,               # Representative year used for historical ROI data
-        Infl,                   # Consumer Price Index (CPI-U)
         ROIStocks,              # Return on Stocks for the year (PCT)
         ROIBonds,               # Return on Bonds for the year (PCT)
+        Infl,                   # Consumer Price Index (CPI-U)
 
-        AnnROI,                 # Annualized effective Portfolio ROI (Blended Stock/Bond/Cash)
-        RealCAGR,               # Annualized Real Effective ROI (only 'Real' data in our table)
+        DecReal,                # Real-ending balance (December)
+        CAGRReal               # Annualized Real Effective ROI (only 'Real' data in our table)
 
-        DecReal                 # Real-ending balance (December)
     ]
 
     # Taable incomes, taxes, MTR snd effective tax
@@ -147,8 +146,8 @@ OutputDefaults:
         ROIStocks,              # Return on Stocks for the year (PCT)
         ROIBonds,               # Return on Bonds for the year (PCT)
         ROI,                    # Effective Portfolio ROI (Blended Stock/Bond/Cash)
-        AnnROI,                 # Annualized effective Portfolio ROI (Blended Stock/Bond/Cash)
-        RealCAGR,               # Annualized Real Effective ROI (only 'Real' data in our table)
+        CAGRNominal,            # Annualized effective Portfolio ROI (Blended Stock/Bond/Cash)
+        CAGRReal,               # Annualized Real Effective ROI (only 'Real' data in our table)
 
         Taxes,                  # Total taxes paid (Sum of Ord, Div, Int, CapGains)    
         TaxPCT,                 # For every $ that came in, what PCT went to taxes

@@ -80,8 +80,8 @@ namespace NinthBall.Reports
             [CID.ROIStocks]         = (it, in y) => y.ROI.StocksROI,
             [CID.ROIBonds]          = (it, in y) => y.ROI.BondsROI,
             [CID.ROI]               = (it, in y) => y.RunningGrowth.PortfolioReturn,
-            [CID.AnnROI]            = (it, in y) => y.RunningGrowth.AnnualizedReturn,
-            [CID.RealCAGR]          = (it, in y) => y.RunningGrowth.RealAnnualizedReturn,
+            [CID.CAGRNominal]       = (it, in y) => y.RunningGrowth.AnnualizedReturn,
+            [CID.CAGRReal]          = (it, in y) => y.RunningGrowth.RealAnnualizedReturn,
 
             // Tax $$$s, MTR and effective tax rate
             [CID.Taxes]             = (it, in y) => y.Taxes.Total,
@@ -150,18 +150,14 @@ namespace NinthBall.Reports
             [CID.XPostTax]     = (it) => it.Sum(y => y.XPostTax),
             [CID.XCash]        = (it) => it.Sum(y => y.XCash),
 
-
-            // Bottom-line: Data is nominal. Show nominal value of last good year.
             [CID.Dec]     = (it) => it.LastGoodYear.Dec.Total,
             [CID.DecPreTax]    = (it) => it.LastGoodYear.Dec.PreTax.Amount,
             [CID.DecPostTax]   = (it) => it.LastGoodYear.Dec.PostTax.Amount,
             [CID.DecCash]      = (it) => it.LastGoodYear.Dec.Cash.Amount,
 
-            // Bottom-line: Show annualized-effective-roi at last good year for both ROI and AnnROI
-            // Do not try to summarize the market noise: StocksROI & BondROI - They are just bootstrapper data.
-            [CID.ROI]          = (it) => it.LastGoodYear.RunningGrowth.PortfolioReturn,
-            [CID.AnnROI]       = (it) => it.LastGoodYear.RunningGrowth.AnnualizedReturn,
-            [CID.RealCAGR]     = (it) => it.LastGoodYear.RunningGrowth.RealAnnualizedReturn,
+            [CID.ROI]           = (it) => it.LastGoodYear.RunningGrowth.PortfolioReturn,
+            [CID.CAGRNominal]   = (it) => it.LastGoodYear.RunningGrowth.AnnualizedReturn,
+            [CID.CAGRReal]      = (it) => it.LastGoodYear.RunningGrowth.RealAnnualizedReturn,
 
 
         }.AsReadOnly();

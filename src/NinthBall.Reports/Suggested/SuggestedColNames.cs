@@ -8,21 +8,26 @@ namespace NinthBall.Reports
         static readonly IReadOnlyDictionary<CID, string> ColumnNames = new Dictionary<CID, string>()
         {
             [CID.Year]              = "Yr",
-            [CID.LikeYear]          = "Like",
 
-            [CID.JanPreTax]         = "Jan-401K",
-            [CID.JanPostTax]        = "Jan-Inv",
-            [CID.DecPreTax]         = "Dec-401K",
-            [CID.DecPostTax]        = "Dec-Inv",
-            [CID.JanPreTaxAlloc]    = "401K[S%]",
-            [CID.JanPostTaxAlloc]   = "INV[S%]",
+            [CID.JanPreTax]         = "PreTax(Jan)",
+            [CID.JanPostTax]        = "PostTax(Jan)",
+            [CID.DecPreTax]         = "PreTax(Dec)",
+            [CID.DecPostTax]        = "PostTax(Dec)",
+            [CID.JanPreTaxAlloc]    = "[S%]",
+            [CID.JanPostTaxAlloc]   = "[S%]",
 
 
             [CID.Change]            = "(±)",
             [CID.ChangePreTax]      = "PreTax(±)",
             [CID.ChangePostTax]     = "PostTax(±)",
 
-            [CID.RealCAGR]          = "CAGR(r)",
+            [CID.LikeYear]          = "Like",
+            [CID.ROIStocks]         = "Stocks",
+            [CID.ROIBonds]          = "Bonds",
+            [CID.Infl]              = "Infl.",
+
+            [CID.CAGRNominal]       = "CAGR(n)",
+            [CID.CAGRReal]          = "CAGR(r)",
 
 
         }.AsReadOnly();
