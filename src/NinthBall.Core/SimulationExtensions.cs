@@ -10,7 +10,7 @@ namespace NinthBall.Core
         public static IConfigurationBuilder AddSimulationDefaults(this IConfigurationBuilder builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
-            return builder.AddYamlResources(typeof(Simulation).Assembly, ".SimDefaults.");
+            return builder.AddYamlResourcesFromAssembly(typeof(Simulation).Assembly, ".SimDefaults.");
         }
 
         public static IConfigurationBuilder AddOverrides(this IConfigurationBuilder builder, SimInputOverrides overrides)

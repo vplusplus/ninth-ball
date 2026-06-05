@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileSystemGlobbing;
 using NinthBall.Utils;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -23,7 +24,79 @@ namespace NinthBall.Core
                 ? builder.AddYamlContent(File.ReadAllText(yamlFileName))
                 : builder;
 
-        public static IConfigurationBuilder AddYamlResources(this IConfigurationBuilder builder, Assembly resourceAssembly, string resourcePathSelector)
+        public static IConfigurationBuilder AddYamlResourcesMatchingGlobPattern(this IConfigurationBuilder builder, string fileFolderOrGlob)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(fileFolderOrGlob);
+
+            var baseFolder = string.Empty;
+            var globPattern = "*.yaml";
+
+            if (File.Exists(fileFolderOrGlob))
+            {
+                // It's a single file. Use as-is.
+                baseFolder = Path.GetDirectoryName(fileFolderOrGlob) ?? string.Empty;
+                globPattern = Path.GetFileName(fileFolderOrGlob);
+            }
+            else if (Directory.Exists(fileFolderOrGlob))
+            {
+                // Its a folder, use the default choice, the intended use.
+                baseFolder = fileFolderOrGlob;
+                globPattern = "*.yaml";
+            }
+            else
+            {
+                bool isAbsolute = Path.IsPathRooted(fileFolderOrGlob);
+
+                var segments = fileFolderOrGlob
+                    .Replace('\\', '/')
+                    .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                char[] globChars = ['*', '?', '['];
+
+                // Find the index of the first segment that contains a glob character
+                int globStartIndex = Array.FindIndex(segments, s => s.AsSpan().IndexOfAny(globChars) >= 0);
+
+                // If no wildcards are found in the non-existent path, treat the last segment as the pattern
+                if (globStartIndex == -1)
+                {
+                    globStartIndex = Math.Max(0, segments.Length - 1);
+                }
+
+                var baseSegments = segments.Take(globStartIndex).ToArray();
+                var globSegments = segments.Skip(globStartIndex).ToArray();
+
+                // Reconstruct the base folder accurately based on OS roots
+                if (isAbsolute)
+                {
+                    string root = Path.GetPathRoot(fileFolderOrGlob) ?? string.Empty;
+                    baseFolder = Path.Combine(root, Path.Combine(baseSegments));
+                }
+                else
+                {
+                    baseFolder = Path.Combine(baseSegments);
+                }
+
+                // Combine with forward slashes for Microsoft Globbing compatibility
+                globPattern = string.Join("/", globSegments);
+            }
+
+            if (!Directory.Exists(baseFolder)) throw new FatalWarning($"Input config base-folder not found | {baseFolder}");
+
+            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+            matcher.AddInclude(globPattern);
+            var matchingFiles = matcher.GetResultsInFullPath(baseFolder).ToArray();
+            if (0 == matchingFiles.Length) throw new FatalWarning($"Input config glob pattern didn't match any file | '{globPattern}'");
+
+            foreach (var filePath in matchingFiles)
+            {
+                Console.WriteLine($" Using config file: {Path.GetFileName(filePath)}");
+                AddRequiredYamlFile(builder, filePath);
+            }
+            return builder;
+        }
+
+        public static IConfigurationBuilder AddYamlResourcesFromAssembly(this IConfigurationBuilder builder, Assembly resourceAssembly, string resourcePathSelector)
         {
             ArgumentNullException.ThrowIfNull(builder);
             ArgumentNullException.ThrowIfNull(resourceAssembly);

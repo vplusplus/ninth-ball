@@ -1,5 +1,5 @@
 ﻿Usage:
- {me} --in Input.yaml --out Output.yaml --watch
+ {me} --in Input-config-path-and-glob --watch
  {me} --help
 
 Switches:
@@ -7,5 +7,5 @@ Switches:
  --watch        Watch the input files for changes and automatically reprocess.
 
 Parameters:
- --in           Path to the primary simulation input configurations YAML file.
+ --in           Path to the simulation input, a folder, an YAML file or glob pattern.
  --out          Path to an optional simulation output configurations YAML file.

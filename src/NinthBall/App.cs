@@ -11,8 +11,7 @@ namespace NinthBall
 {
     static class App
     {
-        static string InputConfigFileName  => CmdLine.Required("In");
-        static string? OptionalOutputConfigFileName => CmdLine.Optional("out", null!);
+        static string InputConfigGlob => CmdLine.Required("In");
         static bool WatchMode => CmdLine.Switch("watch");
         static bool PrintHelp => CmdLine.Switch("help");
 
@@ -31,7 +30,7 @@ namespace NinthBall
             TimeSpan FiveSeconds = TimeSpan.FromSeconds(5);
             TimeSpan TenMinutes  = TimeSpan.FromMinutes(10);
 
-            var fileSet  = new WatchFileSet(InputConfigFileName, OptionalOutputConfigFileName);
+            var fileSet  = new WatchFileSet(Directory.GetFiles(InputConfigGlob));
             var inactive = Stopwatch.StartNew();
             var consecutiveErrors = 0;
 
@@ -78,8 +77,8 @@ namespace NinthBall
                 simSessionBuilder.Configuration
                     .AddSimulationDefaults()
                     .AddReportDefaults()
-                    .AddRequiredYamlFile(InputConfigFileName)
-                    .AddOptionalYamlFile(OptionalOutputConfigFileName);
+                    .AddYamlResourcesMatchingGlobPattern(InputConfigGlob)
+                    ;
 
                 // Assemble simulation and reporting components.
                 simSessionBuilder.Services

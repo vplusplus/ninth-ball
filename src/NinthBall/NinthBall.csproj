@@ -48,10 +48,4 @@
     <ProjectReference Include="..\NinthBall.Reports\NinthBall.Reports.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Config\**">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

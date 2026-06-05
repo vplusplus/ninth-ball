@@ -11,7 +11,7 @@ namespace NinthBall.Reports
     public static class SimulationReportsExtensions
     {
         public static IConfigurationBuilder AddReportDefaults(this IConfigurationBuilder builder) => builder
-            .AddYamlResources(typeof(SimulationReports).Assembly, ".ReportDefaults.");
+            .AddYamlResourcesFromAssembly(typeof(SimulationReports).Assembly, ".ReportDefaults.");
 
         public static IServiceCollection AddReportComponents(this IServiceCollection services)
         {

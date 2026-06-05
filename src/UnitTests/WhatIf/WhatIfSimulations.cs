@@ -15,7 +15,8 @@ namespace UnitTests.WhatIf
     [TestClass]
     public partial class WhatIfSimulations
     {
-        static string WhatIfReportsFolder => MyConfig.Instance["WhatIfReportsFolder"] ?? throw new Exception("Missing config entry: 'WhatIfReportsFolder'");
+        static string WhatIfInoutFolder => MyConfig.Instance["In"] ?? throw new Exception("Missing config entry: 'In'");
+        static string WhatIfReportsFolder => MyConfig.Instance["Out"] ?? throw new Exception("Missing config entry: 'Out'");
 
         const string WhatIfCashFlowFileName = @"WhatIf-CashFlow.json.txt";
         const string WhatIfDistributionFileName = @"WhatIf-Distribution.json.txt";
@@ -27,7 +28,8 @@ namespace UnitTests.WhatIf
             // Prepare simulation configuration from /whatifinputs/*.yaml
             var baseConfig = new ConfigurationBuilder()
                 .AddSimulationDefaults()
-                .AddYamlResources(typeof(WhatIfSimulations).Assembly, ".WhatIfInputs.")
+                //.AddYamlResourcesFromAssembly(typeof(WhatIfSimulations).Assembly, ".WhatIfInputs.")
+                .AddYamlResourcesMatchingGlobPattern(WhatIfInoutFolder)
                 .Build();
 
             // Prepare a combinations of initial balance, first year exp and start age combinations.
@@ -182,8 +184,6 @@ namespace UnitTests.WhatIf
                     .ToArray();
             }
 
-
-            static double ThreeDecimals(double value) => Math.Round(value, 3);
         }
 
         static WhatIfResult TryOneVariation(IConfiguration baseConfiguration, WhatIfVariant varyBy, HashSet<string> strategies)
