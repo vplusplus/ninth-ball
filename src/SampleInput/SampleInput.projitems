@@ -9,11 +9,14 @@
     <Import_RootNamespace>SampleInput</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)SampleInput.yaml">
+    <None Include="$(MSBuildThisFileDirectory)Output.yaml">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Input.yaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)WhatIfOptions.yaml" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)What-If.yaml" />
   </ItemGroup>
 </Project>
