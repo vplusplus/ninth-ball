@@ -56,7 +56,7 @@ namespace NinthBall.Reports.Html
             {
                 switch ((tag ?? string.Empty).ToLower())
                 {
-                    case "date":    return DateTime.Now.ToString(format ?? "yyyyMMdd");
+                    case "date":    return $"{DateTime.Now:yyyyMMdd}";
                     case "initial": return $"{simResult.I0Y0.Jan.Total/1000000:F1}M";
                     case "y0exp":   return $"{simResult.I0Y0.Expenses.LivExp / 1000:F0}K";
                     case "y0age":   return $"{simResult.I0Y0.Age}Y";
