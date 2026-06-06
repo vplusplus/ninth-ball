@@ -25,6 +25,9 @@ namespace UnitTests.WhatIf
         [TestMethod]
         public void RunWhatIfSimulation()
         {
+            Console.WriteLine($"IN:  {WhatIfInoutFolder}");
+            Console.WriteLine($"OUT: {WhatIfReportsFolder}");
+
             // Prepare simulation configuration from /whatifinputs/*.yaml
             var baseConfig = new ConfigurationBuilder()
                 .AddSimulationDefaults()
@@ -139,7 +142,8 @@ namespace UnitTests.WhatIf
             var formatedAndRelaxed = new JsonSerializerOptions()
             {
                 WriteIndented = true,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
             };
 
             // Ensure the output folder exists

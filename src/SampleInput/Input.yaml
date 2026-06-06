@@ -22,7 +22,7 @@ SimParams:
       TieredTax,
       VariableWithdrawal,
       RequiredMinimumDistribution,
-      HistoricalGrowth
+      RandomHistoricalGrowth
 
       # Available objectives:
       # AdditionalIncomes,
@@ -67,12 +67,12 @@ AdditionalIncomes:
     Increment: 0%
 
 LivingExpenses:
-  FirstYearAmount: 130,000
+  FirstYearAmount: 160,000
   StepDown:
     - AtAge: 65           # Example: Stop paying Life Ins
       Reduction: 28000
-    # - AtAge: 70           # Example: Reduction in Med Ins.
-    #   Reduction: 6000
+    - AtAge: 70           # Example: Reduction in Med Ins.
+      Reduction: 6000
 
 
 # ............................................................
