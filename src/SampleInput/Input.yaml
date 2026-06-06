@@ -1,3 +1,12 @@
+Outputs:
+  Html: 
+    File: D:/Junk/SimReport/4M-61-130K-RandomGrowth.html
+    View: Default
+    ZZIterations: [0, 5000, 9999] 
+
+  Excel: 
+    ZZFile: D:/Junk/DeleteMe.xlsx
+    View: Default
 
 SimParams:
   StartAge: 61
@@ -13,7 +22,7 @@ SimParams:
       TieredTax,
       VariableWithdrawal,
       RequiredMinimumDistribution,
-      RandomHistoricalGrowth
+      RandomGrowth
 
       # Available objectives:
       # AdditionalIncomes,
@@ -23,7 +32,6 @@ SimParams:
       # HistoricalGrowth,         # Replays history exactly
       # RandomHistoricalGrowth,   # Regime aware moving blocks (regimes inferred from history)
       # RandomGrowth,             # Regime aware ParametricBootstrapper (regimes inferred from history)
-      # ParametricGrowth          # ParametricBootstrapper using regime profiles defined in config files
 
       # LivingExpenses,
       # FixedWithdrawal, VariableWithdrawal,
@@ -44,7 +52,7 @@ Initial:
     Allocation: 60%
   PostTax:
     Amount: $2,000,000
-    Allocation: 60%
+    Allocation: 70%
 
 # ............................................................
 # Income(s) and Expense(s)
