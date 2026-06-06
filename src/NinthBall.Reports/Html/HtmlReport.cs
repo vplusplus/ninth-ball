@@ -1,6 +1,6 @@
 ﻿using NinthBall.Core;
-using NinthBall.Utils;
 using NinthBall.Reports.Html.Templates;
+using NinthBall.Utils;
 
 namespace NinthBall.Reports.Html
 {
@@ -27,6 +27,7 @@ namespace NinthBall.Reports.Html
 
             // Save
             var htmlFileName = Path.GetFullPath(Options.Html.File);
+            htmlFileName = PlaceHolders.ResolvePlaceholders(htmlFileName, GetTagResolver(simResult));
             FileSystem.EnsureDirectoryForFile(htmlFileName);
             await File.WriteAllTextAsync(htmlFileName, html);
 
@@ -47,5 +48,23 @@ namespace NinthBall.Reports.Html
             FileSystem.EnsureDirectoryForFile(errorHtmlFileName);
             await File.WriteAllTextAsync(errorHtmlFileName, html);
         }
+
+
+        static Func<string, string?, string> GetTagResolver(SimResult simResult)
+        {
+            return (string tag, string? format) =>
+            {
+                switch ((tag ?? string.Empty).ToLower())
+                {
+                    case "date":    return DateTime.Now.ToString(format ?? "yyyyMMdd");
+                    case "initial": return $"{simResult.I0Y0.Jan.Total/1000000:F1}M";
+                    case "y0exp":   return $"{simResult.I0Y0.Expenses.LivExp / 1000:F0}K";
+                    case "y0age":   return $"{simResult.I0Y0.Age}Y";
+                    case "growth":  return simResult.SimParams.Objectives.Where(x => x.Contains("Growth", StringComparison.OrdinalIgnoreCase)).FirstOrDefault() ?? string.Empty;
+                    default: return null!;
+                }
+            };
+        }
+
     }
 }

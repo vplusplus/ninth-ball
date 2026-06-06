@@ -141,24 +141,22 @@ namespace NinthBall.Reports
             [CID.Fees]          = (it) => it.Sum(y => y.Fees.Total),
             [CID.Taxes]         = (it) => it.Sum(y => y.Taxes.Total),
 
-            [CID.LivExp]       = (it) => it.Sum(y => y.Expenses.LivExp),
+            [CID.LivExp]        = (it) => it.Sum(y => y.Expenses.LivExp),
 
-            [CID.Incomes]      = (it) => it.Sum(y => y.Incomes.Total),
-            [CID.SS]           = (it) => it.Sum(y => y.Incomes.SS),
-            [CID.Ann]          = (it) => it.Sum(y => y.Incomes.Ann),
-            [CID.XPreTax]      = (it) => it.Sum(y => y.XPreTax),
-            [CID.XPostTax]     = (it) => it.Sum(y => y.XPostTax),
-            [CID.XCash]        = (it) => it.Sum(y => y.XCash),
+            [CID.Incomes]       = (it) => it.Sum(y => y.Incomes.Total),
+            [CID.SS]            = (it) => it.Sum(y => y.Incomes.SS),
+            [CID.Ann]           = (it) => it.Sum(y => y.Incomes.Ann),
+            [CID.XPreTax]       = (it) => it.Sum(y => y.XPreTax),
+            [CID.XPostTax]      = (it) => it.Sum(y => y.XPostTax),
+            [CID.XCash]         = (it) => it.Sum(y => y.XCash),
 
-            [CID.Dec]     = (it) => it.LastGoodYear.Dec.Total,
-            [CID.DecPreTax]    = (it) => it.LastGoodYear.Dec.PreTax.Amount,
-            [CID.DecPostTax]   = (it) => it.LastGoodYear.Dec.PostTax.Amount,
-            [CID.DecCash]      = (it) => it.LastGoodYear.Dec.Cash.Amount,
+            [CID.Dec]           = (it) => it.LastGoodYear.Dec.Total,
+            [CID.DecPreTax]     = (it) => it.LastGoodYear.Dec.PreTax.Amount,
+            [CID.DecPostTax]    = (it) => it.LastGoodYear.Dec.PostTax.Amount,
+            [CID.DecCash]       = (it) => it.LastGoodYear.Dec.Cash.Amount,
 
-            [CID.ROI]           = (it) => it.LastGoodYear.RunningGrowth.PortfolioReturn,
             [CID.CAGRNominal]   = (it) => it.LastGoodYear.RunningGrowth.AnnualizedReturn,
             [CID.CAGRReal]      = (it) => it.LastGoodYear.RunningGrowth.RealAnnualizedReturn,
-
 
         }.AsReadOnly();
     }

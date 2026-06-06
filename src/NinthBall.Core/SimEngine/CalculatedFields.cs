@@ -113,6 +113,8 @@
 
         extension(SimResult simResult)
         {
+            public SimYear I0Y0 => simResult.Iterations[0].ByYear.Span[0];
+
             public double SurvivalRate => simResult.Iterations.Count == 0 ? 0.0 : (double)simResult.Iterations.Count(x => x.Success) / (double)simResult.Iterations.Count;
 
             /// <summary>
