@@ -18,11 +18,12 @@ SimParams:
       YearlyRebalance,
       AdditionalIncomes,
       LivingExpenses,
-      AnnualFees,
+      # AnnualFees,
+      FidelityWealthManagementFees,
       TieredTax,
-      VariableWithdrawal,
+      FixedWithdrawal,
       RequiredMinimumDistribution,
-      RandomHistoricalGrowth
+      RandomGrowth
 
       # Available objectives:
       # AdditionalIncomes,
@@ -91,7 +92,7 @@ FlatGrowth:
 FixedWithdrawal:
   FirstYearPct: 4%
   Increment:    2%
-  ResetAtAge:   [65, 70]
+  ResetAtAge:   [110]
 
 VariableWithdrawal:
   FutureROI: 4%
@@ -110,7 +111,7 @@ FlatTax:
   State:             5%
 
 AnnualFees:
-  PreTax:   1.1%    # Tax deferred account
+  PreTax:   0.56%    # Tax deferred account
   PostTax:  1.1%     # Investment account
 
 # ............................................................

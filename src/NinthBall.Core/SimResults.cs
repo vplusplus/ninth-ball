@@ -28,7 +28,7 @@ namespace NinthBall.Core
 
     public readonly record struct Assets(Asset PreTax, Asset PostTax, Asset Cash);
 
-    public readonly record struct Fees(double PreTax, double PostTax);
+    public readonly record struct Fees(double PreTax, double PostTax, double feesPct);
 
     public readonly record struct Incomes(double SS, double Ann);
 

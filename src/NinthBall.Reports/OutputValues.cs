@@ -63,6 +63,7 @@ namespace NinthBall.Reports
             [CID.Fees]              = (it, in y) => y.Fees.Total,
             [CID.FeesPreTax]        = (it, in y) => y.Fees.PreTax,
             [CID.FeesPostTax]       = (it, in y) => y.Fees.PostTax,
+            [CID.FeesPct]           = (it, in y) => y.Fees.feesPct,
 
             // Withdrawals and Deposits 
             [CID.XPreTax]           = (it, in y) => y.XPreTax,

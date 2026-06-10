@@ -43,6 +43,9 @@ namespace NinthBall.Reports
                 CID.MTRCapGain,
                 CID.MTRState
             )
+            .WithColumnFormats(FormatHint.P2,
+                CID.FeesPct
+            )
             .AsReadOnly();
 
         private static Dictionary<CID, FormatHint> WithColumnFormats(this Dictionary<CID, FormatHint> dict, FormatHint formatHint, params CID[] columnIds)

@@ -28,7 +28,8 @@ namespace NinthBall.Core
         public static Fees RoundToCents(this Fees fees) => new
         (
             PreTax:  fees.PreTax.RoundToCents(),
-            PostTax: fees.PostTax.RoundToCents()
+            PostTax: fees.PostTax.RoundToCents(),
+            fees.feesPct
         );
 
         public static Incomes RoundToCents(this Incomes x) => new

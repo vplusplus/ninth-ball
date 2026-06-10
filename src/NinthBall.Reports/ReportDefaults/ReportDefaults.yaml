@@ -24,6 +24,7 @@ OutputDefaults:
         Ann,                    # Annuity income received
 
         Fees,                   # Total investment/advisory fees for the year
+        FeesPct,
         Taxes,                  # Total taxes paid (Sum of Ord, Div, Int, CapGains)    
         LivExp,                 # Current Year Expenses (Inflation adjusted)
 

@@ -39,6 +39,7 @@ namespace NinthBall.Reports
         Fees,                   // Total investment/advisory fees for the year
         FeesPreTax,
         FeesPostTax,
+        FeesPct,                // Consolidated fees PCT
 
         XPreTax,                // Net change in PreTax account (withdrawals as negative)
         XPostTax,               // Net change in PostTax account (deposits - withdrawals)
